@@ -6,7 +6,7 @@
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-$RawBase    = "https://raw.githubusercontent.com/Neanderthal86/preventiva/main/Dist"
+$RawBase    = "https://raw.githubusercontent.com/Neanderthal86/tf-toolkit/main/Dist"
 $ShortUrl   = "https://techfontes.com.br/p"
 $InstallDir = "C:\ProgramData\TechFontes\Preventiva"
 

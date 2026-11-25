@@ -12,7 +12,7 @@ Execute no PowerShell (eleva automaticamente para Administrador, baixa a versão
 irm techfontes.com.br/p | iex
 ```
 
-*(Também funciona com `irm techfontes.com.br/preventiva | iex` ou diretamente via GitHub: `irm https://raw.githubusercontent.com/Neanderthal86/preventiva/main/run.ps1 | iex`)*
+*(Também funciona com `irm techfontes.com.br/preventiva | iex`, `irm techfontes.com.br/toolkit | iex` ou diretamente via GitHub: `irm https://raw.githubusercontent.com/Neanderthal86/tf-toolkit/main/run.ps1 | iex`)*
 
 ---
 
