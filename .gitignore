@@ -1,0 +1,14 @@
+# Arquivos temporarios e logs
+*.log
+*.tmp
+Transcript_*.txt
+Relatorio_*.html
+Relatorio_*.json
+
+# Artefato intermediario de build do WinUtil (o publicado fica em Dist/TechFontes-Utility.ps1)
+Dev/winutil-main/winutil.ps1
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+desktop.ini

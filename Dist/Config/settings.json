@@ -1,0 +1,33 @@
+{
+  "TempAgeDays": 3,
+  "MinFreeSpaceGB": 15,
+  "EventLimit": 20,
+  "LimitFileScanMB": 200,
+  "LargeFolderThresholdMB": 100,
+  "CriticalServices": [
+    "BITS",
+    "wuauserv",
+    "Spooler",
+    "CryptSvc",
+    "LanmanWorkstation"
+  ],
+  "ReportSettings": {
+    "OutputFolder": "C:\\ProgramData\\Preventiva",
+    "CompanyName": "Tech Fontes",
+    "CompanyEmail": "suporte@techfontes.com.br",
+    "WebhookUrl": "",
+    "SendWebhookOnlyOnAlerts": true
+  },
+  "SoftwareList": [
+    { "Name": "Google Chrome", "Id": "Google.Chrome" },
+    { "Name": "Brave Browser", "Id": "Brave.Brave" },
+    { "Name": "Mozilla Firefox", "Id": "Mozilla.Firefox" },
+    { "Name": "Adobe Acrobat Reader", "Id": "Adobe.Acrobat.Reader.64-bit" },
+    { "Name": "WhatsApp Desktop", "Id": "WhatsApp.WhatsApp" },
+    { "Name": "AnyDesk", "Id": "AnyDeskSoftwareGmbH.AnyDesk" },
+    { "Name": "WinRAR", "Id": "RARLab.WinRAR" },
+    { "Name": "7-Zip", "Id": "7zip.7zip" },
+    { "Name": "OpenVPN Connect", "Id": "OpenVPNTechnologies.OpenVPNConnect" },
+    { "Name": "VLC Media Player", "Id": "VideoLAN.VLC" }
+  ]
+}
