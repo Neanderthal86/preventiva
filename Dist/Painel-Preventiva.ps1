@@ -622,7 +622,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                 <TextBlock Text="Atalhos r&#x00E1;pidos para administra&#x00E7;&#x00E3;o da esta&#x00E7;&#x00E3;o."
                                            FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14"/>
 
-                                <Button Name="btnAbrirUtility" Content="Abrir TechFontes Utility (WinUtil)" Style="{StaticResource SecondaryButton}"
+                                <Button Name="btnAbrirUtility" Content="Abrir Chris Titus Tech (WinUtil)" Style="{StaticResource SecondaryButton}"
                                         HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="14,11"/>
                                 <Button Name="btnAgendarSemanal" Content="Configurar Agendamento Semanal (Sex 18h)" Style="{StaticResource SecondaryButton}"
                                         HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="14,11"/>
@@ -650,12 +650,13 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
                                     <TextBlock Text="Instala&#x00E7;&#x00E3;o Autom&#x00E1;tica via Winget" FontSize="14.5" FontWeight="Bold" Foreground="White"/>
-                                    <TextBlock Name="txtSoftwaresCount" Text="0 softwares selecionados (instalados apenas no Modo Execu&#x00E7;&#x00E3;o)"
+                                    <TextBlock Name="txtSoftwaresCount" Text="0 software(s) selecionado(s)"
                                                FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Name="btnSelectAllSoft" Content="Selecionar Todos" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
-                                    <Button Name="btnClearSoft" Content="Limpar Sele&#x00E7;&#x00E3;o" Style="{StaticResource SecondaryButton}"/>
+                                    <Button Name="btnClearSoft" Content="Limpar Sele&#x00E7;&#x00E3;o" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                                    <Button Name="btnInstalarSoftwares" Content="Instalar Selecionados" Style="{StaticResource RunButton}" FontSize="12.5" Padding="14,8"/>
                                 </StackPanel>
                             </Grid>
 
@@ -750,6 +751,7 @@ $pnlSoftwares           = $Window.FindName("pnlSoftwares")
 $txtSoftwaresCount      = $Window.FindName("txtSoftwaresCount")
 $btnSelectAllSoft       = $Window.FindName("btnSelectAllSoft")
 $btnClearSoft           = $Window.FindName("btnClearSoft")
+$btnInstalarSoftwares   = $Window.FindName("btnInstalarSoftwares")
 $txtResumoSelecao       = $Window.FindName("txtResumoSelecao")
 $txtStatus              = $Window.FindName("txtStatus")
 $pbProgresso            = $Window.FindName("pbProgresso")
@@ -840,7 +842,7 @@ $UpdateSummary = {
 
     $subText = if ($rbExecucao.IsChecked) { "Execu$([char]0x00E7)$([char]0x00E3)o" } else { "Diagn$([char]0x00F3)stico" }
     $softCount = @($DynamicCheckboxes | Where-Object { $_.IsChecked }).Count
-    $txtSoftwaresCount.Text = "$softCount software(s) selecionado(s) (instalados apenas no Modo Execu$([char]0x00E7)$([char]0x00E3)o)"
+    $txtSoftwaresCount.Text = "$softCount software(s) selecionado(s) $([char]0x2014) clique em 'Instalar Selecionados' para instalar agora"
 
     $extras = @()
     if ($rbExecucao.IsChecked -and $chkHighPerformance.IsChecked) { $extras += "Alto Desempenho" }
@@ -921,6 +923,45 @@ $btnClearSoft.Add_Click({
     & $UpdateSummary
 })
 
+$btnInstalarSoftwares.Add_Click({
+    $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    if ($Softs.Count -eq 0) {
+        [System.Windows.MessageBox]::Show("Selecione pelo menos um software na lista para instalar.", "Nenhum software selecionado", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+        return
+    }
+
+    $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+    if (-not (Test-Path -LiteralPath $ScriptFile)) {
+        [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+        return
+    }
+
+    $ArgsList = @(
+        "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
+        "-Mode", "`"Softwares`"", "-SubModo", "`"Execucao`"",
+        "-Tasks", "`"None`"",
+        "-SoftwareToInstall", "`"$($Softs -join ',')`""
+    )
+
+    try {
+        $btnExecutar.IsEnabled = $false
+        $btnInstalarSoftwares.IsEnabled = $false
+        $btnExecutar.Content = "INSTALANDO..."
+        $pbProgresso.Visibility = "Visible"
+        $txtStatus.Text = "Instalando $($Softs.Count) software(s) via Winget... Acompanhe na janela do console."
+
+        $script:StartTime = Get-Date
+        $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+        $script:PollTimer.Start()
+    } catch {
+        $btnExecutar.IsEnabled = $true
+        $btnInstalarSoftwares.IsEnabled = $true
+        $btnExecutar.Content = "INICIAR PREVENTIVA"
+        $pbProgresso.Visibility = "Collapsed"
+        $txtStatus.Text = "Erro ao iniciar instala$([char]0x00E7)$([char]0x00E3)o: $_"
+    }
+})
+
 # Atalhos de Relatorios e Ferramentas
 $btnAbrirPastaLogs.Add_Click({
     if (-not (Test-Path -LiteralPath $OutputFolder)) {
@@ -980,6 +1021,7 @@ $script:PollTimer.Add_Tick({
         $script:PollTimer.Stop()
         $pbProgresso.Visibility = "Collapsed"
         $btnExecutar.IsEnabled = $true
+        if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
         $btnExecutar.Content = "INICIAR PREVENTIVA"
 
         $exitCode = if ($script:CurrentProcess) { $script:CurrentProcess.ExitCode } else { 0 }
@@ -1046,6 +1088,7 @@ $btnExecutar.Add_Click({
         $script:PollTimer.Start()
     } catch {
         $btnExecutar.IsEnabled = $true
+        if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
         $btnExecutar.Content = "INICIAR PREVENTIVA"
         $pbProgresso.Visibility = "Collapsed"
         $txtStatus.Text = "Erro ao iniciar o processo: $_"
