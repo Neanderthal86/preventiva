@@ -9,8 +9,10 @@ Conjunto de ferramentas em PowerShell para diagnóstico, manutenção preventiva
 Execute no PowerShell (eleva automaticamente para Administrador, baixa a versão mais recente da pasta `Dist/` e abre o Painel Visual):
 
 ```powershell
-irm https://raw.githubusercontent.com/Neanderthal86/preventiva/main/run.ps1 | iex
+irm techfontes.com.br/p | iex
 ```
+
+*(Também funciona com `irm techfontes.com.br/preventiva | iex` ou diretamente via GitHub: `irm https://raw.githubusercontent.com/Neanderthal86/preventiva/main/run.ps1 | iex`)*
 
 ---
 
