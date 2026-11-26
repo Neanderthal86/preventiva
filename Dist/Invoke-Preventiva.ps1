@@ -7,6 +7,8 @@ param(
     [string]$Mode = "Light",
     [string]$SubModo = "Execucao",
     [string[]]$Tasks,
+    [string[]]$Tweaks,
+    [switch]$UndoTweaks,
     [switch]$OptimizePower,
     [string[]]$SoftwareToInstall,
     [switch]$Silent
@@ -31,6 +33,9 @@ if ($SoftwareToInstall) {
 }
 if ($Tasks) {
     $Tasks = @($Tasks | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+}
+if ($Tweaks) {
+    $Tweaks = @($Tweaks | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 }
 
 # 2. Carregar Módulos
@@ -136,8 +141,10 @@ if ($RunDISM -or $RunSFC) {
     Invoke-PreventivaIntegrity -RunDISM $RunDISM -RunSFC $RunSFC
 }
 
-# Otimizações (se solicitado)
-if ($OptimizePower -and $ExecutarAcoes) {
+# Otimizações / Tweaks (se solicitado)
+if ($Tweaks -and $Tweaks.Count -gt 0 -and $ExecutarAcoes) {
+    Invoke-PreventivaTweaks -Tweaks $Tweaks -Undo:$UndoTweaks
+} elseif ($OptimizePower -and $ExecutarAcoes) {
     Set-PreventivaHighPerformance
 }
 

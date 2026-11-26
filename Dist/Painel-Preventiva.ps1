@@ -590,45 +590,115 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                     </Grid>
                 </TabItem>
 
-                <!-- ABA 2: OTIMIZA&#x00C7;&#x00C3;O & FERRAMENTAS -->
+                <!-- ABA 2: OTIMIZACAO & FERRAMENTAS -->
                 <TabItem Header="Otimiza&#x00E7;&#x00E3;o &amp; Ferramentas">
-                    <Grid Margin="0,16,0,0">
+                    <Grid Margin="0,14,0,0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.1*"/>
-                            <ColumnDefinition Width="18"/>
-                            <ColumnDefinition Width="0.9*"/>
+                            <ColumnDefinition Width="1.65*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="0.85*"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Coluna Esquerda: 16 Tweaks Corporativos Reversiveis -->
                         <Border Grid.Column="0" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
-                                BorderThickness="1" CornerRadius="10" Padding="16">
-                            <StackPanel>
-                                <TextBlock Text="Otimiza&#x00E7;&#x00F5;es durante a Preventiva" FontSize="14.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
-                                <TextBlock Text="Aplicadas automaticamente quando o Modo Execu&#x00E7;&#x00E3;o estiver selecionado."
-                                           FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14"/>
+                                BorderThickness="1" CornerRadius="10" Padding="15">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
 
-                                <CheckBox Name="chkHighPerformance" Style="{StaticResource CardCheck}" IsChecked="True" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <TextBlock Text="Ativar Plano de Energia 'Alto Desempenho'" FontSize="13.5" FontWeight="SemiBold" Foreground="White"/>
-                                        <TextBlock Text="Evita redu&#x00E7;&#x00E3;o agressiva de clock da CPU em esta&#x00E7;&#x00F5;es corporativas ligadas na tomada."
-                                                   FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Tweaks Corporativos (100% Revers&#x00ED;veis)" FontSize="14.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Name="txtTweaksCount" Grid.Column="1" Text="0 selecionado(s)" FontSize="11.5" FontWeight="SemiBold" Foreground="#C4613A" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid Grid.Row="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <Button Name="btnTweakPresetCorp" Content="Corporativo Seguro" Style="{StaticResource PresetButton}" ToolTip="Marca os tweaks mais seguros para empresas (privacidade, velocidade e GPOs)"/>
+                                        <Button Name="btnTweakPresetClear" Content="Limpar" Style="{StaticResource PresetButton}" Margin="0"/>
                                     </StackPanel>
-                                </CheckBox>
-                            </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button Name="btnDesfazerTweaks" Content="Desfazer" Style="{StaticResource SecondaryButton}" Padding="11,6" Margin="0,0,6,0" ToolTip="Restaura os valores padrao do Windows para os tweaks marcados"/>
+                                        <Button Name="btnAplicarTweaks" Content="Aplicar Tweaks" Style="{StaticResource RunButton}" FontSize="12" Padding="13,6"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- 2 Colunas (8 + 8) -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="PERFORMANCE &amp; REDE" FontSize="10" FontWeight="Bold" Foreground="#7c8096" Margin="2,0,0,5"/>
+                                        <CheckBox Name="chkTweakHighPerf" Tag="HighPerformance" Style="{StaticResource TaskCheck}" Content="Plano Energia Alto Desempenho"/>
+                                        <CheckBox Name="chkTweakTelemetry" Tag="DisableTelemetry" Style="{StaticResource TaskCheck}" Content="Desativar Telemetria Windows"/>
+                                        <CheckBox Name="chkTweakBGApps" Tag="DisableBGApps" Style="{StaticResource TaskCheck}" Content="Desativar Apps em 2&#x00BA; Plano"/>
+                                        <CheckBox Name="chkTweakVisualFX" Tag="VisualEffects" Style="{StaticResource TaskCheck}" Content="Efeitos Visuais (Desempenho)"/>
+                                        <CheckBox Name="chkTweakDeliveryOpt" Tag="DisableDeliveryOpt" Style="{StaticResource TaskCheck}" Content="Desativar Delivery Opt. (P2P)"/>
+                                        <CheckBox Name="chkTweakHibernation" Tag="DisableHibernation" Style="{StaticResource TaskCheck}" Content="Desativar Hiberna&#x00E7;&#x00E3;o (Desktop)"/>
+                                        <CheckBox Name="chkTweakLongPaths" Tag="EnableLongPaths" Style="{StaticResource TaskCheck}" Content="Caminhos Longos (&gt;260 chars)"/>
+                                        <CheckBox Name="chkTweakEdgeDebloat" Tag="EdgeDebloat" Style="{StaticResource TaskCheck}" Content="Debloat Microsoft Edge (GPO)" Margin="0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="PRODUTIVIDADE &amp; WINDOWS LIMPO" FontSize="10" FontWeight="Bold" Foreground="#7c8096" Margin="2,0,0,5"/>
+                                        <CheckBox Name="chkTweakConsumer" Tag="DisableConsumerFeatures" Style="{StaticResource TaskCheck}" Content="Bloquear Consumer Features"/>
+                                        <CheckBox Name="chkTweakBing" Tag="DisableBingSearch" Style="{StaticResource TaskCheck}" Content="Desativar Bing no Menu Iniciar"/>
+                                        <CheckBox Name="chkTweakActivity" Tag="DisableActivityHistory" Style="{StaticResource TaskCheck}" Content="Desativar Hist&#x00F3;rico Atividades"/>
+                                        <CheckBox Name="chkTweakRightClick" Tag="ClassicRightClick" Style="{StaticResource TaskCheck}" Content="Menu Bot&#x00E3;o Direito Cl&#x00E1;ssico"/>
+                                        <CheckBox Name="chkTweakEndTask" Tag="EndTaskTaskbar" Style="{StaticResource TaskCheck}" Content="Finalizar Tarefa na Barra (W11)"/>
+                                        <CheckBox Name="chkTweakShowExt" Tag="ShowFileExtensions" Style="{StaticResource TaskCheck}" Content="Mostrar Extens&#x00F5;es de Arquivos"/>
+                                        <CheckBox Name="chkTweakWidgets" Tag="DisableWidgets" Style="{StaticResource TaskCheck}" Content="Desativar Widgets (GPO)"/>
+                                        <CheckBox Name="chkTweakCopilot" Tag="DisableCopilotAI" Style="{StaticResource TaskCheck}" Content="Desativar Copilot / AI (GPO)" Margin="0"/>
+                                    </StackPanel>
+                                </Grid>
+
+
+                            </Grid>
                         </Border>
 
+                        <!-- Coluna Direita: Ferramentas Complementares -->
                         <Border Grid.Column="2" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
-                                BorderThickness="1" CornerRadius="10" Padding="16">
-                            <StackPanel>
-                                <TextBlock Text="Ferramentas Complementares" FontSize="14.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
-                                <TextBlock Text="Atalhos r&#x00E1;pidos para administra&#x00E7;&#x00E3;o da esta&#x00E7;&#x00E3;o."
-                                           FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14"/>
-                                <Button Name="btnAbrirUtility" Content="Abrir Chris Titus Tech (WinUtil)" Style="{StaticResource SecondaryButton}"
-                                        HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="14,11"/>
-                                <Button Name="btnAgendarSemanal" Content="Configurar Agendamento Semanal (Sex 18h)" Style="{StaticResource SecondaryButton}"
-                                        HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="14,11"/>
-                                <Button Name="btnAbrirConfig" Content="Editar Configura&#x00E7;&#x00F5;es (settings.json)" Style="{StaticResource SecondaryButton}"
-                                        HorizontalAlignment="Stretch" Padding="14,11"/>
-                            </StackPanel>
+                                BorderThickness="1" CornerRadius="10" Padding="15">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0">
+                                    <TextBlock Text="Ferramentas Complementares" FontSize="14.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Atalhos r&#x00E1;pidos para administra&#x00E7;&#x00E3;o da esta&#x00E7;&#x00E3;o."
+                                               FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14" TextWrapping="Wrap"/>
+
+                                    <Button Name="btnAbrirUtility" Content="Abrir Chris Titus Tech (WinUtil)" Style="{StaticResource SecondaryButton}"
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="12,11"/>
+                                    <Button Name="btnAgendarSemanal" Content="Agendamento Semanal (Sex 18h)" Style="{StaticResource SecondaryButton}"
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="12,11"/>
+                                    <Button Name="btnAbrirConfig" Content="Editar settings.json" Style="{StaticResource SecondaryButton}"
+                                            HorizontalAlignment="Stretch" Padding="12,11"/>
+                                </StackPanel>
+
+                                <Border Grid.Row="1" Background="#161821" BorderBrush="#282b3b" BorderThickness="1" CornerRadius="8" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="SEGURAN&#x00C7;A CORPORATIVA" FontSize="10" FontWeight="Bold" Foreground="#7ad19f"/>
+                                        <TextBlock Text="Todos os tweaks ao lado usam chaves validadas/GPOs e podem ser revertidos pelo bot&#x00E3;o Desfazer."
+                                                   FontSize="11" Foreground="#9ea3b8" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
                         </Border>
                     </Grid>
                 </TabItem>
@@ -744,7 +814,23 @@ $script:IsApplyingPreset = $false
 $txtOutputFolderInfo = $Window.FindName("txtOutputFolderInfo")
 $btnAbrirUltimoRelatorio = $Window.FindName("btnAbrirUltimoRelatorio")
 $btnAbrirPastaLogs = $Window.FindName("btnAbrirPastaLogs")
-$chkHighPerformance = $Window.FindName("chkHighPerformance")
+$txtTweaksCount         = $Window.FindName("txtTweaksCount")
+$btnTweakPresetCorp     = $Window.FindName("btnTweakPresetCorp")
+$btnTweakPresetClear    = $Window.FindName("btnTweakPresetClear")
+$btnAplicarTweaks       = $Window.FindName("btnAplicarTweaks")
+$btnDesfazerTweaks      = $Window.FindName("btnDesfazerTweaks")
+$TweakCheckboxNames = @(
+    "chkTweakHighPerf", "chkTweakTelemetry", "chkTweakBGApps", "chkTweakVisualFX",
+    "chkTweakDeliveryOpt", "chkTweakHibernation", "chkTweakLongPaths", "chkTweakEdgeDebloat",
+    "chkTweakConsumer", "chkTweakBing", "chkTweakActivity", "chkTweakRightClick",
+    "chkTweakEndTask", "chkTweakShowExt", "chkTweakWidgets", "chkTweakCopilot"
+)
+$TweakCheckboxes = @($TweakCheckboxNames | ForEach-Object { $Window.FindName($_) })
+$CorpSafeTweaks = @(
+    "DisableTelemetry", "DisableBGApps", "DisableDeliveryOpt", "EnableLongPaths",
+    "EdgeDebloat", "DisableConsumerFeatures", "DisableBingSearch", "DisableActivityHistory",
+    "EndTaskTaskbar", "ShowFileExtensions", "DisableWidgets", "DisableCopilotAI"
+)
 $btnAbrirUtility = $Window.FindName("btnAbrirUtility")
 $btnAgendarSemanal = $Window.FindName("btnAgendarSemanal")
 $btnAbrirConfig = $Window.FindName("btnAbrirConfig")
@@ -849,7 +935,9 @@ $UpdateSummary = {
     $txtSoftwaresCount.Text = "$softCount software(s) selecionado(s) $([char]0x2014) clique em 'Instalar Selecionados' para instalar agora"
 
     $extras = @()
-    if ($rbExecucao.IsChecked -and $chkHighPerformance.IsChecked) { $extras += "Alto Desempenho" }
+    $tweakCount = @($TweakCheckboxes | Where-Object { $_.IsChecked }).Count
+    if ($txtTweaksCount) { $txtTweaksCount.Text = "$tweakCount selecionado(s)" }
+    if ($rbExecucao.IsChecked -and $tweakCount -gt 0) { $extras += "$tweakCount tweak(s)" }
     if ($rbExecucao.IsChecked -and $softCount -gt 0) { $extras += "$softCount app(s) Winget" }
 
     $resumo = "Selecionado: $($script:ActivePresetName) ($taskCount tarefas)  $([char]0x2022)  $subText"
@@ -913,10 +1001,73 @@ if ($Config -and $Config.SoftwareList) {
 }
 
 # Eventos de selecao para atualizar o resumo em tempo real
-foreach ($ctrl in @($rbDiagnostico, $rbExecucao, $chkHighPerformance)) {
+foreach ($ctrl in @($rbDiagnostico, $rbExecucao)) {
     $ctrl.Add_Checked($UpdateSummary)
 }
-$chkHighPerformance.Add_Unchecked($UpdateSummary)
+foreach ($tcb in $TweakCheckboxes) {
+    $tcb.Add_Checked($UpdateSummary)
+    $tcb.Add_Unchecked($UpdateSummary)
+}
+
+$btnTweakPresetCorp.Add_Click({
+    foreach ($tcb in $TweakCheckboxes) {
+        $tcb.IsChecked = ($CorpSafeTweaks -contains $tcb.Tag)
+    }
+    & $UpdateSummary
+})
+$btnTweakPresetClear.Add_Click({
+    foreach ($tcb in $TweakCheckboxes) { $tcb.IsChecked = $false }
+    & $UpdateSummary
+})
+
+$RunTweaksAction = {
+    param([bool]$IsUndo)
+    $SelectedTweaks = @($TweakCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    if ($SelectedTweaks.Count -eq 0) {
+        [System.Windows.MessageBox]::Show("Selecione pelo menos um tweak na lista.", "Nenhum tweak selecionado", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+        return
+    }
+    $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+    if (-not (Test-Path -LiteralPath $ScriptFile)) {
+        [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+        return
+    }
+
+    $modeLabel = if ($IsUndo) { "TweaksUndo" } else { "Tweaks" }
+    $ArgsList = @(
+        "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
+        "-Mode", "`"$modeLabel`"", "-SubModo", "`"Execucao`"",
+        "-Tasks", "`"None`"",
+        "-Tweaks", "`"$($SelectedTweaks -join ',')`""
+    )
+    if ($IsUndo) { $ArgsList += "-UndoTweaks" }
+
+    try {
+        $btnExecutar.IsEnabled = $false
+        $btnInstalarSoftwares.IsEnabled = $false
+        $btnAplicarTweaks.IsEnabled = $false
+        $btnDesfazerTweaks.IsEnabled = $false
+        $btnExecutar.Content = if ($IsUndo) { "DESFAZENDO..." } else { "APLICANDO..." }
+        $pbProgresso.Visibility = "Visible"
+        $acaoTxt = if ($IsUndo) { "Desfazendo" } else { "Aplicando" }
+        $txtStatus.Text = "$acaoTxt $($SelectedTweaks.Count) tweak(s)... Acompanhe na janela do console."
+
+        $script:StartTime = Get-Date
+        $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+        $script:PollTimer.Start()
+    } catch {
+        $btnExecutar.IsEnabled = $true
+        $btnInstalarSoftwares.IsEnabled = $true
+        $btnAplicarTweaks.IsEnabled = $true
+        $btnDesfazerTweaks.IsEnabled = $true
+        $btnExecutar.Content = "INICIAR PREVENTIVA"
+        $pbProgresso.Visibility = "Collapsed"
+        $txtStatus.Text = "Erro ao executar tweaks: $_"
+    }
+}
+
+$btnAplicarTweaks.Add_Click({ & $RunTweaksAction $false })
+$btnDesfazerTweaks.Add_Click({ & $RunTweaksAction $true })
 
 $btnSelectAllSoft.Add_Click({
         foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $true }
@@ -1031,7 +1182,7 @@ $script:PollTimer.Add_Tick({
             $script:PollTimer.Stop()
             $pbProgresso.Visibility = "Collapsed"
             $btnExecutar.IsEnabled = $true
-            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
+            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }; if ($btnAplicarTweaks) { $btnAplicarTweaks.IsEnabled = $true }; if ($btnDesfazerTweaks) { $btnDesfazerTweaks.IsEnabled = $true }
             $btnExecutar.Content = "INICIAR PREVENTIVA"
 
             $exitCode = if ($script:CurrentProcess) { $script:CurrentProcess.ExitCode } else { 0 }
@@ -1063,7 +1214,8 @@ $btnExecutar.Add_Click({
 
         $SelectedTasks = @($TaskCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
         $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-        $HasPowerOpt = ($chkHighPerformance -and $chkHighPerformance.IsChecked -and $SubModo -eq "Execucao")
+        $SelectedTweaks = @($TweakCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    $HasPowerOpt = ($SelectedTweaks.Count -gt 0 -and $SubModo -eq "Execucao")
 
         if ($SelectedTasks.Count -eq 0 -and $Softs.Count -eq 0 -and -not $HasPowerOpt) {
             [System.Windows.MessageBox]::Show("Selecione pelo menos uma tarefa, otimiza$([char]0x00E7)$([char]0x00E3)o ou software para executar.", "Nenhuma a$([char]0x00E7)$([char]0x00E3)o selecionada", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
@@ -1080,9 +1232,10 @@ $btnExecutar.Add_Click({
         $TasksArg = if ($SelectedTasks.Count -gt 0) { $SelectedTasks -join ',' } else { "None" }
         $ArgsList += "-Tasks"
         $ArgsList += "`"$TasksArg`""
-        if ($chkHighPerformance -and $chkHighPerformance.IsChecked) {
-            $ArgsList += "-OptimizePower"
-        }
+        if ($SelectedTweaks.Count -gt 0) {
+        $ArgsList += "-Tweaks"
+        $ArgsList += "`"$($SelectedTweaks -join ',')`""
+    }
         if ($Softs.Count -gt 0) {
             $ArgsList += "-SoftwareToInstall"
             $ArgsList += "`"$($Softs -join ',')`""
@@ -1100,7 +1253,7 @@ $btnExecutar.Add_Click({
         }
         catch {
             $btnExecutar.IsEnabled = $true
-            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
+            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }; if ($btnAplicarTweaks) { $btnAplicarTweaks.IsEnabled = $true }; if ($btnDesfazerTweaks) { $btnDesfazerTweaks.IsEnabled = $true }
             $btnExecutar.Content = "INICIAR PREVENTIVA"
             $pbProgresso.Visibility = "Collapsed"
             $txtStatus.Text = "Erro ao iniciar o processo: $_"

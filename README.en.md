@@ -63,7 +63,7 @@ Pick a quick preset (**Light**, **Moderate**, **Heavy**, **Recovery**) or click 
 ---
 
 ### 2. Optimization & Complementary Tools
-Enable the **High Performance** power plan during maintenance and access quick shortcuts for **Chris Titus Tech (WinUtil)**, **Weekly Scheduling**, and editing `settings.json`.
+Safely apply or revert **16 fully reversible corporate tweaks** (based on verified WinUtil registry keys and official Microsoft GPOs) with a 1-click **Safe Corporate Profile** preset or individual selection, plus quick shortcuts for **Chris Titus Tech (WinUtil)**, **Weekly Scheduling**, and `settings.json`.
 
 ![Optimization and Tools Tab](docs/screenshots/tab-otimizacao.png)
 

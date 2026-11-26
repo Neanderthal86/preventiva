@@ -63,7 +63,7 @@ Escolha um preset rápido (**Light**, **Moderate**, **Heavy**, **Recovery**) ou 
 ---
 
 ### 2. Otimização & Ferramentas Complementares
-Ative o plano de energia **Alto Desempenho** durante a preventiva e acesse atalhos rápidos para o **Chris Titus Tech (WinUtil)**, o **Agendamento Semanal** e o arquivo de configuração `settings.json`.
+Aplique ou reverta com segurança **16 tweaks corporativos 100% reversíveis** (baseados nas chaves validadas do WinUtil e GPOs oficiais da Microsoft), usando o preset **Perfil Corporativo Seguro** ou seleção individual, além de atalhos rápidos para o **Chris Titus Tech (WinUtil)**, o **Agendamento Semanal** e o `settings.json`.
 
 ![Aba Otimização e Ferramentas](docs/screenshots/tab-otimizacao.png)
 
