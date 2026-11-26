@@ -90,7 +90,7 @@ O projeto nasceu como um script monolítico único (preservado em `Legado/`) e f
 | `SystemInventory.psm1` | Inventário de hardware/SO, saúde da bateria via WMI (alerta `< 70%`) e teste de latência (`8.8.8.8`). |
 | `Diagnostics.psm1` | Espaço e saúde S.M.A.R.T. dos discos, programas de inicialização, drivers com falha, eventos de BSOD (ID 41), varredura de pastas/arquivos grandes, auditoria de segurança (AV, Firewall, porta RDP 3389, BitLocker, ativação) e `DISM`/`SFC`. |
 | `Maintenance.psm1` | Verificação/restart de serviços críticos, limpeza de temporários, Lixeira, Flush DNS, SSD TRIM, limpeza `WinSxS`, Windows Update (`PSWindowsUpdate`), Ponto de Restauração e modo Recovery. |
-| `Optimization.psm1` | Ativação do plano de energia Alto Desempenho (`powercfg`). |
+| `Optimization.psm1` | Tweaks corporativos 100% reversíveis (aplicar/desfazer via registro e GPO) e plano de energia Alto Desempenho (`powercfg`). |
 | `Software.psm1` | Instalação silenciosa em lote via `winget`. |
 | `Reporting.psm1` | Geração de `.log`, `Transcript`, relatório **HTML** estilizado e **JSON** com disparo opcional para Webhook. |
 

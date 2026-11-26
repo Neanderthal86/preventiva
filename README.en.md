@@ -90,7 +90,7 @@ TF-Toolkit evolved from a single monolithic maintenance script (kept in `Legado/
 | `SystemInventory.psm1` | Hardware/OS inventory, WMI battery health check (alerts `< 70%`), and internet latency test (`8.8.8.8`). |
 | `Diagnostics.psm1` | Free disk space & physical disk health, startup items, faulty PnP drivers, BSOD (Event ID 41) & system errors, large folder/file scans, security audit (AV, Firewall, RDP port 3389, BitLocker, Windows license), and `DISM`/`SFC`. |
 | `Maintenance.psm1` | Critical Windows services, temp cleanup, Recycle Bin, Flush DNS, SSD TRIM, `WinSxS` cleanup, Windows Update (`PSWindowsUpdate`), Restore Point, and Recovery reset. |
-| `Optimization.psm1` | High Performance power plan activation (`powercfg`). |
+| `Optimization.psm1` | Fully reversible corporate tweaks (apply/undo via registry and GPO) and High Performance power plan (`powercfg`). |
 | `Software.psm1` | Silent batch installation via `winget`. |
 | `Reporting.psm1` | Generates `.log`, `Transcript`, styled **HTML** reports, and **JSON** payloads with optional Webhook POST. |
 
