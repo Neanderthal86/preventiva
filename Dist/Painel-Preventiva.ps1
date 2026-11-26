@@ -19,7 +19,8 @@ if (Test-Path -LiteralPath $ConfigFile) {
         if ($Config.ReportSettings -and $Config.ReportSettings.OutputFolder) {
             $OutputFolder = $Config.ReportSettings.OutputFolder
         }
-    } catch {}
+    }
+    catch {}
 }
 
 # Dados rapidos da maquina para o cabecalho
@@ -621,7 +622,6 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                 <TextBlock Text="Ferramentas Complementares" FontSize="14.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
                                 <TextBlock Text="Atalhos r&#x00E1;pidos para administra&#x00E7;&#x00E3;o da esta&#x00E7;&#x00E3;o."
                                            FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14"/>
-
                                 <Button Name="btnAbrirUtility" Content="Abrir Chris Titus Tech (WinUtil)" Style="{StaticResource SecondaryButton}"
                                         HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="14,11"/>
                                 <Button Name="btnAgendarSemanal" Content="Configurar Agendamento Semanal (Sex 18h)" Style="{StaticResource SecondaryButton}"
@@ -698,7 +698,8 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 $reader = (New-Object System.Xml.XmlNodeReader $XAML)
 try {
     $Window = [Windows.Markup.XamlReader]::Load($reader)
-} catch {
+}
+catch {
     Write-Host "Falha ao carregar XAML da interface." -ForegroundColor Red
     Write-Host $_.Exception.Message
     Read-Host "Pressione ENTER para sair"
@@ -706,23 +707,23 @@ try {
 }
 
 # Bind de controles
-$TitleBar               = $Window.FindName("TitleBar")
-$btnMinimize            = $Window.FindName("btnMinimize")
-$btnClose               = $Window.FindName("btnClose")
-$imgLogo                = $Window.FindName("imgLogo")
-$linkSite               = $Window.FindName("linkSite")
-$txtHostName            = $Window.FindName("txtHostName")
-$txtFreeSpace           = $Window.FindName("txtFreeSpace")
-$txtAdmin               = $Window.FindName("txtAdmin")
-$bdAdmin                = $Window.FindName("bdAdmin")
-$txtTasksCount          = $Window.FindName("txtTasksCount")
-$btnPresetLight         = $Window.FindName("btnPresetLight")
-$btnPresetModerate      = $Window.FindName("btnPresetModerate")
-$btnPresetHeavy         = $Window.FindName("btnPresetHeavy")
-$btnPresetRecovery      = $Window.FindName("btnPresetRecovery")
-$btnPresetClear         = $Window.FindName("btnPresetClear")
-$rbDiagnostico          = $Window.FindName("rbDiagnostico")
-$rbExecucao             = $Window.FindName("rbExecucao")
+$TitleBar = $Window.FindName("TitleBar")
+$btnMinimize = $Window.FindName("btnMinimize")
+$btnClose = $Window.FindName("btnClose")
+$imgLogo = $Window.FindName("imgLogo")
+$linkSite = $Window.FindName("linkSite")
+$txtHostName = $Window.FindName("txtHostName")
+$txtFreeSpace = $Window.FindName("txtFreeSpace")
+$txtAdmin = $Window.FindName("txtAdmin")
+$bdAdmin = $Window.FindName("bdAdmin")
+$txtTasksCount = $Window.FindName("txtTasksCount")
+$btnPresetLight = $Window.FindName("btnPresetLight")
+$btnPresetModerate = $Window.FindName("btnPresetModerate")
+$btnPresetHeavy = $Window.FindName("btnPresetHeavy")
+$btnPresetRecovery = $Window.FindName("btnPresetRecovery")
+$btnPresetClear = $Window.FindName("btnPresetClear")
+$rbDiagnostico = $Window.FindName("rbDiagnostico")
+$rbExecucao = $Window.FindName("rbExecucao")
 
 $TaskCheckboxNames = @(
     "chkTaskInventory", "chkTaskDiskEvents", "chkTaskCriticalServices", "chkTaskCleanTemp",
@@ -740,22 +741,22 @@ $Presets = @{
 }
 $script:ActivePresetName = "Light"
 $script:IsApplyingPreset = $false
-$txtOutputFolderInfo    = $Window.FindName("txtOutputFolderInfo")
+$txtOutputFolderInfo = $Window.FindName("txtOutputFolderInfo")
 $btnAbrirUltimoRelatorio = $Window.FindName("btnAbrirUltimoRelatorio")
-$btnAbrirPastaLogs      = $Window.FindName("btnAbrirPastaLogs")
-$chkHighPerformance     = $Window.FindName("chkHighPerformance")
-$btnAbrirUtility        = $Window.FindName("btnAbrirUtility")
-$btnAgendarSemanal      = $Window.FindName("btnAgendarSemanal")
-$btnAbrirConfig         = $Window.FindName("btnAbrirConfig")
-$pnlSoftwares           = $Window.FindName("pnlSoftwares")
-$txtSoftwaresCount      = $Window.FindName("txtSoftwaresCount")
-$btnSelectAllSoft       = $Window.FindName("btnSelectAllSoft")
-$btnClearSoft           = $Window.FindName("btnClearSoft")
-$btnInstalarSoftwares   = $Window.FindName("btnInstalarSoftwares")
-$txtResumoSelecao       = $Window.FindName("txtResumoSelecao")
-$txtStatus              = $Window.FindName("txtStatus")
-$pbProgresso            = $Window.FindName("pbProgresso")
-$btnExecutar            = $Window.FindName("btnExecutar")
+$btnAbrirPastaLogs = $Window.FindName("btnAbrirPastaLogs")
+$chkHighPerformance = $Window.FindName("chkHighPerformance")
+$btnAbrirUtility = $Window.FindName("btnAbrirUtility")
+$btnAgendarSemanal = $Window.FindName("btnAgendarSemanal")
+$btnAbrirConfig = $Window.FindName("btnAbrirConfig")
+$pnlSoftwares = $Window.FindName("pnlSoftwares")
+$txtSoftwaresCount = $Window.FindName("txtSoftwaresCount")
+$btnSelectAllSoft = $Window.FindName("btnSelectAllSoft")
+$btnClearSoft = $Window.FindName("btnClearSoft")
+$btnInstalarSoftwares = $Window.FindName("btnInstalarSoftwares")
+$txtResumoSelecao = $Window.FindName("txtResumoSelecao")
+$txtStatus = $Window.FindName("txtStatus")
+$pbProgresso = $Window.FindName("pbProgresso")
+$btnExecutar = $Window.FindName("btnExecutar")
 
 # Preencher informacoes da maquina
 $txtHostName.Text = $HostName
@@ -763,7 +764,8 @@ $txtFreeSpace.Text = "$FreeGB GB"
 $txtOutputFolderInfo.Text = $OutputFolder
 if ($IsAdmin) {
     $txtAdmin.Text = "Administrador"
-} else {
+}
+else {
     $txtAdmin.Text = "Padr$([char]0x00E3)o"
     $txtAdmin.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#e8a472")
     $bdAdmin.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#36261d")
@@ -772,10 +774,10 @@ if ($IsAdmin) {
 
 # Arrastar janela e botoes de titulo
 $TitleBar.Add_MouseLeftButtonDown({
-    if ($_.ChangedButton -eq [System.Windows.Input.MouseButton]::Left) {
-        $Window.DragMove()
-    }
-})
+        if ($_.ChangedButton -eq [System.Windows.Input.MouseButton]::Left) {
+            $Window.DragMove()
+        }
+    })
 $btnMinimize.Add_Click({ $Window.WindowState = "Minimized" })
 $btnClose.Add_Click({ $Window.Close() })
 
@@ -789,7 +791,8 @@ if (Test-Path -LiteralPath $LogoPath) {
         $bitmap.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
         $bitmap.EndInit()
         $imgLogo.Source = $bitmap
-    } catch {}
+    }
+    catch {}
 }
 
 if ($linkSite) {
@@ -811,7 +814,8 @@ $HighlightActivePreset = {
             $kv.Value.Background = $BrushConv.ConvertFromString("#C4613A")
             $kv.Value.BorderBrush = $BrushConv.ConvertFromString("#d97248")
             $kv.Value.Foreground = [System.Windows.Media.Brushes]::White
-        } else {
+        }
+        else {
             $kv.Value.Background = $BrushConv.ConvertFromString("#20222e")
             $kv.Value.BorderBrush = $BrushConv.ConvertFromString("#32364a")
             $kv.Value.Foreground = $BrushConv.ConvertFromString("#c8cde0")
@@ -915,97 +919,102 @@ foreach ($ctrl in @($rbDiagnostico, $rbExecucao, $chkHighPerformance)) {
 $chkHighPerformance.Add_Unchecked($UpdateSummary)
 
 $btnSelectAllSoft.Add_Click({
-    foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $true }
-    & $UpdateSummary
-})
+        foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $true }
+        & $UpdateSummary
+    })
 $btnClearSoft.Add_Click({
-    foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $false }
-    & $UpdateSummary
-})
+        foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $false }
+        & $UpdateSummary
+    })
 
 $btnInstalarSoftwares.Add_Click({
-    $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-    if ($Softs.Count -eq 0) {
-        [System.Windows.MessageBox]::Show("Selecione pelo menos um software na lista para instalar.", "Nenhum software selecionado", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-        return
-    }
+        $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+        if ($Softs.Count -eq 0) {
+            [System.Windows.MessageBox]::Show("Selecione pelo menos um software na lista para instalar.", "Nenhum software selecionado", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+            return
+        }
 
-    $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
-    if (-not (Test-Path -LiteralPath $ScriptFile)) {
-        [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
-        return
-    }
+        $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+        if (-not (Test-Path -LiteralPath $ScriptFile)) {
+            [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+            return
+        }
 
-    $ArgsList = @(
-        "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
-        "-Mode", "`"Softwares`"", "-SubModo", "`"Execucao`"",
-        "-Tasks", "`"None`"",
-        "-SoftwareToInstall", "`"$($Softs -join ',')`""
-    )
+        $ArgsList = @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
+            "-Mode", "`"Softwares`"", "-SubModo", "`"Execucao`"",
+            "-Tasks", "`"None`"",
+            "-SoftwareToInstall", "`"$($Softs -join ',')`""
+        )
 
-    try {
-        $btnExecutar.IsEnabled = $false
-        $btnInstalarSoftwares.IsEnabled = $false
-        $btnExecutar.Content = "INSTALANDO..."
-        $pbProgresso.Visibility = "Visible"
-        $txtStatus.Text = "Instalando $($Softs.Count) software(s) via Winget... Acompanhe na janela do console."
+        try {
+            $btnExecutar.IsEnabled = $false
+            $btnInstalarSoftwares.IsEnabled = $false
+            $btnExecutar.Content = "INSTALANDO..."
+            $pbProgresso.Visibility = "Visible"
+            $txtStatus.Text = "Instalando $($Softs.Count) software(s) via Winget... Acompanhe na janela do console."
 
-        $script:StartTime = Get-Date
-        $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
-        $script:PollTimer.Start()
-    } catch {
-        $btnExecutar.IsEnabled = $true
-        $btnInstalarSoftwares.IsEnabled = $true
-        $btnExecutar.Content = "INICIAR PREVENTIVA"
-        $pbProgresso.Visibility = "Collapsed"
-        $txtStatus.Text = "Erro ao iniciar instala$([char]0x00E7)$([char]0x00E3)o: $_"
-    }
-})
+            $script:StartTime = Get-Date
+            $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+            $script:PollTimer.Start()
+        }
+        catch {
+            $btnExecutar.IsEnabled = $true
+            $btnInstalarSoftwares.IsEnabled = $true
+            $btnExecutar.Content = "INICIAR PREVENTIVA"
+            $pbProgresso.Visibility = "Collapsed"
+            $txtStatus.Text = "Erro ao iniciar instala$([char]0x00E7)$([char]0x00E3)o: $_"
+        }
+    })
 
 # Atalhos de Relatorios e Ferramentas
 $btnAbrirPastaLogs.Add_Click({
-    if (-not (Test-Path -LiteralPath $OutputFolder)) {
-        New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
-    }
-    Start-Process explorer.exe -ArgumentList "`"$OutputFolder`""
-})
+        if (-not (Test-Path -LiteralPath $OutputFolder)) {
+            New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
+        }
+        Start-Process explorer.exe -ArgumentList "`"$OutputFolder`""
+    })
 
 $btnAbrirUltimoRelatorio.Add_Click({
-    $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
+        $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($latest) {
-        Start-Process $latest.FullName
-    } else {
-        [System.Windows.MessageBox]::Show("Nenhum relat$([char]0x00F3)rio HTML encontrado ainda em:`n$OutputFolder", "Relat$([char]0x00F3)rios", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
-    }
-})
+        if ($latest) {
+            Start-Process $latest.FullName
+        }
+        else {
+            [System.Windows.MessageBox]::Show("Nenhum relat$([char]0x00F3)rio HTML encontrado ainda em:`n$OutputFolder", "Relat$([char]0x00F3)rios", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
+        }
+    })
 
 $btnAbrirUtility.Add_Click({
-    $utilBat = Join-Path $BaseDir "Rodar-Utilitario.bat"
-    $utilPs1 = Join-Path $BaseDir "TechFontes-Utility.ps1"
-    if (Test-Path -LiteralPath $utilBat) {
-        Start-Process $utilBat
-    } elseif (Test-Path -LiteralPath $utilPs1) {
-        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$utilPs1`""
-    } else {
-        [System.Windows.MessageBox]::Show("TechFontes-Utility n$([char]0x00E3)o encontrado na pasta.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-    }
-})
+        $utilBat = Join-Path $BaseDir "Rodar-Utilitario.bat"
+        $utilPs1 = Join-Path $BaseDir "TechFontes-Utility.ps1"
+        if (Test-Path -LiteralPath $utilBat) {
+            Start-Process $utilBat
+        }
+        elseif (Test-Path -LiteralPath $utilPs1) {
+            Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$utilPs1`""
+        }
+        else {
+            [System.Windows.MessageBox]::Show("TechFontes-Utility n$([char]0x00E3)o encontrado na pasta.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+        }
+    })
 
 $btnAgendarSemanal.Add_Click({
-    $sched = Join-Path $BaseDir "Install-Agendamento.ps1"
-    if (Test-Path -LiteralPath $sched) {
-        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$sched`"" -Verb RunAs
-    } else {
-        [System.Windows.MessageBox]::Show("Script Install-Agendamento.ps1 n$([char]0x00E3)o encontrado.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-    }
-})
+        $sched = Join-Path $BaseDir "Install-Agendamento.ps1"
+        if (Test-Path -LiteralPath $sched) {
+            Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$sched`"" -Verb RunAs
+        }
+        else {
+            [System.Windows.MessageBox]::Show("Script Install-Agendamento.ps1 n$([char]0x00E3)o encontrado.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+        }
+    })
 
 $btnAbrirConfig.Add_Click({
-    if (Test-Path -LiteralPath $ConfigFile) {
-        Start-Process notepad.exe -ArgumentList "`"$ConfigFile`""
-    }
-})
+        if (Test-Path -LiteralPath $ConfigFile) {
+            Start-Process notepad.exe -ArgumentList "`"$ConfigFile`""
+        }
+    })
 
 # Execucao Assincrona (nao trava a janela WPF)
 $script:CurrentProcess = $null
@@ -1014,86 +1023,89 @@ $script:PollTimer = New-Object System.Windows.Threading.DispatcherTimer
 $script:PollTimer.Interval = [TimeSpan]::FromMilliseconds(500)
 
 $script:PollTimer.Add_Tick({
-    if ($script:CurrentProcess -and -not $script:CurrentProcess.HasExited) {
-        $elapsed = (Get-Date) - $script:StartTime
-        $txtStatus.Text = "Executando preventiva... tempo decorrido: $($elapsed.ToString('mm\:ss'))"
-    } else {
-        $script:PollTimer.Stop()
-        $pbProgresso.Visibility = "Collapsed"
-        $btnExecutar.IsEnabled = $true
-        if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
-        $btnExecutar.Content = "INICIAR PREVENTIVA"
-
-        $exitCode = if ($script:CurrentProcess) { $script:CurrentProcess.ExitCode } else { 0 }
-        $script:CurrentProcess = $null
-
-        if ($exitCode -eq 0) {
-            $txtStatus.Text = "Conclu$([char]0x00ED)do! Relat$([char]0x00F3)rio salvo em $OutputFolder"
-            $res = [System.Windows.MessageBox]::Show(
-                "Preventiva finalizada com sucesso!`n`nDeseja abrir o relat$([char]0x00F3)rio HTML gerado agora?",
-                "Tech Fontes - Conclu$([char]0x00ED)do",
-                [System.Windows.MessageBoxButton]::YesNo,
-                [System.Windows.MessageBoxImage]::Information
-            )
-            if ($res -eq [System.Windows.MessageBoxResult]::Yes) {
-                $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
-                    Sort-Object LastWriteTime -Descending | Select-Object -First 1
-                if ($latest) { Start-Process $latest.FullName }
-            }
-        } else {
-            $txtStatus.Text = "Finalizado com c$([char]0x00F3)digo $exitCode. Verifique os logs em $OutputFolder"
+        if ($script:CurrentProcess -and -not $script:CurrentProcess.HasExited) {
+            $elapsed = (Get-Date) - $script:StartTime
+            $txtStatus.Text = "Executando preventiva... tempo decorrido: $($elapsed.ToString('mm\:ss'))"
         }
-    }
-})
+        else {
+            $script:PollTimer.Stop()
+            $pbProgresso.Visibility = "Collapsed"
+            $btnExecutar.IsEnabled = $true
+            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
+            $btnExecutar.Content = "INICIAR PREVENTIVA"
+
+            $exitCode = if ($script:CurrentProcess) { $script:CurrentProcess.ExitCode } else { 0 }
+            $script:CurrentProcess = $null
+
+            if ($exitCode -eq 0) {
+                $txtStatus.Text = "Conclu$([char]0x00ED)do! Relat$([char]0x00F3)rio salvo em $OutputFolder"
+                $res = [System.Windows.MessageBox]::Show(
+                    "Preventiva finalizada com sucesso!`n`nDeseja abrir o relat$([char]0x00F3)rio HTML gerado agora?",
+                    "Tech Fontes - Conclu$([char]0x00ED)do",
+                    [System.Windows.MessageBoxButton]::YesNo,
+                    [System.Windows.MessageBoxImage]::Information
+                )
+                if ($res -eq [System.Windows.MessageBoxResult]::Yes) {
+                    $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
+                    Sort-Object LastWriteTime -Descending | Select-Object -First 1
+                    if ($latest) { Start-Process $latest.FullName }
+                }
+            }
+            else {
+                $txtStatus.Text = "Finalizado com c$([char]0x00F3)digo $exitCode. Verifique os logs em $OutputFolder"
+            }
+        }
+    })
 
 $btnExecutar.Add_Click({
-    $Mode = if ($script:ActivePresetName) { $script:ActivePresetName } else { "Personalizado" }
-    $SubModo = if ($rbExecucao.IsChecked) { "Execucao" } else { "Diagnostico" }
+        $Mode = if ($script:ActivePresetName) { $script:ActivePresetName } else { "Personalizado" }
+        $SubModo = if ($rbExecucao.IsChecked) { "Execucao" } else { "Diagnostico" }
 
-    $SelectedTasks = @($TaskCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-    $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-    $HasPowerOpt = ($chkHighPerformance -and $chkHighPerformance.IsChecked -and $SubModo -eq "Execucao")
+        $SelectedTasks = @($TaskCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+        $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+        $HasPowerOpt = ($chkHighPerformance -and $chkHighPerformance.IsChecked -and $SubModo -eq "Execucao")
 
-    if ($SelectedTasks.Count -eq 0 -and $Softs.Count -eq 0 -and -not $HasPowerOpt) {
-        [System.Windows.MessageBox]::Show("Selecione pelo menos uma tarefa, otimiza$([char]0x00E7)$([char]0x00E3)o ou software para executar.", "Nenhuma a$([char]0x00E7)$([char]0x00E3)o selecionada", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-        return
-    }
+        if ($SelectedTasks.Count -eq 0 -and $Softs.Count -eq 0 -and -not $HasPowerOpt) {
+            [System.Windows.MessageBox]::Show("Selecione pelo menos uma tarefa, otimiza$([char]0x00E7)$([char]0x00E3)o ou software para executar.", "Nenhuma a$([char]0x00E7)$([char]0x00E3)o selecionada", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+            return
+        }
 
-    $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
-    if (-not (Test-Path -LiteralPath $ScriptFile)) {
-        [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
-        return
-    }
+        $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+        if (-not (Test-Path -LiteralPath $ScriptFile)) {
+            [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+            return
+        }
 
-    $ArgsList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"", "-Mode", "`"$Mode`"", "-SubModo", "`"$SubModo`"")
-    $TasksArg = if ($SelectedTasks.Count -gt 0) { $SelectedTasks -join ',' } else { "None" }
-    $ArgsList += "-Tasks"
-    $ArgsList += "`"$TasksArg`""
-    if ($chkHighPerformance -and $chkHighPerformance.IsChecked) {
-        $ArgsList += "-OptimizePower"
-    }
-    if ($Softs.Count -gt 0) {
-        $ArgsList += "-SoftwareToInstall"
-        $ArgsList += "`"$($Softs -join ',')`""
-    }
+        $ArgsList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"", "-Mode", "`"$Mode`"", "-SubModo", "`"$SubModo`"")
+        $TasksArg = if ($SelectedTasks.Count -gt 0) { $SelectedTasks -join ',' } else { "None" }
+        $ArgsList += "-Tasks"
+        $ArgsList += "`"$TasksArg`""
+        if ($chkHighPerformance -and $chkHighPerformance.IsChecked) {
+            $ArgsList += "-OptimizePower"
+        }
+        if ($Softs.Count -gt 0) {
+            $ArgsList += "-SoftwareToInstall"
+            $ArgsList += "`"$($Softs -join ',')`""
+        }
 
-    try {
-        $btnExecutar.IsEnabled = $false
-        $btnExecutar.Content = "EXECUTANDO..."
-        $pbProgresso.Visibility = "Visible"
-        $txtStatus.Text = "Iniciando $Mode ($SubModo)... Acompanhe na janela do console."
+        try {
+            $btnExecutar.IsEnabled = $false
+            $btnExecutar.Content = "EXECUTANDO..."
+            $pbProgresso.Visibility = "Visible"
+            $txtStatus.Text = "Iniciando $Mode ($SubModo)... Acompanhe na janela do console."
 
-        $script:StartTime = Get-Date
-        $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
-        $script:PollTimer.Start()
-    } catch {
-        $btnExecutar.IsEnabled = $true
-        if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
-        $btnExecutar.Content = "INICIAR PREVENTIVA"
-        $pbProgresso.Visibility = "Collapsed"
-        $txtStatus.Text = "Erro ao iniciar o processo: $_"
-    }
-})
+            $script:StartTime = Get-Date
+            $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+            $script:PollTimer.Start()
+        }
+        catch {
+            $btnExecutar.IsEnabled = $true
+            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }
+            $btnExecutar.Content = "INICIAR PREVENTIVA"
+            $pbProgresso.Visibility = "Collapsed"
+            $txtStatus.Text = "Erro ao iniciar o processo: $_"
+        }
+    })
 
 & $ApplyPreset "Light"
 $Window.ShowDialog() | Out-Null
