@@ -23,6 +23,10 @@ if (Test-Path -LiteralPath $ConfigFile) {
     } catch {}
 }
 
+$NetworkMod = Join-Path $BaseDir "Modules\NetworkTools.psm1"
+if (Test-Path -LiteralPath $NetworkMod) {
+    try { Import-Module $NetworkMod -Force -ErrorAction SilentlyContinue } catch {}
+}
 # Dados rapidos da maquina para o cabecalho
 $HostName = $env:COMPUTERNAME
 $FreeGB = try { [math]::Round((Get-PSDrive C).Free / 1GB, 1) } catch { "?" }
@@ -729,16 +733,18 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <StackPanel Grid.Row="0">
-                                    <TextBlock Text="Ferramentas Complementares" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Atalhos r&#x00E1;pidos para administra&#x00E7;&#x00E3;o da esta&#x00E7;&#x00E3;o."
-                                               FontSize="11.5" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14" TextWrapping="Wrap"/>
+                                    <TextBlock Text="Perfis P&#x00F3;s-Formata&#x00E7;&#x00E3;o" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="Marca Tarefas + Tweaks + Apps em 1 clique."
+                                               FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                                    <StackPanel Name="pnlOnboardingProfiles" Margin="0,0,0,14"/>
 
+                                    <TextBlock Text="Ferramentas Complementares" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
                                     <Button Name="btnAbrirUtility" Content="Abrir Chris Titus Tech (WinUtil)" Style="{StaticResource SecondaryButton}"
-                                            HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="12,11"/>
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,8" Padding="12,9"/>
                                     <Button Name="btnAgendarSemanal" Content="Agendamento Semanal (Sex 18h)" Style="{StaticResource SecondaryButton}"
-                                            HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="12,11"/>
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,8" Padding="12,9"/>
                                     <Button Name="btnAbrirConfig" Content="Editar settings.json" Style="{StaticResource SecondaryButton}"
-                                            HorizontalAlignment="Stretch" Padding="12,11"/>
+                                            HorizontalAlignment="Stretch" Padding="12,9"/>
                                 </StackPanel>
 
                                 <Border Grid.Row="1" Background="{DynamicResource BgSubCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="12">
@@ -776,6 +782,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Name="btnSelectAllSoft" Content="Selecionar Todos" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
                                     <Button Name="btnClearSoft" Content="Limpar Sele&#x00E7;&#x00E3;o" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                                    <Button Name="btnUpgradeAllSoft" Content="Atualizar Todos" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" ToolTip="Executa winget upgrade --all silenciosamente"/>
                                     <Button Name="btnInstalarSoftwares" Content="Instalar Selecionados" Style="{StaticResource RunButton}" FontSize="12.5" Padding="14,8"/>
                                 </StackPanel>
                             </Grid>
@@ -785,6 +792,117 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                             </ScrollViewer>
                         </Grid>
                     </Border>
+                </TabItem>
+                <!-- ABA 4: REDE & SUPORTE RAPIDO -->
+                <TabItem Name="tabRede" Header="Rede &amp; Suporte">
+                    <Grid Margin="0,14,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.15*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="0.85*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Esquerda: Info de Rede + Troca de DNS -->
+                        <Border Grid.Column="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
+                                BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Diagn&#x00F3;stico de Rede ao Vivo" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Informa&#x00E7;&#x00F5;es do adaptador principal e conectividade." FontSize="11.5" Foreground="{DynamicResource TextMuted}"/>
+                                    </StackPanel>
+                                    <Button Name="btnRefreshNet" Grid.Column="1" Content="Atualizar Info" Style="{StaticResource SecondaryButton}" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Border Grid.Row="1" Background="{DynamicResource BgSubCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="135"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Adaptador:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetAdapter" Grid.Row="0" Grid.Column="1" Text="Clique em Atualizar Info" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4" TextTrimming="CharacterEllipsis"/>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="IP Local (IPv4):" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetLocalIP" Grid.Row="1" Grid.Column="1" Text="-" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4"/>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Gateway:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetGateway" Grid.Row="2" Grid.Column="1" Text="-" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4"/>
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="DNS Atual:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetDns" Grid.Row="3" Grid.Column="1" Text="-" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4" TextTrimming="CharacterEllipsis"/>
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Endere&#x00E7;o MAC:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetMac" Grid.Row="4" Grid.Column="1" Text="-" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4"/>
+
+                                        <TextBlock Grid.Row="5" Grid.Column="0" Text="IP P&#x00FA;blico:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetPublicIP" Grid.Row="5" Grid.Column="1" Text="-" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4"/>
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Lat&#x00EA;ncia (8.8.8.8):" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" Margin="0,4"/>
+                                        <TextBlock Name="txtNetLatency" Grid.Row="6" Grid.Column="1" Text="-" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextGood}" Margin="0,4"/>
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Row="2">
+                                    <TextBlock Text="TROCAR DNS EM 1 CLIQUE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                                    <UniformGrid Columns="4">
+                                        <Button Name="btnDnsCloudflare" Content="Cloudflare 1.1.1.1" Style="{StaticResource SecondaryButton}" FontSize="11.5" Padding="6,8" Margin="0,0,6,0"/>
+                                        <Button Name="btnDnsGoogle" Content="Google 8.8.8.8" Style="{StaticResource SecondaryButton}" FontSize="11.5" Padding="6,8" Margin="0,0,6,0"/>
+                                        <Button Name="btnDnsQuad9" Content="Quad9 9.9.9.9" Style="{StaticResource SecondaryButton}" FontSize="11.5" Padding="6,8" Margin="0,0,6,0"/>
+                                        <Button Name="btnDnsDhcp" Content="Auto (DHCP)" Style="{StaticResource SecondaryButton}" FontSize="11.5" Padding="6,8"/>
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Direita: Acoes Rapidas de Suporte -->
+                        <Border Grid.Column="2" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
+                                BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0">
+                                    <TextBlock Text="A&#x00E7;&#x00F5;es R&#x00E1;pidas de Suporte" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Comandos imediatos sem precisar abrir o CMD." FontSize="11.5" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
+
+                                    <Button Name="btnQuickFlushDns" Content="Flush DNS Imediato" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Stretch" Margin="0,0,0,9" Padding="12,10"/>
+                                    <Button Name="btnQuickRenewIp" Content="Renovar IP (Release + Renew)" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Stretch" Margin="0,0,0,9" Padding="12,10"/>
+                                    <Button Name="btnQuickSpooler" Content="Reiniciar Spooler + Limpar Fila Impress&#x00E3;o" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Stretch" Margin="0,0,0,9" Padding="12,10"/>
+                                    <Button Name="btnQuickNcpa" Content="Abrir Conex&#x00F5;es de Rede (ncpa.cpl)" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Stretch" Margin="0,0,0,9" Padding="12,10"/>
+                                    <Button Name="btnQuickDevMgmt" Content="Abrir Gerenciador de Dispositivos" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Stretch" Padding="12,10"/>
+                                </StackPanel>
+
+                                <Border Grid.Row="1" Background="{DynamicResource BgSubCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="RETORNO DA A&#x00C7;&#x00C3;O" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                        <TextBlock Name="txtNetActionResult" Text="Pronto para diagn&#x00F3;stico." FontSize="11.5" Foreground="{DynamicResource TextGood}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </TabItem>
             </TabControl>
 
@@ -861,6 +979,26 @@ $pnlSoftwares            = $Window.FindName("pnlSoftwares")
 $txtSoftwaresCount       = $Window.FindName("txtSoftwaresCount")
 $btnSelectAllSoft        = $Window.FindName("btnSelectAllSoft")
 $btnClearSoft            = $Window.FindName("btnClearSoft")
+$pnlOnboardingProfiles   = $Window.FindName("pnlOnboardingProfiles")
+$btnUpgradeAllSoft       = $Window.FindName("btnUpgradeAllSoft")
+$btnRefreshNet           = $Window.FindName("btnRefreshNet")
+$txtNetAdapter           = $Window.FindName("txtNetAdapter")
+$txtNetLocalIP           = $Window.FindName("txtNetLocalIP")
+$txtNetGateway           = $Window.FindName("txtNetGateway")
+$txtNetDns               = $Window.FindName("txtNetDns")
+$txtNetMac               = $Window.FindName("txtNetMac")
+$txtNetPublicIP          = $Window.FindName("txtNetPublicIP")
+$txtNetLatency           = $Window.FindName("txtNetLatency")
+$btnDnsCloudflare        = $Window.FindName("btnDnsCloudflare")
+$btnDnsGoogle            = $Window.FindName("btnDnsGoogle")
+$btnDnsQuad9             = $Window.FindName("btnDnsQuad9")
+$btnDnsDhcp              = $Window.FindName("btnDnsDhcp")
+$btnQuickFlushDns        = $Window.FindName("btnQuickFlushDns")
+$btnQuickRenewIp         = $Window.FindName("btnQuickRenewIp")
+$btnQuickSpooler         = $Window.FindName("btnQuickSpooler")
+$btnQuickNcpa            = $Window.FindName("btnQuickNcpa")
+$btnQuickDevMgmt         = $Window.FindName("btnQuickDevMgmt")
+$txtNetActionResult      = $Window.FindName("txtNetActionResult")
 $btnInstalarSoftwares    = $Window.FindName("btnInstalarSoftwares")
 $txtResumoSelecao        = $Window.FindName("txtResumoSelecao")
 $txtStatus               = $Window.FindName("txtStatus")
@@ -1125,7 +1263,116 @@ $ApplyPreset = {
     & $UpdateSummary
 }
 
-$btnPresetLight.Add_Click({ & $ApplyPreset "Light" })
+$btnPresetLight.Add_Click({ # Popular Perfis Pos-Formatacao (settings.json)
+$SecondaryBtnStyle = $Window.FindResource("SecondaryButton")
+if ($Config -and $Config.OnboardingProfiles -and $pnlOnboardingProfiles) {
+    foreach ($prof in $Config.OnboardingProfiles) {
+        $btnP = New-Object System.Windows.Controls.Button
+        $btnP.Style = $SecondaryBtnStyle
+        $btnP.Content = "Perfil: $($prof.Name)"
+        $btnP.ToolTip = $prof.Description
+        $btnP.HorizontalAlignment = "Stretch"
+        $btnP.Margin = New-Object System.Windows.Thickness(0, 0, 0, 7)
+        $btnP.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
+        $btnP.Tag = $prof
+        $btnP.Add_Click({
+            $p = $this.Tag
+            if ($p.Preset) { & $ApplyPreset $p.Preset }
+            foreach ($tcb in $TweakCheckboxes) {
+                $tcb.IsChecked = ($p.Tweaks -contains $tcb.Tag)
+            }
+            foreach ($scb in $DynamicCheckboxes) {
+                $scb.IsChecked = ($p.Softwares -contains $scb.Tag)
+            }
+            $rbExecucao.IsChecked = $true
+            & $UpdateSummary
+            $txtStatus.Text = "Perfil '$($p.Name)' carregado! Clique em INICIAR PREVENTIVA para aplicar."
+        })
+        $pnlOnboardingProfiles.Children.Add($btnP) | Out-Null
+    }
+}
+
+# Botao Atualizar Todos os Apps (winget upgrade --all)
+if ($btnUpgradeAllSoft) {
+    $btnUpgradeAllSoft.Add_Click({
+        $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+        if (-not (Test-Path -LiteralPath $ScriptFile)) { return }
+        $ArgsList = @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
+            "-Mode", "`"WingetUpgrade`"", "-SubModo", "`"Execucao`"",
+            "-Tasks", "`"None`"", "-UpgradeAllSoftware"
+        )
+        try {
+            $btnExecutar.IsEnabled = $false
+            $btnInstalarSoftwares.IsEnabled = $false
+            $btnUpgradeAllSoft.IsEnabled = $false
+            $btnAplicarTweaks.IsEnabled = $false
+            $btnDesfazerTweaks.IsEnabled = $false
+            $btnExecutar.Content = "ATUALIZANDO..."
+            $pbProgresso.Visibility = "Visible"
+            $txtStatus.Text = "Atualizando todos os apps instalados via Winget... Acompanhe no console."
+            $script:StartTime = Get-Date
+            $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+            $script:PollTimer.Start()
+        } catch {
+            $btnExecutar.IsEnabled = $true
+            $btnInstalarSoftwares.IsEnabled = $true
+        if ($btnUpgradeAllSoft) { $btnUpgradeAllSoft.IsEnabled = $true }
+            $btnUpgradeAllSoft.IsEnabled = $true
+            $btnAplicarTweaks.IsEnabled = $true
+            $btnDesfazerTweaks.IsEnabled = $true
+            $btnExecutar.Content = "INICIAR PREVENTIVA"
+            $pbProgresso.Visibility = "Collapsed"
+            $txtStatus.Text = "Erro ao iniciar atualiza$([char]0x00E7)$([char]0x00E3)o Winget: $_"
+        }
+    })
+}
+
+# Aba Rede & Suporte Rapido
+$RefreshNetworkUI = {
+    try {
+        if (Get-Command Get-PreventivaNetworkSummary -ErrorAction SilentlyContinue) {
+            $info = Get-PreventivaNetworkSummary
+            $txtNetAdapter.Text  = $info.Adapter
+            $txtNetLocalIP.Text  = $info.LocalIP
+            $txtNetGateway.Text  = $info.Gateway
+            $txtNetDns.Text      = $info.DnsList
+            $txtNetMac.Text      = $info.Mac
+            $txtNetPublicIP.Text = $info.PublicIP
+            $txtNetLatency.Text  = $info.Latency
+            $txtNetActionResult.Text = "Informa$([char]0x00E7)$([char]0x00F5)es de rede atualizadas ($(Get-Date -Format 'HH:mm:ss'))."
+        }
+    } catch {
+        $txtNetActionResult.Text = "Falha ao ler rede: $_"
+    }
+}
+
+$btnRefreshNet.Add_Click($RefreshNetworkUI)
+$btnDnsCloudflare.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "Cloudflare"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnDnsGoogle.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "Google"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnDnsQuad9.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "Quad9"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnDnsDhcp.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "DHCP"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickFlushDns.Add_Click({
+    try { ipconfig /flushdns | Out-Null; $txtNetActionResult.Text = "Flush DNS executado com sucesso ($(Get-Date -Format 'HH:mm:ss'))." } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickRenewIp.Add_Click({
+    try { $txtNetActionResult.Text = (Invoke-PreventivaRenewIp); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickSpooler.Add_Click({
+    try { $txtNetActionResult.Text = (Restart-PreventivaPrintSpooler) } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickNcpa.Add_Click({ Start-Process "ncpa.cpl" })
+$btnQuickDevMgmt.Add_Click({ Start-Process "devmgmt.msc" })
+
+& $ApplyPreset "Light" })
 $btnPresetModerate.Add_Click({ & $ApplyPreset "Moderate" })
 $btnPresetHeavy.Add_Click({ & $ApplyPreset "Heavy" })
 $btnPresetRecovery.Add_Click({ & $ApplyPreset "Recovery" })
@@ -1225,6 +1472,7 @@ $RunTweaksAction = {
     } catch {
         $btnExecutar.IsEnabled = $true
         $btnInstalarSoftwares.IsEnabled = $true
+        if ($btnUpgradeAllSoft) { $btnUpgradeAllSoft.IsEnabled = $true }
         $btnAplicarTweaks.IsEnabled = $true
         $btnDesfazerTweaks.IsEnabled = $true
         $btnExecutar.Content = "INICIAR PREVENTIVA"
@@ -1280,6 +1528,7 @@ $btnInstalarSoftwares.Add_Click({
     } catch {
         $btnExecutar.IsEnabled = $true
         $btnInstalarSoftwares.IsEnabled = $true
+        if ($btnUpgradeAllSoft) { $btnUpgradeAllSoft.IsEnabled = $true }
         $btnAplicarTweaks.IsEnabled = $true
         $btnDesfazerTweaks.IsEnabled = $true
         $btnExecutar.Content = "INICIAR PREVENTIVA"
@@ -1348,6 +1597,7 @@ $script:PollTimer.Add_Tick({
         $pbProgresso.Visibility = "Collapsed"
         $btnExecutar.IsEnabled = $true
         $btnInstalarSoftwares.IsEnabled = $true
+        if ($btnUpgradeAllSoft) { $btnUpgradeAllSoft.IsEnabled = $true }
         $btnAplicarTweaks.IsEnabled = $true
         $btnDesfazerTweaks.IsEnabled = $true
         $btnExecutar.Content = "INICIAR PREVENTIVA"
@@ -1422,6 +1672,7 @@ $btnExecutar.Add_Click({
     } catch {
         $btnExecutar.IsEnabled = $true
         $btnInstalarSoftwares.IsEnabled = $true
+        if ($btnUpgradeAllSoft) { $btnUpgradeAllSoft.IsEnabled = $true }
         $btnAplicarTweaks.IsEnabled = $true
         $btnDesfazerTweaks.IsEnabled = $true
         $btnExecutar.Content = "INICIAR PREVENTIVA"
@@ -1429,6 +1680,115 @@ $btnExecutar.Add_Click({
         $txtStatus.Text = "Erro ao iniciar o processo: $_"
     }
 })
+
+# Popular Perfis Pos-Formatacao (settings.json)
+$SecondaryBtnStyle = $Window.FindResource("SecondaryButton")
+if ($Config -and $Config.OnboardingProfiles -and $pnlOnboardingProfiles) {
+    foreach ($prof in $Config.OnboardingProfiles) {
+        $btnP = New-Object System.Windows.Controls.Button
+        $btnP.Style = $SecondaryBtnStyle
+        $btnP.Content = "Perfil: $($prof.Name)"
+        $btnP.ToolTip = $prof.Description
+        $btnP.HorizontalAlignment = "Stretch"
+        $btnP.Margin = New-Object System.Windows.Thickness(0, 0, 0, 7)
+        $btnP.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
+        $btnP.Tag = $prof
+        $btnP.Add_Click({
+            $p = $this.Tag
+            if ($p.Preset) { & $ApplyPreset $p.Preset }
+            foreach ($tcb in $TweakCheckboxes) {
+                $tcb.IsChecked = ($p.Tweaks -contains $tcb.Tag)
+            }
+            foreach ($scb in $DynamicCheckboxes) {
+                $scb.IsChecked = ($p.Softwares -contains $scb.Tag)
+            }
+            $rbExecucao.IsChecked = $true
+            & $UpdateSummary
+            $txtStatus.Text = "Perfil '$($p.Name)' carregado! Clique em INICIAR PREVENTIVA para aplicar."
+        })
+        $pnlOnboardingProfiles.Children.Add($btnP) | Out-Null
+    }
+}
+
+# Botao Atualizar Todos os Apps (winget upgrade --all)
+if ($btnUpgradeAllSoft) {
+    $btnUpgradeAllSoft.Add_Click({
+        $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+        if (-not (Test-Path -LiteralPath $ScriptFile)) { return }
+        $ArgsList = @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
+            "-Mode", "`"WingetUpgrade`"", "-SubModo", "`"Execucao`"",
+            "-Tasks", "`"None`"", "-UpgradeAllSoftware"
+        )
+        try {
+            $btnExecutar.IsEnabled = $false
+            $btnInstalarSoftwares.IsEnabled = $false
+            $btnUpgradeAllSoft.IsEnabled = $false
+            $btnAplicarTweaks.IsEnabled = $false
+            $btnDesfazerTweaks.IsEnabled = $false
+            $btnExecutar.Content = "ATUALIZANDO..."
+            $pbProgresso.Visibility = "Visible"
+            $txtStatus.Text = "Atualizando todos os apps instalados via Winget... Acompanhe no console."
+            $script:StartTime = Get-Date
+            $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+            $script:PollTimer.Start()
+        } catch {
+            $btnExecutar.IsEnabled = $true
+            $btnInstalarSoftwares.IsEnabled = $true
+        if ($btnUpgradeAllSoft) { $btnUpgradeAllSoft.IsEnabled = $true }
+            $btnUpgradeAllSoft.IsEnabled = $true
+            $btnAplicarTweaks.IsEnabled = $true
+            $btnDesfazerTweaks.IsEnabled = $true
+            $btnExecutar.Content = "INICIAR PREVENTIVA"
+            $pbProgresso.Visibility = "Collapsed"
+            $txtStatus.Text = "Erro ao iniciar atualiza$([char]0x00E7)$([char]0x00E3)o Winget: $_"
+        }
+    })
+}
+
+# Aba Rede & Suporte Rapido
+$RefreshNetworkUI = {
+    try {
+        if (Get-Command Get-PreventivaNetworkSummary -ErrorAction SilentlyContinue) {
+            $info = Get-PreventivaNetworkSummary
+            $txtNetAdapter.Text  = $info.Adapter
+            $txtNetLocalIP.Text  = $info.LocalIP
+            $txtNetGateway.Text  = $info.Gateway
+            $txtNetDns.Text      = $info.DnsList
+            $txtNetMac.Text      = $info.Mac
+            $txtNetPublicIP.Text = $info.PublicIP
+            $txtNetLatency.Text  = $info.Latency
+            $txtNetActionResult.Text = "Informa$([char]0x00E7)$([char]0x00F5)es de rede atualizadas ($(Get-Date -Format 'HH:mm:ss'))."
+        }
+    } catch {
+        $txtNetActionResult.Text = "Falha ao ler rede: $_"
+    }
+}
+
+$btnRefreshNet.Add_Click($RefreshNetworkUI)
+$btnDnsCloudflare.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "Cloudflare"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnDnsGoogle.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "Google"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnDnsQuad9.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "Quad9"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnDnsDhcp.Add_Click({
+    try { $txtNetActionResult.Text = (Set-PreventivaDns -Provider "DHCP"); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickFlushDns.Add_Click({
+    try { ipconfig /flushdns | Out-Null; $txtNetActionResult.Text = "Flush DNS executado com sucesso ($(Get-Date -Format 'HH:mm:ss'))." } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickRenewIp.Add_Click({
+    try { $txtNetActionResult.Text = (Invoke-PreventivaRenewIp); & $RefreshNetworkUI } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickSpooler.Add_Click({
+    try { $txtNetActionResult.Text = (Restart-PreventivaPrintSpooler) } catch { $txtNetActionResult.Text = "Erro: $_" }
+})
+$btnQuickNcpa.Add_Click({ Start-Process "ncpa.cpl" })
+$btnQuickDevMgmt.Add_Click({ Start-Process "devmgmt.msc" })
 
 & $ApplyPreset "Light"
 & $ApplyTheme $script:ThemeMode

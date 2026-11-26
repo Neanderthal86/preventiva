@@ -29,5 +29,61 @@
     { "Name": "7-Zip", "Id": "7zip.7zip" },
     { "Name": "OpenVPN Connect", "Id": "OpenVPNTechnologies.OpenVPNConnect" },
     { "Name": "VLC Media Player", "Id": "VideoLAN.VLC" }
+  ],
+  "OnboardingProfiles": [
+    {
+      "Name": "Desktop Escritório",
+      "Description": "Apps essenciais + Tweaks corporativos + Alto Desempenho + Sem Hibernação",
+      "Preset": "Light",
+      "Tweaks": [
+        "HighPerformance",
+        "DisableHibernation",
+        "DisableTelemetry",
+        "DisableBGApps",
+        "DisableDeliveryOpt",
+        "EnableLongPaths",
+        "EdgeDebloat",
+        "DisableConsumerFeatures",
+        "DisableBingSearch",
+        "DisableActivityHistory",
+        "EndTaskTaskbar",
+        "ShowFileExtensions",
+        "DisableWidgets",
+        "DisableCopilotAI"
+      ],
+      "Softwares": [
+        "Google.Chrome",
+        "Adobe.Acrobat.Reader.64-bit",
+        "7zip.7zip",
+        "AnyDeskSoftwareGmbH.AnyDesk",
+        "WhatsApp.WhatsApp"
+      ]
+    },
+    {
+      "Name": "Notebook Corporativo",
+      "Description": "Apps + OpenVPN + Tweaks seguros (mantém bateria e hibernação)",
+      "Preset": "Light",
+      "Tweaks": [
+        "DisableTelemetry",
+        "DisableBGApps",
+        "DisableDeliveryOpt",
+        "EnableLongPaths",
+        "EdgeDebloat",
+        "DisableConsumerFeatures",
+        "DisableBingSearch",
+        "DisableActivityHistory",
+        "EndTaskTaskbar",
+        "ShowFileExtensions",
+        "DisableWidgets",
+        "DisableCopilotAI"
+      ],
+      "Softwares": [
+        "Google.Chrome",
+        "Adobe.Acrobat.Reader.64-bit",
+        "7zip.7zip",
+        "AnyDeskSoftwareGmbH.AnyDesk",
+        "OpenVPNTechnologies.OpenVPNConnect"
+      ]
+    }
   ]
 }

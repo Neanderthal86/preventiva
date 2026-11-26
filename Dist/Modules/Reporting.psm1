@@ -65,6 +65,30 @@ function Write-PreventivaAlerta {
     Write-PreventivaLog "[ALERTA] $Mensagem" -Secao "Alertas"
 }
 
+function Get-PreventivaHealthScore {
+    param([array]$Alertas, [string]$AntivirusTexto, [bool]$PendingReboot)
+    $score = 100
+    foreach ($a in $Alertas) {
+        if ($a -match 'Disco .* com sa')          { $score -= 30 }
+        elseif ($a -match 'Nenhum antiv')         { $score -= 25 }
+        elseif ($a -match 'Firewall.*DESATIVADO') { $score -= 20 }
+        elseif ($a -match 'BSOD|Queda de energia'){ $score -= 15 }
+        elseif ($a -match 'Espa.*abaixo')         { $score -= 15 }
+        elseif ($a -match 'RDP \(3389\)')         { $score -= 10 }
+        elseif ($a -match 'Bateria com sa')       { $score -= 10 }
+        elseif ($a -match 'ativado')              { $score -= 10 }
+        elseif ($a -match 'BitLocker')            { $score -= 5  }
+        else                                      { $score -= 5  }
+    }
+    if ($AntivirusTexto -match 'Nenhum|Falha') { $score -= 15 }
+    if ($PendingReboot) { $score -= 3 }
+    if ($score -lt 0) { $score = 0 }
+
+    $grade = if ($score -ge 90) { "Excelente" } elseif ($score -ge 75) { "Bom" } elseif ($score -ge 50) { "Atenção" } else { "Crítico" }
+    $css   = if ($score -ge 90) { "ok" } elseif ($score -ge 75) { "info" } else { "alerta" }
+    return [PSCustomObject]@{ Score = $score; Grade = $grade; Css = $css }
+}
+
 function Finalize-PreventivaReporting {
     param(
         [string]$Mode,
@@ -77,6 +101,8 @@ function Finalize-PreventivaReporting {
         [bool]$SendWebhookOnlyOnAlerts = $true
     )
 
+    $health = Get-PreventivaHealthScore -Alertas $global:Report.Alertas -AntivirusTexto $AntivirusTexto -PendingReboot $PendingReboot
+
     # Gerar JSON para Integracoes
     try {
         $JsonData = @{
@@ -84,6 +110,8 @@ function Finalize-PreventivaReporting {
             IsExecucao     = $ExecutarAcoes
             Date           = (Get-Date)
             Host           = $env:COMPUTERNAME
+            HealthScore    = $health.Score
+            HealthGrade    = $health.Grade
             Alertas        = $global:Report.Alertas
             EspacoAntesGB  = $EspacoAntes
             EspacoDepoisGB = $EspacoDepois
@@ -185,9 +213,10 @@ function New-HtmlReport {
     }
 
     $qtdAlertas  = $ReportData.Alertas.Count
-    $statusGeral = if ($qtdAlertas -eq 0) { "Saudável" } else { "$qtdAlertas Alerta(s)" }
-    $statusSub   = if ($qtdAlertas -eq 0) { "Nenhum ponto crítico encontrado" } else { "Verifique os pontos de atenção abaixo" }
-    $statusCor   = if ($qtdAlertas -eq 0) { "ok" } else { "alerta" }
+    $health      = Get-PreventivaHealthScore -Alertas $ReportData.Alertas -AntivirusTexto $AntivirusTexto -PendingReboot $PendingReboot
+    $statusGeral = "$($health.Score) / 100"
+    $statusSub   = "$($health.Grade) &middot; " + $(if ($qtdAlertas -eq 0) { "0 alertas" } else { "$qtdAlertas alerta(s)" })
+    $statusCor   = $health.Css
 
     $deltaGB     = [math]::Round(($EspacoDepois - $EspacoAntes), 2)
     $deltaTexto  = if ($deltaGB -gt 0) { "+$deltaGB GB liberados (antes: $EspacoAntes GB)" } elseif ($EspacoAntes -gt 0) { "antes: $EspacoAntes GB" } else { "unidade C:" }
@@ -596,7 +625,7 @@ function New-HtmlReport {
 
     <section class="cards">
       <div class="card $statusCor">
-        <div class="card-label">Status Geral</div>
+        <div class="card-label">Índice de Saúde</div>
         <div class="card-value">$statusGeral</div>
         <div class="card-sub">$statusSub</div>
       </div>

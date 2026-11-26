@@ -72,6 +72,7 @@ $Files = @(
     "Modules/Maintenance.psm1",
     "Modules/Optimization.psm1",
     "Modules/Software.psm1",
+    "Modules/NetworkTools.psm1",
     "Modules/Reporting.psm1"
 )
 

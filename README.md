@@ -74,9 +74,16 @@ Aplique ou reverta com segurança **16 tweaks corporativos 100% reversíveis** (
 ---
 
 ### 3. Softwares (Winget)
-Selecione os aplicativos corporativos padrão (configuráveis em `Dist/Config/settings.json`) e clique em **Instalar Selecionados** para instalar silenciosamente via Winget na hora — sem precisar executar tarefas de limpeza junto.
+Selecione os aplicativos corporativos padrão (configuráveis em `Dist/Config/settings.json`) e clique em **Instalar Selecionados** para instalar silenciosamente via Winget na hora — ou clique em **Atualizar Todos** (`winget upgrade --all`) para atualizar todos os programas já instalados na máquina.
 
 ![Aba Softwares Winget](docs/screenshots/tab-softwares.png)
+
+---
+
+### 4. Rede & Suporte Rápido (Novo na v2.0)
+Diagnóstico ao vivo do adaptador principal (IP Local, Gateway, DNS, MAC, IP Público e latência), troca de DNS em 1 clique (**Cloudflare**, **Google**, **Quad9** ou **DHCP**) e atalhos imediatos para **Flush DNS**, **Renovar IP** e **Reiniciar Spooler + limpar fila de impressão**.
+
+![Aba Rede e Suporte](docs/screenshots/tab-rede.png)
 
 ---
 

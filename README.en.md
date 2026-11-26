@@ -74,9 +74,16 @@ Safely apply or revert **16 fully reversible corporate tweaks** (based on verifi
 ---
 
 ### 3. Software Installer (Winget)
-Select standard corporate apps (customizable in `Dist/Config/settings.json`) and click **Instalar Selecionados** (*Install Selected*) to deploy them silently via Winget right away — independently of maintenance tasks.
+Select standard corporate apps (customizable in `Dist/Config/settings.json`) and click **Instalar Selecionados** (*Install Selected*) to deploy silently via Winget right away — or click **Atualizar Todos** (`winget upgrade --all`) to update all installed applications in one click.
 
 ![Softwares Winget Tab](docs/screenshots/tab-softwares.png)
+
+---
+
+### 4. Network & Quick Support (New in v2.0)
+Live active-adapter diagnostics (Local IP, Gateway, DNS, MAC, Public IP, and latency), 1-click DNS switcher (**Cloudflare**, **Google**, **Quad9**, or **DHCP**), and instant support actions (**Flush DNS**, **IP Release/Renew**, and **Print Spooler restart + queue cleanup**).
+
+![Network and Support Tab](docs/screenshots/tab-rede.png)
 
 ---
 

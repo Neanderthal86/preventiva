@@ -11,6 +11,7 @@ param(
     [switch]$UndoTweaks,
     [switch]$OptimizePower,
     [string[]]$SoftwareToInstall,
+    [switch]$UpgradeAllSoftware,
     [switch]$Silent
 )
 
@@ -148,9 +149,12 @@ if ($Tweaks -and $Tweaks.Count -gt 0 -and $ExecutarAcoes) {
     Set-PreventivaHighPerformance
 }
 
-# Instalação de Softwares (se solicitado)
+# Instalação / Atualização de Softwares (se solicitado)
 if ($SoftwareToInstall -and $SoftwareToInstall.Count -gt 0 -and $ExecutarAcoes) {
     Install-PreventivaSoftware -AppIds $SoftwareToInstall
+}
+if ($UpgradeAllSoftware -and $ExecutarAcoes) {
+    Update-PreventivaAllSoftware
 }
 
 # 5. Finalizar
