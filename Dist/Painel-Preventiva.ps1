@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    Interface Grafica (GUI) moderna em WPF para a Preventiva Corporativa Tech Fontes.
+    Interface Grafica (GUI) moderna em WPF para o TF-Toolkit (Tech Fontes)
+    com suporte a tema Auto / Claro / Escuro.
 #>
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
@@ -19,8 +20,7 @@ if (Test-Path -LiteralPath $ConfigFile) {
         if ($Config.ReportSettings -and $Config.ReportSettings.OutputFolder) {
             $OutputFolder = $Config.ReportSettings.OutputFolder
         }
-    }
-    catch {}
+    } catch {}
 }
 
 # Dados rapidos da maquina para o cabecalho
@@ -38,27 +38,47 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
         FontFamily="Segoe UI">
 
     <Window.Resources>
-        <!-- Cores da Identidade Tech Fontes -->
+        <!-- Paleta Dinamica (alternada em tempo real entre Escuro e Claro) -->
         <SolidColorBrush x:Key="BgWindow" Color="#141419"/>
         <SolidColorBrush x:Key="BgHeader" Color="#101015"/>
         <SolidColorBrush x:Key="BgCard" Color="#1d1e26"/>
-        <SolidColorBrush x:Key="BgCardHover" Color="#242632"/>
+        <SolidColorBrush x:Key="BgSubCard" Color="#161821"/>
+        <SolidColorBrush x:Key="BgFooter" Color="#191b24"/>
+        <SolidColorBrush x:Key="BgControl" Color="#171820"/>
+        <SolidColorBrush x:Key="BgControlHover" Color="#222430"/>
+        <SolidColorBrush x:Key="BgControlSelected" Color="#242026"/>
+        <SolidColorBrush x:Key="BgControlCheckedGreen" Color="#1d2824"/>
+        <SolidColorBrush x:Key="BgSecondaryBtn" Color="#242736"/>
+        <SolidColorBrush x:Key="BgSecondaryBtnHover" Color="#30354a"/>
+        <SolidColorBrush x:Key="BgTab" Color="#1b1d26"/>
+        <SolidColorBrush x:Key="BgTabHover" Color="#252836"/>
+        <SolidColorBrush x:Key="BgPill" Color="#1d1f2a"/>
+        <SolidColorBrush x:Key="BgTitleHover" Color="#2a2c38"/>
+        <SolidColorBrush x:Key="BgBadgeAdmin" Color="#1d2a23"/>
+        <SolidColorBrush x:Key="BorderWindow" Color="#2f3242"/>
         <SolidColorBrush x:Key="BorderSubtle" Color="#2b2d3a"/>
+        <SolidColorBrush x:Key="BorderControl" Color="#2b2e3d"/>
+        <SolidColorBrush x:Key="BorderControlHover" Color="#484d66"/>
+        <SolidColorBrush x:Key="BorderBadgeAdmin" Color="#2f523e"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#f0f0f5"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#c9cde0"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#8f93a8"/>
+        <SolidColorBrush x:Key="TextWarning" Color="#d99a7c"/>
+        <SolidColorBrush x:Key="TextGood" Color="#7ad19f"/>
+        <SolidColorBrush x:Key="ScrollThumb" Color="#383c52"/>
+
+        <!-- Cores Fixas da Identidade Tech Fontes -->
         <SolidColorBrush x:Key="AccentOrange" Color="#C4613A"/>
         <SolidColorBrush x:Key="AccentOrangeHover" Color="#d97248"/>
-        <SolidColorBrush x:Key="AccentBlue" Color="#3D5270"/>
-        <SolidColorBrush x:Key="AccentBlueLight" Color="#5c7ea8"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#3d7a5a"/>
         <SolidColorBrush x:Key="AccentGreenHover" Color="#4d9970"/>
-        <SolidColorBrush x:Key="TextPrimary" Color="#f0f0f5"/>
-        <SolidColorBrush x:Key="TextMuted" Color="#8f93a8"/>
 
-        <!-- Bot&#x00E3;o Janela (Minimizar / Fechar) -->
+        <!-- Botao Janela (Minimizar / Fechar) -->
         <Style TargetType="Button" x:Key="TitleBarButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#8f93a8"/>
-            <Setter Property="Width" Value="38"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="30"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -70,8 +90,8 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#2a2c38"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BgTitleHover}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -97,7 +117,36 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             </Setter>
         </Style>
 
-        <!-- Bot&#x00E3;o Prim&#x00E1;rio (Executar) -->
+        <!-- Botao Pill de Tema (Auto / Claro / Escuro) -->
+        <Style TargetType="Button" x:Key="ThemePillButton">
+            <Setter Property="Background" Value="{DynamicResource BgPill}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="11,4"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BgControlHover}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#C4613A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botao Primario (Executar) -->
         <Style TargetType="Button" x:Key="RunButton">
             <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -117,8 +166,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                 <Setter TargetName="bd" Property="Background" Value="{StaticResource AccentGreenHover}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="bd" Property="Background" Value="#2e3340"/>
-                                <Setter Property="Foreground" Value="#6e7385"/>
+                                <Setter Property="Opacity" Value="0.45"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -126,15 +174,15 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             </Setter>
         </Style>
 
-        <!-- Bot&#x00E3;o Secund&#x00E1;rio -->
+        <!-- Botao Secundario -->
         <Style TargetType="Button" x:Key="SecondaryButton">
-            <Setter Property="Background" Value="#242736"/>
-            <Setter Property="Foreground" Value="#dfe2ee"/>
+            <Setter Property="Background" Value="{DynamicResource BgSecondaryBtn}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="14,8"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#34384c"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderControl}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -146,9 +194,8 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#30354a"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BgSecondaryBtnHover}"/>
                                 <Setter TargetName="bd" Property="BorderBrush" Value="#5c7ea8"/>
-                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45"/>
@@ -159,7 +206,38 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             </Setter>
         </Style>
 
-        <!-- TabControl & TabItem Customizados (sem fundo branco bugado!) -->
+        <!-- Botao Preset -->
+        <Style TargetType="Button" x:Key="PresetButton">
+            <Setter Property="Background" Value="{DynamicResource BgSecondaryBtn}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderControl}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BgSecondaryBtnHover}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#C4613A"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TabControl & TabItem Customizados -->
         <Style TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -167,7 +245,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
         </Style>
 
         <Style TargetType="TabItem">
-            <Setter Property="Foreground" Value="#9aa0b8"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
             <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -175,14 +253,14 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="TabBorder" Background="#1b1d26" BorderBrush="#2a2d3d" BorderThickness="1"
+                        <Border x:Name="TabBorder" Background="{DynamicResource BgTab}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1"
                                 CornerRadius="8" Padding="18,10" SnapsToDevicePixels="True">
                             <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#252836"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource BgTabHover}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="TabBorder" Property="Background" Value="#C4613A"/>
@@ -195,24 +273,23 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             </Setter>
         </Style>
 
-        <!-- RadioButton em formato de Card Clic&#x00E1;vel -->
+        <!-- RadioButton em formato de Card Clicavel -->
         <Style TargetType="RadioButton" x:Key="CardRadio">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="CardBorder" Background="#191a22" BorderBrush="#2b2e3d" BorderThickness="1.5"
+                        <Border x:Name="CardBorder" Background="{DynamicResource BgControl}" BorderBrush="{DynamicResource BorderControl}" BorderThickness="1.5"
                                 CornerRadius="9" Padding="14,9" SnapsToDevicePixels="True">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <!-- Indicador circular customizado -->
                                 <Grid Grid.Column="0" Width="18" Height="18" VerticalAlignment="Top" Margin="0,2,12,0">
-                                    <Ellipse x:Name="OuterCircle" Stroke="#585d75" StrokeThickness="2" Fill="Transparent"/>
+                                    <Ellipse x:Name="OuterCircle" Stroke="#7a8099" StrokeThickness="2" Fill="Transparent"/>
                                     <Ellipse x:Name="InnerDot" Width="8" Height="8" Fill="#C4613A" Visibility="Collapsed"/>
                                 </Grid>
                                 <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
@@ -220,11 +297,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CardBorder" Property="Background" Value="#222430"/>
-                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="#484d66"/>
+                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource BgControlHover}"/>
+                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource BorderControlHover}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CardBorder" Property="Background" Value="#242026"/>
+                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource BgControlSelected}"/>
                                 <Setter TargetName="CardBorder" Property="BorderBrush" Value="#C4613A"/>
                                 <Setter TargetName="OuterCircle" Property="Stroke" Value="#C4613A"/>
                                 <Setter TargetName="InnerDot" Property="Visibility" Value="Visible"/>
@@ -235,15 +312,15 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             </Setter>
         </Style>
 
-        <!-- CheckBox em formato de Card Clic&#x00E1;vel -->
+        <!-- CheckBox em formato de Card Clicavel (Softwares) -->
         <Style TargetType="CheckBox" x:Key="CardCheck">
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="Margin" Value="0,0,10,10"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Border x:Name="CheckBorder" Background="#191a22" BorderBrush="#2b2e3d" BorderThickness="1.5"
+                        <Border x:Name="CheckBorder" Background="{DynamicResource BgControl}" BorderBrush="{DynamicResource BorderControl}" BorderThickness="1.5"
                                 CornerRadius="8" Padding="12,10" SnapsToDevicePixels="True">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -251,7 +328,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Border x:Name="Box" Grid.Column="0" Width="18" Height="18" CornerRadius="4"
-                                        BorderBrush="#585d75" BorderThickness="2" Background="Transparent"
+                                        BorderBrush="#7a8099" BorderThickness="2" Background="Transparent"
                                         VerticalAlignment="Center" Margin="0,0,10,0">
                                     <TextBlock x:Name="CheckMark" Text="&#x2713;" Foreground="White" FontSize="12"
                                                FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -262,11 +339,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CheckBorder" Property="Background" Value="#222430"/>
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#484d66"/>
+                                <Setter TargetName="CheckBorder" Property="Background" Value="{DynamicResource BgControlHover}"/>
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{DynamicResource BorderControlHover}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CheckBorder" Property="Background" Value="#1d2824"/>
+                                <Setter TargetName="CheckBorder" Property="Background" Value="{DynamicResource BgControlCheckedGreen}"/>
                                 <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#3d7a5a"/>
                                 <Setter TargetName="Box" Property="Background" Value="#3d7a5a"/>
                                 <Setter TargetName="Box" Property="BorderBrush" Value="#4d9970"/>
@@ -277,46 +354,16 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                 </Setter.Value>
             </Setter>
         </Style>
-        <!-- Bot&#x00E3;o Preset (Light / Moderate / Heavy / Recovery) -->
-        <Style TargetType="Button" x:Key="PresetButton">
-            <Setter Property="Background" Value="#20222e"/>
-            <Setter Property="Foreground" Value="#c8cde0"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="0,0,6,0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#32364a"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#2c3042"/>
-                                <Setter TargetName="bd" Property="BorderBrush" Value="#C4613A"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
 
-        <!-- CheckBox Compacto para Checklist de Tarefas -->
+        <!-- CheckBox Compacto para Checklist de Tarefas e Tweaks -->
         <Style TargetType="CheckBox" x:Key="TaskCheck">
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Border x:Name="TaskBorder" Background="#171820" BorderBrush="#262938" BorderThickness="1"
+                        <Border x:Name="TaskBorder" Background="{DynamicResource BgControl}" BorderBrush="{DynamicResource BorderControl}" BorderThickness="1"
                                 CornerRadius="7" Padding="10,7" SnapsToDevicePixels="True">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -324,7 +371,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Border x:Name="Box" Grid.Column="0" Width="16" Height="16" CornerRadius="4"
-                                        BorderBrush="#555a73" BorderThickness="1.8" Background="Transparent"
+                                        BorderBrush="#7a8099" BorderThickness="1.8" Background="Transparent"
                                         VerticalAlignment="Center" Margin="0,0,9,0">
                                     <TextBlock x:Name="CheckMark" Text="&#x2713;" Foreground="White" FontSize="11"
                                                FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -335,11 +382,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TaskBorder" Property="Background" Value="#20222e"/>
-                                <Setter TargetName="TaskBorder" Property="BorderBrush" Value="#464b66"/>
+                                <Setter TargetName="TaskBorder" Property="Background" Value="{DynamicResource BgControlHover}"/>
+                                <Setter TargetName="TaskBorder" Property="BorderBrush" Value="{DynamicResource BorderControlHover}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="TaskBorder" Property="Background" Value="#221e24"/>
+                                <Setter TargetName="TaskBorder" Property="Background" Value="{DynamicResource BgControlSelected}"/>
                                 <Setter TargetName="TaskBorder" Property="BorderBrush" Value="#C4613A"/>
                                 <Setter TargetName="Box" Property="Background" Value="#C4613A"/>
                                 <Setter TargetName="Box" Property="BorderBrush" Value="#d97248"/>
@@ -351,7 +398,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
             </Setter>
         </Style>
 
-        <!-- ScrollBar Dark Minimalista (para lista de softwares se crescer) -->
+        <!-- ScrollBar Minimalista -->
         <Style TargetType="ScrollBar">
             <Setter Property="Width" Value="7"/>
             <Setter Property="MinWidth" Value="7"/>
@@ -365,7 +412,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <Thumb>
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Background="#383c52" CornerRadius="3.5" Margin="1,2"/>
+                                                <Border Background="{DynamicResource ScrollThumb}" CornerRadius="3.5" Margin="1,2"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -378,8 +425,8 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
         </Style>
     </Window.Resources>
 
-    <!-- Moldura Externa com Borda Sutil -->
-    <Border Background="{StaticResource BgWindow}" BorderBrush="#2f3242" BorderThickness="1" CornerRadius="12">
+    <!-- Moldura Externa -->
+    <Border Background="{DynamicResource BgWindow}" BorderBrush="{DynamicResource BorderWindow}" BorderThickness="1" CornerRadius="12">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -388,9 +435,9 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Barra de T&#x00ED;tulo Customizada (Arrast&#x00E1;vel) -->
-            <Border Name="TitleBar" Grid.Row="0" Background="{StaticResource BgHeader}" CornerRadius="12,12,0,0"
-                    BorderBrush="#222430" BorderThickness="0,0,0,1" Padding="18,10">
+            <!-- Barra de Titulo Customizada (Arrastavel) -->
+            <Border Name="TitleBar" Grid.Row="0" Background="{DynamicResource BgHeader}" CornerRadius="12,12,0,0"
+                    BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,0,1" Padding="18,9">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -398,16 +445,23 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="TECH FONTES" FontSize="11.5" FontWeight="Bold" Foreground="#C4613A"/>
-                        <TextBlock Text="  &#x2022;  PREVENTIVA CORPORATIVA WINDOWS" FontSize="11.5" FontWeight="SemiBold" Foreground="#7c8096"/>
+                        <TextBlock Text="  &#x2022;  TF-TOOLKIT PREVENTIVA WINDOWS" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Seletor de Tema: Auto / Claro / Escuro -->
+                        <Button Name="btnThemeToggle" Style="{StaticResource ThemePillButton}" Margin="0,0,10,0" ToolTip="Alternar tema: Auto (Windows), Claro ou Escuro">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Name="txtThemeIcon" Text="&#x263E;" FontSize="12.5" Foreground="#5b9dff" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Name="txtThemeLabel" Text="Escuro" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                         <Button Name="btnMinimize" Content="&#x2014;" Style="{StaticResource TitleBarButton}" ToolTip="Minimizar"/>
                         <Button Name="btnClose" Content="&#x2715;" Style="{StaticResource CloseButton}" Margin="4,0,0,0" ToolTip="Fechar"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Cabe&#x00E7;alho da Marca + Info da M&#x00E1;quina -->
+            <!-- Cabecalho da Marca + Info da Maquina -->
             <Grid Grid.Row="1" Margin="24,18,24,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -419,43 +473,43 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                        RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="White">
+                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}">
                         <Run Text="Tech "/><Run Text="Fontes" Foreground="#C4613A"/>
                     </TextBlock>
                     <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
-                        <TextBlock Text="Central de Manuten&#x00E7;&#x00E3;o &amp; Diagn&#x00F3;stico  |  " FontSize="12.5" Foreground="{StaticResource TextMuted}"/>
+                        <TextBlock Text="Central de Manuten&#x00E7;&#x00E3;o &amp; Diagn&#x00F3;stico  |  " FontSize="12.5" Foreground="{DynamicResource TextMuted}"/>
                         <TextBlock FontSize="12.5">
-                            <Hyperlink Name="linkSite" Foreground="#6d93c4" TextDecorations="None" Cursor="Hand">techfontes.com.br</Hyperlink>
+                            <Hyperlink Name="linkSite" Foreground="#4a7ab5" TextDecorations="None" Cursor="Hand">techfontes.com.br</Hyperlink>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- P&#x00ED;lulas de Contexto da M&#x00E1;quina -->
+                <!-- Pilulas de Contexto da Maquina -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#1d1f2a" BorderBrush="#2d3042" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,8,0">
+                    <Border Background="{DynamicResource BgPill}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,8,0">
                         <StackPanel>
-                            <TextBlock Text="ESTA&#x00C7;&#x00C3;O" FontSize="9.5" FontWeight="Bold" Foreground="#7c8096"/>
-                            <TextBlock Name="txtHostName" Text="..." FontSize="12.5" FontWeight="SemiBold" Foreground="White"/>
+                            <TextBlock Text="ESTA&#x00C7;&#x00C3;O" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Name="txtHostName" Text="..." FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
                     </Border>
-                    <Border Background="#1d1f2a" BorderBrush="#2d3042" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,8,0">
+                    <Border Background="{DynamicResource BgPill}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,8,0">
                         <StackPanel>
-                            <TextBlock Text="LIVRE EM C:" FontSize="9.5" FontWeight="Bold" Foreground="#7c8096"/>
-                            <TextBlock Name="txtFreeSpace" Text="... GB" FontSize="12.5" FontWeight="SemiBold" Foreground="#7ad19f"/>
+                            <TextBlock Text="LIVRE EM C:" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Name="txtFreeSpace" Text="... GB" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextGood}"/>
                         </StackPanel>
                     </Border>
-                    <Border Name="bdAdmin" Background="#1d2a23" BorderBrush="#2f523e" BorderThickness="1" CornerRadius="8" Padding="12,7">
+                    <Border Name="bdAdmin" Background="{DynamicResource BgBadgeAdmin}" BorderBrush="{DynamicResource BorderBadgeAdmin}" BorderThickness="1" CornerRadius="8" Padding="12,7">
                         <StackPanel>
-                            <TextBlock Text="PRIVIL&#x00C9;GIO" FontSize="9.5" FontWeight="Bold" Foreground="#7c8096"/>
-                            <TextBlock Name="txtAdmin" Text="Admin" FontSize="12.5" FontWeight="SemiBold" Foreground="#7ad19f"/>
+                            <TextBlock Text="PRIVIL&#x00C9;GIO" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Name="txtAdmin" Text="Admin" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextGood}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Grid>
 
-            <!-- Conte&#x00FA;do Principal (Abas) -->
+            <!-- Conteudo Principal (Abas) -->
             <TabControl Grid.Row="2" Margin="24,6,24,14">
-                <!-- ABA 1: PREVENTIVA & DIAGN&#x00D3;STICO -->
+                <!-- ABA 1: PREVENTIVA & DIAGNOSTICO -->
                 <TabItem Header="Preventiva &amp; Diagn&#x00F3;stico">
                     <Grid Margin="0,14,0,0">
                         <Grid.ColumnDefinitions>
@@ -465,7 +519,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Grid.ColumnDefinitions>
 
                         <!-- Coluna Esquerda: Presets + Checklist Granular -->
-                        <Border Grid.Column="0" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
+                        <Border Grid.Column="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
                                 BorderThickness="1" CornerRadius="10" Padding="15">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -474,13 +528,12 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Cabe&#x00E7;alho + Presets -->
                                 <Grid Grid.Row="0" Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="1. Presets &amp; Tarefas da Manuten&#x00E7;&#x00E3;o" FontSize="14.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="1. Presets &amp; Tarefas da Manuten&#x00E7;&#x00E3;o" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     <TextBlock Name="txtTasksCount" Grid.Column="1" Text="8 selecionadas" FontSize="11.5" FontWeight="SemiBold" Foreground="#C4613A" VerticalAlignment="Center"/>
                                 </Grid>
 
@@ -490,15 +543,15 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                        <Button Name="btnPresetLight" Content="Light" Style="{StaticResource PresetButton}" ToolTip="Limpeza b&#x00E1;sica, DNS, servi&#x00E7;os e auditoria"/>
-                                        <Button Name="btnPresetModerate" Content="Moderate" Style="{StaticResource PresetButton}" ToolTip="Light + Windows Update, Defender Scan e SSD TRIM"/>
-                                        <Button Name="btnPresetHeavy" Content="Heavy" Style="{StaticResource PresetButton}" ToolTip="Moderate + DISM/SFC, WinSxS, varredura completa e Restaura&#x00E7;&#x00E3;o"/>
-                                        <Button Name="btnPresetRecovery" Content="Recovery" Style="{StaticResource PresetButton}" ToolTip="Heavy + Reset completo de Windows Update e Rede"/>
+                                        <Button Name="btnPresetLight" Content="Light" Style="{StaticResource PresetButton}"/>
+                                        <Button Name="btnPresetModerate" Content="Moderate" Style="{StaticResource PresetButton}"/>
+                                        <Button Name="btnPresetHeavy" Content="Heavy" Style="{StaticResource PresetButton}"/>
+                                        <Button Name="btnPresetRecovery" Content="Recovery" Style="{StaticResource PresetButton}"/>
                                     </StackPanel>
-                                    <Button Name="btnPresetClear" Grid.Column="1" Content="Desmarcar tudo" Style="{StaticResource PresetButton}" Margin="0" ToolTip="Limpa todas as tarefas para marcar apenas o que precisa"/>
+                                    <Button Name="btnPresetClear" Grid.Column="1" Content="Desmarcar tudo" Style="{StaticResource PresetButton}" Margin="0"/>
                                 </Grid>
 
-                                <!-- Checklist em 2 Colunas Sim&#x00E9;tricas (8 + 8) -->
+                                <!-- Checklist em 2 Colunas Simetricas (8 + 8) -->
                                 <Grid Grid.Row="2">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -507,7 +560,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="B&#x00C1;SICO &amp; DIAGN&#x00D3;STICO" FontSize="10" FontWeight="Bold" Foreground="#7c8096" Margin="2,0,0,6"/>
+                                        <TextBlock Text="B&#x00C1;SICO &amp; DIAGN&#x00D3;STICO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="2,0,0,6"/>
                                         <CheckBox Name="chkTaskInventory" Tag="Inventory" Style="{StaticResource TaskCheck}" Content="Invent&#x00E1;rio, Bateria e Rede"/>
                                         <CheckBox Name="chkTaskDiskEvents" Tag="DiskEvents" Style="{StaticResource TaskCheck}" Content="Disco, Startup, Drivers e Eventos"/>
                                         <CheckBox Name="chkTaskCriticalServices" Tag="CriticalServices" Style="{StaticResource TaskCheck}" Content="Verificar Servi&#x00E7;os Cr&#x00ED;ticos"/>
@@ -519,7 +572,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="AVAN&#x00C7;ADO &amp; REPAROS" FontSize="10" FontWeight="Bold" Foreground="#7c8096" Margin="2,0,0,6"/>
+                                        <TextBlock Text="AVAN&#x00C7;ADO &amp; REPAROS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="2,0,0,6"/>
                                         <CheckBox Name="chkTaskWindowsUpdate" Tag="WindowsUpdate" Style="{StaticResource TaskCheck}" Content="Windows Update"/>
                                         <CheckBox Name="chkTaskDefenderScan" Tag="DefenderScan" Style="{StaticResource TaskCheck}" Content="Defender Quick Scan"/>
                                         <CheckBox Name="chkTaskTrim" Tag="Trim" Style="{StaticResource TaskCheck}" Content="Otimiza&#x00E7;&#x00E3;o SSD (TRIM)"/>
@@ -533,8 +586,8 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                             </Grid>
                         </Border>
 
-                        <!-- Coluna Direita: Tipo de Execu&#x00E7;&#x00E3;o + Dica -->
-                        <Border Grid.Column="2" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
+                        <!-- Coluna Direita: Tipo de Execucao + Relatorios -->
+                        <Border Grid.Column="2" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
                                 BorderThickness="1" CornerRadius="10" Padding="16">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -543,42 +596,41 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Text="2. Tipo de Execu&#x00E7;&#x00E3;o" FontSize="14.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                                <TextBlock Grid.Row="0" Text="2. Tipo de Execu&#x00E7;&#x00E3;o" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
 
                                 <StackPanel Grid.Row="1">
                                     <RadioButton Name="rbDiagnostico" GroupName="SubModeGroup" Style="{StaticResource CardRadio}" IsChecked="True">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Modo Diagn&#x00F3;stico" FontSize="13.5" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock Text="Modo Diagn&#x00F3;stico" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                                 <Border Background="#243347" CornerRadius="4" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="Somente leitura" FontSize="10.5" FontWeight="SemiBold" Foreground="#8fb4e0"/>
+                                                    <TextBlock Text="Somente leitura" FontSize="10.5" FontWeight="SemiBold" Foreground="#b5d1f2"/>
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Text="Nada ser&#x00E1; apagado, instalado ou alterado. Ideal para auditoria r&#x00E1;pida e gera&#x00E7;&#x00E3;o de relat&#x00F3;rio."
-                                                       Foreground="{StaticResource TextMuted}" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                       Foreground="{DynamicResource TextMuted}" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </RadioButton>
 
                                     <RadioButton Name="rbExecucao" GroupName="SubModeGroup" Style="{StaticResource CardRadio}">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Modo Execu&#x00E7;&#x00E3;o" FontSize="13.5" FontWeight="Bold" Foreground="White"/>
-                                                <Border Background="#3d281f" CornerRadius="4" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="Aplica altera&#x00E7;&#x00F5;es" FontSize="10.5" FontWeight="SemiBold" Foreground="#eb926c"/>
+                                                <TextBlock Text="Modo Execu&#x00E7;&#x00E3;o" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Border Background="#C4613A" CornerRadius="4" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Aplica altera&#x00E7;&#x00F5;es" FontSize="10.5" FontWeight="SemiBold" Foreground="White"/>
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Text="Executa de fato as limpezas, atualiza&#x00E7;&#x00F5;es, otimiza&#x00E7;&#x00F5;es e instala&#x00E7;&#x00F5;es marcadas nas outras abas."
-                                                       Foreground="#d99a7c" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                       Foreground="{DynamicResource TextWarning}" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </RadioButton>
                                 </StackPanel>
 
-                                <!-- Box informativo no rodap&#x00E9; da coluna direita -->
-                                <Border Grid.Row="2" Background="#161821" BorderBrush="#282b3b" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <Border Grid.Row="2" Background="{DynamicResource BgSubCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="12">
                                     <StackPanel>
-                                        <TextBlock Text="SA&#x00CD;DA DE RELAT&#x00D3;RIOS" FontSize="10" FontWeight="Bold" Foreground="#7c8096"/>
+                                        <TextBlock Text="SA&#x00CD;DA DE RELAT&#x00D3;RIOS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                                         <TextBlock Name="txtOutputFolderInfo" Text="C:\ProgramData\Preventiva" FontSize="11.5"
-                                                   Foreground="#c5c9db" Margin="0,3,0,8" TextTrimming="CharacterEllipsis"/>
+                                                   Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,8" TextTrimming="CharacterEllipsis"/>
                                         <StackPanel Orientation="Horizontal">
                                             <Button Name="btnAbrirUltimoRelatorio" Content="Abrir &#x00DA;ltimo Relat&#x00F3;rio" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
                                             <Button Name="btnAbrirPastaLogs" Content="Abrir Pasta" Style="{StaticResource SecondaryButton}"/>
@@ -600,7 +652,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                         </Grid.ColumnDefinitions>
 
                         <!-- Coluna Esquerda: 16 Tweaks Corporativos Reversiveis -->
-                        <Border Grid.Column="0" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
+                        <Border Grid.Column="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
                                 BorderThickness="1" CornerRadius="10" Padding="15">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -614,7 +666,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Tweaks Corporativos (100% Revers&#x00ED;veis)" FontSize="14.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Tweaks Corporativos (100% Revers&#x00ED;veis)" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     <TextBlock Name="txtTweaksCount" Grid.Column="1" Text="0 selecionado(s)" FontSize="11.5" FontWeight="SemiBold" Foreground="#C4613A" VerticalAlignment="Center"/>
                                 </Grid>
 
@@ -624,11 +676,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                        <Button Name="btnTweakPresetCorp" Content="Corporativo Seguro" Style="{StaticResource PresetButton}" ToolTip="Marca os tweaks mais seguros para empresas (privacidade, velocidade e GPOs)"/>
+                                        <Button Name="btnTweakPresetCorp" Content="Corporativo Seguro" Style="{StaticResource PresetButton}"/>
                                         <Button Name="btnTweakPresetClear" Content="Limpar" Style="{StaticResource PresetButton}" Margin="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <Button Name="btnDesfazerTweaks" Content="Desfazer" Style="{StaticResource SecondaryButton}" Padding="11,6" Margin="0,0,6,0" ToolTip="Restaura os valores padrao do Windows para os tweaks marcados"/>
+                                        <Button Name="btnDesfazerTweaks" Content="Desfazer" Style="{StaticResource SecondaryButton}" Padding="11,6" Margin="0,0,6,0"/>
                                         <Button Name="btnAplicarTweaks" Content="Aplicar Tweaks" Style="{StaticResource RunButton}" FontSize="12" Padding="13,6"/>
                                     </StackPanel>
                                 </Grid>
@@ -642,7 +694,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="PERFORMANCE &amp; REDE" FontSize="10" FontWeight="Bold" Foreground="#7c8096" Margin="2,0,0,5"/>
+                                        <TextBlock Text="PERFORMANCE &amp; REDE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="2,0,0,5"/>
                                         <CheckBox Name="chkTweakHighPerf" Tag="HighPerformance" Style="{StaticResource TaskCheck}" Content="Plano Energia Alto Desempenho"/>
                                         <CheckBox Name="chkTweakTelemetry" Tag="DisableTelemetry" Style="{StaticResource TaskCheck}" Content="Desativar Telemetria Windows"/>
                                         <CheckBox Name="chkTweakBGApps" Tag="DisableBGApps" Style="{StaticResource TaskCheck}" Content="Desativar Apps em 2&#x00BA; Plano"/>
@@ -654,7 +706,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="PRODUTIVIDADE &amp; WINDOWS LIMPO" FontSize="10" FontWeight="Bold" Foreground="#7c8096" Margin="2,0,0,5"/>
+                                        <TextBlock Text="PRODUTIVIDADE &amp; WINDOWS LIMPO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="2,0,0,5"/>
                                         <CheckBox Name="chkTweakConsumer" Tag="DisableConsumerFeatures" Style="{StaticResource TaskCheck}" Content="Bloquear Consumer Features"/>
                                         <CheckBox Name="chkTweakBing" Tag="DisableBingSearch" Style="{StaticResource TaskCheck}" Content="Desativar Bing no Menu Iniciar"/>
                                         <CheckBox Name="chkTweakActivity" Tag="DisableActivityHistory" Style="{StaticResource TaskCheck}" Content="Desativar Hist&#x00F3;rico Atividades"/>
@@ -665,13 +717,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                         <CheckBox Name="chkTweakCopilot" Tag="DisableCopilotAI" Style="{StaticResource TaskCheck}" Content="Desativar Copilot / AI (GPO)" Margin="0"/>
                                     </StackPanel>
                                 </Grid>
-
-
                             </Grid>
                         </Border>
 
                         <!-- Coluna Direita: Ferramentas Complementares -->
-                        <Border Grid.Column="2" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
+                        <Border Grid.Column="2" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
                                 BorderThickness="1" CornerRadius="10" Padding="15">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -679,9 +729,9 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <StackPanel Grid.Row="0">
-                                    <TextBlock Text="Ferramentas Complementares" FontSize="14.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Ferramentas Complementares" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
                                     <TextBlock Text="Atalhos r&#x00E1;pidos para administra&#x00E7;&#x00E3;o da esta&#x00E7;&#x00E3;o."
-                                               FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14" TextWrapping="Wrap"/>
+                                               FontSize="11.5" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14" TextWrapping="Wrap"/>
 
                                     <Button Name="btnAbrirUtility" Content="Abrir Chris Titus Tech (WinUtil)" Style="{StaticResource SecondaryButton}"
                                             HorizontalAlignment="Stretch" Margin="0,0,0,10" Padding="12,11"/>
@@ -691,11 +741,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                             HorizontalAlignment="Stretch" Padding="12,11"/>
                                 </StackPanel>
 
-                                <Border Grid.Row="1" Background="#161821" BorderBrush="#282b3b" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <Border Grid.Row="1" Background="{DynamicResource BgSubCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="8" Padding="12">
                                     <StackPanel>
-                                        <TextBlock Text="SEGURAN&#x00C7;A CORPORATIVA" FontSize="10" FontWeight="Bold" Foreground="#7ad19f"/>
+                                        <TextBlock Text="SEGURAN&#x00C7;A CORPORATIVA" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextGood}"/>
                                         <TextBlock Text="Todos os tweaks ao lado usam chaves validadas/GPOs e podem ser revertidos pelo bot&#x00E3;o Desfazer."
-                                                   FontSize="11" Foreground="#9ea3b8" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                   FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -705,7 +755,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 
                 <!-- ABA 3: SOFTWARES (WINGET) -->
                 <TabItem Header="Softwares (Winget)">
-                    <Border Margin="0,16,0,0" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}"
+                    <Border Margin="0,14,0,0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}"
                             BorderThickness="1" CornerRadius="10" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -719,9 +769,9 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="Instala&#x00E7;&#x00E3;o Autom&#x00E1;tica via Winget" FontSize="14.5" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Instala&#x00E7;&#x00E3;o Autom&#x00E1;tica via Winget" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                     <TextBlock Name="txtSoftwaresCount" Text="0 software(s) selecionado(s)"
-                                               FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
+                                               FontSize="11.5" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Name="btnSelectAllSoft" Content="Selecionar Todos" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
@@ -738,8 +788,8 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
                 </TabItem>
             </TabControl>
 
-            <!-- Rodap&#x00E9; / Barra de A&#x00E7;&#x00E3;o e Progresso -->
-            <Border Grid.Row="3" Background="#191b24" BorderBrush="#2b2d3a" BorderThickness="0,1,0,0"
+            <!-- Rodape / Barra de Acao e Progresso -->
+            <Border Grid.Row="3" Background="{DynamicResource BgFooter}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,1,0,0"
                     CornerRadius="0,0,12,12" Padding="24,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -749,11 +799,11 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,18,0">
                         <TextBlock Name="txtResumoSelecao" Text="Resumo: Light &#x2022; Diagn&#x00F3;stico" FontSize="12"
-                                   FontWeight="SemiBold" Foreground="#c9cde0"/>
+                                   FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
                         <TextBlock Name="txtStatus" Text="Pronto para iniciar." FontSize="11.5"
-                                   Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
+                                   Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
                         <ProgressBar Name="pbProgresso" Height="5" Margin="0,8,0,0" Visibility="Collapsed"
-                                     IsIndeterminate="True" Background="#252836" Foreground="#C4613A" BorderThickness="0"/>
+                                     IsIndeterminate="True" Background="{DynamicResource BgTab}" Foreground="#C4613A" BorderThickness="0"/>
                     </StackPanel>
 
                     <Button Name="btnExecutar" Grid.Column="1" Content="INICIAR PREVENTIVA" Width="220" Height="44"
@@ -768,8 +818,7 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 $reader = (New-Object System.Xml.XmlNodeReader $XAML)
 try {
     $Window = [Windows.Markup.XamlReader]::Load($reader)
-}
-catch {
+} catch {
     Write-Host "Falha ao carregar XAML da interface." -ForegroundColor Red
     Write-Host $_.Exception.Message
     Read-Host "Pressione ENTER para sair"
@@ -777,24 +826,171 @@ catch {
 }
 
 # Bind de controles
-$TitleBar = $Window.FindName("TitleBar")
-$btnMinimize = $Window.FindName("btnMinimize")
-$btnClose = $Window.FindName("btnClose")
-$imgLogo = $Window.FindName("imgLogo")
-$linkSite = $Window.FindName("linkSite")
-$txtHostName = $Window.FindName("txtHostName")
-$txtFreeSpace = $Window.FindName("txtFreeSpace")
-$txtAdmin = $Window.FindName("txtAdmin")
-$bdAdmin = $Window.FindName("bdAdmin")
-$txtTasksCount = $Window.FindName("txtTasksCount")
-$btnPresetLight = $Window.FindName("btnPresetLight")
-$btnPresetModerate = $Window.FindName("btnPresetModerate")
-$btnPresetHeavy = $Window.FindName("btnPresetHeavy")
-$btnPresetRecovery = $Window.FindName("btnPresetRecovery")
-$btnPresetClear = $Window.FindName("btnPresetClear")
-$rbDiagnostico = $Window.FindName("rbDiagnostico")
-$rbExecucao = $Window.FindName("rbExecucao")
+$TitleBar                = $Window.FindName("TitleBar")
+$btnThemeToggle          = $Window.FindName("btnThemeToggle")
+$txtThemeIcon            = $Window.FindName("txtThemeIcon")
+$txtThemeLabel           = $Window.FindName("txtThemeLabel")
+$btnMinimize             = $Window.FindName("btnMinimize")
+$btnClose                = $Window.FindName("btnClose")
+$imgLogo                 = $Window.FindName("imgLogo")
+$linkSite                = $Window.FindName("linkSite")
+$txtHostName             = $Window.FindName("txtHostName")
+$txtFreeSpace            = $Window.FindName("txtFreeSpace")
+$txtAdmin                = $Window.FindName("txtAdmin")
+$bdAdmin                 = $Window.FindName("bdAdmin")
+$txtTasksCount           = $Window.FindName("txtTasksCount")
+$btnPresetLight          = $Window.FindName("btnPresetLight")
+$btnPresetModerate       = $Window.FindName("btnPresetModerate")
+$btnPresetHeavy          = $Window.FindName("btnPresetHeavy")
+$btnPresetRecovery       = $Window.FindName("btnPresetRecovery")
+$btnPresetClear          = $Window.FindName("btnPresetClear")
+$rbDiagnostico           = $Window.FindName("rbDiagnostico")
+$rbExecucao              = $Window.FindName("rbExecucao")
+$txtOutputFolderInfo     = $Window.FindName("txtOutputFolderInfo")
+$btnAbrirUltimoRelatorio = $Window.FindName("btnAbrirUltimoRelatorio")
+$btnAbrirPastaLogs       = $Window.FindName("btnAbrirPastaLogs")
+$txtTweaksCount          = $Window.FindName("txtTweaksCount")
+$btnTweakPresetCorp      = $Window.FindName("btnTweakPresetCorp")
+$btnTweakPresetClear     = $Window.FindName("btnTweakPresetClear")
+$btnAplicarTweaks        = $Window.FindName("btnAplicarTweaks")
+$btnDesfazerTweaks       = $Window.FindName("btnDesfazerTweaks")
+$btnAbrirUtility         = $Window.FindName("btnAbrirUtility")
+$btnAgendarSemanal       = $Window.FindName("btnAgendarSemanal")
+$btnAbrirConfig          = $Window.FindName("btnAbrirConfig")
+$pnlSoftwares            = $Window.FindName("pnlSoftwares")
+$txtSoftwaresCount       = $Window.FindName("txtSoftwaresCount")
+$btnSelectAllSoft        = $Window.FindName("btnSelectAllSoft")
+$btnClearSoft            = $Window.FindName("btnClearSoft")
+$btnInstalarSoftwares    = $Window.FindName("btnInstalarSoftwares")
+$txtResumoSelecao        = $Window.FindName("txtResumoSelecao")
+$txtStatus               = $Window.FindName("txtStatus")
+$pbProgresso             = $Window.FindName("pbProgresso")
+$btnExecutar             = $Window.FindName("btnExecutar")
 
+$BrushConv = [System.Windows.Media.BrushConverter]::new()
+
+# ============================================
+# SISTEMA DE TEMAS (Auto / Claro / Escuro)
+# ============================================
+$ThemePalettes = @{
+    "Dark" = @{
+        BgWindow              = "#141419"
+        BgHeader              = "#101015"
+        BgCard                = "#1d1e26"
+        BgSubCard             = "#161821"
+        BgFooter              = "#191b24"
+        BgControl             = "#171820"
+        BgControlHover        = "#222430"
+        BgControlSelected     = "#242026"
+        BgControlCheckedGreen = "#1d2824"
+        BgSecondaryBtn        = "#242736"
+        BgSecondaryBtnHover   = "#30354a"
+        BgTab                 = "#1b1d26"
+        BgTabHover            = "#252836"
+        BgPill                = "#1d1f2a"
+        BgTitleHover          = "#2a2c38"
+        BgBadgeAdmin          = "#1d2a23"
+        BorderWindow          = "#2f3242"
+        BorderSubtle          = "#2b2d3a"
+        BorderControl         = "#2b2e3d"
+        BorderControlHover    = "#484d66"
+        BorderBadgeAdmin      = "#2f523e"
+        TextPrimary           = "#f0f0f5"
+        TextSecondary         = "#c9cde0"
+        TextMuted             = "#8f93a8"
+        TextWarning           = "#d99a7c"
+        TextGood              = "#7ad19f"
+        ScrollThumb           = "#383c52"
+    }
+    "Light" = @{
+        BgWindow              = "#f4f5f8"
+        BgHeader              = "#ffffff"
+        BgCard                = "#ffffff"
+        BgSubCard             = "#f7f8fc"
+        BgFooter              = "#ffffff"
+        BgControl             = "#f8f9fc"
+        BgControlHover        = "#eef0f7"
+        BgControlSelected     = "#fdf3ee"
+        BgControlCheckedGreen = "#edf7f1"
+        BgSecondaryBtn        = "#eef0f6"
+        BgSecondaryBtnHover   = "#e2e6f0"
+        BgTab                 = "#e7eaf2"
+        BgTabHover            = "#dce0eb"
+        BgPill                = "#f0f2f7"
+        BgTitleHover          = "#e6e9f2"
+        BgBadgeAdmin          = "#e8f6ee"
+        BorderWindow          = "#cfd4e2"
+        BorderSubtle          = "#e1e4ee"
+        BorderControl         = "#d5dae6"
+        BorderControlHover    = "#b3bad0"
+        BorderBadgeAdmin      = "#9ed4b6"
+        TextPrimary           = "#1a1d26"
+        TextSecondary         = "#3c4257"
+        TextMuted             = "#646b82"
+        TextWarning           = "#a84a24"
+        TextGood              = "#236b43"
+        ScrollThumb           = "#bfc5d6"
+    }
+}
+
+$ThemePrefFile = Join-Path $BaseDir "Config\theme.pref"
+$script:ThemeMode = "Auto"
+if (Test-Path -LiteralPath $ThemePrefFile) {
+    $saved = (Get-Content -LiteralPath $ThemePrefFile -ErrorAction SilentlyContinue | Select-Object -First 1)
+    if ($saved -in @("Auto", "Claro", "Escuro")) { $script:ThemeMode = $saved }
+}
+
+function Get-WindowsIsLightTheme {
+    try {
+        $v = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -ErrorAction Stop).AppsUseLightTheme
+        return ($v -eq 1)
+    } catch { return $false }
+}
+
+$ApplyTheme = {
+    param([string]$ModeName)
+    $script:ThemeMode = $ModeName
+    try { Set-Content -LiteralPath $ThemePrefFile -Value $ModeName -Encoding ASCII -ErrorAction SilentlyContinue } catch {}
+
+    $effective = "Dark"
+    if ($ModeName -eq "Claro") { $effective = "Light" }
+    elseif ($ModeName -eq "Escuro") { $effective = "Dark" }
+    else { $effective = if (Get-WindowsIsLightTheme) { "Light" } else { "Dark" } }
+
+    $pal = $ThemePalettes[$effective]
+    foreach ($k in $pal.Keys) {
+        $Window.Resources[$k] = $BrushConv.ConvertFromString($pal[$k])
+    }
+
+    if ($ModeName -eq "Auto") {
+        $txtThemeLabel.Text = "Auto"
+        $txtThemeIcon.Text = [string][char]0x25D0
+        $txtThemeIcon.Foreground = $BrushConv.ConvertFromString($(if ($effective -eq "Light") { "#3D5270" } else { "#c9cde0" }))
+    } elseif ($ModeName -eq "Claro") {
+        $txtThemeLabel.Text = "Claro"
+        $txtThemeIcon.Text = [string][char]0x2600
+        $txtThemeIcon.Foreground = $BrushConv.ConvertFromString("#e68a00")
+    } else {
+        $txtThemeLabel.Text = "Escuro"
+        $txtThemeIcon.Text = [string][char]0x263E
+        $txtThemeIcon.Foreground = $BrushConv.ConvertFromString("#5b9dff")
+    }
+
+    if ($HighlightActivePreset) { & $HighlightActivePreset }
+}
+
+$btnThemeToggle.Add_Click({
+    $next = switch ($script:ThemeMode) {
+        "Auto"   { "Claro" }
+        "Claro"  { "Escuro" }
+        default  { "Auto" }
+    }
+    & $ApplyTheme $next
+})
+
+# ============================================
+# CONTROLES DE TAREFAS, TWEAKS E SOFTWARES
+# ============================================
 $TaskCheckboxNames = @(
     "chkTaskInventory", "chkTaskDiskEvents", "chkTaskCriticalServices", "chkTaskCleanTemp",
     "chkTaskEmptyRecycleBin", "chkTaskFlushDns", "chkTaskFolderScan", "chkTaskSecurityAudit",
@@ -811,14 +1007,7 @@ $Presets = @{
 }
 $script:ActivePresetName = "Light"
 $script:IsApplyingPreset = $false
-$txtOutputFolderInfo = $Window.FindName("txtOutputFolderInfo")
-$btnAbrirUltimoRelatorio = $Window.FindName("btnAbrirUltimoRelatorio")
-$btnAbrirPastaLogs = $Window.FindName("btnAbrirPastaLogs")
-$txtTweaksCount         = $Window.FindName("txtTweaksCount")
-$btnTweakPresetCorp     = $Window.FindName("btnTweakPresetCorp")
-$btnTweakPresetClear    = $Window.FindName("btnTweakPresetClear")
-$btnAplicarTweaks       = $Window.FindName("btnAplicarTweaks")
-$btnDesfazerTweaks      = $Window.FindName("btnDesfazerTweaks")
+
 $TweakCheckboxNames = @(
     "chkTweakHighPerf", "chkTweakTelemetry", "chkTweakBGApps", "chkTweakVisualFX",
     "chkTweakDeliveryOpt", "chkTweakHibernation", "chkTweakLongPaths", "chkTweakEdgeDebloat",
@@ -831,18 +1020,6 @@ $CorpSafeTweaks = @(
     "EdgeDebloat", "DisableConsumerFeatures", "DisableBingSearch", "DisableActivityHistory",
     "EndTaskTaskbar", "ShowFileExtensions", "DisableWidgets", "DisableCopilotAI"
 )
-$btnAbrirUtility = $Window.FindName("btnAbrirUtility")
-$btnAgendarSemanal = $Window.FindName("btnAgendarSemanal")
-$btnAbrirConfig = $Window.FindName("btnAbrirConfig")
-$pnlSoftwares = $Window.FindName("pnlSoftwares")
-$txtSoftwaresCount = $Window.FindName("txtSoftwaresCount")
-$btnSelectAllSoft = $Window.FindName("btnSelectAllSoft")
-$btnClearSoft = $Window.FindName("btnClearSoft")
-$btnInstalarSoftwares = $Window.FindName("btnInstalarSoftwares")
-$txtResumoSelecao = $Window.FindName("txtResumoSelecao")
-$txtStatus = $Window.FindName("txtStatus")
-$pbProgresso = $Window.FindName("pbProgresso")
-$btnExecutar = $Window.FindName("btnExecutar")
 
 # Preencher informacoes da maquina
 $txtHostName.Text = $HostName
@@ -850,20 +1027,17 @@ $txtFreeSpace.Text = "$FreeGB GB"
 $txtOutputFolderInfo.Text = $OutputFolder
 if ($IsAdmin) {
     $txtAdmin.Text = "Administrador"
-}
-else {
+} else {
     $txtAdmin.Text = "Padr$([char]0x00E3)o"
-    $txtAdmin.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#e8a472")
-    $bdAdmin.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#36261d")
-    $bdAdmin.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#6e4630")
+    $txtAdmin.Foreground = $BrushConv.ConvertFromString("#C4613A")
 }
 
 # Arrastar janela e botoes de titulo
 $TitleBar.Add_MouseLeftButtonDown({
-        if ($_.ChangedButton -eq [System.Windows.Input.MouseButton]::Left) {
-            $Window.DragMove()
-        }
-    })
+    if ($_.ChangedButton -eq [System.Windows.Input.MouseButton]::Left) {
+        $Window.DragMove()
+    }
+})
 $btnMinimize.Add_Click({ $Window.WindowState = "Minimized" })
 $btnClose.Add_Click({ $Window.Close() })
 
@@ -877,22 +1051,19 @@ if (Test-Path -LiteralPath $LogoPath) {
         $bitmap.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
         $bitmap.EndInit()
         $imgLogo.Source = $bitmap
-    }
-    catch {}
+    } catch {}
 }
 
 if ($linkSite) {
     $linkSite.Add_Click({ Start-Process "https://techfontes.com.br" })
 }
 
-# Funcao para atualizar estilo dos botoes de preset
 $PresetButtons = @{
     "Light"    = $btnPresetLight
     "Moderate" = $btnPresetModerate
     "Heavy"    = $btnPresetHeavy
     "Recovery" = $btnPresetRecovery
 }
-$BrushConv = [System.Windows.Media.BrushConverter]::new()
 
 $HighlightActivePreset = {
     foreach ($kv in $PresetButtons.GetEnumerator()) {
@@ -900,23 +1071,20 @@ $HighlightActivePreset = {
             $kv.Value.Background = $BrushConv.ConvertFromString("#C4613A")
             $kv.Value.BorderBrush = $BrushConv.ConvertFromString("#d97248")
             $kv.Value.Foreground = [System.Windows.Media.Brushes]::White
-        }
-        else {
-            $kv.Value.Background = $BrushConv.ConvertFromString("#20222e")
-            $kv.Value.BorderBrush = $BrushConv.ConvertFromString("#32364a")
-            $kv.Value.Foreground = $BrushConv.ConvertFromString("#c8cde0")
+        } else {
+            $kv.Value.Background = $Window.Resources["BgSecondaryBtn"]
+            $kv.Value.BorderBrush = $Window.Resources["BorderControl"]
+            $kv.Value.Foreground = $Window.Resources["TextSecondary"]
         }
     }
 }
 
-# Funcao para atualizar o resumo dinamico no rodape e contadores
 $DynamicCheckboxes = @()
 $UpdateSummary = {
     $selectedTasks = @($TaskCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
     $taskCount = $selectedTasks.Count
     $txtTasksCount.Text = "$taskCount selecionada(s)"
 
-    # Detecta se a combinacao atual corresponde exatamente a algum preset
     if (-not $script:IsApplyingPreset) {
         $matched = "Personalizado"
         foreach ($pName in @("Light", "Moderate", "Heavy", "Recovery")) {
@@ -968,7 +1136,7 @@ foreach ($cb in $TaskCheckboxes) {
     $cb.Add_Unchecked($UpdateSummary)
 }
 
-# Popular lista de softwares em Cards
+# Popular lista de softwares em Cards (com DynamicResource para suportar Claro/Escuro)
 $CardCheckStyle = $Window.FindResource("CardCheck")
 if ($Config -and $Config.SoftwareList) {
     foreach ($soft in $Config.SoftwareList) {
@@ -982,12 +1150,12 @@ if ($Config -and $Config.SoftwareList) {
         $tbName.Text = $soft.Name
         $tbName.FontSize = 13
         $tbName.FontWeight = "SemiBold"
-        $tbName.Foreground = [System.Windows.Media.Brushes]::White
+        $tbName.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextPrimary")
 
         $tbId = New-Object System.Windows.Controls.TextBlock
         $tbId.Text = $soft.Id
         $tbId.FontSize = 10.5
-        $tbId.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#7c8096")
+        $tbId.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextMuted")
 
         $sp.Children.Add($tbName) | Out-Null
         $sp.Children.Add($tbId) | Out-Null
@@ -1000,7 +1168,6 @@ if ($Config -and $Config.SoftwareList) {
     }
 }
 
-# Eventos de selecao para atualizar o resumo em tempo real
 foreach ($ctrl in @($rbDiagnostico, $rbExecucao)) {
     $ctrl.Add_Checked($UpdateSummary)
 }
@@ -1070,195 +1237,199 @@ $btnAplicarTweaks.Add_Click({ & $RunTweaksAction $false })
 $btnDesfazerTweaks.Add_Click({ & $RunTweaksAction $true })
 
 $btnSelectAllSoft.Add_Click({
-        foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $true }
-        & $UpdateSummary
-    })
+    foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $true }
+    & $UpdateSummary
+})
 $btnClearSoft.Add_Click({
-        foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $false }
-        & $UpdateSummary
-    })
+    foreach ($cb in $DynamicCheckboxes) { $cb.IsChecked = $false }
+    & $UpdateSummary
+})
 
 $btnInstalarSoftwares.Add_Click({
-        $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-        if ($Softs.Count -eq 0) {
-            [System.Windows.MessageBox]::Show("Selecione pelo menos um software na lista para instalar.", "Nenhum software selecionado", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-            return
-        }
+    $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    if ($Softs.Count -eq 0) {
+        [System.Windows.MessageBox]::Show("Selecione pelo menos um software na lista para instalar.", "Nenhum software selecionado", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+        return
+    }
 
-        $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
-        if (-not (Test-Path -LiteralPath $ScriptFile)) {
-            [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
-            return
-        }
+    $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+    if (-not (Test-Path -LiteralPath $ScriptFile)) {
+        [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+        return
+    }
 
-        $ArgsList = @(
-            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
-            "-Mode", "`"Softwares`"", "-SubModo", "`"Execucao`"",
-            "-Tasks", "`"None`"",
-            "-SoftwareToInstall", "`"$($Softs -join ',')`""
-        )
+    $ArgsList = @(
+        "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"",
+        "-Mode", "`"Softwares`"", "-SubModo", "`"Execucao`"",
+        "-Tasks", "`"None`"",
+        "-SoftwareToInstall", "`"$($Softs -join ',')`""
+    )
 
-        try {
-            $btnExecutar.IsEnabled = $false
-            $btnInstalarSoftwares.IsEnabled = $false
-            $btnExecutar.Content = "INSTALANDO..."
-            $pbProgresso.Visibility = "Visible"
-            $txtStatus.Text = "Instalando $($Softs.Count) software(s) via Winget... Acompanhe na janela do console."
+    try {
+        $btnExecutar.IsEnabled = $false
+        $btnInstalarSoftwares.IsEnabled = $false
+        $btnAplicarTweaks.IsEnabled = $false
+        $btnDesfazerTweaks.IsEnabled = $false
+        $btnExecutar.Content = "INSTALANDO..."
+        $pbProgresso.Visibility = "Visible"
+        $txtStatus.Text = "Instalando $($Softs.Count) software(s) via Winget... Acompanhe na janela do console."
 
-            $script:StartTime = Get-Date
-            $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
-            $script:PollTimer.Start()
-        }
-        catch {
-            $btnExecutar.IsEnabled = $true
-            $btnInstalarSoftwares.IsEnabled = $true
-            $btnExecutar.Content = "INICIAR PREVENTIVA"
-            $pbProgresso.Visibility = "Collapsed"
-            $txtStatus.Text = "Erro ao iniciar instala$([char]0x00E7)$([char]0x00E3)o: $_"
-        }
-    })
+        $script:StartTime = Get-Date
+        $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+        $script:PollTimer.Start()
+    } catch {
+        $btnExecutar.IsEnabled = $true
+        $btnInstalarSoftwares.IsEnabled = $true
+        $btnAplicarTweaks.IsEnabled = $true
+        $btnDesfazerTweaks.IsEnabled = $true
+        $btnExecutar.Content = "INICIAR PREVENTIVA"
+        $pbProgresso.Visibility = "Collapsed"
+        $txtStatus.Text = "Erro ao iniciar instala$([char]0x00E7)$([char]0x00E3)o: $_"
+    }
+})
 
 # Atalhos de Relatorios e Ferramentas
 $btnAbrirPastaLogs.Add_Click({
-        if (-not (Test-Path -LiteralPath $OutputFolder)) {
-            New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
-        }
-        Start-Process explorer.exe -ArgumentList "`"$OutputFolder`""
-    })
+    if (-not (Test-Path -LiteralPath $OutputFolder)) {
+        New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
+    }
+    Start-Process explorer.exe -ArgumentList "`"$OutputFolder`""
+})
 
 $btnAbrirUltimoRelatorio.Add_Click({
-        $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
+    $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1
-        if ($latest) {
-            Start-Process $latest.FullName
-        }
-        else {
-            [System.Windows.MessageBox]::Show("Nenhum relat$([char]0x00F3)rio HTML encontrado ainda em:`n$OutputFolder", "Relat$([char]0x00F3)rios", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
-        }
-    })
+    if ($latest) {
+        Start-Process $latest.FullName
+    } else {
+        [System.Windows.MessageBox]::Show("Nenhum relat$([char]0x00F3)rio HTML encontrado ainda em:`n$OutputFolder", "Relat$([char]0x00F3)rios", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
+    }
+})
 
 $btnAbrirUtility.Add_Click({
-        $utilBat = Join-Path $BaseDir "Rodar-Utilitario.bat"
-        $utilPs1 = Join-Path $BaseDir "TechFontes-Utility.ps1"
-        if (Test-Path -LiteralPath $utilBat) {
-            Start-Process $utilBat
-        }
-        elseif (Test-Path -LiteralPath $utilPs1) {
-            Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$utilPs1`""
-        }
-        else {
-            [System.Windows.MessageBox]::Show("TechFontes-Utility n$([char]0x00E3)o encontrado na pasta.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-        }
-    })
+    $utilBat = Join-Path $BaseDir "Rodar-Utilitario.bat"
+    $utilPs1 = Join-Path $BaseDir "TechFontes-Utility.ps1"
+    if (Test-Path -LiteralPath $utilBat) {
+        Start-Process $utilBat
+    } elseif (Test-Path -LiteralPath $utilPs1) {
+        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$utilPs1`""
+    } else {
+        [System.Windows.MessageBox]::Show("TechFontes-Utility n$([char]0x00E3)o encontrado na pasta.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+    }
+})
 
 $btnAgendarSemanal.Add_Click({
-        $sched = Join-Path $BaseDir "Install-Agendamento.ps1"
-        if (Test-Path -LiteralPath $sched) {
-            Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$sched`"" -Verb RunAs
-        }
-        else {
-            [System.Windows.MessageBox]::Show("Script Install-Agendamento.ps1 n$([char]0x00E3)o encontrado.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-        }
-    })
+    $sched = Join-Path $BaseDir "Install-Agendamento.ps1"
+    if (Test-Path -LiteralPath $sched) {
+        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$sched`"" -Verb RunAs
+    } else {
+        [System.Windows.MessageBox]::Show("Script Install-Agendamento.ps1 n$([char]0x00E3)o encontrado.", "Aviso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+    }
+})
 
 $btnAbrirConfig.Add_Click({
-        if (Test-Path -LiteralPath $ConfigFile) {
-            Start-Process notepad.exe -ArgumentList "`"$ConfigFile`""
-        }
-    })
+    if (Test-Path -LiteralPath $ConfigFile) {
+        Start-Process notepad.exe -ArgumentList "`"$ConfigFile`""
+    }
+})
 
-# Execucao Assincrona (nao trava a janela WPF)
+# Execucao Assincrona
 $script:CurrentProcess = $null
 $script:StartTime = $null
 $script:PollTimer = New-Object System.Windows.Threading.DispatcherTimer
 $script:PollTimer.Interval = [TimeSpan]::FromMilliseconds(500)
 
 $script:PollTimer.Add_Tick({
-        if ($script:CurrentProcess -and -not $script:CurrentProcess.HasExited) {
-            $elapsed = (Get-Date) - $script:StartTime
-            $txtStatus.Text = "Executando preventiva... tempo decorrido: $($elapsed.ToString('mm\:ss'))"
-        }
-        else {
-            $script:PollTimer.Stop()
-            $pbProgresso.Visibility = "Collapsed"
-            $btnExecutar.IsEnabled = $true
-            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }; if ($btnAplicarTweaks) { $btnAplicarTweaks.IsEnabled = $true }; if ($btnDesfazerTweaks) { $btnDesfazerTweaks.IsEnabled = $true }
-            $btnExecutar.Content = "INICIAR PREVENTIVA"
+    if ($script:CurrentProcess -and -not $script:CurrentProcess.HasExited) {
+        $elapsed = (Get-Date) - $script:StartTime
+        $txtStatus.Text = "Executando... tempo decorrido: $($elapsed.ToString('mm\:ss'))"
+    } else {
+        $script:PollTimer.Stop()
+        $pbProgresso.Visibility = "Collapsed"
+        $btnExecutar.IsEnabled = $true
+        $btnInstalarSoftwares.IsEnabled = $true
+        $btnAplicarTweaks.IsEnabled = $true
+        $btnDesfazerTweaks.IsEnabled = $true
+        $btnExecutar.Content = "INICIAR PREVENTIVA"
 
-            $exitCode = if ($script:CurrentProcess) { $script:CurrentProcess.ExitCode } else { 0 }
-            $script:CurrentProcess = $null
+        $exitCode = if ($script:CurrentProcess) { $script:CurrentProcess.ExitCode } else { 0 }
+        $script:CurrentProcess = $null
 
-            if ($exitCode -eq 0) {
-                $txtStatus.Text = "Conclu$([char]0x00ED)do! Relat$([char]0x00F3)rio salvo em $OutputFolder"
-                $res = [System.Windows.MessageBox]::Show(
-                    "Preventiva finalizada com sucesso!`n`nDeseja abrir o relat$([char]0x00F3)rio HTML gerado agora?",
-                    "Tech Fontes - Conclu$([char]0x00ED)do",
-                    [System.Windows.MessageBoxButton]::YesNo,
-                    [System.Windows.MessageBoxImage]::Information
-                )
-                if ($res -eq [System.Windows.MessageBoxResult]::Yes) {
-                    $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
+        if ($exitCode -eq 0) {
+            $txtStatus.Text = "Conclu$([char]0x00ED)do! Relat$([char]0x00F3)rio salvo em $OutputFolder"
+            $res = [System.Windows.MessageBox]::Show(
+                "Opera$([char]0x00E7)$([char]0x00E3)o finalizada com sucesso!`n`nDeseja abrir o relat$([char]0x00F3)rio HTML gerado agora?",
+                "Tech Fontes - Conclu$([char]0x00ED)do",
+                [System.Windows.MessageBoxButton]::YesNo,
+                [System.Windows.MessageBoxImage]::Information
+            )
+            if ($res -eq [System.Windows.MessageBoxResult]::Yes) {
+                $latest = Get-ChildItem -LiteralPath $OutputFolder -Filter "Relatorio_*.html" -ErrorAction SilentlyContinue |
                     Sort-Object LastWriteTime -Descending | Select-Object -First 1
-                    if ($latest) { Start-Process $latest.FullName }
-                }
+                if ($latest) { Start-Process $latest.FullName }
             }
-            else {
-                $txtStatus.Text = "Finalizado com c$([char]0x00F3)digo $exitCode. Verifique os logs em $OutputFolder"
-            }
+        } else {
+            $txtStatus.Text = "Finalizado com c$([char]0x00F3)digo $exitCode. Verifique os logs em $OutputFolder"
         }
-    })
+    }
+})
 
 $btnExecutar.Add_Click({
-        $Mode = if ($script:ActivePresetName) { $script:ActivePresetName } else { "Personalizado" }
-        $SubModo = if ($rbExecucao.IsChecked) { "Execucao" } else { "Diagnostico" }
+    $Mode = if ($script:ActivePresetName) { $script:ActivePresetName } else { "Personalizado" }
+    $SubModo = if ($rbExecucao.IsChecked) { "Execucao" } else { "Diagnostico" }
 
-        $SelectedTasks = @($TaskCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-        $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
-        $SelectedTweaks = @($TweakCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    $SelectedTasks = @($TaskCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    $SelectedTweaks = @($TweakCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
+    $Softs = @($DynamicCheckboxes | Where-Object { $_.IsChecked } | ForEach-Object { $_.Tag })
     $HasPowerOpt = ($SelectedTweaks.Count -gt 0 -and $SubModo -eq "Execucao")
 
-        if ($SelectedTasks.Count -eq 0 -and $Softs.Count -eq 0 -and -not $HasPowerOpt) {
-            [System.Windows.MessageBox]::Show("Selecione pelo menos uma tarefa, otimiza$([char]0x00E7)$([char]0x00E3)o ou software para executar.", "Nenhuma a$([char]0x00E7)$([char]0x00E3)o selecionada", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
-            return
-        }
+    if ($SelectedTasks.Count -eq 0 -and $Softs.Count -eq 0 -and -not $HasPowerOpt) {
+        [System.Windows.MessageBox]::Show("Selecione pelo menos uma tarefa, tweak ou software para executar.", "Nenhuma a$([char]0x00E7)$([char]0x00E3)o selecionada", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+        return
+    }
 
-        $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
-        if (-not (Test-Path -LiteralPath $ScriptFile)) {
-            [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
-            return
-        }
+    $ScriptFile = Join-Path $BaseDir "Invoke-Preventiva.ps1"
+    if (-not (Test-Path -LiteralPath $ScriptFile)) {
+        [System.Windows.MessageBox]::Show("Script base n$([char]0x00E3)o encontrado:`n$ScriptFile", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+        return
+    }
 
-        $ArgsList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"", "-Mode", "`"$Mode`"", "-SubModo", "`"$SubModo`"")
-        $TasksArg = if ($SelectedTasks.Count -gt 0) { $SelectedTasks -join ',' } else { "None" }
-        $ArgsList += "-Tasks"
-        $ArgsList += "`"$TasksArg`""
-        if ($SelectedTweaks.Count -gt 0) {
+    $ArgsList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$ScriptFile`"", "-Mode", "`"$Mode`"", "-SubModo", "`"$SubModo`"")
+    $TasksArg = if ($SelectedTasks.Count -gt 0) { $SelectedTasks -join ',' } else { "None" }
+    $ArgsList += "-Tasks"
+    $ArgsList += "`"$TasksArg`""
+    if ($SelectedTweaks.Count -gt 0) {
         $ArgsList += "-Tweaks"
         $ArgsList += "`"$($SelectedTweaks -join ',')`""
     }
-        if ($Softs.Count -gt 0) {
-            $ArgsList += "-SoftwareToInstall"
-            $ArgsList += "`"$($Softs -join ',')`""
-        }
+    if ($Softs.Count -gt 0) {
+        $ArgsList += "-SoftwareToInstall"
+        $ArgsList += "`"$($Softs -join ',')`""
+    }
 
-        try {
-            $btnExecutar.IsEnabled = $false
-            $btnExecutar.Content = "EXECUTANDO..."
-            $pbProgresso.Visibility = "Visible"
-            $txtStatus.Text = "Iniciando $Mode ($SubModo)... Acompanhe na janela do console."
+    try {
+        $btnExecutar.IsEnabled = $false
+        $btnInstalarSoftwares.IsEnabled = $false
+        $btnAplicarTweaks.IsEnabled = $false
+        $btnDesfazerTweaks.IsEnabled = $false
+        $btnExecutar.Content = "EXECUTANDO..."
+        $pbProgresso.Visibility = "Visible"
+        $txtStatus.Text = "Iniciando $Mode ($SubModo)... Acompanhe na janela do console."
 
-            $script:StartTime = Get-Date
-            $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
-            $script:PollTimer.Start()
-        }
-        catch {
-            $btnExecutar.IsEnabled = $true
-            if ($btnInstalarSoftwares) { $btnInstalarSoftwares.IsEnabled = $true }; if ($btnAplicarTweaks) { $btnAplicarTweaks.IsEnabled = $true }; if ($btnDesfazerTweaks) { $btnDesfazerTweaks.IsEnabled = $true }
-            $btnExecutar.Content = "INICIAR PREVENTIVA"
-            $pbProgresso.Visibility = "Collapsed"
-            $txtStatus.Text = "Erro ao iniciar o processo: $_"
-        }
-    })
+        $script:StartTime = Get-Date
+        $script:CurrentProcess = Start-Process powershell -ArgumentList ($ArgsList -join " ") -WindowStyle Normal -PassThru
+        $script:PollTimer.Start()
+    } catch {
+        $btnExecutar.IsEnabled = $true
+        $btnInstalarSoftwares.IsEnabled = $true
+        $btnAplicarTweaks.IsEnabled = $true
+        $btnDesfazerTweaks.IsEnabled = $true
+        $btnExecutar.Content = "INICIAR PREVENTIVA"
+        $pbProgresso.Visibility = "Collapsed"
+        $txtStatus.Text = "Erro ao iniciar o processo: $_"
+    }
+})
 
 & $ApplyPreset "Light"
+& $ApplyTheme $script:ThemeMode
 $Window.ShowDialog() | Out-Null

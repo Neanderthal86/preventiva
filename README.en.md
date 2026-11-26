@@ -9,7 +9,7 @@
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square&logo=powershell&logoColor=white)
-![WPF](https://img.shields.io/badge/UI-WPF%20Dark%20Mode-1d1e26?style=flat-square)
+![WPF](https://img.shields.io/badge/UI-WPF%20Auto%20%7C%20Light%20%7C%20Dark-1d1e26?style=flat-square)
 ![Winget](https://img.shields.io/badge/Apps-Winget-3d7a5a?style=flat-square)
 
 </div>
@@ -51,7 +51,11 @@ irm https://raw.githubusercontent.com/Neanderthal86/tf-toolkit/main/run.ps1 | ie
 ### 1. Preventive & Diagnostics (Presets + Granular Checklist)
 Pick a quick preset (**Light**, **Moderate**, **Heavy**, **Recovery**) or click **Desmarcar tudo** (*Uncheck all*) to run any single task on demand (such as **Flush DNS** or **Temp Cleanup**). On the right column, switch between **Read-Only Diagnostics** and **Execution Mode**.
 
-![Preventive and Diagnostics Tab](docs/screenshots/tab-preventiva.png)
+![Preventive and Diagnostics Tab (Dark)](docs/screenshots/tab-preventiva.png)
+
+> **`Auto` / `Light` / `Dark` Themes:** switch live from the title bar pill (or keep `Auto` to follow the Windows system theme):
+
+![Preventive and Diagnostics Tab (Light)](docs/screenshots/tab-preventiva-light.png)
 
 | Preset | Included Tasks |
 | :--- | :--- |

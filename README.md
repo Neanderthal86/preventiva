@@ -9,7 +9,7 @@
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square&logo=powershell&logoColor=white)
-![WPF](https://img.shields.io/badge/UI-WPF%20Dark%20Mode-1d1e26?style=flat-square)
+![WPF](https://img.shields.io/badge/UI-WPF%20Auto%20%7C%20Light%20%7C%20Dark-1d1e26?style=flat-square)
 ![Winget](https://img.shields.io/badge/Apps-Winget-3d7a5a?style=flat-square)
 
 </div>
@@ -51,7 +51,11 @@ O **TF-Toolkit** foi desenvolvido pela **Tech Fontes** para padronizar e agiliza
 ### 1. Preventiva & Diagnóstico (Presets + Checklist Granular)
 Escolha um preset rápido (**Light**, **Moderate**, **Heavy**, **Recovery**) ou clique em **Desmarcar tudo** para executar apenas uma ação pontual (como **Flush DNS** ou **Limpeza de Temporários**). Na coluna direita, alterne entre **Modo Diagnóstico** (somente leitura) e **Modo Execução** (aplica limpezas e reparos).
 
-![Aba Preventiva e Diagnóstico](docs/screenshots/tab-preventiva.png)
+![Aba Preventiva e Diagnóstico (Escuro)](docs/screenshots/tab-preventiva.png)
+
+> **Temas `Auto` / `Claro` / `Escuro`:** alterne em tempo real no topo da janela (ou deixe em `Auto` para acompanhar automaticamente o tema do Windows):
+
+![Aba Preventiva e Diagnóstico (Claro)](docs/screenshots/tab-preventiva-light.png)
 
 | Preset | O que inclui automaticamente |
 | :--- | :--- |
