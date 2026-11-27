@@ -2,16 +2,29 @@ root = true
 
 [*]
 charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
-trim_trailing_whitespace = true
-insert_final_newline = true
 
-[*.{json,yml,yaml}]
+# PowerShell 5.1 só lê acentos corretamente em arquivos UTF-8 com BOM.
+[*.{ps1,psm1,psd1}]
+charset = utf-8-bom
+
+[*.{xaml,yml,yaml,json,svg}]
 indent_size = 2
 
-[*.{ps1,psm1,bat,cmd}]
-end_of_line = crlf
+[*.md]
+trim_trailing_whitespace = false
 
-[*.{xaml,md,json,yml}]
+# O cmd.exe só entende ASCII sem BOM de forma confiável.
+[*.cmd]
+charset = latin1
+
+[LICENSE]
+end_of_line = lf
+
+# Os arquivos do git ficam como o git os grava.
+[{.gitattributes,.gitignore,.editorconfig}]
 end_of_line = lf

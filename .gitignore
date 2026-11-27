@@ -1,15 +1,24 @@
-# Logs e relatorios locais
+# Gerados pelo WinForge e pelas ferramentas
+SHA256SUMS.txt
+*.zip
 *.log
-*.tmp
-Transcript_*.txt
-Relatorio_*.html
-Relatorio_*.json
 
-# Preferencias locais e pacotes de release
-config/theme.pref
-release/
-
-# Sistema / IDE
-.DS_Store
+# Sistema e editores
 Thumbs.db
 desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Arquivos locais, builds e credenciais
+dist/
+build/
+*.tmp
+*.bak
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key

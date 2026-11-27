@@ -1,5 +1,5 @@
 # ============================================================
-# Tech Fontes - TF-Toolkit v3.0 (One-Line Runner)
+# Tech Fontes - TF-Toolkit v4.0 (One-Line Runner)
 # Uso: irm techfontes.com.br/p | iex
 # ============================================================
 
@@ -9,11 +9,11 @@ $ProgressPreference = "SilentlyContinue"
 # --- Configuracao editavel do Banner ---
 $BannerTitle    = "====Tech Fontes===="
 $BannerSubtitle = "=====TF-Toolkit===="
-$AppVersion     = "3.0"
+$AppVersion     = "4.0"
 $SiteUrl        = "techfontes.com.br"
 # ---------------------------------------
 
-$RawBase    = "https://raw.githubusercontent.com/Neanderthal86/tf-toolkit/main"
+$RepoZipUrl = "https://github.com/Neanderthal86/tf-toolkit/archive/refs/heads/main.zip"
 $ShortUrl   = "https://techfontes.com.br/p"
 $InstallDir = "C:\ProgramData\TechFontes\TF-Toolkit"
 
@@ -55,49 +55,38 @@ $osVer = [System.Environment]::OSVersion.VersionString
 Write-Host "[$ts] [INFO] [TF-Toolkit] TF-Toolkit $AppVersion on PowerShell $($PSVersionTable.PSVersion) ($($PSVersionTable.PSEdition)), $osVer, process $PID." -ForegroundColor Gray
 Write-Host "[$ts] [INFO] [TF-Toolkit] $SiteUrl" -ForegroundColor DarkGray
 
-# 3. Sincroniza silenciosamente apenas os arquivos essenciais (~65 KB)
+# 3. Baixa e extrai rapidamente via .NET ZipFile (muito mais rapido que Expand-Archive)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$Files = @(
-    "TF-Toolkit.ps1",
-    "TF-Toolkit.bat",
-    "Invoke-Preventiva.ps1",
-    "Install-Agendamento.ps1",
-    "gui/MainWindow.xaml",
-    "assets/logo.png",
-    "config/settings.json",
-    "modules/SystemInventory.psm1",
-    "modules/Diagnostics.psm1",
-    "modules/Maintenance.psm1",
-    "modules/Optimization.psm1",
-    "modules/Software.psm1",
-    "modules/NetworkTools.psm1",
-    "modules/Reporting.psm1"
-)
+$tempRoot = Join-Path $env:TEMP ("TF-Toolkit-" + [guid]::NewGuid().ToString("N"))
+$zipPath  = Join-Path $tempRoot "tf-toolkit.zip"
+$extPath  = Join-Path $tempRoot "ext"
 
-foreach ($sub in @("", "assets", "config", "gui", "modules")) {
-    $dir = if ($sub) { Join-Path $InstallDir $sub } else { $InstallDir }
-    if (-not (Test-Path -LiteralPath $dir)) {
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
-    }
-}
-
-$wc = New-Object System.Net.WebClient
 try {
-    foreach ($rel in $Files) {
-        $url = "$RawBase/$rel"
-        $dest = Join-Path $InstallDir ($rel -replace '/', '\')
-        $wc.DownloadFile($url, $dest)
+    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    $wc = New-Object System.Net.WebClient
+    try { $wc.DownloadFile($RepoZipUrl, $zipPath) } finally { $wc.Dispose() }
+
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $extPath)
+    $repoFolder = Get-ChildItem -LiteralPath $extPath -Directory | Select-Object -First 1
+
+    if (Test-Path -LiteralPath $InstallDir) {
+        Remove-Item -LiteralPath $InstallDir -Recurse -Force -ErrorAction SilentlyContinue
     }
+    New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+    Copy-Item -Path (Join-Path $repoFolder.FullName "*") -Destination $InstallDir -Recurse -Force
+
+    $guiScript = Join-Path $InstallDir "WinForge.Gui.ps1"
+    if (-not (Test-Path -LiteralPath $guiScript)) {
+        throw "WinForge.Gui.ps1 nao encontrado em $InstallDir"
+    }
+
+    $ts2 = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
+    Write-Host "[$ts2] [INFO] [UI] Starting the interface thread." -ForegroundColor Gray
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -STA -File `"$guiScript`""
 } finally {
-    $wc.Dispose()
+    if (Test-Path -LiteralPath $tempRoot) {
+        Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
 }
-
-$entryScript = Join-Path $InstallDir "TF-Toolkit.ps1"
-if (-not (Test-Path -LiteralPath $entryScript)) {
-    throw "TF-Toolkit.ps1 nao encontrado em $InstallDir"
-}
-
-$ts2 = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
-Write-Host "[$ts2] [INFO] [UI] Starting the interface thread." -ForegroundColor Gray
-Start-Process powershell.exe -ArgumentList "-WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$entryScript`""
