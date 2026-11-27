@@ -16,7 +16,7 @@ Não abra uma issue pública para uma falha de segurança: ela fica visível par
 2. Conte o que acontece, a versão do TF-Toolkit, a versão e a build do Windows e os passos para reproduzir.
 3. A resposta vem pelo próprio relato. Combinamos juntos quando a falha pode ser divulgada, depois da correção.
 
-Sem conta no GitHub? Escreva para suporte@techfontes.com.br com o assunto "Segurança do TF-Toolkit".
+Sem conta no GitHub? Escreva para fontes@techfontes.com.br com o assunto "Segurança do TF-Toolkit".
 
 ### O que conta como falha de segurança
 
@@ -40,4 +40,4 @@ Please don't open a public issue for a security problem.
 2. Describe what happens, the TF-Toolkit version, the Windows version and build, and the steps to reproduce.
 3. You'll get an answer in the report itself. We'll agree on when to disclose it, after the fix.
 
-No GitHub account? Email suporte@techfontes.com.br with the subject "TF-Toolkit security".
+No GitHub account? Email fontes@techfontes.com.br with the subject "TF-Toolkit security".
