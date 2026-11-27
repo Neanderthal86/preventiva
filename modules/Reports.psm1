@@ -724,30 +724,66 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
     )
 
     $encode = { param($text) [System.Net.WebUtility]::HtmlEncode([string]$text) }
+    $logoDataUri = ""
     $logoHtml = "<div class='brand-badge'>TF</div>"
     try {
         $logoFile = Join-Path (Split-Path -Parent $PSScriptRoot) "assets\logo.png"
         if (Test-Path -LiteralPath $logoFile -PathType Leaf) {
             $b64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($logoFile))
-            $logoHtml = "<div class='logo-wrap'><img class='brand-logo' src='data:image/png;base64,$b64' alt='Tech Fontes'/></div>"
+            $logoDataUri = "data:image/png;base64,$b64"
+            $logoHtml = "<div class='logo-wrap'><img class='brand-logo' src='$logoDataUri' alt='Tech Fontes'/></div>"
         }
     } catch {}
 
+    $nowDate = Get-Date -Format "dd/MM/yyyy"
     $nowText = Get-Date -Format "dd/MM/yyyy 'às' HH:mm"
+    $protocolId = "TF-" + (Get-Date -Format "yyyyMMdd-HHmm")
     $hostName = & $encode $env:COMPUTERNAME
     $userName = & $encode $env:USERNAME
+
+    # Reordenar secoes por prioridade de analise tecnica (Anexos extensos no final)
+    $priorityOrder = @(
+        'Pontos de aten',
+        'Sistema',
+        'Hardware',
+        'Discos',
+        'Seguran',
+        'Bateria',
+        'Rede',
+        'Eventos cr',
+        'Telas azuis',
+        'Drivers',
+        'Programas',
+        'Ajustes'
+    )
+    $orderedSections = New-Object System.Collections.Generic.List[object]
+    $usedIdx = @{}
+    foreach ($pat in $priorityOrder) {
+        for ($i = 0; $i -lt $Sections.Count; $i++) {
+            if ($usedIdx.ContainsKey($i)) { continue }
+            if ([string]$Sections[$i].Title -match $pat) {
+                $orderedSections.Add($Sections[$i])
+                $usedIdx[$i] = $true
+            }
+        }
+    }
+    for ($i = 0; $i -lt $Sections.Count; $i++) {
+        if (-not $usedIdx.ContainsKey($i)) { $orderedSections.Add($Sections[$i]) }
+    }
 
     # Extrair destaques para os cards executivos (KPIs) no topo
     $kpiModel = $env:COMPUTERNAME
     $kpiOs = "Windows"
     $kpiOsSub = ""
+    $kpiCpu = "-"
+    $kpiRam = ""
     $kpiDiskText = "-"
     $kpiDiskPct = -1
     $kpiSecText = "Verificado"
     $kpiSecSub = ""
     $kpiSecTone = "ok"
 
-    foreach ($sec in $Sections) {
+    foreach ($sec in $orderedSections) {
         $t = [string]$sec.Title
         foreach ($it in @($sec.Items)) {
             $lbl = [string]$it.Label
@@ -756,6 +792,9 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
                 if ($lbl -match 'Fabricante') { $kpiModel = $val }
                 elseif ($lbl -match 'Sistema operacional') { $kpiOs = ($val -replace '\s*\(build.*$', '') }
                 elseif ($lbl -match 'Ativa') { $kpiOsSub = $val }
+            } elseif ($t -match 'Hardware') {
+                if ($lbl -match 'Processador') { $kpiCpu = ($val -replace '\(R\)|\(TM\)|CPU\s*@.*$', '').Trim() }
+                elseif ($lbl -match 'Mem') { $kpiRam = $val }
             } elseif ($t -match 'Discos' -and $lbl -eq 'C:') {
                 $kpiDiskText = ($val -replace '\s*·.*$', '')
                 if ($val -match '\((\d+)%\s*usado\)') { $kpiDiskPct = [int]$Matches[1] }
@@ -773,20 +812,19 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
 
     $scoreBadge = ""
     if ($HealthScore -ge 0) {
-        $scoreCls = if ($HealthScore -ge 85) { "ok" } elseif ($HealthScore -ge 65) { "warn" } else { "bad" }
         $scoreRingColor = if ($HealthScore -ge 85) { "#22c55e" } elseif ($HealthScore -ge 65) { "#f59e0b" } else { "#ef4444" }
-        $dashOffset = [math]::Round(125.6 - (125.6 * [math]::Min(100, [math]::Max(0, $HealthScore)) / 100.0), 1)
+        $dashOffset = [math]::Round(138.2 - (138.2 * [math]::Min(100, [math]::Max(0, $HealthScore)) / 100.0), 1)
         $scoreBadge = @"
-<div class='score-card $scoreCls'>
-  <svg class='score-ring' viewBox='0 0 48 48' width='48' height='48'>
-    <circle cx='24' cy='24' r='20' fill='none' stroke='rgba(255,255,255,0.16)' stroke-width='4.5'/>
-    <circle cx='24' cy='24' r='20' fill='none' stroke='$scoreRingColor' stroke-width='4.5' stroke-linecap='round' stroke-dasharray='125.6' stroke-dashoffset='$dashOffset' transform='rotate(-90 24 24)'/>
-    <text x='24' y='28' text-anchor='middle' fill='#ffffff' font-size='13' font-weight='800' font-family='Segoe UI, Arial, sans-serif'>$HealthScore</text>
+<div class='score-card'>
+  <svg class='score-ring' viewBox='0 0 52 52' width='52' height='52'>
+    <circle cx='26' cy='26' r='22' fill='none' stroke='rgba(255,255,255,0.16)' stroke-width='4.5'/>
+    <circle cx='26' cy='26' r='22' fill='none' stroke='$scoreRingColor' stroke-width='4.5' stroke-linecap='round' stroke-dasharray='138.2' stroke-dashoffset='$dashOffset' transform='rotate(-90 26 26)'/>
+    <text x='26' y='31' text-anchor='middle' fill='#ffffff' font-size='14.5' font-weight='800' font-family='Segoe UI, Arial, sans-serif'>$HealthScore</text>
   </svg>
   <div class='score-info'>
-    <div class='score-tag'>Saúde do PC</div>
+    <div class='score-tag'>Índice de Saúde</div>
     <div class='score-lbl'>$(& $encode $HealthLabel)</div>
-    <div class='score-sub'>$HealthScore de 100 pontos</div>
+    <div class='score-sub'>$HealthScore / 100 pontos</div>
   </div>
 </div>
 "@
@@ -796,6 +834,11 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
     if ($kpiDiskPct -ge 0) {
         $dCls = if ($kpiDiskPct -ge 90) { "bad" } elseif ($kpiDiskPct -ge 75) { "warn" } else { "ok" }
         $diskBarHtml = "<div class='mini-bar'><div class='mini-fill $dCls' style='width:$kpiDiskPct%'></div></div>"
+    }
+
+    $runningHeaderLogoCss = ""
+    if (-not [string]::IsNullOrWhiteSpace($logoDataUri)) {
+        $runningHeaderLogoCss = "background-image: url('$logoDataUri'); background-repeat: no-repeat; background-size: 15px 15px; background-position: 0 calc(100% - 5px); padding-left: 21px;"
     }
 
     # Helper para badges visuais de valor
@@ -843,6 +886,8 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
         return "<svg viewBox='0 0 24 24'><path d='M4 7h10M18 7h2M4 17h4M12 17h8'/><circle cx='16' cy='7' r='2'/><circle cx='10' cy='17' r='2'/></svg>"
     }
 
+    $safeHostCss = ($env:COMPUTERNAME -replace '["\\]', '')
+
     $sb = New-Object System.Text.StringBuilder
     [void]$sb.AppendLine(@"
 <!doctype html>
@@ -851,84 +896,197 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
 <meta charset="utf-8">
 <title>Relatório Técnico de Diagnóstico - $hostName - Tech Fontes</title>
 <style>
-  @page { size: A4; margin: 11mm 11mm 12mm 11mm; }
-  * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  body { margin: 0; font-family: 'Segoe UI', -apple-system, Arial, sans-serif; color: #1e293b; background: #ffffff; font-size: 10.5px; line-height: 1.42; }
+  /* Configuração Editorial A4 com Cabeçalho e Rodapé Fixos em Todas as Páginas */
+  @page {
+    size: A4;
+    margin: 22mm 14mm 19mm 14mm;
+    @top-left {
+      content: "TECH FONTES  ·  Relatório Técnico de Diagnóstico";
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: #334155;
+      letter-spacing: 0.3px;
+      vertical-align: bottom;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      border-bottom: 1.5px solid #C4613A;
+      $runningHeaderLogoCss
+    }
+    @top-center {
+      content: "";
+      margin-bottom: 8px;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+    @top-right {
+      content: "Estação: $safeHostCss  ·  $nowDate";
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 8.5px;
+      font-weight: 600;
+      color: #64748b;
+      vertical-align: bottom;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+    @bottom-left {
+      content: "Tech Fontes Informática  ·  techfontes.com.br  ·  fontes@techfontes.com.br";
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 8.2px;
+      color: #64748b;
+      vertical-align: top;
+      padding-top: 6px;
+      border-top: 1px solid #cbd5e1;
+    }
+    @bottom-center {
+      content: "";
+      border-top: 1px solid #cbd5e1;
+    }
+    @bottom-right {
+      content: "Página " counter(page) " de " counter(pages);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: #334155;
+      vertical-align: top;
+      padding-top: 6px;
+      border-top: 1px solid #cbd5e1;
+    }
+  }
 
-  /* Cabeçalho Corporativo Tech Fontes */
+  /* Página 1 sem o cabeçalho corrido (usa o banner corporativo completo) */
+  @page :first {
+    margin-top: 12mm;
+    @top-left { content: none; border-bottom: none; background-image: none; }
+    @top-center { content: none; border-bottom: none; }
+    @top-right { content: none; border-bottom: none; }
+  }
+
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { margin: 0; font-family: 'Segoe UI', -apple-system, Arial, sans-serif; color: #1e293b; background: #ffffff; font-size: 10.2px; line-height: 1.48; }
+
+  /* Banner Corporativo Editorial (Página 1) */
   .hero {
-    background: linear-gradient(135deg, #1e293b 0%, #2a3b4c 65%, #34475a 100%);
+    background: linear-gradient(135deg, #16202c 0%, #243447 62%, #2f4358 100%);
     color: #ffffff;
     border-radius: 10px;
-    padding: 15px 18px;
+    padding: 18px 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     border-bottom: 4px solid #C4613A;
   }
-  .brand { display: flex; align-items: center; gap: 13px; }
-  .logo-wrap { background: #ffffff; border-radius: 9px; padding: 5px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-  .brand-logo { width: 38px; height: 38px; object-fit: contain; }
-  .brand-badge { width: 46px; height: 46px; border-radius: 9px; background: #C4613A; color: #fff; font-weight: 800; font-size: 19px; display: flex; align-items: center; justify-content: center; }
-  .brand-kicker { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #f4a482; margin-bottom: 2px; }
-  .brand h1 { margin: 0; font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.2px; }
-  .brand p { margin: 2px 0 0; font-size: 10px; color: #cbd5e1; }
+  .brand { display: flex; align-items: center; gap: 15px; }
+  .logo-wrap { background: #ffffff; border-radius: 10px; padding: 6px; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0,0,0,0.22); }
+  .brand-logo { width: 42px; height: 42px; object-fit: contain; }
+  .brand-badge { width: 52px; height: 52px; border-radius: 10px; background: #C4613A; color: #fff; font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+  .brand-kicker { font-size: 8.8px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #f5aa89; margin-bottom: 3px; }
+  .brand h1 { margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; }
+  .brand p { margin: 3px 0 0; font-size: 10px; color: #cbd5e1; }
 
-  /* Score Card no Cabeçalho */
-  .score-card { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16); border-radius: 9px; padding: 7px 12px; }
+  /* Índice de Saúde no Banner */
+  .score-card { display: flex; align-items: center; gap: 11px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; padding: 8px 14px; }
   .score-ring { flex-shrink: 0; }
-  .score-tag { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.7px; color: #cbd5e1; font-weight: 600; }
-  .score-lbl { font-size: 13px; font-weight: 800; color: #ffffff; line-height: 1.15; }
-  .score-sub { font-size: 9.5px; color: #cbd5e1; }
+  .score-tag { font-size: 8.2px; text-transform: uppercase; letter-spacing: 0.8px; color: #cbd5e1; font-weight: 600; }
+  .score-lbl { font-size: 14px; font-weight: 800; color: #ffffff; line-height: 1.15; }
+  .score-sub { font-size: 9.2px; color: #cbd5e1; }
 
-  /* Faixa de Metadados + KPIs Executivos */
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 13px; }
-  .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3px solid #2a3b4c; border-radius: 8px; padding: 8px 10px; }
+  /* Faixa de Identificação do Laudo */
+  .meta-strip {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1.1fr 1fr;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 9px 14px;
+    margin-bottom: 14px;
+  }
+  .meta-cell span { display: block; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b; }
+  .meta-cell strong { font-size: 10.8px; color: #0f172a; font-weight: 700; }
+
+  /* KPIs Executivos */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #2a3b4c; border-radius: 8px; padding: 10px 12px; }
   .kpi.accent { border-top-color: #C4613A; }
   .kpi.ok { border-top-color: #16a34a; }
   .kpi.warn { border-top-color: #d97706; }
   .kpi.bad { border-top-color: #dc2626; }
-  .kpi-lbl { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 2px; }
-  .kpi-val { font-size: 11.5px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .kpi-sub { font-size: 9.5px; color: #475569; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mini-bar { height: 5px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 5px; }
+  .kpi-lbl { font-size: 8.2px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 3px; }
+  .kpi-val { font-size: 11.2px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi-sub { font-size: 9.2px; color: #475569; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini-bar { height: 5px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 6px; }
   .mini-fill { height: 100%; border-radius: 99px; }
   .mini-fill.ok { background: #16a34a; }
   .mini-fill.warn { background: #d97706; }
   .mini-fill.bad { background: #dc2626; }
 
-  /* Seções */
-  section { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
-  section.flow { break-inside: auto; page-break-inside: auto; }
-  .sec-head { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 7px 12px; display: flex; justify-content: space-between; align-items: center; break-after: avoid; page-break-after: avoid; }
-  .sec-title { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.35px; }
-  .sec-title svg { width: 14px; height: 14px; stroke: #C4613A; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-  .sec-count { font-size: 9px; font-weight: 700; color: #475569; background: #e2e8f0; padding: 1.5px 7px; border-radius: 99px; }
-  .sec-body { padding: 6px 12px 8px; }
+  /* Divisória Editorial de Anexo */
+  .appendix-banner {
+    margin: 18px 0 12px;
+    padding: 7px 12px;
+    background: #f1f5f9;
+    border-left: 4px solid #243447;
+    border-radius: 0 6px 6px 0;
+    font-size: 9.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #334155;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
 
-  /* Tabela Padrão */
+  /* Seções Editoriais Numeradas */
+  section {
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    margin-bottom: 13px;
+    overflow: hidden;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    background: #ffffff;
+  }
+  section.flow { break-inside: auto; page-break-inside: auto; }
+  .sec-head {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .sec-title { display: flex; align-items: center; gap: 8px; font-size: 11.2px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.4px; }
+  .sec-num { font-size: 9.5px; font-weight: 800; color: #ffffff; background: #C4613A; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.3px; }
+  .sec-title svg { width: 14px; height: 14px; stroke: #243447; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .sec-count { font-size: 8.8px; font-weight: 700; color: #475569; background: #e2e8f0; padding: 2px 8px; border-radius: 99px; }
+  .sec-body { padding: 8px 14px 10px; }
+
+  /* Tabela Editorial Padrão */
   table.kv { width: 100%; border-collapse: collapse; }
-  table.kv tr { border-bottom: 1px solid #f1f5f9; }
+  table.kv tr { border-bottom: 1px solid #f1f5f9; break-inside: avoid; }
   table.kv tr:nth-child(even) { background: #fafbfd; }
   table.kv tr:last-child { border-bottom: none; }
-  table.kv td { padding: 4.5px 6px; vertical-align: top; }
-  table.kv td.k { width: 31%; font-weight: 600; color: #475569; }
+  table.kv td { padding: 5.5px 7px; vertical-align: top; }
+  table.kv td.k { width: 30%; font-weight: 600; color: #475569; }
   table.kv td.v { color: #0f172a; word-break: break-word; }
 
-  /* Grade Compacta de 2 Colunas (Ajustes & Programas) */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; row-gap: 0; }
-  .g-item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3.5px 4px; border-bottom: 1px solid #f1f5f9; break-inside: avoid; }
-  .g-k { font-weight: 600; color: #334155; font-size: 9.8px; }
-  .g-v { color: #475569; font-size: 9.5px; text-align: right; flex-shrink: 0; max-width: 52%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Grade Compacta de 2 Colunas (Anexos: Programas e Ajustes) */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; row-gap: 0; }
+  .g-item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 4px 4px; border-bottom: 1px solid #f1f5f9; break-inside: avoid; }
+  .g-k { font-weight: 600; color: #334155; font-size: 9.4px; }
+  .g-v { color: #475569; font-size: 9.2px; text-align: right; flex-shrink: 0; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Barras e Badges */
-  .disk-bar { height: 5px; width: 180px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 4px; }
+  /* Barras de Disco e Selos de Status */
+  .disk-bar { height: 5px; width: 190px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 5px; }
   .disk-fill { height: 100%; border-radius: 99px; }
   .disk-fill.ok { background: #16a34a; }
   .disk-fill.warn { background: #d97706; }
   .disk-fill.bad { background: #dc2626; }
-  .pill { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 8.8px; font-weight: 700; letter-spacing: 0.2px; }
+  .pill { display: inline-block; padding: 1.5px 7px; border-radius: 99px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.2px; }
   .pill-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
   .pill-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
   .pill-bad { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
@@ -937,15 +1095,21 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
   .val-ok { color: #15803d; font-weight: 600; }
   .val-warn { color: #b45309; font-weight: 600; }
 
-  /* Quadro do Analista */
-  .analyst-box { margin-top: 12px; border: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 8px; padding: 10px 14px; break-inside: avoid; page-break-inside: avoid; }
-  .analyst-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #2a3b4c; margin-bottom: 6px; }
-  .analyst-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; font-size: 9.5px; color: #64748b; }
-  .analyst-line { border-bottom: 1px solid #cbd5e1; height: 18px; margin-top: 2px; }
-
-  /* Rodapé */
-  .footer { margin-top: 14px; padding-top: 8px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 9.2px; color: #64748b; }
-  .footer strong { color: #C4613A; }
+  /* Quadro Editorial de Parecer Técnico */
+  .analyst-box {
+    margin-top: 16px;
+    border: 1px solid #cbd5e1;
+    border-top: 3px solid #243447;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 13px 16px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .analyst-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #1e293b; margin-bottom: 8px; }
+  .analyst-notes { border: 1px dashed #cbd5e1; background: #ffffff; border-radius: 6px; height: 54px; margin-bottom: 12px; padding: 6px 10px; font-size: 8.8px; color: #94a3b8; }
+  .analyst-grid { display: grid; grid-template-columns: 1.2fr 1fr 0.8fr 1fr; gap: 14px; font-size: 8.8px; font-weight: 600; color: #475569; }
+  .analyst-line { border-bottom: 1px solid #94a3b8; height: 20px; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -953,24 +1117,31 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
     <div class="brand">
       $logoHtml
       <div>
-        <div class="brand-kicker">Tech Fontes Informática · Laudo Preventivo</div>
-        <h1>Relatório Técnico de Diagnóstico</h1>
-        <p>Estação <strong>$hostName</strong> · Usuário <strong>$userName</strong> · Gerado em $nowText</p>
+        <div class="brand-kicker">Tech Fontes Informática · Laudo Técnico Preventivo</div>
+        <h1>Relatório de Diagnóstico da Estação</h1>
+        <p>Levantamento técnico completo gerado pelo TF-Toolkit v$(& $encode $Build) para análise especializada</p>
       </div>
     </div>
     $scoreBadge
   </div>
 
+  <div class="meta-strip">
+    <div class="meta-cell"><span>Equipamento / Modelo</span><strong>$(& $encode $kpiModel)</strong></div>
+    <div class="meta-cell"><span>Estação / Usuário</span><strong>$hostName · $userName</strong></div>
+    <div class="meta-cell"><span>Data de Emissão</span><strong>$nowText</strong></div>
+    <div class="meta-cell"><span>Protocolo do Laudo</span><strong>$protocolId</strong></div>
+  </div>
+
   <div class="kpi-grid">
     <div class="kpi accent">
-      <div class="kpi-lbl">Equipamento</div>
-      <div class="kpi-val">$(& $encode $kpiModel)</div>
-      <div class="kpi-sub">Host: $hostName · $($Sections.Count) seções</div>
-    </div>
-    <div class="kpi">
       <div class="kpi-lbl">Sistema Operacional</div>
       <div class="kpi-val">$(& $encode $kpiOs)</div>
       <div class="kpi-sub">$(& $encode $kpiOsSub)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Processador &amp; Memória</div>
+      <div class="kpi-val">$(& $encode $kpiCpu)</div>
+      <div class="kpi-sub">$(& $encode $kpiRam)</div>
     </div>
     <div class="kpi">
       <div class="kpi-lbl">Disco Principal (C:)</div>
@@ -985,14 +1156,24 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
   </div>
 "@)
 
-    foreach ($sec in $Sections) {
+    $secNum = 0
+    $appendixPrinted = $false
+    foreach ($sec in $orderedSections) {
         if (-not $sec.Items -or $sec.Items.Count -eq 0) { continue }
+        $secNum++
+        $numTxt = "{0:D2}" -f $secNum
         $secTitle = [string]$sec.Title
         $iconSvg = & $getSectionIcon $secTitle
         $isCompactGrid = ($secTitle -match 'Ajustes do Windows|Programas Instalados')
-        $secCls = if ($isCompactGrid -or $sec.Items.Count -gt 12) { " class='flow'" } else { "" }
 
-        [void]$sb.AppendLine("<section$secCls><div class='sec-head'><div class='sec-title'>$iconSvg<span>$(& $encode $secTitle)</span></div><span class='sec-count'>$($sec.Items.Count) itens</span></div><div class='sec-body'>")
+        if ($isCompactGrid -and -not $appendixPrinted) {
+            [void]$sb.AppendLine("<div class='appendix-banner'>Anexos Técnicos · Inventário de Softwares e Configurações do Sistema</div>")
+            $appendixPrinted = $true
+        }
+
+        $secCls = if ($isCompactGrid -or $sec.Items.Count -gt 10) { " class='flow'" } else { "" }
+
+        [void]$sb.AppendLine("<section$secCls><div class='sec-head'><div class='sec-title'><span class='sec-num'>$numTxt</span>$iconSvg<span>$(& $encode $secTitle)</span></div><span class='sec-count'>$($sec.Items.Count) itens</span></div><div class='sec-body'>")
 
         if ($isCompactGrid) {
             [void]$sb.AppendLine("<div class='grid-2'>")
@@ -1015,17 +1196,14 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
 
     [void]$sb.AppendLine(@"
   <div class="analyst-box">
-    <div class="analyst-title">Parecer Técnico / Registro do Analista</div>
+    <div class="analyst-title">Parecer Técnico e Registro do Analista</div>
+    <div class="analyst-notes">Observações, diagnóstico complementar e recomendações técnicas:</div>
     <div class="analyst-grid">
       <div>Analista Responsável<div class="analyst-line"></div></div>
-      <div>Chamado / Ordem de Serviço<div class="analyst-line"></div></div>
-      <div>Data da Análise<div class="analyst-line"></div></div>
+      <div>Cliente / Empresa<div class="analyst-line"></div></div>
+      <div>Chamado / OS<div class="analyst-line"></div></div>
+      <div>Data / Assinatura<div class="analyst-line"></div></div>
     </div>
-  </div>
-
-  <div class="footer">
-    <div><strong>Tech Fontes</strong> · techfontes.com.br · fontes@techfontes.com.br</div>
-    <div>TF-Toolkit v$(& $encode $Build) · Documento gerado automaticamente em $nowText</div>
   </div>
 </body>
 </html>
