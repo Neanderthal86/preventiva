@@ -18,6 +18,21 @@ function Get-TFToolkitReportSystemItems {
 
     if ($machine) { @{ Label = (Get-TFToolkitText 'Fabricante e modelo'); Value = $machine } }
 
+    # Numero de serie / Service Tag (essencial para garantia Dell/Lenovo/HP e inventario)
+    $serial = ""
+    try {
+        $bios = Get-TFToolkitCimOrNull -ClassName "Win32_BIOS" | Select-Object -First 1
+        if ($bios -and -not [string]::IsNullOrWhiteSpace($bios.SerialNumber)) {
+            $s = $bios.SerialNumber.Trim()
+            if ($s -notmatch '^(To Be Filled|Default string|System Serial|None|O\.E\.M\.|0+)$') {
+                $serial = $s
+            }
+        }
+    } catch {}
+    if (-not [string]::IsNullOrWhiteSpace($serial)) {
+        @{ Label = (Get-TFToolkitText 'Nº de Série / Service Tag'); Value = $serial }
+    }
+
     if ($os) {
         # O mesmo texto do cartão Windows da tela inicial: "Windows 11 Pro 24H2 (build 26100)".
         $build = [int](Get-TFToolkitJsonValue -Object $os -Name "BuildNumber" -Default 0)
@@ -624,6 +639,15 @@ function Get-TFToolkitReportNetworkItems {
                 $dns = ($ipCfg.DNSServer | Where-Object { $_.AddressFamily -eq 2 }).ServerAddresses
                 if ($dns) { $items += [PSCustomObject]@{ Label = "Servidores DNS"; Value = ($dns -join ", ") } }
             }
+            try {
+                $wlan = (& netsh wlan show interfaces 2>$null) -join "`n"
+                if ($wlan -match '(?m)^\s*SSID\s*:\s*(.+)$') {
+                    $ssid = $Matches[1].Trim()
+                    if (-not [string]::IsNullOrWhiteSpace($ssid)) {
+                        $items += [PSCustomObject]@{ Label = "Rede Wi-Fi (SSID)"; Value = $ssid }
+                    }
+                }
+            } catch {}
         }
     } catch {}
 
@@ -684,13 +708,10 @@ function Get-TFToolkitReportInstalledAppsItems {
             Sort-Object DisplayName -Unique)
 
         $items += [PSCustomObject]@{ Label = "Total de programas"; Value = "$($apps.Count) instalado(s)" }
-        foreach ($a in ($apps | Select-Object -First 35)) {
+        foreach ($a in $apps) {
             $ver = if ($a.DisplayVersion) { "v$($a.DisplayVersion)" } else { "-" }
             $pub = if ($a.Publisher) { " · $($a.Publisher)" } else { "" }
             $items += [PSCustomObject]@{ Label = "$($a.DisplayName)"; Value = "$ver$pub" }
-        }
-        if ($apps.Count -gt 35) {
-            $items += [PSCustomObject]@{ Label = "Demais programas"; Value = "+$($apps.Count - 35) aplicativos adicionais instalados" }
         }
     } catch {}
 
@@ -771,8 +792,9 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
         if (-not $usedIdx.ContainsKey($i)) { $orderedSections.Add($Sections[$i]) }
     }
 
-    # Extrair destaques para os cards executivos (KPIs) no topo
+    # Extrair destaques para os cards executivos (KPIs) e Recomendacoes Automaticas
     $kpiModel = $env:COMPUTERNAME
+    $kpiSerial = ""
     $kpiOs = "Windows"
     $kpiOsSub = ""
     $kpiCpu = "-"
@@ -783,6 +805,11 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
     $kpiSecSub = ""
     $kpiSecTone = "ok"
 
+    $recs = New-Object System.Collections.Generic.List[object]
+    $hasUnexpectedShutdown = $false
+    $hasWuErrors = $false
+    $hasServiceErrors = $false
+
     foreach ($sec in $orderedSections) {
         $t = [string]$sec.Title
         foreach ($it in @($sec.Items)) {
@@ -790,25 +817,89 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
             $val = [string]$it.Value
             if ($t -match 'Sistema') {
                 if ($lbl -match 'Fabricante') { $kpiModel = $val }
+                elseif ($lbl -match 'Service Tag|Série') { $kpiSerial = $val }
                 elseif ($lbl -match 'Sistema operacional') { $kpiOs = ($val -replace '\s*\(build.*$', '') }
-                elseif ($lbl -match 'Ativa') { $kpiOsSub = $val }
+                elseif ($lbl -match 'Ativa') {
+                    $kpiOsSub = $val
+                    if ($val -match 'Não ativado|Expirad') {
+                        $recs.Add(@{ Level = "alta"; Tag = "Licenciamento"; Text = "Windows sem ativação válida — regularizar licença do sistema operacional." })
+                    }
+                }
+                elseif ($lbl -match 'Reinício pendente' -and $val -notmatch '^Não') {
+                    $recs.Add(@{ Level = "media"; Tag = "Sistema"; Text = "Há reinício pendente — reiniciar a estação para concluir atualizações e ajustes." })
+                }
             } elseif ($t -match 'Hardware') {
                 if ($lbl -match 'Processador') { $kpiCpu = ($val -replace '\(R\)|\(TM\)|CPU\s*@.*$', '').Trim() }
                 elseif ($lbl -match 'Mem') { $kpiRam = $val }
-            } elseif ($t -match 'Discos' -and $lbl -eq 'C:') {
-                $kpiDiskText = ($val -replace '\s*·.*$', '')
-                if ($val -match '\((\d+)%\s*usado\)') { $kpiDiskPct = [int]$Matches[1] }
+            } elseif ($t -match 'Discos') {
+                if ($lbl -eq 'C:') {
+                    $kpiDiskText = ($val -replace '\s*·.*$', '')
+                    if ($val -match '\((\d+)%\s*usado\)') {
+                        $kpiDiskPct = [int]$Matches[1]
+                        if ($kpiDiskPct -ge 85) {
+                            $recs.Add(@{ Level = "alta"; Tag = "Armazenamento"; Text = "Disco C: com $kpiDiskPct% de ocupação — executar limpeza de arquivos ou expandir armazenamento." })
+                        }
+                    }
+                }
+                if ($lbl -match '^Saúde:' -and $val -notmatch 'Saudável') {
+                    $recs.Add(@{ Level = "alta"; Tag = "Disco (SMART)"; Text = "Alerta de confiabilidade detectado no disco ($lbl) — realizar backup imediato e avaliar substituição." })
+                }
             } elseif ($t -match 'Seguran') {
                 if ($lbl -match 'Antiv') {
                     $kpiSecText = ($val -replace '^Outro antivírus em uso:\s*', '')
-                    if ($val -match 'Nenhum|Desativado|desligado') { $kpiSecTone = "bad" }
+                    if ($val -match 'Nenhum|Desativado|desligado') {
+                        $kpiSecTone = "bad"
+                        $recs.Add(@{ Level = "alta"; Tag = "Segurança"; Text = "Antivírus inativo ou ausente — ativar proteção contra ameaças imediatamente." })
+                    }
                 } elseif ($lbl -match 'Firewall') {
                     $kpiSecSub = if ($val -match 'desligado') { "Firewall parcialmente desligado" } else { "Firewall ativo" }
-                    if ($val -match 'desligado' -and $kpiSecTone -eq 'ok') { $kpiSecTone = "warn" }
+                    if ($val -match 'desligado') {
+                        if ($kpiSecTone -eq 'ok') { $kpiSecTone = "warn" }
+                        $recs.Add(@{ Level = "media"; Tag = "Firewall"; Text = "Um ou mais perfis do Firewall do Windows estão desativados — revisar política de rede." })
+                    }
                 }
+            } elseif ($t -match 'Bateria' -and $val -match 'Desgaste alto') {
+                $recs.Add(@{ Level = "media"; Tag = "Bateria"; Text = "Bateria com desgaste avançado ($($val -replace '\s*\|.*$', '')) — avaliar substituição preventiva." })
+            } elseif ($t -match 'Eventos') {
+                if ($lbl -match 'Kernel-Power|EventLog \(ID 6008\)') { $hasUnexpectedShutdown = $true }
+                if ($lbl -match 'WindowsUpdateClient') { $hasWuErrors = $true }
+                if ($lbl -match 'Service Control Manager') { $hasServiceErrors = $true }
+            } elseif ($t -match 'Drivers' -and $lbl -match 'Dispositivos com erro') {
+                $recs.Add(@{ Level = "media"; Tag = "Drivers"; Text = "$val no Gerenciador de Dispositivos — reinstalar ou atualizar drivers afetados." })
+            } elseif ($t -match 'Pontos de aten' -and $val -match 'não foi verificado nem passou por uma manutenção') {
+                $recs.Add(@{ Level = "info"; Tag = "Preventiva"; Text = "Estação sem registro de manutenção recente — agendar rotina preventiva pelo TF-Toolkit." })
             }
         }
     }
+
+    if ($hasUnexpectedShutdown) {
+        $recs.Add(@{ Level = "media"; Tag = "Estabilidade"; Text = "Desligamentos/reinícios inesperados registrados nos últimos 7 dias (Kernel-Power 41 / EventLog 6008) — verificar fonte, bateria, energia ou temperatura." })
+    }
+    if ($hasWuErrors) {
+        $recs.Add(@{ Level = "info"; Tag = "Atualizações"; Text = "Falhas recentes no Windows Update — executar o reparo do Windows Update no TF-Toolkit." })
+    }
+    if ($hasServiceErrors -and -not $hasUnexpectedShutdown) {
+        $recs.Add(@{ Level = "info"; Tag = "Serviços"; Text = "Falhas de inicialização de serviços detectadas no log de eventos — revisar serviços afetados." })
+    }
+    if ($recs.Count -eq 0) {
+        $recs.Add(@{ Level = "ok"; Tag = "Saudável"; Text = "Nenhum ponto crítico identificado — manter a rotina preventiva periódica." })
+    }
+
+    $recsHtmlSb = New-Object System.Text.StringBuilder
+    [void]$recsHtmlSb.AppendLine("<div class='rec-box'><div class='rec-head'><span>Recomendações Técnicas Automáticas</span><span class='rec-cnt'>$($recs.Count) item(ns)</span></div><ul class='rec-list'>")
+    foreach ($r in $recs) {
+        $pillCls = switch ($r.Level) {
+            "alta"  { "pill-bad" }
+            "media" { "pill-warn" }
+            "ok"    { "pill-ok" }
+            default { "pill-info" }
+        }
+        [void]$recsHtmlSb.AppendLine("<li><span class='pill $pillCls'>$(& $encode $r.Tag)</span><span>$(& $encode $r.Text)</span></li>")
+    }
+    [void]$recsHtmlSb.AppendLine("</ul></div>")
+    $recsBlockHtml = $recsHtmlSb.ToString()
+
+    $metaModelText = if (-not [string]::IsNullOrWhiteSpace($kpiSerial)) { "$kpiModel · S/N: $kpiSerial" } else { $kpiModel }
 
     $scoreBadge = ""
     if ($HealthScore -ge 0) {
@@ -1095,6 +1186,24 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
   .val-ok { color: #15803d; font-weight: 600; }
   .val-warn { color: #b45309; font-weight: 600; }
 
+  /* Bloco de Recomendações Técnicas Automáticas */
+  .rec-box {
+    background: #fffaf7;
+    border: 1px solid #f0d4c6;
+    border-left: 4px solid #C4613A;
+    border-radius: 8px;
+    padding: 9px 13px;
+    margin-bottom: 14px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .rec-head { display: flex; justify-content: space-between; align-items: center; font-size: 9.8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #9a3e1b; margin-bottom: 6px; }
+  .rec-cnt { font-size: 8.5px; font-weight: 700; color: #9a3e1b; background: #fae4d8; padding: 1px 7px; border-radius: 99px; }
+  .rec-list { list-style: none; margin: 0; padding: 0; }
+  .rec-list li { display: flex; align-items: baseline; gap: 8px; padding: 2.8px 0; font-size: 9.8px; color: #1e293b; border-bottom: 1px dashed #f3dfd4; }
+  .rec-list li:last-child { border-bottom: none; }
+  .rec-list .pill { flex-shrink: 0; min-width: 74px; text-align: center; }
+
   /* Quadro Editorial de Parecer Técnico */
   .analyst-box {
     margin-top: 16px;
@@ -1126,7 +1235,7 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
   </div>
 
   <div class="meta-strip">
-    <div class="meta-cell"><span>Equipamento / Modelo</span><strong>$(& $encode $kpiModel)</strong></div>
+    <div class="meta-cell"><span>Equipamento / Service Tag</span><strong>$(& $encode $metaModelText)</strong></div>
     <div class="meta-cell"><span>Estação / Usuário</span><strong>$hostName · $userName</strong></div>
     <div class="meta-cell"><span>Data de Emissão</span><strong>$nowText</strong></div>
     <div class="meta-cell"><span>Protocolo do Laudo</span><strong>$protocolId</strong></div>
@@ -1154,6 +1263,8 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
       <div class="kpi-sub">$(& $encode $kpiSecSub)</div>
     </div>
   </div>
+
+  $recsBlockHtml
 "@)
 
     $secNum = 0

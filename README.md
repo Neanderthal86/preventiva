@@ -35,10 +35,10 @@ irm techfontes.com.br/p | iex
 
 ## O que o TF-Toolkit inclui (38 Módulos)
 
-* **Cuidar:** Checkup completo com nota de saúde, limpeza segura (temporários, caches, WinSxS, Lixeira), otimização de inicialização e performance.
-* **Consertar:** Reparo do Windows (`DISM`, `SFC`, `CHKDSK`), diagnóstico e correção de rede/DNS, drivers e Windows Update.
-* **Proteger:** Auditoria de segurança (Microsoft Defender, Firewall, BitLocker, ativação), relatórios HTML/texto e monitor opcional na bandeja com alertas proativos.
-* **Configurar:** Instalação/atualização/desinstalação de apps via `winget` (`catalog/catalog.json`), **Backup antes de formatar**, **53 ajustes reversíveis do Windows** com perfis prontos e **Histórico de Mudanças (Journal)** com desfazer.
+* **Otimização:** Checkup completo com nota de saúde, limpeza segura (temporários, caches, WinSxS, Lixeira), otimização de inicialização e performance.
+* **Ferramentas:** Reparo do Windows (`DISM`, `SFC`, `CHKDSK`), diagnóstico completo com **Relatório Técnico em PDF (para analista)** em padrão editorial corporativo (com cabeçalho/rodapé fixos, paginação, Service Tag, KPIs e recomendações automáticas), além de correção de rede/DNS e drivers.
+* **Segurança:** Auditoria de segurança (Microsoft Defender, Firewall, BitLocker, ativação), atualizações do Windows/apps e monitor opcional na bandeja com alertas proativos.
+* **Sistema:** Instalação/atualização/desinstalação de apps via `winget` (`catalog/catalog.json`), **Backup antes de formatar**, **53 ajustes reversíveis do Windows** com perfis prontos, **Histórico de Mudanças (Journal)** com desfazer e menu lateral recolhível.
 * **Três idiomas:** Português, Inglês e Espanhol (`lang/`).
 
 ---
