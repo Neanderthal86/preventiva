@@ -1,12 +1,12 @@
 ﻿<#
 .SYNOPSIS
-    Monitor do WinForge na bandeja do Windows (perto do relógio).
+    Monitor do TF-Toolkit na bandeja do Windows (perto do relógio).
 
 .DESCRIPTION
-    Fica de olho no PC e mostra um aviso quando algo pede atenção (as conferências de Get-WinForgeAgentChecks): pouco
+    Fica de olho no PC e mostra um aviso quando algo pede atenção (as conferências de Get-TFToolkitAgentChecks): pouco
     espaço ou um disco que pode falhar, proteção desligada, reinício pendente, manutenção atrasada, Windows sem suporte,
-    programas desatualizados, uma tela azul, o resultado do teste de memória e uma versão nova do WinForge. Só lê; o menu
-    do ícone abre o WinForge para acelerar, limpar ou verificar o PC. Ligue e desligue em Sobre o WinForge > Monitor na
+    programas desatualizados, uma tela azul, o resultado do teste de memória e uma versão nova do TF-Toolkit. Só lê; o menu
+    do ícone abre o TF-Toolkit para acelerar, limpar ou verificar o PC. Ligue e desligue em Sobre o TF-Toolkit > Monitor na
     bandeja.
 #>
 [CmdletBinding()]
@@ -31,7 +31,7 @@ catch {
 
 # Uma cópia só por sessão do Windows.
 $createdNew = $false
-$script:Mutex = New-Object System.Threading.Mutex($true, "Local\WinForge.Agent", [ref]$createdNew)
+$script:Mutex = New-Object System.Threading.Mutex($true, "Local\TFToolkit.Agent", [ref]$createdNew)
 
 if (-not $createdNew) {
     exit 0
@@ -61,10 +61,10 @@ catch {
     exit 1
 }
 
-$script:StopSignal = New-Object System.Threading.EventWaitHandle($false, [System.Threading.EventResetMode]::AutoReset, (Get-WinForgeAgentStopEventName))
+$script:StopSignal = New-Object System.Threading.EventWaitHandle($false, [System.Threading.EventResetMode]::AutoReset, (Get-TFToolkitAgentStopEventName))
 # Sem o estado guardado, é a primeira vez que o monitor abre neste usuário: um balão diz que ele está ali.
-$script:FirstRun = -not (Test-Path -LiteralPath (Get-WinForgeAgentStatePath) -PathType Leaf)
-$script:State = Read-WinForgeAgentState
+$script:FirstRun = -not (Test-Path -LiteralPath (Get-TFToolkitAgentStatePath) -PathType Leaf)
+$script:State = Read-TFToolkitAgentState
 $script:Alerts = @{}
 # O que o clique no último balão abre (o Id de uma ação, "" = só a janela). $null: o balão só informa, e o clique não
 # abre nada (sem isto, clicar no balão da pausa ou da pasta apagada repetia o aviso anterior).
@@ -86,49 +86,49 @@ $script:AbandonedWorkers = New-Object System.Collections.ArrayList
 
 
 function Open-AgentWindow {
-    # Abre a janela do WinForge, opcionalmente já rodando uma ação (Id da navegação).
+    # Abre a janela do TF-Toolkit, opcionalmente já rodando uma ação (Id da navegação).
     param ([string]$Action = "")
 
-    $gui = Join-Path $PSScriptRoot "WinForge.Gui.ps1"
+    $gui = Join-Path $PSScriptRoot "TF-Toolkit.Gui.ps1"
 
     if (-not (Test-Path -LiteralPath $gui -PathType Leaf)) {
         $script:LastAction = $null
-        $script:Notify.ShowBalloonTip(8000, "WinForge", (Get-WinForgeText 'A pasta do WinForge mudou de lugar ou foi apagada. Abra o WinForge na pasta nova e ligue o monitor em Sobre o WinForge > Monitor na bandeja.'), [System.Windows.Forms.ToolTipIcon]::Warning)
+        $script:Notify.ShowBalloonTip(8000, "TF-Toolkit", (Get-TFToolkitText 'A pasta do TF-Toolkit mudou de lugar ou foi apagada. Abra o TF-Toolkit na pasta nova e ligue o monitor em Sobre o TF-Toolkit > Monitor na bandeja.'), [System.Windows.Forms.ToolTipIcon]::Warning)
         return
     }
 
-    $arguments = "-NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File $(ConvertTo-WinForgeCommandLineArgument -Value $gui)"
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File $(ConvertTo-TFToolkitCommandLineArgument -Value $gui)"
     if ($Action) { $arguments += " -Action $Action" }
 
     try {
-        Start-Process -FilePath (Get-WinForgePowerShellPath) -ArgumentList $arguments -WindowStyle Hidden -ErrorAction Stop
+        Start-Process -FilePath (Get-TFToolkitPowerShellPath) -ArgumentList $arguments -WindowStyle Hidden -ErrorAction Stop
     }
     catch {
         # O clique neste balão não pode repetir o aviso anterior.
         $script:LastAction = $null
-        $script:Notify.ShowBalloonTip(5000, "WinForge", (Get-WinForgeText 'O Windows não deixou abrir o WinForge agora. Tente de novo pelo atalho do WinForge.'), [System.Windows.Forms.ToolTipIcon]::Error)
+        $script:Notify.ShowBalloonTip(5000, "TF-Toolkit", (Get-TFToolkitText 'O Windows não deixou abrir o TF-Toolkit agora. Tente de novo pelo atalho do TF-Toolkit.'), [System.Windows.Forms.ToolTipIcon]::Error)
     }
 }
 
 
 function Update-AgentTooltip {
-    # O texto ao passar o mouse (até 63 caracteres; o texto vem de Get-WinForgeAgentTooltip).
-    $script:Notify.Text = Get-WinForgeAgentTooltip -Alerts @($script:Alerts.Values) -FirstReading $script:FirstReading -PausedUntil (Get-WinForgeAgentPausedUntil)
+    # O texto ao passar o mouse (até 63 caracteres; o texto vem de Get-TFToolkitAgentTooltip).
+    $script:Notify.Text = Get-TFToolkitAgentTooltip -Alerts @($script:Alerts.Values) -FirstReading $script:FirstReading -PausedUntil (Get-TFToolkitAgentPausedUntil)
 }
 
 
 function Switch-AgentPause {
     # Pausar avisos por 24 horas / Retomar os avisos (menu do ícone). A pausa ganha um balão com até quando ela vai.
-    if (Test-WinForgeAgentPaused) {
-        Set-WinForgeAgentPause -Hours 0
+    if (Test-TFToolkitAgentPaused) {
+        Set-TFToolkitAgentPause -Hours 0
     }
     else {
-        Set-WinForgeAgentPause -Hours 24
-        $until = Get-WinForgeAgentPausedUntil
+        Set-TFToolkitAgentPause -Hours 24
+        $until = Get-TFToolkitAgentPausedUntil
 
         if ($null -ne $until) {
             $script:LastAction = $null
-            $script:Notify.ShowBalloonTip(8000, (Get-WinForgeText 'Avisos pausados'), (Get-WinForgeAgentPauseNotice -Until $until), [System.Windows.Forms.ToolTipIcon]::Info)
+            $script:Notify.ShowBalloonTip(8000, (Get-TFToolkitText 'Avisos pausados'), (Get-TFToolkitAgentPauseNotice -Until $until), [System.Windows.Forms.ToolTipIcon]::Info)
         }
     }
 
@@ -144,7 +144,7 @@ function Show-AgentAlerts {
     #>
     $now = Get-Date
     $active = @($script:Alerts.Values | Sort-Object @{ Expression = { if ($_.Level -eq "Warning") { 0 } else { 1 } } })
-    $due = @(Select-WinForgeAgentAlerts -Alerts $active -State $script:State -Now $now -Paused (Test-WinForgeAgentPaused -Now $now))
+    $due = @(Select-TFToolkitAgentAlerts -Alerts $active -State $script:State -Now $now -Paused (Test-TFToolkitAgentPaused -Now $now))
 
     if ($due.Count -gt 0) {
         $alert = $due[0]
@@ -156,7 +156,7 @@ function Show-AgentAlerts {
     }
 
     if ($script:StateDirty) {
-        Save-WinForgeAgentState -State $script:State
+        Save-TFToolkitAgentState -State $script:State
         $script:StateDirty = $false
     }
 }
@@ -164,7 +164,7 @@ function Show-AgentAlerts {
 
 function Stop-AgentIfFolderGone {
     <#
-    A pasta do WinForge mudou de lugar ou foi apagada com o monitor aberto: tira a entrada de início que aponta para este
+    A pasta do TF-Toolkit mudou de lugar ou foi apagada com o monitor aberto: tira a entrada de início que aponta para este
     script (ela só falharia a cada entrada no Windows), avisa e fecha alguns segundos depois (fechar na hora tiraria o
     ícone, e o aviso com ele). Uma entrada que já aponta para outra pasta (o monitor ligado de novo pela pasta nova) fica
     como está. Devolve se vai fechar.
@@ -174,14 +174,14 @@ function Stop-AgentIfFolderGone {
     $script:Closing = $true
 
     try {
-        [void](Remove-WinForgeAgentStaleEntry -ScriptPath $PSCommandPath)
+        [void](Remove-TFToolkitAgentStaleEntry -ScriptPath $PSCommandPath)
     }
     catch {
         Write-Verbose "Monitor: $($_.Exception.Message)"
     }
 
     $script:LastAction = $null
-    $script:Notify.ShowBalloonTip(8000, "WinForge", (Get-WinForgeText 'A pasta do WinForge mudou de lugar ou foi apagada, e o monitor vai fechar. Para ligá-lo de novo, abra o WinForge na pasta nova e use Sobre o WinForge > Monitor na bandeja.'), [System.Windows.Forms.ToolTipIcon]::Warning)
+    $script:Notify.ShowBalloonTip(8000, "TF-Toolkit", (Get-TFToolkitText 'A pasta do TF-Toolkit mudou de lugar ou foi apagada, e o monitor vai fechar. Para ligá-lo de novo, abra o TF-Toolkit na pasta nova e use Sobre o TF-Toolkit > Monitor na bandeja.'), [System.Windows.Forms.ToolTipIcon]::Warning)
 
     $script:ExitTimer = New-Object System.Windows.Forms.Timer
     $script:ExitTimer.Interval = 8000
@@ -234,7 +234,7 @@ function Start-AgentHeavyChecks {
                 }
             }
 
-            [PSCustomObject]@{ Checked = @($Ids); Alerts = @(foreach ($id in $Ids) { Get-WinForgeAgentReading -Id $id }) }
+            [PSCustomObject]@{ Checked = @($Ids); Alerts = @(foreach ($id in $Ids) { Get-TFToolkitAgentReading -Id $id }) }
         })
     [void]$shell.AddArgument($moduleRoot)
     [void]$shell.AddArgument($script:AgentModules)
@@ -308,12 +308,12 @@ function Invoke-AgentTick {
         Stop-AgentHeavyChecks
     }
 
-    $due = @(Get-WinForgeAgentDueChecks -State $script:State)
+    $due = @(Get-TFToolkitAgentDueChecks -State $script:State)
     $light = @($due | Where-Object { -not $_.Heavy } | ForEach-Object { $_.Id })
     $heavy = @($due | Where-Object { $_.Heavy } | ForEach-Object { $_.Id })
 
     if ($light.Count -gt 0) {
-        Set-AgentReadings -Checked $light -Alerts @(foreach ($id in $light) { Get-WinForgeAgentReading -Id $id })
+        Set-AgentReadings -Checked $light -Alerts @(foreach ($id in $light) { Get-TFToolkitAgentReading -Id $id })
     }
 
     if ($heavy.Count -gt 0 -and $null -eq $script:Worker) {
@@ -329,9 +329,9 @@ function Invoke-AgentTick {
 
 # --- Ícone e menu ------------------------------------------------------------------------------------------
 $script:Notify = New-Object System.Windows.Forms.NotifyIcon
-$iconPath = Get-WinForgeIconPath -Root $PSScriptRoot
+$iconPath = Get-TFToolkitIconPath -Root $PSScriptRoot
 $script:Notify.Icon = $(if ($iconPath) { New-Object System.Drawing.Icon($iconPath) } else { [System.Drawing.SystemIcons]::Application })
-$script:Notify.Text = "WinForge"
+$script:Notify.Text = "TF-Toolkit"
 
 $script:Menu = New-Object System.Windows.Forms.ContextMenuStrip
 $script:BoldFont = $null
@@ -340,7 +340,7 @@ try { $script:WarningImage = [System.Drawing.SystemIcons]::Warning.ToBitmap() } 
 
 
 function Add-AgentMenuItem {
-    # Um item do menu do ícone. Sem -OnClick, o clique abre a janela do WinForge com a ação -Action ("" = só a janela).
+    # Um item do menu do ícone. Sem -OnClick, o clique abre a janela do TF-Toolkit com a ação -Action ("" = só a janela).
     param (
         [string]$Text,
         [string]$Action = "",
@@ -372,7 +372,7 @@ function Add-AgentMenuItem {
 
 function Update-AgentMenu {
     <#
-    Monta o menu do ícone de novo a cada vez que ele abre: Abrir o WinForge; um item por aviso aberto (o mais grave
+    Monta o menu do ícone de novo a cada vez que ele abre: Abrir o TF-Toolkit; um item por aviso aberto (o mais grave
     primeiro, com o ícone de alerta), que abre a tela que resolve, ou "Nada pedindo atenção"; Verificar o PC, Acelerar
     agora e Limpeza rápida; pausar ou retomar; Configurar o monitor; e fechar, dizendo até quando.
     #>
@@ -380,15 +380,15 @@ function Update-AgentMenu {
     $script:Menu.Items.Clear()
     foreach ($entry in $old) { $entry.Dispose() }
 
-    Add-AgentMenuItem -Text (Get-WinForgeText 'Abrir o WinForge') -Bold
+    Add-AgentMenuItem -Text (Get-TFToolkitText 'Abrir o TF-Toolkit') -Bold
 
-    $alerts = @(Get-WinForgeAgentSortedAlerts -Alerts @($script:Alerts.Values))
+    $alerts = @(Get-TFToolkitAgentSortedAlerts -Alerts @($script:Alerts.Values))
 
     if (-not $script:FirstReading) {
-        Add-AgentMenuItem -Text (Get-WinForgeText 'Conferindo o PC...') -Disabled
+        Add-AgentMenuItem -Text (Get-TFToolkitText 'Conferindo o PC...') -Disabled
     }
     elseif ($alerts.Count -eq 0) {
-        Add-AgentMenuItem -Text (Get-WinForgeText 'Nada pedindo atenção') -Disabled
+        Add-AgentMenuItem -Text (Get-TFToolkitText 'Nada pedindo atenção') -Disabled
     }
     else {
         foreach ($alert in $alerts) {
@@ -397,19 +397,19 @@ function Update-AgentMenu {
     }
 
     [void]$script:Menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
-    Add-AgentMenuItem -Text (Get-WinForgeText 'Verificar o PC') -Action "maintenance.checkup"
-    Add-AgentMenuItem -Text (Get-WinForgeText 'Acelerar agora') -Action "performance.boost"
-    Add-AgentMenuItem -Text (Get-WinForgeText 'Limpeza rápida') -Action "cleanup.quick"
+    Add-AgentMenuItem -Text (Get-TFToolkitText 'Verificar o PC') -Action "maintenance.checkup"
+    Add-AgentMenuItem -Text (Get-TFToolkitText 'Acelerar agora') -Action "performance.boost"
+    Add-AgentMenuItem -Text (Get-TFToolkitText 'Limpeza rápida') -Action "cleanup.quick"
     [void]$script:Menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
 
-    Add-AgentMenuItem -Text $(if (Test-WinForgeAgentPaused) { (Get-WinForgeText 'Retomar os avisos') } else { (Get-WinForgeText 'Pausar avisos por 24 horas') }) -OnClick { Switch-AgentPause }
-    Add-AgentMenuItem -Text (Get-WinForgeText 'Configurar o monitor...') -Action "app.monitor"
+    Add-AgentMenuItem -Text $(if (Test-TFToolkitAgentPaused) { (Get-TFToolkitText 'Retomar os avisos') } else { (Get-TFToolkitText 'Pausar avisos por 24 horas') }) -OnClick { Switch-AgentPause }
+    Add-AgentMenuItem -Text (Get-TFToolkitText 'Configurar o monitor...') -Action "app.monitor"
 
     # Fechar só vale até a próxima entrada no Windows quando o monitor está ligado para abrir com ele.
     $enabled = $false
-    try { $enabled = Test-WinForgeAgentEnabled } catch { Write-Verbose "Monitor: $($_.Exception.Message)" }
+    try { $enabled = Test-TFToolkitAgentEnabled } catch { Write-Verbose "Monitor: $($_.Exception.Message)" }
 
-    Add-AgentMenuItem -Text $(if ($enabled) { (Get-WinForgeText 'Fechar até a próxima entrada no Windows') } else { (Get-WinForgeText 'Fechar o monitor') }) -OnClick { [System.Windows.Forms.Application]::Exit() }
+    Add-AgentMenuItem -Text $(if ($enabled) { (Get-TFToolkitText 'Fechar até a próxima entrada no Windows') } else { (Get-TFToolkitText 'Fechar o monitor') }) -OnClick { [System.Windows.Forms.Application]::Exit() }
 }
 
 
@@ -438,8 +438,8 @@ Update-AgentTooltip
 # A primeira vez: o ícone costuma ir para a área dos ocultos, e o monitor ficaria calado até algo pedir atenção.
 if ($script:FirstRun) {
     $script:LastAction = $null
-    $script:Notify.ShowBalloonTip(10000, (Get-WinForgeText 'Monitor do WinForge ligado'), (Get-WinForgeText 'O WinForge vai avisar aqui quando algo pedir atenção. Clique com o botão direito no ícone para ver as opções.'), [System.Windows.Forms.ToolTipIcon]::Info)
-    Save-WinForgeAgentState -State $script:State
+    $script:Notify.ShowBalloonTip(10000, (Get-TFToolkitText 'Monitor do TF-Toolkit ligado'), (Get-TFToolkitText 'O TF-Toolkit vai avisar aqui quando algo pedir atenção. Clique com o botão direito no ícone para ver as opções.'), [System.Windows.Forms.ToolTipIcon]::Info)
+    Save-TFToolkitAgentState -State $script:State
 }
 
 # A primeira leitura espera um pouco (o Windows acabou de entrar); depois, uma volta a cada 15 segundos (cada
@@ -453,7 +453,7 @@ $timer.Add_Tick({
     })
 $timer.Start()
 
-# O pedido de fechar (Sobre o WinForge > Monitor na bandeja > Desligar) é atendido em meio segundo, a tempo de o monitor
+# O pedido de fechar (Sobre o TF-Toolkit > Monitor na bandeja > Desligar) é atendido em meio segundo, a tempo de o monitor
 # sair sozinho, guardar o estado e tirar o ícone, antes de quem pediu desistir de esperar e encerrar o processo.
 $stopTimer = New-Object System.Windows.Forms.Timer
 $stopTimer.Interval = 500

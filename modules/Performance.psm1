@@ -1,6 +1,6 @@
 ﻿# Desempenho: liberar memória, ver o que está pesando agora e "Acelerar agora" (memória + temporários, num clique).
 #
-# Sobre a memória, o WinForge é honesto: o Windows usa a memória livre como cache e a recupera sozinho. Liberar ajuda
+# Sobre a memória, o TF-Toolkit é honesto: o Windows usa a memória livre como cache e a recupera sozinho. Liberar ajuda
 # antes de abrir algo pesado (um jogo, um editor de vídeo) num PC com pouca memória; o efeito some aos poucos, conforme
 # os programas voltam a usar o que precisam. A tela mostra quanto foi liberado de fato, medido antes e depois.
 # O cache de arquivos (a lista de espera do Windows) não é esvaziado: ele já conta como memória disponível, e jogá-lo
@@ -12,9 +12,9 @@
 # ---------------------------------------------------------------------------
 
 # Abaixo disto, a memória liberada (e, no Acelerar agora, os temporários apagados) é "quase nada".
-$script:WinForgeMemoryLittleBytes = 50MB
+$script:TFToolkitMemoryLittleBytes = 50MB
 
-function Get-WinForgeMemoryUsage {
+function Get-TFToolkitMemoryUsage {
     # Total, disponível e em uso (bytes), como o Gerenciador de Tarefas mostra. $null sem leitura. -OperatingSystem: a
     # leitura do Win32_OperatingSystem que quem chama já fez (a página usa a mesma para o tempo ligado).
     param (
@@ -32,8 +32,8 @@ function Get-WinForgeMemoryUsage {
         }
     }
 
-    $total = [double](Get-WinForgeJsonValue -Object $os -Name "TotalVisibleMemorySize" -Default 0) * 1KB
-    $available = [double](Get-WinForgeJsonValue -Object $os -Name "FreePhysicalMemory" -Default 0) * 1KB
+    $total = [double](Get-TFToolkitJsonValue -Object $os -Name "TotalVisibleMemorySize" -Default 0) * 1KB
+    $available = [double](Get-TFToolkitJsonValue -Object $os -Name "FreePhysicalMemory" -Default 0) * 1KB
 
     if ($total -le 0) { return $null }
 
@@ -46,7 +46,7 @@ function Get-WinForgeMemoryUsage {
 }
 
 
-function Test-WinForgeMemoryHigh {
+function Test-TFToolkitMemoryHigh {
     # Memória em uso alta: a partir de 85%. Uma regra só para a página, a lista dos que pesam e o Verificar o PC.
     param ([Parameter(Mandatory)]$Memory)
 
@@ -54,7 +54,7 @@ function Test-WinForgeMemoryHigh {
 }
 
 
-function Get-WinForgePerformancePageStatus {
+function Get-TFToolkitPerformancePageStatus {
     <#
     O resumo no alto da página Desempenho: a memória em uso e há quanto tempo o PC está ligado, de uma leitura só do
     Windows, imediata. Cada linha tem Label, Text, Level (Normal | Warn | Muted) e Opens. Memória a partir de 85% e o PC
@@ -64,43 +64,43 @@ function Get-WinForgePerformancePageStatus {
     - o tempo ligado abre Tempo ligado e energia, que explica por que desligar não zera esse tempo (com a Inicialização
       Rápida, só reiniciar zera): quem desliga o PC toda noite e lê "9 dias" acharia que é erro.
     #>
-    $memoryLabel = (Get-WinForgeText 'Memória em uso')
+    $memoryLabel = (Get-TFToolkitText 'Memória em uso')
     $os = $null
 
     try {
         $os = Get-CimInstance -ClassName Win32_OperatingSystem -OperationTimeoutSec 15 -ErrorAction Stop
     }
     catch {
-        return @([PSCustomObject]@{ Label = $memoryLabel; Text = (Get-WinForgeText 'não foi possível ler'); Level = "Muted"; Opens = "" })
+        return @([PSCustomObject]@{ Label = $memoryLabel; Text = (Get-TFToolkitText 'não foi possível ler'); Level = "Muted"; Opens = "" })
     }
 
-    $memory = Get-WinForgeMemoryUsage -OperatingSystem $os
-    $row = [PSCustomObject]@{ Label = $memoryLabel; Text = (Get-WinForgeText 'não foi possível ler'); Level = "Muted"; Opens = "" }
+    $memory = Get-TFToolkitMemoryUsage -OperatingSystem $os
+    $row = [PSCustomObject]@{ Label = $memoryLabel; Text = (Get-TFToolkitText 'não foi possível ler'); Level = "Muted"; Opens = "" }
 
     if ($null -ne $memory) {
-        $row.Text = (Get-WinForgeText '{0} de {1} ({2}%)' "$(Format-WinForgeBytes -Bytes $memory.Used)" "$(Format-WinForgeBytes -Bytes $memory.Total)" "$($memory.Percent)")
+        $row.Text = (Get-TFToolkitText '{0} de {1} ({2}%)' "$(Format-TFToolkitBytes -Bytes $memory.Used)" "$(Format-TFToolkitBytes -Bytes $memory.Total)" "$($memory.Percent)")
         $row.Level = "Normal"
 
-        if (Test-WinForgeMemoryHigh -Memory $memory) {
-            $row.Text = (Get-WinForgeText '{0} · alta' "$($row.Text)")
+        if (Test-TFToolkitMemoryHigh -Memory $memory) {
+            $row.Text = (Get-TFToolkitText '{0} · alta' "$($row.Text)")
             $row.Level = "Warn"
             $row.Opens = "performance.processes"
         }
     }
 
     $rows = @($row)
-    $boot = Get-WinForgeJsonValue -Object $os -Name "LastBootUpTime" -Default $null
+    $boot = Get-TFToolkitJsonValue -Object $os -Name "LastBootUpTime" -Default $null
 
     if ($boot -is [datetime] -and $boot.Year -ge 2000) {
-        $uptime = Get-WinForgeUptimeText -LastBootTime $boot
+        $uptime = Get-TFToolkitUptimeText -LastBootTime $boot
 
         # Um boot "no futuro" (o relógio acertado depois de ligar) não tem tempo ligado que se possa dizer: a linha sai,
         # como quando o Windows não informa a hora.
-        if ($uptime -ne (Get-WinForgeText 'Desconhecido')) {
-            $row = [PSCustomObject]@{ Label = (Get-WinForgeText 'Ligado há'); Text = $uptime; Level = "Normal"; Opens = "" }
+        if ($uptime -ne (Get-TFToolkitText 'Desconhecido')) {
+            $row = [PSCustomObject]@{ Label = (Get-TFToolkitText 'Ligado há'); Text = $uptime; Level = "Normal"; Opens = "" }
 
-            if (Test-WinForgeLongUptime -LastBootTime $boot) {
-                $row.Text = (Get-WinForgeText '{0} · reiniciar deixa o Windows mais leve' "$uptime")
+            if (Test-TFToolkitLongUptime -LastBootTime $boot) {
+                $row.Text = (Get-TFToolkitText '{0} · reiniciar deixa o Windows mais leve' "$uptime")
                 $row.Level = "Warn"
                 $row.Opens = "diagnostics.startup"
             }
@@ -113,16 +113,16 @@ function Get-WinForgePerformancePageStatus {
 }
 
 
-function Initialize-WinForgeMemoryNative {
+function Initialize-TFToolkitMemoryNative {
     # A chamada do Windows que esvazia a memória de trabalho dos processos.
-    if ($null -ne ('WinForgeMemoryNative' -as [type])) { return }
+    if ($null -ne ('TFToolkitMemoryNative' -as [type])) { return }
 
     Add-Type -TypeDefinition @'
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-public static class WinForgeMemoryNative
+public static class TFToolkitMemoryNative
 {
     [DllImport("psapi.dll")]
     private static extern bool EmptyWorkingSet(IntPtr process);
@@ -155,7 +155,7 @@ public static class WinForgeMemoryNative
         {
             try
             {
-                // O próprio WinForge fica: a memória dele voltaria na hora de desenhar o resultado, e a conta mentiria.
+                // O próprio TF-Toolkit fica: a memória dele voltaria na hora de desenhar o resultado, e a conta mentiria.
                 if (process.SessionId != session || process.Id == self) { continue; }
 
                 IntPtr handle = OpenProcess(ProcessAccess, false, process.Id);
@@ -182,30 +182,30 @@ public static class WinForgeMemoryNative
 }
 
 
-function Invoke-WinForgeMemoryTrim {
-    # Tira da memória as páginas dos processos da sessão da pessoa (os que o Windows deixa), menos o próprio WinForge.
+function Invoke-TFToolkitMemoryTrim {
+    # Tira da memória as páginas dos processos da sessão da pessoa (os que o Windows deixa), menos o próprio TF-Toolkit.
     # Devolve quantos processos.
-    Initialize-WinForgeMemoryNative
+    Initialize-TFToolkitMemoryNative
 
-    return [WinForgeMemoryNative]::TrimWorkingSets()
+    return [TFToolkitMemoryNative]::TrimWorkingSets()
 }
 
 
-function Optimize-WinForgeMemory {
+function Optimize-TFToolkitMemory {
     <#
-    Libera memória e mede o efeito: Before e After (Get-WinForgeMemoryUsage) e Freed (bytes a menos em uso; nunca
+    Libera memória e mede o efeito: Before e After (Get-TFToolkitMemoryUsage) e Freed (bytes a menos em uso; nunca
     negativo). Espera um instante antes de medir de novo, para o Windows contabilizar.
     #>
     param (
         [int]$SettleMilliseconds = 1500
     )
 
-    $before = Get-WinForgeMemoryUsage
-    [void](Invoke-WinForgeMemoryTrim)
+    $before = Get-TFToolkitMemoryUsage
+    [void](Invoke-TFToolkitMemoryTrim)
 
     if ($SettleMilliseconds -gt 0) { Start-Sleep -Milliseconds $SettleMilliseconds }
 
-    $after = Get-WinForgeMemoryUsage
+    $after = Get-TFToolkitMemoryUsage
     $measured = ($null -ne $before -and $null -ne $after)
     $freed = $(if ($measured) { [Math]::Max([double]0, [double]$before.Used - [double]$after.Used) } else { 0 })
 
@@ -215,67 +215,67 @@ function Optimize-WinForgeMemory {
 }
 
 
-function Test-WinForgeMemoryFreedLittle {
+function Test-TFToolkitMemoryFreedLittle {
     # Menos de 50 MB liberados é "quase nada": a memória já estava folgada. Sem a medição, não se sabe.
     param ([Parameter(Mandatory)]$Optimization)
 
-    if (-not [bool](Get-WinForgeJsonValue -Object $Optimization -Name "Measured" -Default $true)) { return $false }
+    if (-not [bool](Get-TFToolkitJsonValue -Object $Optimization -Name "Measured" -Default $true)) { return $false }
 
-    return ([double]$Optimization.Freed -lt $script:WinForgeMemoryLittleBytes)
+    return ([double]$Optimization.Freed -lt $script:TFToolkitMemoryLittleBytes)
 }
 
 
-function Test-WinForgeMemoryStillHigh {
-    # Verdadeiro quando, medida depois de liberar, a memória em uso continua alta (Test-WinForgeMemoryHigh): o que pesa são
+function Test-TFToolkitMemoryStillHigh {
+    # Verdadeiro quando, medida depois de liberar, a memória em uso continua alta (Test-TFToolkitMemoryHigh): o que pesa são
     # os programas abertos, e esvaziar a memória deles não resolve. Sem a medição, falso (não se sabe).
     param ([Parameter(Mandatory)]$Optimization)
 
-    if (-not [bool](Get-WinForgeJsonValue -Object $Optimization -Name "Measured" -Default $true)) { return $false }
+    if (-not [bool](Get-TFToolkitJsonValue -Object $Optimization -Name "Measured" -Default $true)) { return $false }
 
-    $after = Get-WinForgeJsonValue -Object $Optimization -Name "After" -Default $null
+    $after = Get-TFToolkitJsonValue -Object $Optimization -Name "After" -Default $null
 
-    return ($null -ne $after -and (Test-WinForgeMemoryHigh -Memory $after))
+    return ($null -ne $after -and (Test-TFToolkitMemoryHigh -Memory $after))
 }
 
 
-function Format-WinForgeMemoryFreedText {
-    # "2 GB de memória liberados"; quase nada (Test-WinForgeMemoryFreedLittle), que a memória já estava folgada; sem a
+function Format-TFToolkitMemoryFreedText {
+    # "2 GB de memória liberados"; quase nada (Test-TFToolkitMemoryFreedLittle), que a memória já estava folgada; sem a
     # leitura do Windows antes e depois, que a memória foi liberada sem medir. Com a memória ainda alta depois, nunca
     # "folgada": a frase diz que ela continua alta.
     param ([Parameter(Mandatory)]$Optimization)
 
-    if (-not [bool](Get-WinForgeJsonValue -Object $Optimization -Name "Measured" -Default $true)) {
-        return (Get-WinForgeText 'memória liberada (o Windows não informou quanto)')
+    if (-not [bool](Get-TFToolkitJsonValue -Object $Optimization -Name "Measured" -Default $true)) {
+        return (Get-TFToolkitText 'memória liberada (o Windows não informou quanto)')
     }
 
-    $high = Test-WinForgeMemoryStillHigh -Optimization $Optimization
+    $high = Test-TFToolkitMemoryStillHigh -Optimization $Optimization
 
-    if (Test-WinForgeMemoryFreedLittle -Optimization $Optimization) {
-        if ($high) { return (Get-WinForgeText 'quase nada a liberar: a memória continua alta ({0}%)' "$($Optimization.After.Percent)") }
-        return (Get-WinForgeText 'a memória já estava folgada (quase nada a liberar)')
+    if (Test-TFToolkitMemoryFreedLittle -Optimization $Optimization) {
+        if ($high) { return (Get-TFToolkitText 'quase nada a liberar: a memória continua alta ({0}%)' "$($Optimization.After.Percent)") }
+        return (Get-TFToolkitText 'a memória já estava folgada (quase nada a liberar)')
     }
 
-    $text = (Get-WinForgeText '{0} de memória liberados' "$(Format-WinForgeBytes -Bytes $Optimization.Freed)")
-    if ($high) { $text += (Get-WinForgeText '; a memória continua alta ({0}%)' "$($Optimization.After.Percent)") }
+    $text = (Get-TFToolkitText '{0} de memória liberados' "$(Format-TFToolkitBytes -Bytes $Optimization.Freed)")
+    if ($high) { $text += (Get-TFToolkitText '; a memória continua alta ({0}%)' "$($Optimization.After.Percent)") }
 
     return $text
 }
 
 
-function Write-WinForgeMemoryStillHighNotice {
+function Write-TFToolkitMemoryStillHighNotice {
     # O aviso de que a memória continua alta depois de liberar: um aviso sobre o PC, que não conta no desfecho, com o lugar
     # que resolve.
     param ([Parameter(Mandatory)]$Optimization)
 
-    if (-not (Test-WinForgeMemoryStillHigh -Optimization $Optimization)) { return $false }
+    if (-not (Test-TFToolkitMemoryStillHigh -Optimization $Optimization)) { return $false }
 
-    Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'A memória continua alta ({0}%): o que pesa são os programas abertos; veja Desempenho > Programas pesando agora.' "$($Optimization.After.Percent)")
+    Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'A memória continua alta ({0}%): o que pesa são os programas abertos; veja Desempenho > Programas pesando agora.' "$($Optimization.After.Percent)")
 
     return $true
 }
 
 
-function Set-WinForgeMemoryStillHighView {
+function Set-TFToolkitMemoryStillHighView {
     <#
     A faixa de quando a memória continua alta depois de liberar: o título diz isso (amarelo), a frase diz que o peso são
     os programas abertos (com o que saiu, quando saiu algo que conte, e $Extra no fim) e o botão abre Programas pesando
@@ -289,38 +289,38 @@ function Set-WinForgeMemoryStillHighView {
     )
 
     $note = $(
-        if (Test-WinForgeMemoryFreedLittle -Optimization $Optimization) { (Get-WinForgeText 'Liberar quase não ajudou: o que pesa são os programas abertos.') }
-        else { (Get-WinForgeText '{0} liberados, mas o que pesa são os programas abertos.' "$Freed") }
+        if (Test-TFToolkitMemoryFreedLittle -Optimization $Optimization) { (Get-TFToolkitText 'Liberar quase não ajudou: o que pesa são os programas abertos.') }
+        else { (Get-TFToolkitText '{0} liberados, mas o que pesa são os programas abertos.' "$Freed") }
     )
     if ($Extra) { $note += " $Extra" }
 
-    return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'A memória continua alta ({0}%)' "$($Optimization.After.Percent)") -Note $note -Tone Warn `
-            -Next "performance.processes" -NextLabel (Get-WinForgeText 'Ver o que está pesando'))
+    return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'A memória continua alta ({0}%)' "$($Optimization.After.Percent)") -Note $note -Tone Warn `
+            -Next "performance.processes" -NextLabel (Get-TFToolkitText 'Ver o que está pesando'))
 }
 
 
-function Write-WinForgeMemoryFacts {
+function Write-TFToolkitMemoryFacts {
     param ([Parameter(Mandatory)]$Optimization)
 
     if ($null -ne $Optimization.Before -and $null -ne $Optimization.After) {
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Memória em uso antes') -Value (Get-WinForgeText '{0} de {1} ({2}%)' "$(Format-WinForgeBytes -Bytes $Optimization.Before.Used)" "$(Format-WinForgeBytes -Bytes $Optimization.Before.Total)" "$($Optimization.Before.Percent)")
-        $high = Test-WinForgeMemoryStillHigh -Optimization $Optimization
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Memória em uso agora') -Value "$(Format-WinForgeBytes -Bytes $Optimization.After.Used) ($($Optimization.After.Percent)%)" -Level $(if ($high) { "Warn" } else { "Normal" })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Memória em uso antes') -Value (Get-TFToolkitText '{0} de {1} ({2}%)' "$(Format-TFToolkitBytes -Bytes $Optimization.Before.Used)" "$(Format-TFToolkitBytes -Bytes $Optimization.Before.Total)" "$($Optimization.Before.Percent)")
+        $high = Test-TFToolkitMemoryStillHigh -Optimization $Optimization
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Memória em uso agora') -Value "$(Format-TFToolkitBytes -Bytes $Optimization.After.Used) ($($Optimization.After.Percent)%)" -Level $(if ($high) { "Warn" } else { "Normal" })
         # Verde só quando liberou algo que faça diferença; "0 B" em verde pareceria uma conquista. "Folgada" só quando a
         # memória de fato está folgada: alta, o pouco que saiu é dos programas abertos que estão usando a memória.
-        $freedValue = Format-WinForgeBytes -Bytes $Optimization.Freed
-        if ((Test-WinForgeMemoryFreedLittle -Optimization $Optimization) -and -not $high) { $freedValue = (Get-WinForgeText '{0} (a memória já estava folgada)' "$freedValue") }
+        $freedValue = Format-TFToolkitBytes -Bytes $Optimization.Freed
+        if ((Test-TFToolkitMemoryFreedLittle -Optimization $Optimization) -and -not $high) { $freedValue = (Get-TFToolkitText '{0} (a memória já estava folgada)' "$freedValue") }
 
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Liberada') -Value $freedValue -Level $(if (-not (Test-WinForgeMemoryFreedLittle -Optimization $Optimization) -and -not $high) { "Ok" } else { "Normal" })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Liberada') -Value $freedValue -Level $(if (-not (Test-TFToolkitMemoryFreedLittle -Optimization $Optimization) -and -not $high) { "Ok" } else { "Normal" })
     }
     else {
         # Sem a leitura de antes e depois, "0 B" diria que nada saiu; o esvaziamento aconteceu, só não foi medido.
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Liberada') -Value (Get-WinForgeText 'não foi possível medir')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Liberada') -Value (Get-TFToolkitText 'não foi possível medir')
     }
 }
 
 
-function Set-WinForgeMemoryOptimizationView {
+function Set-TFToolkitMemoryOptimizationView {
     <#
     A faixa de Liberar memória: quanto saiu no título, com a memória de agora e de antes embaixo. Folgada ou ainda alta,
     o título diz isso (alta, em amarelo e com o botão para o que está pesando). Quando a faixa já diz tudo, o resumo (as
@@ -331,79 +331,79 @@ function Set-WinForgeMemoryOptimizationView {
         [Parameter(Mandatory)]$Optimization
     )
 
-    if (-not [bool](Get-WinForgeJsonValue -Object $Optimization -Name "Measured" -Default $true)) {
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'Memória liberada') -Note (Get-WinForgeText 'O Windows não informou quanto.'))
+    if (-not [bool](Get-TFToolkitJsonValue -Object $Optimization -Name "Measured" -Default $true)) {
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'Memória liberada') -Note (Get-TFToolkitText 'O Windows não informou quanto.'))
     }
 
-    $freed = (Get-WinForgeText '{0} de memória' "$(Format-WinForgeBytes -Bytes $Optimization.Freed)")
+    $freed = (Get-TFToolkitText '{0} de memória' "$(Format-TFToolkitBytes -Bytes $Optimization.Freed)")
 
-    if (Test-WinForgeMemoryStillHigh -Optimization $Optimization) {
-        return (Set-WinForgeMemoryStillHighView -Result $Result -Optimization $Optimization -Freed $freed)
+    if (Test-TFToolkitMemoryStillHigh -Optimization $Optimization) {
+        return (Set-TFToolkitMemoryStillHighView -Result $Result -Optimization $Optimization -Freed $freed)
     }
 
     # A memória de agora e de antes, quando o Windows informou as duas.
-    $after = Get-WinForgeJsonValue -Object $Optimization -Name "After" -Default $null
-    $before = Get-WinForgeJsonValue -Object $Optimization -Name "Before" -Default $null
-    $now = $(if ($null -ne $after) { (Get-WinForgeText 'Memória em uso: {0}%' "$($after.Percent)") } else { "" })
+    $after = Get-TFToolkitJsonValue -Object $Optimization -Name "After" -Default $null
+    $before = Get-TFToolkitJsonValue -Object $Optimization -Name "Before" -Default $null
+    $now = $(if ($null -ne $after) { (Get-TFToolkitText 'Memória em uso: {0}%' "$($after.Percent)") } else { "" })
 
-    if (Test-WinForgeMemoryFreedLittle -Optimization $Optimization) {
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'A memória já estava folgada') -Note $(if ($now) { (Get-WinForgeText '{0}; quase nada a liberar.' "$now") } else { (Get-WinForgeText 'Quase nada a liberar.') }) -HideSummary)
+    if (Test-TFToolkitMemoryFreedLittle -Optimization $Optimization) {
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'A memória já estava folgada') -Note $(if ($now) { (Get-TFToolkitText '{0}; quase nada a liberar.' "$now") } else { (Get-TFToolkitText 'Quase nada a liberar.') }) -HideSummary)
     }
 
-    $lead = $(if ($now -and $null -ne $before) { (Get-WinForgeText '{0} (antes, {1}%). ' "$now" "$($before.Percent)") } else { "" })
+    $lead = $(if ($now -and $null -ne $before) { (Get-TFToolkitText '{0} (antes, {1}%). ' "$now" "$($before.Percent)") } else { "" })
 
-    return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText '{0} liberados' "$freed") -Note (Get-WinForgeText '{0}Ajuda antes de abrir algo pesado; o efeito some aos poucos.' "${lead}") -HideSummary)
+    return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText '{0} liberados' "$freed") -Note (Get-TFToolkitText '{0}Ajuda antes de abrir algo pesado; o efeito some aos poucos.' "${lead}") -HideSummary)
 }
 
 
-function Invoke-WinForgeMemoryOptimization {
-    $title = (Get-WinForgeText 'Liberar memória')
+function Invoke-TFToolkitMemoryOptimization {
+    $title = (Get-TFToolkitText 'Liberar memória')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'esvaziando a memória que os programas não estão usando')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'esvaziando a memória que os programas não estão usando')
 
         try {
-            $optimization = Optimize-WinForgeMemory
+            $optimization = Optimize-TFToolkitMemory
         }
         finally {
             Write-Progress -Activity $title -Completed
         }
 
-        Write-WinForgeMemoryFacts -Optimization $optimization
+        Write-TFToolkitMemoryFacts -Optimization $optimization
         Write-Host ""
 
         # Os programas abertos recarregam o que voltarem a usar: o efeito some aos poucos. O cache de arquivos do Windows
         # fica como está: ele já conta como memória disponível e faz os programas abrirem mais rápido. Com a memória ainda
         # alta, o conselho é outro: o que pesa são os programas abertos.
-        if (-not (Write-WinForgeMemoryStillHighNotice -Optimization $optimization)) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Ajuda antes de abrir algo pesado; o efeito some aos poucos.')
+        if (-not (Write-TFToolkitMemoryStillHighNotice -Optimization $optimization)) {
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Ajuda antes de abrir algo pesado; o efeito some aos poucos.')
         }
 
-        $final = New-WinForgeResult -Kind Ok -Detail (Format-WinForgeMemoryFreedText -Optimization $optimization) -Title $title -Data @{ FreedBytes = [int64]$optimization.Freed }
-        [void](Set-WinForgeMemoryOptimizationView -Result $final -Optimization $optimization)
+        $final = New-TFToolkitResult -Kind Ok -Detail (Format-TFToolkitMemoryFreedText -Optimization $optimization) -Title $title -Data @{ FreedBytes = [int64]$optimization.Freed }
+        [void](Set-TFToolkitMemoryOptimizationView -Result $final -Optimization $optimization)
     }
     catch {
         # A mensagem do .NET (DLL, ponto de entrada, modo de linguagem) não diz nada para a pessoa; fica no detalhe técnico.
         Write-Verbose "Liberar memória: $($_.Exception.Message)"
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível liberar a memória: o Windows não atendeu ao pedido.')
-        $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o Windows não atendeu ao pedido de liberar a memória') -Title $title
-        [void](Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'A memória não foi liberada') -Note "$(Get-WinForgeText 'O Windows não atendeu ao pedido').")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível liberar a memória: o Windows não atendeu ao pedido.')
+        $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o Windows não atendeu ao pedido de liberar a memória') -Title $title
+        [void](Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'A memória não foi liberada') -Note "$(Get-TFToolkitText 'O Windows não atendeu ao pedido').")
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
-function Get-WinForgeBoostTempState {
+function Get-TFToolkitBoostTempState {
     <#
     O que aconteceu com os temporários no Acelerar agora, numa palavra só, para o resumo e a faixa dizerem a mesma coisa
     (antes, cada um decidia com as suas contas): Done (saiu algo: Bytes acima de zero), None (nada a apagar, ou o que saiu
     estava vazio), InUse (havia temporários antigos, mas todos em uso: o Warning da limpeza da pasta,
-    Invoke-WinForgeFolderCleanup) e Failed (a pasta não pôde ser limpa). Sem o resultado da limpeza, pelos bytes.
+    Invoke-TFToolkitFolderCleanup) e Failed (a pasta não pôde ser limpa). Sem o resultado da limpeza, pelos bytes.
     #>
     param (
         $Temp = $null,
@@ -420,11 +420,11 @@ function Get-WinForgeBoostTempState {
 }
 
 
-function Set-WinForgeBoostView {
+function Set-TFToolkitBoostView {
     <#
     A faixa do Acelerar agora. O título diz o que importa: quanto de memória saiu (ou os temporários, quando eles foram o
     ganho), que o PC já estava leve, que a memória continua alta (amarelo, com o botão para o que está pesando) ou que ela
-    não foi liberada; embaixo vêm a memória de agora e de antes e os temporários (Get-WinForgeBoostTempState). O que deu
+    não foi liberada; embaixo vêm a memória de agora e de antes e os temporários (Get-TFToolkitBoostTempState). O que deu
     errado com os temporários e a conta diferente vão no fim da frase, e aí o resumo fica à vista. Devolve o próprio
     resultado.
     #>
@@ -436,20 +436,20 @@ function Set-WinForgeBoostView {
         [bool]$OtherAccount = $false
     )
 
-    $tempText = Format-WinForgeBytes -Bytes $TempBytes
-    $tempState = Get-WinForgeBoostTempState -Temp $Temp -Bytes $TempBytes
+    $tempText = Format-TFToolkitBytes -Bytes $TempBytes
+    $tempState = Get-TFToolkitBoostTempState -Temp $Temp -Bytes $TempBytes
 
     # Os temporários em uso não são "nenhum temporário para apagar": eles existem, só não puderam sair.
     $tempPart = switch ($tempState) {
-        "Done" { (Get-WinForgeText '{0} de temporários apagados' "$tempText") }
-        "None" { (Get-WinForgeText 'nenhum temporário para apagar') }
-        "InUse" { (Get-WinForgeText 'os temporários estavam em uso e ficaram') }
+        "Done" { (Get-TFToolkitText '{0} de temporários apagados' "$tempText") }
+        "None" { (Get-TFToolkitText 'nenhum temporário para apagar') }
+        "InUse" { (Get-TFToolkitText 'os temporários estavam em uso e ficaram') }
         default { "" }
     }
 
     $extra = @(
-        if ($tempState -eq "Failed") { (Get-WinForgeText 'Os temporários não foram apagados: {0}.' "$(([string]$Temp.Detail).Trim().TrimEnd('.'))") }
-        if ($OtherAccount) { (Get-WinForgeText 'Os temporários apagados foram os da conta com que o WinForge está aberto.') }
+        if ($tempState -eq "Failed") { (Get-TFToolkitText 'Os temporários não foram apagados: {0}.' "$(([string]$Temp.Detail).Trim().TrimEnd('.'))") }
+        if ($OtherAccount) { (Get-TFToolkitText 'Os temporários apagados foram os da conta com que o TF-Toolkit está aberto.') }
     ) -join " "
 
     # A frase: a parte principal, os temporários (quando não estão no título) e o que deu errado.
@@ -465,134 +465,134 @@ function Set-WinForgeBoostView {
     $hide = ([string]$Result.Kind -eq "Ok")
 
     if ($null -eq $Optimization) {
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'A memória não foi liberada') -Note (& $join (Get-WinForgeText 'O Windows não atendeu ao pedido') $tempPart))
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'A memória não foi liberada') -Note (& $join (Get-TFToolkitText 'O Windows não atendeu ao pedido') $tempPart))
     }
 
-    if (-not [bool](Get-WinForgeJsonValue -Object $Optimization -Name "Measured" -Default $true)) {
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'Memória liberada') -Note (& $join (Get-WinForgeText 'O Windows não informou quanto') $tempPart))
+    if (-not [bool](Get-TFToolkitJsonValue -Object $Optimization -Name "Measured" -Default $true)) {
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'Memória liberada') -Note (& $join (Get-TFToolkitText 'O Windows não informou quanto') $tempPart))
     }
 
-    $memory = (Get-WinForgeText '{0} de memória' "$(Format-WinForgeBytes -Bytes $Optimization.Freed)")
-    $little = Test-WinForgeMemoryFreedLittle -Optimization $Optimization
+    $memory = (Get-TFToolkitText '{0} de memória' "$(Format-TFToolkitBytes -Bytes $Optimization.Freed)")
+    $little = Test-TFToolkitMemoryFreedLittle -Optimization $Optimization
 
-    if (Test-WinForgeMemoryStillHigh -Optimization $Optimization) {
-        $freed = $(if ($tempState -eq "Done") { (Get-WinForgeText '{0} e {1} de temporários' "$memory" "$tempText") } else { $memory })
-        return (Set-WinForgeMemoryStillHighView -Result $Result -Optimization $Optimization -Freed $freed -Extra $extra)
+    if (Test-TFToolkitMemoryStillHigh -Optimization $Optimization) {
+        $freed = $(if ($tempState -eq "Done") { (Get-TFToolkitText '{0} e {1} de temporários' "$memory" "$tempText") } else { $memory })
+        return (Set-TFToolkitMemoryStillHighView -Result $Result -Optimization $Optimization -Freed $freed -Extra $extra)
     }
 
     # A memória de agora e de antes, quando o Windows informou as duas.
-    $after = Get-WinForgeJsonValue -Object $Optimization -Name "After" -Default $null
-    $before = Get-WinForgeJsonValue -Object $Optimization -Name "Before" -Default $null
-    $now = $(if ($null -ne $after) { (Get-WinForgeText 'Memória em uso: {0}%' "$($after.Percent)") } else { "" })
+    $after = Get-TFToolkitJsonValue -Object $Optimization -Name "After" -Default $null
+    $before = Get-TFToolkitJsonValue -Object $Optimization -Name "Before" -Default $null
+    $now = $(if ($null -ne $after) { (Get-TFToolkitText 'Memória em uso: {0}%' "$($after.Percent)") } else { "" })
 
-    if ($little -and $TempBytes -lt $script:WinForgeMemoryLittleBytes) {
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'O PC já estava leve') -Note (& $join $(if ($now) { (Get-WinForgeText '{0}; quase nada a liberar' "$now") } else { (Get-WinForgeText 'Quase nada a liberar') }) $(if ($tempState -eq "InUse") { $tempPart } else { "" })) -HideSummary:$hide)
+    if ($little -and $TempBytes -lt $script:TFToolkitMemoryLittleBytes) {
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'O PC já estava leve') -Note (& $join $(if ($now) { (Get-TFToolkitText '{0}; quase nada a liberar' "$now") } else { (Get-TFToolkitText 'Quase nada a liberar') }) $(if ($tempState -eq "InUse") { $tempPart } else { "" })) -HideSummary:$hide)
     }
 
     if ($little) {
         # A memória já estava folgada, e o ganho foram os temporários: eles vão no título.
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText '{0} de temporários apagados' "$tempText") -Note (& $join (Get-WinForgeText 'A memória já estava folgada{0}' "$(if ($null -ne $after) { (Get-WinForgeText ' ({0}% em uso)' "$($after.Percent)") })") "") -HideSummary:$hide)
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText '{0} de temporários apagados' "$tempText") -Note (& $join (Get-TFToolkitText 'A memória já estava folgada{0}' "$(if ($null -ne $after) { (Get-TFToolkitText ' ({0}% em uso)' "$($after.Percent)") })") "") -HideSummary:$hide)
     }
 
-    $note = & $join $(if ($now -and $null -ne $before) { (Get-WinForgeText '{0} (antes, {1}%)' "$now" "$($before.Percent)") } else { "" }) $tempPart
-    if ($tempState -ne "Failed" -and -not $OtherAccount) { $note += (Get-WinForgeText ' O efeito na memória some aos poucos.') }
+    $note = & $join $(if ($now -and $null -ne $before) { (Get-TFToolkitText '{0} (antes, {1}%)' "$now" "$($before.Percent)") } else { "" }) $tempPart
+    if ($tempState -ne "Failed" -and -not $OtherAccount) { $note += (Get-TFToolkitText ' O efeito na memória some aos poucos.') }
 
-    return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText '{0} liberados' "$memory") -Note $note -HideSummary:$hide)
+    return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText '{0} liberados' "$memory") -Note $note -HideSummary:$hide)
 }
 
 
-function Invoke-WinForgeBoost {
+function Invoke-TFToolkitBoost {
     # Acelerar agora: libera memória e apaga os temporários do usuário, sem perguntar nada (nada disso faz falta).
-    $title = (Get-WinForgeText 'Acelerar agora')
+    $title = (Get-TFToolkitText 'Acelerar agora')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        Write-Progress -Activity $title -Status (Get-WinForgeText '1 de 2: liberando memória') -PercentComplete 0
+        Write-Progress -Activity $title -Status (Get-TFToolkitText '1 de 2: liberando memória') -PercentComplete 0
 
         try {
             # As duas partes são independentes: a memória que o Windows não deixou liberar não impede apagar os temporários.
             $optimization = $null
 
             try {
-                $optimization = Optimize-WinForgeMemory
+                $optimization = Optimize-TFToolkitMemory
             }
             catch {
                 Write-Verbose "Acelerar agora, memória: $($_.Exception.Message)"
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível liberar a memória: o Windows não atendeu ao pedido.')
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível liberar a memória: o Windows não atendeu ao pedido.')
             }
 
-            Write-Progress -Activity $title -Status (Get-WinForgeText '2 de 2: apagando temporários') -PercentComplete 50
-            $temp = Clear-WinForgeUserTemp
+            Write-Progress -Activity $title -Status (Get-TFToolkitText '2 de 2: apagando temporários') -PercentComplete 50
+            $temp = Clear-TFToolkitUserTemp
         }
         finally {
             Write-Progress -Activity $title -Completed
         }
 
-        $tempBytes = [int64](Get-WinForgeResultData -Result $temp -Name "FreedBytes")
-        $tempText = Format-WinForgeBytes -Bytes $tempBytes
-        $tempState = Get-WinForgeBoostTempState -Temp $temp -Bytes $tempBytes
+        $tempBytes = [int64](Get-TFToolkitResultData -Result $temp -Name "FreedBytes")
+        $tempText = Format-TFToolkitBytes -Bytes $tempBytes
+        $tempState = Get-TFToolkitBoostTempState -Temp $temp -Bytes $tempBytes
         $tempFailed = ($tempState -eq "Failed")
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Resultado')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Resultado')
 
         if ($null -ne $optimization) {
-            Write-WinForgeMemoryFacts -Optimization $optimization
+            Write-TFToolkitMemoryFacts -Optimization $optimization
         }
         else {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Memória') -Value (Get-WinForgeText 'não foi possível liberar') -Level Warn
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Memória') -Value (Get-TFToolkitText 'não foi possível liberar') -Level Warn
         }
 
         # Os temporários que não puderam ser apagados, ou que estavam em uso, não são "0 B": a linha diz o que houve.
         switch ($tempState) {
-            "Failed" { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Temporários apagados') -Value (Get-WinForgeText 'não foi possível apagar') -Level Warn }
-            "InUse" { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Temporários apagados') -Value (Get-WinForgeText 'nenhum (estavam em uso)') }
-            default { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Temporários apagados') -Value $tempText }
+            "Failed" { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Temporários apagados') -Value (Get-TFToolkitText 'não foi possível apagar') -Level Warn }
+            "InUse" { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Temporários apagados') -Value (Get-TFToolkitText 'nenhum (estavam em uso)') }
+            default { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Temporários apagados') -Value $tempText }
         }
         Write-Host ""
 
         # Com a memória ainda alta, o aviso diz onde está o peso (os programas abertos); senão, o conselho de sempre.
-        $stillHigh = ($null -ne $optimization -and (Write-WinForgeMemoryStillHighNotice -Optimization $optimization))
+        $stillHigh = ($null -ne $optimization -and (Write-TFToolkitMemoryStillHighNotice -Optimization $optimization))
 
         if (-not $stillHigh) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para durar, use Desempenho > Gerenciar inicialização e Desempenho > Programas pesando agora.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para durar, use Desempenho > Gerenciar inicialização e Desempenho > Programas pesando agora.')
         }
 
         # Sem pergunta, o aviso da outra conta fica no resumo, e a faixa fica amarela: os temporários apagados foram os
         # dessa conta.
-        $otherAccount = Write-WinForgeOtherAccountNotice -What 'os temporários apagados'
+        $otherAccount = Write-TFToolkitOtherAccountNotice -What 'os temporários apagados'
 
         # O resumo diz o que aconteceu com cada parte: os temporários entram quando foram apagados ("0 B de temporários"
         # não diz nada), quando estavam em uso ou quando não puderam ser apagados.
         $tempDone = ($tempState -eq "Done")
         $tempNote = switch ($tempState) {
-            "Failed" { (Get-WinForgeText 'os temporários não foram apagados') }
-            "InUse" { (Get-WinForgeText 'os temporários estavam em uso e ficaram') }
-            "Done" { (Get-WinForgeText '{0} de temporários apagados' "$tempText") }
+            "Failed" { (Get-TFToolkitText 'os temporários não foram apagados') }
+            "InUse" { (Get-TFToolkitText 'os temporários estavam em uso e ficaram') }
+            "Done" { (Get-TFToolkitText '{0} de temporários apagados' "$tempText") }
             default { "" }
         }
         $detail = $(
-            if ($null -eq $optimization) { (Get-WinForgeText 'a memória não foi liberada; {0}' "$(if ($tempNote) { $tempNote } else { (Get-WinForgeText 'nenhum temporário para apagar') })") }
-            elseif ($tempDone -and -not $optimization.Measured) { (Get-WinForgeText '{0} e {1} de temporários apagados' "$(Format-WinForgeMemoryFreedText -Optimization $optimization)" "$tempText") }
-            elseif ($tempDone -and $stillHigh) { (Get-WinForgeText '{0} de memória e {1} de temporários liberados; a memória continua alta ({2}%)' "$(Format-WinForgeBytes -Bytes $optimization.Freed)" "$tempText" "$($optimization.After.Percent)") }
-            elseif ($tempState -in @("Done", "None") -and -not $stillHigh -and $optimization.Measured -and (Test-WinForgeMemoryFreedLittle -Optimization $optimization) -and $tempBytes -lt $script:WinForgeMemoryLittleBytes) { (Get-WinForgeText 'o PC já estava leve: quase nada a liberar') }
-            elseif ($tempDone) { (Get-WinForgeText '{0} de memória e {1} de temporários liberados' "$(Format-WinForgeBytes -Bytes $optimization.Freed)" "$tempText") }
-            else { "$(Format-WinForgeMemoryFreedText -Optimization $optimization)$(if ($tempNote) { "; $tempNote" })" }
+            if ($null -eq $optimization) { (Get-TFToolkitText 'a memória não foi liberada; {0}' "$(if ($tempNote) { $tempNote } else { (Get-TFToolkitText 'nenhum temporário para apagar') })") }
+            elseif ($tempDone -and -not $optimization.Measured) { (Get-TFToolkitText '{0} e {1} de temporários apagados' "$(Format-TFToolkitMemoryFreedText -Optimization $optimization)" "$tempText") }
+            elseif ($tempDone -and $stillHigh) { (Get-TFToolkitText '{0} de memória e {1} de temporários liberados; a memória continua alta ({2}%)' "$(Format-TFToolkitBytes -Bytes $optimization.Freed)" "$tempText" "$($optimization.After.Percent)") }
+            elseif ($tempState -in @("Done", "None") -and -not $stillHigh -and $optimization.Measured -and (Test-TFToolkitMemoryFreedLittle -Optimization $optimization) -and $tempBytes -lt $script:TFToolkitMemoryLittleBytes) { (Get-TFToolkitText 'o PC já estava leve: quase nada a liberar') }
+            elseif ($tempDone) { (Get-TFToolkitText '{0} de memória e {1} de temporários liberados' "$(Format-TFToolkitBytes -Bytes $optimization.Freed)" "$tempText") }
+            else { "$(Format-TFToolkitMemoryFreedText -Optimization $optimization)$(if ($tempNote) { "; $tempNote" })" }
         )
         # As duas partes falhando é falha; uma só, ressalva.
         $kind = $(if ($null -eq $optimization -and $tempFailed) { "Failed" } elseif ($null -eq $optimization -or $tempFailed -or $otherAccount) { "Warning" } else { "Ok" })
-        if ($otherAccount) { $detail += (Get-WinForgeText '; os temporários apagados foram os da conta com que o WinForge está aberto') }
-        $final = New-WinForgeResult -Kind $kind -Detail $detail -Title $title -Data @{ FreedBytes = [int64]$tempBytes }
-        [void](Set-WinForgeBoostView -Result $final -Optimization $optimization -TempBytes $tempBytes -Temp $temp -OtherAccount ([bool]$otherAccount))
+        if ($otherAccount) { $detail += (Get-TFToolkitText '; os temporários apagados foram os da conta com que o TF-Toolkit está aberto') }
+        $final = New-TFToolkitResult -Kind $kind -Detail $detail -Title $title -Data @{ FreedBytes = [int64]$tempBytes }
+        [void](Set-TFToolkitBoostView -Result $final -Optimization $optimization -TempBytes $tempBytes -Temp $temp -OtherAccount ([bool]$otherAccount))
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível acelerar: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível acelerar: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -600,9 +600,9 @@ function Invoke-WinForgeBoost {
 # Programas pesando agora
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeProtectedProcessNames {
+function Get-TFToolkitProtectedProcessNames {
     # Processos que não podem ser fechados por aqui: os do Windows (fechá-los derruba a sessão ou o próprio Windows), os
-    # de instalação e atualização (fechá-los no meio estraga a instalação) e os que hospedam o próprio WinForge (o
+    # de instalação e atualização (fechá-los no meio estraga a instalação) e os que hospedam o próprio TF-Toolkit (o
     # PowerShell e o terminal do console). Também os que o Windows divide entre vários programas: o WebView2 (Teams,
     # Outlook, Widgets e a busca desenham as janelas com ele; encerrá-lo derruba todos), a moldura dos aplicativos da
     # Store (ApplicationFrameHost) e a busca do Windows 10 (SearchApp).
@@ -612,7 +612,7 @@ function Get-WinForgeProtectedProcessNames {
         "SearchIndexer", "StartMenuExperienceHost", "ShellExperienceHost", "TextInputHost", "audiodg", "spoolsv", "conhost",
         "WmiPrvSE", "MsMpEng", "NisSrv", "SecurityHealthService", "SecurityHealthSystray", "SgrmBroker", "smartscreen",
         "dllhost", "Secure System", "LogonUI", "WUDFHost", "msiexec", "TiWorker", "TrustedInstaller",
-        "MoUsoCoreWorker", "wuauclt", "UsoClient", "powershell", "pwsh", "WindowsTerminal", "OpenConsole", "WinForge",
+        "MoUsoCoreWorker", "wuauclt", "UsoClient", "powershell", "pwsh", "WindowsTerminal", "OpenConsole", "TF-Toolkit",
         "msedgewebview2", "ApplicationFrameHost", "SearchApp", "SearchUI", "LockApp", "ShellHost", "Widgets", "WidgetService",
         "backgroundTaskHost", "rundll32", "SystemSettingsBroker", "UserOOBEBroker", "ChsIME", "TabTip", "AggregatorHost",
         "MpDefenderCoreService"
@@ -620,7 +620,7 @@ function Get-WinForgeProtectedProcessNames {
 }
 
 
-function Get-WinForgePrivateWorkingSets {
+function Get-TFToolkitPrivateWorkingSets {
     <#
     A memória de cada processo como o Gerenciador de Tarefas mostra (o conjunto de trabalho privado), por número de
     processo. O WorkingSet64 conta também as bibliotecas que vários processos dividem: somado nos 30 processos de um
@@ -630,8 +630,8 @@ function Get-WinForgePrivateWorkingSets {
 
     try {
         foreach ($row in @(Get-CimInstance -ClassName Win32_PerfRawData_PerfProc_Process -Property IDProcess, WorkingSetPrivate -OperationTimeoutSec 5 -ErrorAction Stop)) {
-            $id = [int](Get-WinForgeJsonValue -Object $row -Name "IDProcess" -Default 0)
-            $bytes = Get-WinForgeJsonValue -Object $row -Name "WorkingSetPrivate" -Default $null
+            $id = [int](Get-TFToolkitJsonValue -Object $row -Name "IDProcess" -Default 0)
+            $bytes = Get-TFToolkitJsonValue -Object $row -Name "WorkingSetPrivate" -Default $null
 
             if ($id -gt 0 -and $null -ne $bytes) { $map[$id] = [double]$bytes }
         }
@@ -644,13 +644,13 @@ function Get-WinForgePrivateWorkingSets {
 }
 
 
-function Get-WinForgeProcessSample {
+function Get-TFToolkitProcessSample {
     <#
     Lê os processos duas vezes (com $IntervalMilliseconds entre as leituras) e devolve, por programa (processos com o
     mesmo nome somados): Name, Description, Company, Count, Cpu (% do PC no intervalo), CpuUnread (quantos processos o
-    Windows não deixou medir: abertos como Administrador, com o WinForge sem), Memory (bytes, o conjunto de trabalho
+    Windows não deixou medir: abertos como Administrador, com o TF-Toolkit sem), Memory (bytes, o conjunto de trabalho
     privado, como no Gerenciador de Tarefas), Ids, Processes e Protected. Description e Company começam com o nome do
-    processo; Add-WinForgeProcessDetails as preenche só para os que vão aparecer. Só entram os processos desta sessão do
+    processo; Add-TFToolkitProcessDetails as preenche só para os que vão aparecer. Só entram os processos desta sessão do
     Windows: os de serviços (sessão 0) e os de outras contas logadas (troca rápida de usuário) não são da pessoa.
     Processes guarda, de cada um, o Id e a hora em que começou: entre medir e fechar passam minutos, e o Windows
     reaproveita o número de um processo que saiu. A memória é lida no intervalo entre as duas leituras, que é de espera.
@@ -679,11 +679,11 @@ function Get-WinForgeProcessSample {
         }
     }
 
-    $privateSets = Get-WinForgePrivateWorkingSets
+    $privateSets = Get-TFToolkitPrivateWorkingSets
     $remaining = $IntervalMilliseconds - $clock.Elapsed.TotalMilliseconds
     if ($remaining -gt 0) { Start-Sleep -Milliseconds ([int]$remaining) }
     $cores = [Math]::Max(1, [Environment]::ProcessorCount)
-    $protected = Get-WinForgeProtectedProcessNames
+    $protected = Get-TFToolkitProtectedProcessNames
     $groups = @{}
 
     foreach ($process in @(Get-Process -ErrorAction SilentlyContinue)) {
@@ -762,17 +762,17 @@ function Get-WinForgeProcessSample {
 }
 
 
-function Add-WinForgeProcessDetails {
+function Add-TFToolkitProcessDetails {
     <#
     O nome amigável e o fabricante (lidos do arquivo do programa) dos programas que vão aparecer. Ler o módulo de um
     processo custa, e numa sessão há centenas deles: a medição deixa isso para cá, só para a dúzia que aparece. Sem
-    leitura (aberto como Administrador, com o WinForge sem), fica o nome do processo. Nomes amigáveis repetidos levam o
+    leitura (aberto como Administrador, com o TF-Toolkit sem), fica o nome do processo. Nomes amigáveis repetidos levam o
     nome do processo entre parênteses.
     #>
     param ([object[]]$Groups = @())
 
     foreach ($group in $Groups) {
-        foreach ($id in @(Get-WinForgeJsonValue -Object $group -Name "Ids" -Default @())) {
+        foreach ($id in @(Get-TFToolkitJsonValue -Object $group -Name "Ids" -Default @())) {
             $process = Get-Process -Id ([int]$id) -ErrorAction SilentlyContinue
             if ($null -eq $process) { continue }
 
@@ -802,11 +802,11 @@ function Add-WinForgeProcessDetails {
 }
 
 
-function Get-WinForgeHeavyProcesses {
+function Get-TFToolkitHeavyProcesses {
     # Os programas que mais pesam: os $Top de maior CPU e os $Top de maior memória, sem repetir, do mais pesado ao mais
     # leve, com o nome amigável e o fabricante.
     param (
-        [object[]]$Sample = @(Get-WinForgeProcessSample),
+        [object[]]$Sample = @(Get-TFToolkitProcessSample),
         [int]$Top = 6
     )
 
@@ -816,48 +816,48 @@ function Get-WinForgeHeavyProcesses {
     # Na ordem em que a tela mostra: pelo processador arredondado ("quase parado" empata em zero) e, no empate, pela memória.
     $heavy = @($Sample | Where-Object { $names -contains $_.Name } | Sort-Object -Property @{ Expression = { if ($_.Cpu -ge 1) { [Math]::Round($_.Cpu) } else { 0 } }; Descending = $true }, @{ Expression = { $_.Memory }; Descending = $true })
 
-    Add-WinForgeProcessDetails -Groups $heavy
+    Add-TFToolkitProcessDetails -Groups $heavy
 
     return $heavy
 }
 
 
-function Format-WinForgeProcessUsage {
+function Format-TFToolkitProcessUsage {
     # "18% do processador · 2,1 GB de memória". Sem nenhum processo do programa medido (aberto como Administrador, com o
-    # WinForge sem), o processador fica "sem leitura": "quase parado" seria um palpite. Com parte sem leitura e o resto
+    # TF-Toolkit sem), o processador fica "sem leitura": "quase parado" seria um palpite. Com parte sem leitura e o resto
     # parado, "sem leitura em parte": o processo que não deu para medir pode ser o ocupado.
     param ([Parameter(Mandatory)]$Process)
 
-    $count = [int](Get-WinForgeJsonValue -Object $Process -Name "Count" -Default 1)
-    $unread = [int](Get-WinForgeJsonValue -Object $Process -Name "CpuUnread" -Default 0)
+    $count = [int](Get-TFToolkitJsonValue -Object $Process -Name "Count" -Default 1)
+    $unread = [int](Get-TFToolkitJsonValue -Object $Process -Name "CpuUnread" -Default 0)
 
     $cpuText = $(
-        if ($Process.Cpu -ge 1) { (Get-WinForgeText '{0}% do processador' "$([int][Math]::Round($Process.Cpu))") }
-        elseif ($unread -gt 0 -and $unread -ge $count) { (Get-WinForgeText 'processador sem leitura') }
-        elseif ($unread -gt 0) { (Get-WinForgeText 'processador sem leitura em parte') }
-        else { (Get-WinForgeText 'processador quase parado') }
+        if ($Process.Cpu -ge 1) { (Get-TFToolkitText '{0}% do processador' "$([int][Math]::Round($Process.Cpu))") }
+        elseif ($unread -gt 0 -and $unread -ge $count) { (Get-TFToolkitText 'processador sem leitura') }
+        elseif ($unread -gt 0) { (Get-TFToolkitText 'processador sem leitura em parte') }
+        else { (Get-TFToolkitText 'processador quase parado') }
     )
 
-    return (Get-WinForgeText '{0} · {1} de memória' "$cpuText" "$(Format-WinForgeBytes -Bytes $Process.Memory)")
+    return (Get-TFToolkitText '{0} · {1} de memória' "$cpuText" "$(Format-TFToolkitBytes -Bytes $Process.Memory)")
 }
 
 
-function Get-WinForgeProtectedProcessReason {
+function Get-TFToolkitProtectedProcessReason {
     # Por que um processo protegido não entra na lista para fechar, na marca que ele leva na lista dos que pesam.
     param ([Parameter(Mandatory)][string]$Name)
 
-    # O WinForge que está aberto fica fora da lista; um PowerShell ou terminal que aparece pode ser o monitor da bandeja,
-    # a janela de texto do WinForge ou um script seu: fechar por aqui poderia derrubar o WinForge.
-    if ($Name -eq "WinForge") { return (Get-WinForgeText 'usado pelo WinForge') }
-    if ($Name -in @("powershell", "pwsh", "WindowsTerminal", "OpenConsole")) { return (Get-WinForgeText 'pode ser o WinForge') }
-    if ($Name -in @("msiexec", "TiWorker", "TrustedInstaller", "MoUsoCoreWorker", "wuauclt", "UsoClient")) { return (Get-WinForgeText 'instalação ou atualização') }
-    if ($Name -in @("msedgewebview2", "rundll32", "dllhost")) { return (Get-WinForgeText 'usado por vários programas') }
+    # O TF-Toolkit que está aberto fica fora da lista; um PowerShell ou terminal que aparece pode ser o monitor da bandeja,
+    # a janela de texto do TF-Toolkit ou um script seu: fechar por aqui poderia derrubar o TF-Toolkit.
+    if ($Name -eq "TF-Toolkit") { return (Get-TFToolkitText 'usado pelo TF-Toolkit') }
+    if ($Name -in @("powershell", "pwsh", "WindowsTerminal", "OpenConsole")) { return (Get-TFToolkitText 'pode ser o TF-Toolkit') }
+    if ($Name -in @("msiexec", "TiWorker", "TrustedInstaller", "MoUsoCoreWorker", "wuauclt", "UsoClient")) { return (Get-TFToolkitText 'instalação ou atualização') }
+    if ($Name -in @("msedgewebview2", "rundll32", "dllhost")) { return (Get-TFToolkitText 'usado por vários programas') }
 
-    return (Get-WinForgeText 'do Windows')
+    return (Get-TFToolkitText 'do Windows')
 }
 
 
-function Get-WinForgeSampledProcess {
+function Get-TFToolkitSampledProcess {
     # O processo medido, se ainda for ele: o mesmo número, o mesmo nome e a mesma hora de início (o Windows reaproveita
     # o número de um processo que saiu). $null quando saiu, quando o número agora é de outro processo ou quando não dá
     # para confirmar (sem a hora de início, nada é fechado).
@@ -883,7 +883,7 @@ function Get-WinForgeSampledProcess {
 }
 
 
-function Test-WinForgeSampledProcessUnconfirmed {
+function Test-TFToolkitSampledProcessUnconfirmed {
     # Verdadeiro quando o processo medido parece continuar aberto (o mesmo número e o mesmo nome), mas não dá para
     # conferir a hora de início: sem Administrador, o Windows nega lê-la num programa aberto como Administrador. Ele não
     # foi fechado, e a tela não pode dizer que foi.
@@ -910,7 +910,7 @@ function Test-WinForgeSampledProcessUnconfirmed {
 }
 
 
-function Get-WinForgeProcessParents {
+function Get-TFToolkitProcessParents {
     # O processo pai de cada processo com este nome (Win32_Process): Id -> Id do pai. Vazio sem resposta do Windows.
     param ([Parameter(Mandatory)][string]$Name)
 
@@ -919,7 +919,7 @@ function Get-WinForgeProcessParents {
 
     try {
         foreach ($row in @(Get-CimInstance -ClassName Win32_Process -Filter "Name = '$wql'" -Property ProcessId, ParentProcessId -OperationTimeoutSec 5 -ErrorAction Stop)) {
-            $map[[int](Get-WinForgeJsonValue -Object $row -Name "ProcessId" -Default 0)] = [int](Get-WinForgeJsonValue -Object $row -Name "ParentProcessId" -Default 0)
+            $map[[int](Get-TFToolkitJsonValue -Object $row -Name "ProcessId" -Default 0)] = [int](Get-TFToolkitJsonValue -Object $row -Name "ParentProcessId" -Default 0)
         }
     }
     catch {
@@ -930,9 +930,9 @@ function Get-WinForgeProcessParents {
 }
 
 
-function Initialize-WinForgeWindowNative {
+function Initialize-TFToolkitWindowNative {
     # As chamadas do Windows que acham a moldura de um aplicativo da Store e pedem para fechá-la (como o X).
-    if ($null -ne ('WinForgeWindowNative' -as [type])) { return }
+    if ($null -ne ('TFToolkitWindowNative' -as [type])) { return }
 
     Add-Type -TypeDefinition @'
 using System;
@@ -940,13 +940,13 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-public sealed class WinForgeAppFrame
+public sealed class TFToolkitAppFrame
 {
     public int ProcessId;
     public IntPtr Window;
 }
 
-public static class WinForgeWindowNative
+public static class TFToolkitWindowNative
 {
     private delegate bool EnumWindowsProc(IntPtr window, IntPtr parameter);
 
@@ -977,9 +977,9 @@ public static class WinForgeWindowNative
 
     // Cada moldura visível (ApplicationFrameWindow, do ApplicationFrameHost) com a janela de um aplicativo da Store
     // dentro (Windows.UI.Core.CoreWindow, do processo do aplicativo).
-    public static WinForgeAppFrame[] ListAppFrames()
+    public static TFToolkitAppFrame[] ListAppFrames()
     {
-        List<WinForgeAppFrame> frames = new List<WinForgeAppFrame>();
+        List<TFToolkitAppFrame> frames = new List<TFToolkitAppFrame>();
 
         EnumWindows(delegate (IntPtr frame, IntPtr unused)
         {
@@ -995,7 +995,7 @@ public static class WinForgeWindowNative
 
                 if (owner != host && ClassOf(child) == "Windows.UI.Core.CoreWindow")
                 {
-                    WinForgeAppFrame item = new WinForgeAppFrame();
+                    TFToolkitAppFrame item = new TFToolkitAppFrame();
                     item.ProcessId = (int)owner;
                     item.Window = frame;
                     frames.Add(item);
@@ -1021,7 +1021,7 @@ public static class WinForgeWindowNative
 }
 
 
-function Get-WinForgeAppFrameWindows {
+function Get-TFToolkitAppFrameWindows {
     <#
     As janelas dos aplicativos da Store abertas agora: Id do processo do aplicativo -> a moldura do Windows que a mostra.
     Esses aplicativos desenham a janela dentro de uma moldura de outro processo (ApplicationFrameHost), então o
@@ -1031,9 +1031,9 @@ function Get-WinForgeAppFrameWindows {
     $map = @{}
 
     try {
-        Initialize-WinForgeWindowNative
+        Initialize-TFToolkitWindowNative
 
-        foreach ($frame in @([WinForgeWindowNative]::ListAppFrames())) {
+        foreach ($frame in @([TFToolkitWindowNative]::ListAppFrames())) {
             $map[[int]$frame.ProcessId] = $frame.Window
         }
     }
@@ -1045,13 +1045,13 @@ function Get-WinForgeAppFrameWindows {
 }
 
 
-function Close-WinForgeAppFrameWindow {
+function Close-TFToolkitAppFrameWindow {
     # Pede para fechar a moldura de um aplicativo da Store, como o X. Falso quando o Windows não aceitou o pedido.
     param ([Parameter(Mandatory)][IntPtr]$Window)
 
     try {
-        Initialize-WinForgeWindowNative
-        return [bool][WinForgeWindowNative]::RequestClose($Window)
+        Initialize-TFToolkitWindowNative
+        return [bool][TFToolkitWindowNative]::RequestClose($Window)
     }
     catch {
         Write-Verbose "Fechar a janela do aplicativo: $($_.Exception.Message)"
@@ -1060,10 +1060,10 @@ function Close-WinForgeAppFrameWindow {
 }
 
 
-function Test-WinForgeProcessGroupWindowless {
+function Test-TFToolkitProcessGroupWindowless {
     <#
     Verdadeiro quando o programa continua aberto e nenhum processo dele tem janela: fechar como no X não tem onde
-    clicar, só encerrando à força. Um processo que não dá para conferir (aberto como Administrador, com o WinForge sem)
+    clicar, só encerrando à força. Um processo que não dá para conferir (aberto como Administrador, com o TF-Toolkit sem)
     não conta como sem janela: ele nem seria encerrado, e perguntar sobre "encerrar à força" seria enganoso.
     #>
     param ([Parameter(Mandatory)]$Process)
@@ -1072,18 +1072,18 @@ function Test-WinForgeProcessGroupWindowless {
     $alive = 0
     $frames = $null
 
-    foreach ($entry in @(Get-WinForgeJsonValue -Object $Process -Name "Processes" -Default @())) {
-        $running = Get-WinForgeSampledProcess -Name $name -Entry $entry
+    foreach ($entry in @(Get-TFToolkitJsonValue -Object $Process -Name "Processes" -Default @())) {
+        $running = Get-TFToolkitSampledProcess -Name $name -Entry $entry
 
         if ($null -eq $running) {
-            if (Test-WinForgeSampledProcessUnconfirmed -Name $name -Entry $entry) { return $false }
+            if (Test-TFToolkitSampledProcessUnconfirmed -Name $name -Entry $entry) { return $false }
             continue
         }
 
         if ($running.MainWindowHandle -ne [IntPtr]::Zero) { return $false }
 
         # Um aplicativo da Store tem a janela dentro da moldura do Windows: ela existe, e fecha como no X.
-        if ($null -eq $frames) { $frames = Get-WinForgeAppFrameWindows }
+        if ($null -eq $frames) { $frames = Get-TFToolkitAppFrameWindows }
         if ($frames.ContainsKey([int]$running.Id)) { return $false }
 
         $alive++
@@ -1093,10 +1093,10 @@ function Test-WinForgeProcessGroupWindowless {
 }
 
 
-function Stop-WinForgeProcessGroup {
+function Stop-TFToolkitProcessGroup {
     <#
     Fecha um programa: primeiro pedindo para fechar cada janela, como o X (a de um aplicativo da Store é a moldura do
-    Windows em volta dela, Get-WinForgeAppFrameWindows), e esperando até $WaitMilliseconds (a espera
+    Windows em volta dela, Get-TFToolkitAppFrameWindows), e esperando até $WaitMilliseconds (a espera
     acaba assim que elas fecham: um programa que fecha na hora não segura a tela, e um que demora a salvar tem tempo).
     O que não fecha fica aberto, com o motivo: uma caixa de diálogo aberta (o Windows nem entrega o pedido), a janela
     que continua aberta (pode estar perguntando "Salvar alterações?", ou há outra janela) ou o programa que foi para
@@ -1105,7 +1105,7 @@ function Stop-WinForgeProcessGroup {
     "python", outro "javaw") fica. Um programa sem nenhuma janela só é encerrado com -AllowForce, que a tela só passa
     depois de perguntar: é como encerrar pelo Gerenciador de Tarefas, e o que não foi salvo pode ser perdido (uma
     gravação, uma máquina virtual). Antes de agir em cada processo, confere que o número ainda é do mesmo processo
-    medido. Devolve um WinForge.Result.
+    medido. Devolve um TFToolkit.Result.
     #>
     param (
         [Parameter(Mandatory)]$Process,
@@ -1114,7 +1114,7 @@ function Stop-WinForgeProcessGroup {
     )
 
     $name = [string]$Process.Name
-    $entries = @(Get-WinForgeJsonValue -Object $Process -Name "Processes" -Default @())
+    $entries = @(Get-TFToolkitJsonValue -Object $Process -Name "Processes" -Default @())
     $windowed = @()
     $background = @()
     $unconfirmed = 0
@@ -1123,12 +1123,12 @@ function Stop-WinForgeProcessGroup {
     $framed = @{}
 
     foreach ($entry in $entries) {
-        $running = Get-WinForgeSampledProcess -Name $name -Entry $entry
+        $running = Get-TFToolkitSampledProcess -Name $name -Entry $entry
 
         if ($null -eq $running) {
             # Saiu, ou o número agora é de outro programa: não há o que fechar. Mas o mesmo programa ainda aberto sem a
-            # hora de início legível (aberto como Administrador, com o WinForge sem) não pode ser dado como fechado.
-            if (Test-WinForgeSampledProcessUnconfirmed -Name $name -Entry $entry) { $unconfirmed++ }
+            # hora de início legível (aberto como Administrador, com o TF-Toolkit sem) não pode ser dado como fechado.
+            if (Test-TFToolkitSampledProcessUnconfirmed -Name $name -Entry $entry) { $unconfirmed++ }
             continue
         }
 
@@ -1140,10 +1140,10 @@ function Stop-WinForgeProcessGroup {
 
         # Um aplicativo da Store tem a janela dentro da moldura do Windows (de outro processo): fechar a moldura é o X
         # dele. Se o pedido não for atendido, a espera abaixo vê a janela ainda aberta e diz isso.
-        if ($null -eq $frames) { $frames = Get-WinForgeAppFrameWindows }
+        if ($null -eq $frames) { $frames = Get-TFToolkitAppFrameWindows }
 
         if ($frames.ContainsKey([int]$running.Id)) {
-            [void](Close-WinForgeAppFrameWindow -Window $frames[[int]$running.Id])
+            [void](Close-TFToolkitAppFrameWindow -Window $frames[[int]$running.Id])
             $windowed += $entry
             $framed[[int]$entry.Id] = $true
         }
@@ -1161,12 +1161,12 @@ function Stop-WinForgeProcessGroup {
 
         do {
             Start-Sleep -Milliseconds 250
-            $open = @($windowed | ForEach-Object { Get-WinForgeSampledProcess -Name $name -Entry $_ } | Where-Object { $null -ne $_ })
+            $open = @($windowed | ForEach-Object { Get-TFToolkitSampledProcess -Name $name -Entry $_ } | Where-Object { $null -ne $_ })
 
             # O aplicativo da Store sai logo depois de a moldura fechar (o Windows o suspende e encerra): sem a moldura, ele
             # não conta mais como aberto, nem como "perto do relógio".
             if ($framed.Count -gt 0 -and $open.Count -gt 0) {
-                $framesNow = Get-WinForgeAppFrameWindows
+                $framesNow = Get-TFToolkitAppFrameWindows
                 $open = @($open | Where-Object { -not $framed.ContainsKey([int]$_.Id) -or $framesNow.ContainsKey([int]$_.Id) })
             }
         } while ($open.Count -gt 0 -and (Get-Date) -lt $deadline)
@@ -1186,7 +1186,7 @@ function Stop-WinForgeProcessGroup {
     }
     elseif ($hadWindow -and $stillOpen -eq 0 -and $tray -eq 0 -and $dialog -eq 0 -and $unconfirmed -eq 0 -and $background.Count -gt 0) {
         # Só os processos abertos pelo programa (direta ou indiretamente, pelo processo que tinha a janela).
-        $parents = Get-WinForgeProcessParents -Name $name
+        $parents = Get-TFToolkitProcessParents -Name $name
         $family = @{}
         foreach ($entry in $windowed) { $family[[int]$entry.Id] = $true }
 
@@ -1204,7 +1204,7 @@ function Stop-WinForgeProcessGroup {
     }
 
     foreach ($entry in $targets) {
-        $running = Get-WinForgeSampledProcess -Name $name -Entry $entry
+        $running = Get-TFToolkitSampledProcess -Name $name -Entry $entry
         if ($null -eq $running) { continue }
 
         try {
@@ -1220,36 +1220,36 @@ function Stop-WinForgeProcessGroup {
 
     if ($hadWindow -and $others.Count -gt 0 -and $stillOpen -eq 0 -and $tray -eq 0 -and $dialog -eq 0 -and $unconfirmed -eq 0) {
         Start-Sleep -Milliseconds 500
-        $left = @($others | Where-Object { $null -ne (Get-WinForgeSampledProcess -Name $name -Entry $_) }).Count
+        $left = @($others | Where-Object { $null -ne (Get-TFToolkitSampledProcess -Name $name -Entry $_) }).Count
     }
 
-    if ($dialog -gt 0) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'está com uma caixa de diálogo aberta; responda a ela e feche o programa por ela')) }
-    if ($stillOpen -gt 0) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a janela não fechou (pode estar perguntando se quer salvar, ou ter outra janela aberta); feche por ela')) }
-    if ($tray -gt 0) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'fechou a janela, mas continua aberto perto do relógio; para sair, use o ícone dele (botão direito, Sair)')) }
-    if ($unconfirmed -gt 0 -and $windowed.Count -eq 0 -and $targets.Count -eq 0) { return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o Windows não deixou conferir que é o mesmo programa medido (talvez aberto como Administrador); feche-o pela janela dele')) }
-    if ($unconfirmed -gt 0) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'parte dos processos continuou aberta (o Windows não deixou conferir todos)')) }
-    if (-not $hadWindow -and -not $AllowForce -and $background.Count -gt 0) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'não tem janela aberta para fechar como no X; ficou aberto')) }
-    if ($failed -gt 0 -and $failed -lt $targets.Count) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'parte dos processos continuou aberta')) }
-    if ($failed -gt 0) { return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o Windows não deixou fechar (talvez precise de Administrador)')) }
-    if ($left -gt 0) { return (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} (pode ser de outro programa)' "$(Format-WinForgeCount -Count $left -One (Get-WinForgeText 'processo com o mesmo nome continua aberto') -Many (Get-WinForgeText 'processos com o mesmo nome continuam abertos'))")) }
+    if ($dialog -gt 0) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'está com uma caixa de diálogo aberta; responda a ela e feche o programa por ela')) }
+    if ($stillOpen -gt 0) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a janela não fechou (pode estar perguntando se quer salvar, ou ter outra janela aberta); feche por ela')) }
+    if ($tray -gt 0) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'fechou a janela, mas continua aberto perto do relógio; para sair, use o ícone dele (botão direito, Sair)')) }
+    if ($unconfirmed -gt 0 -and $windowed.Count -eq 0 -and $targets.Count -eq 0) { return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o Windows não deixou conferir que é o mesmo programa medido (talvez aberto como Administrador); feche-o pela janela dele')) }
+    if ($unconfirmed -gt 0) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'parte dos processos continuou aberta (o Windows não deixou conferir todos)')) }
+    if (-not $hadWindow -and -not $AllowForce -and $background.Count -gt 0) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'não tem janela aberta para fechar como no X; ficou aberto')) }
+    if ($failed -gt 0 -and $failed -lt $targets.Count) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'parte dos processos continuou aberta')) }
+    if ($failed -gt 0) { return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o Windows não deixou fechar (talvez precise de Administrador)')) }
+    if ($left -gt 0) { return (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} (pode ser de outro programa)' "$(Format-TFToolkitCount -Count $left -One (Get-TFToolkitText 'processo com o mesmo nome continua aberto') -Many (Get-TFToolkitText 'processos com o mesmo nome continuam abertos'))")) }
 
-    return (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'fechado'))
+    return (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'fechado'))
 }
 
 
-function Show-WinForgeHeavyProcesses {
-    $title = (Get-WinForgeText 'Programas pesando agora')
+function Show-TFToolkitHeavyProcesses {
+    $title = (Get-TFToolkitText 'Programas pesando agora')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'medindo o uso do processador e da memória')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'medindo o uso do processador e da memória')
 
         try {
-            $heavy = @(Get-WinForgeHeavyProcesses)
-            $memory = Get-WinForgeMemoryUsage
+            $heavy = @(Get-TFToolkitHeavyProcesses)
+            $memory = Get-TFToolkitMemoryUsage
         }
         finally {
             Write-Progress -Activity $title -Completed
@@ -1257,34 +1257,34 @@ function Show-WinForgeHeavyProcesses {
 
         if ($heavy.Count -eq 0) {
             # Sem nenhum processo lido, "o que pesa é do Windows" seria um palpite.
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler os programas abertos agora.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'não foi possível ler os programas abertos') -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler os programas abertos agora.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'não foi possível ler os programas abertos') -Title $title)
             return
         }
 
         if ($null -ne $memory) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Memória em uso') -Value (Get-WinForgeText '{0} de {1} ({2}%)' "$(Format-WinForgeBytes -Bytes $memory.Used)" "$(Format-WinForgeBytes -Bytes $memory.Total)" "$($memory.Percent)") -Level $(if (Test-WinForgeMemoryHigh -Memory $memory) { "Warn" } else { "Normal" })
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Memória em uso') -Value (Get-TFToolkitText '{0} de {1} ({2}%)' "$(Format-TFToolkitBytes -Bytes $memory.Used)" "$(Format-TFToolkitBytes -Bytes $memory.Total)" "$($memory.Percent)") -Level $(if (Test-TFToolkitMemoryHigh -Memory $memory) { "Warn" } else { "Normal" })
             Write-Host ""
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'O que mais pesa')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'O que mais pesa')
 
         foreach ($process in $heavy) {
             $label = $process.Description
             if ($process.Count -gt 1) { $label += " ($($process.Count))" }
 
             # Os protegidos aparecem (é bom saber o que pesa), com o motivo: não entram na lista para fechar.
-            $value = Format-WinForgeProcessUsage -Process $process
-            if ($process.Protected) { $value += " · $(Get-WinForgeProtectedProcessReason -Name ([string]$process.Name))" }
+            $value = Format-TFToolkitProcessUsage -Process $process
+            if ($process.Protected) { $value += " · $(Get-TFToolkitProtectedProcessReason -Name ([string]$process.Name))" }
 
-            Write-WinForgeKeyValue -Label $label -Value $value -LabelWidth 34
+            Write-TFToolkitKeyValue -Label $label -Value $value -LabelWidth 34
         }
 
         Write-Host ""
 
         # Um aviso sobre o PC, não sobre a tela: não conta no desfecho.
-        if ($null -ne $memory -and (Test-WinForgeMemoryHigh -Memory $memory)) {
-            Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'A memória em uso está alta ({0}%): fechar programas que você não está usando ajuda.' "$($memory.Percent)")
+        if ($null -ne $memory -and (Test-TFToolkitMemoryHigh -Memory $memory)) {
+            Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'A memória em uso está alta ({0}%): fechar programas que você não está usando ajuda.' "$($memory.Percent)")
         }
 
         $closable = @($heavy | Where-Object { -not $_.Protected })
@@ -1292,68 +1292,68 @@ function Show-WinForgeHeavyProcesses {
         # Só olhar não tem veredito: sem desfecho registrado, a janela termina sem a faixa "Tudo certo", e a lista é o
         # conteúdo da tela.
         if ($closable.Count -eq 0) {
-            # O que mais pesa é do Windows, de uma instalação em andamento ou do próprio WinForge.
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nada do que mais pesa agora pode ser fechado por aqui.')
-            Exit-WinForgeAction
+            # O que mais pesa é do Windows, de uma instalação em andamento ou do próprio TF-Toolkit.
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nada do que mais pesa agora pode ser fechado por aqui.')
+            Exit-TFToolkitAction
             return
         }
 
         # Os programas do Windows não entram na lista.
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Fechar por aqui é como clicar no X: o que não foi salvo pode ser perdido.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Fechar por aqui é como clicar no X: o que não foi salvo pode ser perdido.')
         Write-Host ""
 
-        $answer = Read-WinForgeChoice -Message (Get-WinForgeText 'Quer fechar algum programa?') -DefaultKey "X" -ShowMenu -TextPrompt (Get-WinForgeText 'Opção (F ou X; ENTER = concluir)') -Options @(
-            @{ Key = "F"; Label = (Get-WinForgeText 'Fechar programas'); Description = (Get-WinForgeText 'escolha na lista o que fechar') },
-            @{ Key = "X"; Label = (Get-WinForgeText 'Concluir'); Exit = $true; Accent = $true }
+        $answer = Read-TFToolkitChoice -Message (Get-TFToolkitText 'Quer fechar algum programa?') -DefaultKey "X" -ShowMenu -TextPrompt (Get-TFToolkitText 'Opção (F ou X; ENTER = concluir)') -Options @(
+            @{ Key = "F"; Label = (Get-TFToolkitText 'Fechar programas'); Description = (Get-TFToolkitText 'escolha na lista o que fechar') },
+            @{ Key = "X"; Label = (Get-TFToolkitText 'Concluir'); Exit = $true; Accent = $true }
         )
 
         if ($answer -ine "F") {
-            Exit-WinForgeAction
+            Exit-TFToolkitAction
             return
         }
 
         $options = @(
             foreach ($process in $closable) {
-                $parts = @(Format-WinForgeProcessUsage -Process $process)
+                $parts = @(Format-TFToolkitProcessUsage -Process $process)
                 if ($process.Company) { $parts += $process.Company }
-                if ($process.Count -gt 1) { $parts += (Get-WinForgeText '{0} processos' "$($process.Count)") }
+                if ($process.Count -gt 1) { $parts += (Get-TFToolkitText '{0} processos' "$($process.Count)") }
                 @{ Key = $process.Name; Label = $process.Description; Description = ($parts -join " · "); Selected = $false }
             }
         )
 
-        $picked = Read-WinForgeMultiSelect -Message (Get-WinForgeText 'Marque os programas que devem ser fechados') -Options $options -ConfirmLabel (Get-WinForgeText 'Fechar')
+        $picked = Read-TFToolkitMultiSelect -Message (Get-TFToolkitText 'Marque os programas que devem ser fechados') -Options $options -ConfirmLabel (Get-TFToolkitText 'Fechar')
 
         if ($null -eq $picked -or @($picked).Count -eq 0) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
         $chosen = @($closable | Where-Object { @($picked) -contains $_.Name })
-        $question = Get-WinForgeSelectionQuestion -Verb (Get-WinForgeText 'Fechar') -Names @($chosen | ForEach-Object { [string]$_.Description }) -Many (Get-WinForgeText 'programas')
+        $question = Get-TFToolkitSelectionQuestion -Verb (Get-TFToolkitText 'Fechar') -Names @($chosen | ForEach-Object { [string]$_.Description }) -Many (Get-TFToolkitText 'programas')
 
-        if (-not (Confirm-WinForgeAction -Message $question -DefaultKey "N" -YesLabel (Get-WinForgeText 'Fechar') -NoLabel (Get-WinForgeText 'Cancelar'))) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+        if (-not (Confirm-TFToolkitAction -Message $question -DefaultKey "N" -YesLabel (Get-TFToolkitText 'Fechar') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
         # Um programa sem janela aberta (perto do relógio, uma máquina virtual, um processo em segundo plano) não tem como
         # fechar como no X: só encerrando à força, e isso pede uma pergunta à parte, com Não como padrão.
-        $windowless = @($chosen | Where-Object { Test-WinForgeProcessGroupWindowless -Process $_ })
+        $windowless = @($chosen | Where-Object { Test-TFToolkitProcessGroupWindowless -Process $_ })
         $force = $false
 
         if ($windowless.Count -gt 0) {
-            Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText '{0} {1}: fechar é encerrar à força, e o que não foi salvo (uma gravação, uma máquina virtual) pode ser perdido.' "$(Join-WinForgeList -Items @($windowless | ForEach-Object { [string]$_.Description }))" "$(if ($windowless.Count -eq 1) { (Get-WinForgeText 'não tem janela aberta') } else { (Get-WinForgeText 'não têm janela aberta') })")
-            $forceQuestion = Get-WinForgeSelectionQuestion -Verb (Get-WinForgeText 'Encerrar à força') -Names @($windowless | ForEach-Object { [string]$_.Description }) -Many (Get-WinForgeText 'programas')
-            $force = Confirm-WinForgeAction -Message $forceQuestion -DefaultKey "N" -Danger -YesLabel (Get-WinForgeText 'Encerrar à força') -NoLabel (Get-WinForgeText 'Não encerrar')
+            Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText '{0} {1}: fechar é encerrar à força, e o que não foi salvo (uma gravação, uma máquina virtual) pode ser perdido.' "$(Join-TFToolkitList -Items @($windowless | ForEach-Object { [string]$_.Description }))" "$(if ($windowless.Count -eq 1) { (Get-TFToolkitText 'não tem janela aberta') } else { (Get-TFToolkitText 'não têm janela aberta') })")
+            $forceQuestion = Get-TFToolkitSelectionQuestion -Verb (Get-TFToolkitText 'Encerrar à força') -Names @($windowless | ForEach-Object { [string]$_.Description }) -Many (Get-TFToolkitText 'programas')
+            $force = Confirm-TFToolkitAction -Message $forceQuestion -DefaultKey "N" -Danger -YesLabel (Get-TFToolkitText 'Encerrar à força') -NoLabel (Get-TFToolkitText 'Não encerrar')
         }
 
         # Tudo o que foi marcado está sem janela, e a resposta foi Não: é desistir, como na pergunta de antes, e não um
         # programa que "ficou aberto".
         if ($windowless.Count -gt 0 -and -not $force -and $windowless.Count -eq $chosen.Count) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
@@ -1361,64 +1361,64 @@ function Show-WinForgeHeavyProcesses {
 
         foreach ($process in $chosen) {
             if (-not $force -and $windowless -contains $process) {
-                $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'ficou aberto (sem janela para fechar como no X)')
+                $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'ficou aberto (sem janela para fechar como no X)')
                 $result.Etapa = $process.Description
                 $results += $result
-                Write-WinForgeStatus -Type Warning -Message "$($process.Description): $($result.Detail)."
+                Write-TFToolkitStatus -Type Warning -Message "$($process.Description): $($result.Detail)."
                 continue
             }
 
-            $result = Stop-WinForgeProcessGroup -Process $process -AllowForce:($windowless -contains $process)
+            $result = Stop-TFToolkitProcessGroup -Process $process -AllowForce:($windowless -contains $process)
             $result.Etapa = $process.Description
             $results += $result
 
-            if ($result.Kind -eq "Ok") { Write-WinForgeStatus -Type Success -Message (Get-WinForgeText '{0}: fechado.' "$($process.Description)") }
-            elseif ($result.Kind -eq "Warning") { Write-WinForgeStatus -Type Warning -Message "$($process.Description): $($result.Detail)." }
-            else { Write-WinForgeStatus -Type Error -Message "$($process.Description): $($result.Detail)." }
+            if ($result.Kind -eq "Ok") { Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText '{0}: fechado.' "$($process.Description)") }
+            elseif ($result.Kind -eq "Warning") { Write-TFToolkitStatus -Type Warning -Message "$($process.Description): $($result.Detail)." }
+            else { Write-TFToolkitStatus -Type Error -Message "$($process.Description): $($result.Detail)." }
         }
 
         $failed = @($results | Where-Object { $_.Kind -ne "Ok" })
-        $names = Join-WinForgeList -Items @($failed | ForEach-Object { [string]$_.Etapa })
+        $names = Join-TFToolkitList -Items @($failed | ForEach-Object { [string]$_.Etapa })
         $now = $null
 
         # O efeito, medido: a memória em uso antes (da medição) e agora.
         if ($failed.Count -lt $results.Count -and $null -ne $memory) {
-            $now = Get-WinForgeMemoryUsage
+            $now = Get-TFToolkitMemoryUsage
 
             if ($null -ne $now) {
                 Write-Host ""
-                Write-WinForgeKeyValue -Label (Get-WinForgeText 'Memória em uso agora') -Value (Get-WinForgeText '{0} de {1} ({2}%); antes, {3}%' "$(Format-WinForgeBytes -Bytes $now.Used)" "$(Format-WinForgeBytes -Bytes $now.Total)" "$($now.Percent)" "$($memory.Percent)")
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Memória em uso agora') -Value (Get-TFToolkitText '{0} de {1} ({2}%); antes, {3}%' "$(Format-TFToolkitBytes -Bytes $now.Used)" "$(Format-TFToolkitBytes -Bytes $now.Total)" "$($now.Percent)" "$($memory.Percent)")
             }
         }
 
         if ($failed.Count -eq 0) {
             # Na janela, o título diz quantos, e a frase, o efeito na memória (os nomes ficam no resumo); sem a leitura da
             # memória, a frase diz quais.
-            $closedText = Format-WinForgeCount -Count $results.Count -One (Get-WinForgeText 'programa fechado') -Many (Get-WinForgeText 'programas fechados')
-            $final = New-WinForgeResult -Kind Ok -Detail $closedText -Title $title
+            $closedText = Format-TFToolkitCount -Count $results.Count -One (Get-TFToolkitText 'programa fechado') -Many (Get-TFToolkitText 'programas fechados')
+            $final = New-TFToolkitResult -Kind Ok -Detail $closedText -Title $title
             $note = $(
-                if ($null -ne $now) { (Get-WinForgeText 'Memória em uso agora: {0}% (antes, {1}%).' "$($now.Percent)" "$($memory.Percent)") }
-                else { $(if ($results.Count -eq 1) { (Get-WinForgeText 'Fechado: {0}.' "$(Join-WinForgeList -Items @($results | ForEach-Object { [string]$_.Etapa }))") } else { (Get-WinForgeText 'Fechados: {0}.' "$(Join-WinForgeList -Items @($results | ForEach-Object { [string]$_.Etapa }))") }) }
+                if ($null -ne $now) { (Get-TFToolkitText 'Memória em uso agora: {0}% (antes, {1}%).' "$($now.Percent)" "$($memory.Percent)") }
+                else { $(if ($results.Count -eq 1) { (Get-TFToolkitText 'Fechado: {0}.' "$(Join-TFToolkitList -Items @($results | ForEach-Object { [string]$_.Etapa }))") } else { (Get-TFToolkitText 'Fechados: {0}.' "$(Join-TFToolkitList -Items @($results | ForEach-Object { [string]$_.Etapa }))") }) }
             )
-            [void](Set-WinForgeResultView -Result $final -Headline $closedText -Note $note)
+            [void](Set-TFToolkitResultView -Result $final -Headline $closedText -Note $note)
         }
         elseif (@($failed | Where-Object { $_.Kind -eq "Failed" }).Count -eq $results.Count) {
-            $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'não foi possível fechar: {0}' "$names") -Title $title
+            $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'não foi possível fechar: {0}' "$names") -Title $title
         }
         elseif ($failed.Count -eq $results.Count) {
             # Uma janela que ficou aberta perguntando se quer salvar não é erro: a pessoa responde e fecha por ela.
-            $final = New-WinForgeResult -Kind Warning -Detail $(if ($failed.Count -eq 1) { (Get-WinForgeText 'ficou aberto: {0}' "$names") } else { (Get-WinForgeText 'ficaram abertos: {0}' "$names") }) -Title $title
+            $final = New-TFToolkitResult -Kind Warning -Detail $(if ($failed.Count -eq 1) { (Get-TFToolkitText 'ficou aberto: {0}' "$names") } else { (Get-TFToolkitText 'ficaram abertos: {0}' "$names") }) -Title $title
         }
         else {
-            $final = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} de {1} não fecharam: {2}' "$($failed.Count)" "$($results.Count)" "$names") -Title $title
+            $final = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} de {1} não fecharam: {2}' "$($failed.Count)" "$($results.Count)" "$names") -Title $title
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível medir os programas: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível medir os programas: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 

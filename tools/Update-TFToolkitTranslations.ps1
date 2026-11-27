@@ -1,13 +1,13 @@
 ﻿#requires -Version 5.1
 <#
 .SYNOPSIS
-    Atualiza as traduções do WinForge (lang\*.po) com os textos atuais do código.
+    Atualiza as traduções do TF-Toolkit (lang\*.po) com os textos atuais do código.
 
 .DESCRIPTION
-    O WinForge usa o texto em português como chave, como no gettext. Este script lê os textos da interface (as chamadas
-    de Get-WinForgeText e Get-WinForgeContextText com texto fixo, os parâmetros que recebem texto da interface, os
-    atributos visíveis do XAML e o catálogo de programas) e grava o modelo tools\WinForge.pot. Depois junta o modelo em
-    cada lang\*.po: as traduções existentes ficam, os textos novos entram sem tradução (o WinForge mostra o português
+    O TF-Toolkit usa o texto em português como chave, como no gettext. Este script lê os textos da interface (as chamadas
+    de Get-TFToolkitText e Get-TFToolkitContextText com texto fixo, os parâmetros que recebem texto da interface, os
+    atributos visíveis do XAML e o catálogo de programas) e grava o modelo tools\TF-Toolkit.pot. Depois junta o modelo em
+    cada lang\*.po: as traduções existentes ficam, os textos novos entram sem tradução (o TF-Toolkit mostra o português
     até alguém traduzir) e os que saíram do código vão para o fim do arquivo como obsoletos (#~), para reaproveitar.
 
     Abra o .po num editor de traduções (o Poedit, por exemplo) para preencher o que falta. Os comentários "#." dizem o
@@ -15,7 +15,7 @@
     português), mas aparece no aviso do fim.
 
 .EXAMPLE
-    .\tools\Update-WinForgeTranslations.ps1
+    .\tools\Update-TFToolkitTranslations.ps1
 #>
 [CmdletBinding()]
 param ()
@@ -27,17 +27,17 @@ $root = Split-Path -Parent $PSScriptRoot
 $utf8 = New-Object System.Text.UTF8Encoding $false
 $eot = [string][char]4
 
-# Parâmetros que recebem texto da interface sem passar por Get-WinForgeText na chamada (a função traduz por dentro).
+# Parâmetros que recebem texto da interface sem passar por Get-TFToolkitText na chamada (a função traduz por dentro).
 $parameterTexts = @(
-    @{ Command = "Write-WinForgeOtherAccountNotice"; Parameter = "What"; Note = "começa com o artigo: a frase concorda com ele (gênero e número)" },
-    @{ Command = "Format-WinForgeDateTime"; Parameter = "Pattern"; Note = "padrão de data (Format-WinForgeDateTime)" }
+    @{ Command = "Write-TFToolkitOtherAccountNotice"; Parameter = "What"; Note = "começa com o artigo: a frase concorda com ele (gênero e número)" },
+    @{ Command = "Format-TFToolkitDateTime"; Parameter = "Pattern"; Note = "padrão de data (Format-TFToolkitDateTime)" }
 )
 
 # Funções cujo primeiro argumento é texto da interface.
-$firstArgumentTexts = @{ "Get-WinForgeStartupText" = "mensagem de início (antes dos módulos)" }
+$firstArgumentTexts = @{ "Get-TFToolkitStartupText" = "mensagem de início (antes dos módulos)" }
 
-# Textos que o código usa sem escrever na chamada (o padrão de Format-WinForgeDateTime).
-$fixedTexts = @(@{ Text = "dd/MM/yyyy HH:mm"; Where = "modules/Core.psm1"; Note = "padrão de data (Format-WinForgeDateTime)" })
+# Textos que o código usa sem escrever na chamada (o padrão de Format-TFToolkitDateTime).
+$fixedTexts = @(@{ Text = "dd/MM/yyyy HH:mm"; Where = "modules/Core.psm1"; Note = "padrão de data (Format-TFToolkitDateTime)" })
 
 $entries = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([System.StringComparer]::Ordinal)
 $order = New-Object System.Collections.Generic.List[string]
@@ -79,13 +79,13 @@ function Get-ArgumentNote {
 
 
 function Test-InsideTranslation {
-    # Se o texto já está dentro de um Get-WinForgeText (ou Get-WinForgeContextText) dentro do argumento.
+    # Se o texto já está dentro de um Get-TFToolkitText (ou Get-TFToolkitContextText) dentro do argumento.
     param ($Node, $Stop)
 
     $parent = $Node.Parent
 
     while ($null -ne $parent -and $parent -ne $Stop) {
-        if ($parent -is [System.Management.Automation.Language.CommandAst] -and @("Get-WinForgeText", "Get-WinForgeContextText") -contains $parent.GetCommandName()) { return $true }
+        if ($parent -is [System.Management.Automation.Language.CommandAst] -and @("Get-TFToolkitText", "Get-TFToolkitContextText") -contains $parent.GetCommandName()) { return $true }
 
         $parent = $parent.Parent
     }
@@ -95,7 +95,7 @@ function Test-InsideTranslation {
 
 
 # Os scripts: os módulos e os scripts de entrada, nessa ordem.
-$files = @(Get-ChildItem -LiteralPath (Join-Path $root "modules") -Filter "*.psm1" -File | Sort-Object Name) + @(Get-ChildItem -LiteralPath $root -Filter "WinForge.*.ps1" -File | Sort-Object Name)
+$files = @(Get-ChildItem -LiteralPath (Join-Path $root "modules") -Filter "*.psm1" -File | Sort-Object Name) + @(Get-ChildItem -LiteralPath $root -Filter "TF-Toolkit.*.ps1" -File | Sort-Object Name)
 
 foreach ($file in $files) {
     $tokens = $null
@@ -111,7 +111,7 @@ foreach ($file in $files) {
         $elements = @($command.CommandElements)
         $where = "${relative}:$($command.Extent.StartLineNumber)"
 
-        if ($name -eq "Get-WinForgeText") {
+        if ($name -eq "Get-TFToolkitText") {
             if ($elements.Count -ge 2 -and $elements[1] -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
                 Add-Text -Key $elements[1].Value -Where $where -Note (Get-ArgumentNote -Elements @($elements | Select-Object -Skip 2))
             }
@@ -119,7 +119,7 @@ foreach ($file in $files) {
             continue
         }
 
-        if ($name -eq "Get-WinForgeContextText") {
+        if ($name -eq "Get-TFToolkitContextText") {
             if ($elements.Count -ge 3 -and $elements[1] -is [System.Management.Automation.Language.StringConstantExpressionAst] -and $elements[2] -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
                 $note = "contexto: $($elements[1].Value)"
                 $arguments = Get-ArgumentNote -Elements @($elements | Select-Object -Skip 3)
@@ -179,7 +179,7 @@ foreach ($xaml in $xamlFiles) {
 Import-Module (Join-Path $root "modules\Core.psm1") -Force -DisableNameChecking
 Import-Module (Join-Path $root "modules\Catalog.psm1") -Force -DisableNameChecking
 
-foreach ($program in @((Get-WinForgeBuiltInCatalog).Essentials)) {
+foreach ($program in @((Get-TFToolkitBuiltInCatalog).Essentials)) {
     Add-Text -Key ([string]$program.Categoria) -Where "catalog:embutido" -Note "categoria do catálogo"
     Add-Text -Key ([string]$program.Descricao) -Where "catalog:embutido" -Note "descrição de programa ($($program.Nome))"
 }
@@ -419,11 +419,11 @@ function Write-PoFile {
 }
 
 
-$templateHeader = "Project-Id-Version: WinForge`nMIME-Version: 1.0`nContent-Type: text/plain; charset=UTF-8`nContent-Transfer-Encoding: 8bit`n"
-$templateComments = @("# Textos da interface do WinForge: o modelo das traduções (lang\*.po).", "# Gerado por tools\Update-WinForgeTranslations.ps1; não edite à mão.")
+$templateHeader = "Project-Id-Version: TF-Toolkit`nMIME-Version: 1.0`nContent-Type: text/plain; charset=UTF-8`nContent-Transfer-Encoding: 8bit`n"
+$templateComments = @("# Textos da interface do TF-Toolkit: o modelo das traduções (lang\*.po).", "# Gerado por tools\Update-TFToolkitTranslations.ps1; não edite à mão.")
 
-[void](Write-PoFile -Path (Join-Path $PSScriptRoot "WinForge.pot") -Comments $templateComments -Header $templateHeader -Existing $null)
-Write-Host "Modelo: $($order.Count) textos em tools\WinForge.pot" -ForegroundColor Cyan
+[void](Write-PoFile -Path (Join-Path $PSScriptRoot "TF-Toolkit.pot") -Comments $templateComments -Header $templateHeader -Existing $null)
+Write-Host "Modelo: $($order.Count) textos em tools\TF-Toolkit.pot" -ForegroundColor Cyan
 
 $languageFolder = Join-Path $root "lang"
 

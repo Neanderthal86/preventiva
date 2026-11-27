@@ -1,15 +1,15 @@
-﻿# O visual da janela do WinForge: as cores dos temas claro e escuro, os ícones (desenhos de traço numa caixa de 24 x 24)
+﻿# O visual da janela do TF-Toolkit: as cores dos temas claro e escuro, os ícones (desenhos de traço numa caixa de 24 x 24)
 # e a leitura da saída das ações para o resumo da tela de execução. Só dados e lógica, sem WPF: a janela
-# (WinForge.Gui.ps1) monta os controles a partir daqui, e tudo isto pode ser conferido fora do Windows.
+# (TF-Toolkit.Gui.ps1) monta os controles a partir daqui, e tudo isto pode ser conferido fora do Windows.
 
 # ---------------------------------------------------------------------------
 # Temas
 # ---------------------------------------------------------------------------
 
 # Cada chave vira um pincel <Chave>Brush nos recursos da janela (o XAML usa os mesmos nomes) e também é usada pelos
-# controles que o script monta. O desenho é o do WinForge 4.0 (R37): no escuro, um grafite frio (a janela #171A1C, a barra
+# controles que o script monta. O desenho é o do TF-Toolkit 4.0 (R37): no escuro, um grafite frio (a janela #171A1C, a barra
 # lateral um pouco mais clara, #1C2022, e os cartões #202527), o texto num branco quente (#F1EEE7) e a cor de destaque no
-# laranja da bigorna do ícone (#F49367, assets\WinForge.svg), com texto escuro por cima, como o Windows faz no modo escuro.
+# laranja da bigorna do ícone (#F49367, assets\TF-Toolkit.svg), com texto escuro por cima, como o Windows faz no modo escuro.
 # No claro, o mesmo arranjo em cinzas claros, e o laranja mais escuro (#B9501E), que passa de 4,5:1 com texto branco. O
 # verde de "tudo certo" é um verde-menta no escuro (#95D3AE); o aviso fica no amarelo-âmbar, para não se confundir com o
 # laranja do destaque.
@@ -22,9 +22,9 @@
 # preenchida na cor de destaque), InputLine é a borda das caixas de texto e ButtonLine a dos botões comuns. Line (o
 # contorno dos cartões e os traços entre as linhas) e SidebarLine são translúcidos, como os do Windows 11: preto a 10% no
 # claro e branco a 7% no escuro, e acompanham o fundo onde estiverem. Quem precisa de uma cor sólida (a borda da barra de
-# título) usa ConvertTo-WinForgeOpaqueColor. Com o contraste alto do Windows ligado, valem as cores do sistema
-# (Get-WinForgeHighContrastPalette).
-$script:WinForgePalettes = @{
+# título) usa ConvertTo-TFToolkitOpaqueColor. Com o contraste alto do Windows ligado, valem as cores do sistema
+# (Get-TFToolkitHighContrastPalette).
+$script:TFToolkitPalettes = @{
     Light = @{
         Window = "#F5F6F6"; Sidebar = "#EEF0F0"; SidebarLine = "#14000000"; Card = "#FFFFFF"; CardHover = "#F8F9F9"
         Inset = "#F2F4F4"; Line = "#1A000000"; Text = "#1B1E1F"; Muted = "#525859"; Dim = "#5C6465"
@@ -53,10 +53,10 @@ $script:WinForgePalettes = @{
 
 # As 16 cores do console (Write-Host -ForegroundColor) em cada tema, nos tons do Windows 11: o verde, o aviso e o
 # vermelho são os das cores de estado (Ok, Warn, Bad), os cinzas e o branco são os do texto. "Blue" continua azul: é a
-# cor que o programa pediu, e não a do WinForge. No claro, "White" e "Gray" viram tons escuros: texto branco sobre o fundo
+# cor que o programa pediu, e não a do TF-Toolkit. No claro, "White" e "Gray" viram tons escuros: texto branco sobre o fundo
 # claro dos detalhes técnicos não seria legível. Todas passam de 4,5:1 sobre o fundo dos detalhes técnicos (Inset), o
 # cartão e o cartão sob o mouse, nos dois temas.
-$script:WinForgeConsolePalettes = @{
+$script:TFToolkitConsolePalettes = @{
     Light = @{
         Black = "#5C6465"; DarkBlue = "#003E92"; DarkGreen = "#0B6A0B"; DarkCyan = "#005B70"; DarkRed = "#A4262C"
         DarkMagenta = "#5C2E91"; DarkYellow = "#835000"; Gray = "#3B3B3B"; DarkGray = "#5C6465"; Blue = "#2B5FD0"
@@ -78,7 +78,7 @@ $script:WinForgeConsolePalettes = @{
 
 # Desenho próprio, em traços (comandos M L H V A C Z, separados por espaço; vírgula decimal nunca). A janela desenha
 # cada um com pontas e junções arredondadas; "L x y" para um ponto quase igual vira um ponto.
-$script:WinForgeIcons = @{
+$script:TFToolkitIcons = @{
     "home" = "M 3.5 10.5 L 12 3.5 L 20.5 10.5 M 6 8.5 V 19.5 A 1 1 0 0 0 7 20.5 H 10 V 15 H 14 V 20.5 H 17 A 1 1 0 0 0 18 19.5 V 8.5"
     "gauge" = "M 4.6 17.5 A 8.5 8.5 0 1 1 19.4 17.5 M 12 13.5 L 15.8 8.6 M 12 13.5 L 12.01 13.5 M 7.2 12 L 6.2 11.6 M 12 6.5 L 12 5.5 M 16.8 12 L 17.8 11.6"
     "pulse" = "M 3 12.5 H 7 L 9.5 6 L 14 19 L 16.5 12.5 H 21"
@@ -143,7 +143,7 @@ $script:WinForgeIcons = @{
 
 # O ícone de cada página, de cada item da navegação e de cada cartão do Início ("fact.<id>"). Item sem ícone próprio usa o
 # da página dele.
-$script:WinForgeIconNames = @{
+$script:TFToolkitIconNames = @{
     "home" = "home"; "maintenance" = "gauge"; "diagnostics" = "pulse"; "security" = "shield"; "cleanup" = "sparkles"
     "repair" = "wrench"; "updates" = "sync"; "performance" = "rocket"; "software" = "apps"; "network" = "wifi"; "tweaks" = "sliders"; "personalize" = "palette"; "app" = "info"
     "search" = "search"
@@ -197,22 +197,22 @@ $script:WinForgeIconNames = @{
 }
 
 
-function Get-WinForgePalette {
+function Get-TFToolkitPalette {
     # As cores de um tema (cópia: quem altera não muda a tabela).
     param ([ValidateSet("Light", "Dark")][string]$Name = "Light")
 
-    return $script:WinForgePalettes[$Name].Clone()
+    return $script:TFToolkitPalettes[$Name].Clone()
 }
 
 
-function Get-WinForgeConsolePalette {
+function Get-TFToolkitConsolePalette {
     param ([ValidateSet("Light", "Dark")][string]$Name = "Light")
 
-    return $script:WinForgeConsolePalettes[$Name].Clone()
+    return $script:TFToolkitConsolePalettes[$Name].Clone()
 }
 
 
-function Get-WinForgeLevelColors {
+function Get-TFToolkitLevelColors {
     # As cores de cada nível de resultado (Ok, Warn, Bad, Muted) num tema: Dot é a cor do texto e do ícone, Back o fundo
     # suave e Line o contorno; Icon é o ícone do resultado.
     param ([Parameter(Mandatory)][hashtable]$Theme)
@@ -226,7 +226,7 @@ function Get-WinForgeLevelColors {
 }
 
 
-function Get-WinForgeHighContrastPalette {
+function Get-TFToolkitHighContrastPalette {
     <#
     As cores da janela com o contraste alto do Windows ligado (Configurações > Acessibilidade > Temas de contraste), nas
     mesmas chaves das paletas. Colors: Window, WindowText, Highlight, HighlightText e HotTrack (a cor dos links), em
@@ -243,7 +243,7 @@ function Get-WinForgeHighContrastPalette {
 
     $palette = @{}
 
-    foreach ($key in @($script:WinForgePalettes.Light.Keys)) { $palette[$key] = $text }
+    foreach ($key in @($script:TFToolkitPalettes.Light.Keys)) { $palette[$key] = $text }
 
     foreach ($key in @("Window", "Sidebar", "Card", "CardHover", "Inset", "AccentCard", "NavSelected", "NavHover", "Search", "OkSoft",
             "WarnSoft", "BadSoft", "MutedSoft", "DangerSoft", "Track", "Knob", "SwitchKnobOn", "Hero", "HeroPanel")) {
@@ -260,13 +260,13 @@ function Get-WinForgeHighContrastPalette {
 }
 
 
-function Get-WinForgeHighContrastConsolePalette {
+function Get-TFToolkitHighContrastConsolePalette {
     # As 16 cores dos detalhes técnicos com o contraste alto ligado: todas na cor do texto do sistema.
     param ([Parameter(Mandatory)][string]$Text)
 
     $palette = @{}
 
-    foreach ($key in @($script:WinForgeConsolePalettes.Light.Keys)) { $palette[$key] = $Text }
+    foreach ($key in @($script:TFToolkitConsolePalettes.Light.Keys)) { $palette[$key] = $Text }
 
     return $palette
 }
@@ -276,11 +276,11 @@ function Get-WinForgeHighContrastConsolePalette {
 # da página e os números do histórico no Início) e o mostrador (a nota de saúde). Todo texto da janela usa um destes,
 # multiplicado pelo tamanho do texto escolhido no Windows. Cada tamanho tem a sua entrelinha (12/16, 14/20, 18/24, 20/28,
 # 28/36, 40/52 e 68/92).
-$script:WinForgeTypeRamp = [ordered]@{ Caption = 12; Body = 14; BodyLarge = 18; Subtitle = 20; Title = 28; TitleLarge = 40; Display = 68 }
-$script:WinForgeLineRamp = [ordered]@{ Caption = 16; Body = 20; BodyLarge = 24; Subtitle = 28; Title = 36; TitleLarge = 52; Display = 92 }
+$script:TFToolkitTypeRamp = [ordered]@{ Caption = 12; Body = 14; BodyLarge = 18; Subtitle = 20; Title = 28; TitleLarge = 40; Display = 68 }
+$script:TFToolkitLineRamp = [ordered]@{ Caption = 16; Body = 20; BodyLarge = 24; Subtitle = 28; Title = 36; TitleLarge = 52; Display = 92 }
 
 
-function Get-WinForgeTextScale {
+function Get-TFToolkitTextScale {
     # O fator do tamanho do texto escolhido no Windows (Configurações > Acessibilidade > Tamanho do texto): o valor
     # TextScaleFactor do registro, de 100 a 225. Sem valor, ou fora dessa faixa, 1.
     param ($Value)
@@ -297,7 +297,7 @@ function Get-WinForgeTextScale {
 }
 
 
-function Get-WinForgeTypeRamp {
+function Get-TFToolkitTypeRamp {
     # Os tamanhos da escala (Caption, Body, BodyLarge, Subtitle, Title, TitleLarge) já multiplicados pelo fator do tamanho
     # do texto, em meios pontos. Um fator fora de 1 a 2,25 vale 1.
     param ([double]$Scale = 1.0)
@@ -306,15 +306,15 @@ function Get-WinForgeTypeRamp {
 
     $ramp = @{}
 
-    foreach ($key in @($script:WinForgeTypeRamp.Keys)) {
-        $ramp[$key] = [double]([Math]::Round([double]$script:WinForgeTypeRamp[$key] * $Scale * 2.0) / 2.0)
+    foreach ($key in @($script:TFToolkitTypeRamp.Keys)) {
+        $ramp[$key] = [double]([Math]::Round([double]$script:TFToolkitTypeRamp[$key] * $Scale * 2.0) / 2.0)
     }
 
     return $ramp
 }
 
 
-function Get-WinForgeLineRamp {
+function Get-TFToolkitLineRamp {
     # As entrelinhas da escala (Caption 16, Body 20...), multiplicadas pelo fator do tamanho do texto como os tamanhos, em
     # meios pontos. Um fator fora de 1 a 2,25 vale 1.
     param ([double]$Scale = 1.0)
@@ -323,15 +323,15 @@ function Get-WinForgeLineRamp {
 
     $ramp = @{}
 
-    foreach ($key in @($script:WinForgeLineRamp.Keys)) {
-        $ramp[$key] = [double]([Math]::Round([double]$script:WinForgeLineRamp[$key] * $Scale * 2.0) / 2.0)
+    foreach ($key in @($script:TFToolkitLineRamp.Keys)) {
+        $ramp[$key] = [double]([Math]::Round([double]$script:TFToolkitLineRamp[$key] * $Scale * 2.0) / 2.0)
     }
 
     return $ramp
 }
 
 
-function Convert-WinForgeXamlMotion {
+function Convert-TFToolkitXamlMotion {
     <#
     O XAML da janela antes de ser montado: com os efeitos de animação do Windows desligados (Animate $false), as transições
     dos botões e da chave (Duration="0:0:0.083") passam a durar zero, e o estado muda na hora. Só essa duração é trocada:
@@ -348,23 +348,23 @@ function Convert-WinForgeXamlMotion {
 }
 
 
-function Get-WinForgeNavGroups {
+function Get-TFToolkitNavGroups {
     <#
     Os grupos da barra lateral da janela, na ordem da tela, com as páginas de cada um. Só a janela os usa: o menu de texto
     e a busca seguem a ordem da tabela de navegação, e nenhuma página muda de nome nem de lugar.
     #>
     return @(
-        [PSCustomObject]@{ Label = (Get-WinForgeText 'Cuidar'); Pages = @("maintenance", "cleanup", "performance") },
-        [PSCustomObject]@{ Label = (Get-WinForgeText 'Consertar'); Pages = @("repair", "diagnostics", "network") },
-        [PSCustomObject]@{ Label = (Get-WinForgeText 'Proteger'); Pages = @("security", "updates") },
-        [PSCustomObject]@{ Label = (Get-WinForgeText 'Configurar'); Pages = @("software", "tweaks", "personalize") }
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Cuidar'); Pages = @("maintenance", "cleanup", "performance") },
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Consertar'); Pages = @("repair", "diagnostics", "network") },
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Proteger'); Pages = @("security", "updates") },
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Configurar'); Pages = @("software", "tweaks", "personalize") }
     )
 }
 
 
-function Get-WinForgeNavOrder {
+function Get-TFToolkitNavOrder {
     <#
-    A ordem das páginas da lista principal na barra lateral: as de cada grupo (Get-WinForgeNavGroups), e no fim as que não
+    A ordem das páginas da lista principal na barra lateral: as de cada grupo (Get-TFToolkitNavGroups), e no fim as que não
     estão em nenhum, sem título. Pages: os Id da lista principal, na ordem da tabela de navegação; um Id de grupo que não
     está nela fica de fora. Devolve Id e Heading (o título do grupo, só na primeira página de cada um).
     #>
@@ -373,7 +373,7 @@ function Get-WinForgeNavOrder {
     $order = @()
     $placed = @{}
 
-    foreach ($group in @(Get-WinForgeNavGroups)) {
+    foreach ($group in @(Get-TFToolkitNavGroups)) {
         $first = $true
 
         foreach ($id in @($group.Pages)) {
@@ -396,9 +396,9 @@ function Get-WinForgeNavOrder {
 }
 
 
-function Get-WinForgeThemePreference {
-    # O tema escolhido em Sobre o WinForge > Aparência: System (como o Windows, o padrão), Light ou Dark.
-    $value = [string](Get-WinForgeSetting -Name "Theme" -Default "System")
+function Get-TFToolkitThemePreference {
+    # O tema escolhido em Sobre o TF-Toolkit > Aparência: System (como o Windows, o padrão), Light ou Dark.
+    $value = [string](Get-TFToolkitSetting -Name "Theme" -Default "System")
 
     if ($value -eq "Light" -or $value -eq "Dark") { return $value }
 
@@ -406,7 +406,7 @@ function Get-WinForgeThemePreference {
 }
 
 
-function Resolve-WinForgeTheme {
+function Resolve-TFToolkitTheme {
     # O tema a usar: o escolhido pela pessoa ou, em "como o Windows", o dos aplicativos do Windows (claro, se não der
     # para saber).
     param (
@@ -422,7 +422,7 @@ function Resolve-WinForgeTheme {
 }
 
 
-function ConvertTo-WinForgeOpaqueColor {
+function ConvertTo-TFToolkitOpaqueColor {
     <#
     Uma cor translúcida ("#AARRGGBB", como os contornos Line e SidebarLine) já pintada sobre um fundo sólido ("#RRGGBB"):
     o "#RRGGBB" que aparece na tela. Uma cor já sólida volta como está.
@@ -433,12 +433,12 @@ function ConvertTo-WinForgeOpaqueColor {
     )
 
     if ($Hex -match '^#[0-9A-Fa-f]{6}$') { return $Hex.ToUpperInvariant() }
-    if ($Hex -notmatch '^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$') { throw (Get-WinForgeText 'Cor inválida: {0}' "$Hex") }
+    if ($Hex -notmatch '^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$') { throw (Get-TFToolkitText 'Cor inválida: {0}' "$Hex") }
 
     $alpha = [Convert]::ToInt32($Matches[1], 16) / 255.0
     $top = @([Convert]::ToInt32($Matches[2], 16), [Convert]::ToInt32($Matches[3], 16), [Convert]::ToInt32($Matches[4], 16))
 
-    if ($Background -notmatch '^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$') { throw (Get-WinForgeText 'Cor inválida: {0}' "$Background") }
+    if ($Background -notmatch '^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$') { throw (Get-TFToolkitText 'Cor inválida: {0}' "$Background") }
 
     $bottom = @([Convert]::ToInt32($Matches[1], 16), [Convert]::ToInt32($Matches[2], 16), [Convert]::ToInt32($Matches[3], 16))
     $mixed = for ($i = 0; $i -lt 3; $i++) { [int][Math]::Round($top[$i] * $alpha + $bottom[$i] * (1 - $alpha)) }
@@ -447,11 +447,11 @@ function ConvertTo-WinForgeOpaqueColor {
 }
 
 
-function ConvertTo-WinForgeColorRef {
+function ConvertTo-TFToolkitColorRef {
     # "#RRGGBB" no formato COLORREF do Windows (0x00BBGGRR), para a cor da barra de título.
     param ([Parameter(Mandatory)][string]$Hex)
 
-    if ($Hex -notmatch '^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$') { throw (Get-WinForgeText 'Cor inválida: {0}' "$Hex") }
+    if ($Hex -notmatch '^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$') { throw (Get-TFToolkitText 'Cor inválida: {0}' "$Hex") }
 
     $r = [Convert]::ToInt32($Matches[1], 16)
     $g = [Convert]::ToInt32($Matches[2], 16)
@@ -461,18 +461,18 @@ function ConvertTo-WinForgeColorRef {
 }
 
 
-function Get-WinForgeIconData {
+function Get-TFToolkitIconData {
     # O desenho de um ícone (texto de geometria do WPF). Nome desconhecido vira o de reticências, para nunca faltar ícone.
     param ([Parameter(Mandatory)][string]$Name)
 
-    if ($script:WinForgeIcons.ContainsKey($Name)) { return [string]$script:WinForgeIcons[$Name] }
+    if ($script:TFToolkitIcons.ContainsKey($Name)) { return [string]$script:TFToolkitIcons[$Name] }
 
-    return [string]$script:WinForgeIcons["dots"]
+    return [string]$script:TFToolkitIcons["dots"]
 }
 
 
-function Get-WinForgeLogoDrawing {
-    # O desenho de assets\WinForge.svg, para a janela desenhar o ícone quando o .ico não está na pasta: o quadrado grafite
+function Get-TFToolkitLogoDrawing {
+    # O desenho de assets\TF-Toolkit.svg, para a janela desenhar o ícone quando o .ico não está na pasta: o quadrado grafite
     # numa caixa de 1024 e a bigorna (branca, de face laranja), cujos traços o SVG reduz com scale(.9) e desloca com
     # translate(-36 -88). Os traços são os mesmos do SVG, com o L da segunda reta escrito por extenso. A barra lateral
     # desenha a mesma bigorna, sem o quadrado, nas cores do tema (o XAML tem os mesmos traços).
@@ -493,7 +493,7 @@ function Get-WinForgeLogoDrawing {
 }
 
 
-function Get-WinForgeIconName {
+function Get-TFToolkitIconName {
     # O ícone de uma página, de um item ("pagina.item") ou de um cartão do Início ("fact.<id>"). Um resultado da busca que
     # leva a uma página ("search.page.<página>", ou a uma parte dela) tem o ícone da página; um ajuste ("search.tweak.<página>.<ajuste>"), o da página dele.
     param ([Parameter(Mandatory)][AllowEmptyString()][string]$Id)
@@ -501,17 +501,17 @@ function Get-WinForgeIconName {
     if ($Id.StartsWith("search.page.")) { $Id = ($Id.Substring(12) -split '\.', 2)[0] }
     elseif ($Id.StartsWith("search.tweak.")) { $Id = ($Id.Substring(13) -split '\.', 2)[0] }
 
-    if ($script:WinForgeIconNames.ContainsKey($Id)) { return [string]$script:WinForgeIconNames[$Id] }
+    if ($script:TFToolkitIconNames.ContainsKey($Id)) { return [string]$script:TFToolkitIconNames[$Id] }
 
     $page = ($Id -split '\.', 2)[0]
 
-    if ($script:WinForgeIconNames.ContainsKey($page)) { return [string]$script:WinForgeIconNames[$page] }
+    if ($script:TFToolkitIconNames.ContainsKey($page)) { return [string]$script:TFToolkitIconNames[$page] }
 
     return "dots"
 }
 
 
-function Get-WinForgeHealthActionPlan {
+function Get-TFToolkitHealthActionPlan {
     <#
     Os botões da nota de saúde no Início: os dois da nota (Verificar o PC e Otimizar, CardIds) e um por ponto de atenção.
     Um botão por ação: o ponto que se resolve com um dos botões da nota não ganha outro igual na linha dele. E um destaque
@@ -543,7 +543,7 @@ function Get-WinForgeHealthActionPlan {
 }
 
 
-function Get-WinForgeScoreMarks {
+function Get-TFToolkitScoreMarks {
     <#
     Os traços embaixo da nota de saúde no Início: quantos dos Count (10) ficam cheios. Um traço a cada 10 pontos
     completos: só a nota 100 enche os dez (uma nota 95 não parece cheia). Sem nota (negativa) ou com 0, nenhum.
@@ -559,7 +559,7 @@ function Get-WinForgeScoreMarks {
 }
 
 
-function Get-WinForgeHomeColumns {
+function Get-TFToolkitHomeColumns {
     <#
     As colunas de uma fileira do Início (os cartões de "Seu PC", a linha da última manutenção e do reinício, os números
     do histórico): Count lado a lado quando cada um fica com pelo menos MinWidth (já com o tamanho do texto do Windows);
@@ -579,7 +579,7 @@ function Get-WinForgeHomeColumns {
 }
 
 
-function Test-WinForgeHeroWide {
+function Test-TFToolkitHeroWide {
     <#
     O cartão da nota de saúde com a nota à direita da frase: só quando a frase e os botões ficam com pelo menos MinText
     (já com o tamanho do texto do Windows) ao lado da nota (ScoreWidth). Senão, a nota desce para baixo dos botões. Sem
@@ -597,7 +597,7 @@ function Test-WinForgeHeroWide {
 }
 
 
-function Get-WinForgeHeroBand {
+function Get-TFToolkitHeroBand {
     <#
     A faixa inclinada atrás da nota de saúde, no desenho do cartão (Width x Height, em pixels): um quadrilátero que começa
     no alto em Start (a partir da esquerda), vai até a direita e desce inclinado para a esquerda (Slant: quanto o lado de
@@ -624,25 +624,25 @@ function Get-WinForgeHeroBand {
 }
 
 
-function Get-WinForgeHealthHeadline {
+function Get-TFToolkitHealthHeadline {
     # A frase grande da nota de saúde no Início. Se parte do que entra na nota não pôde ser lida, uma nota alta não
     # garante nada sobre essa parte: a frase fica mais modesta ("parece bem") e o resumo embaixo diz o que faltou.
     param ($Health)
 
     if ($null -eq $Health) { return "" }
 
-    $unread = @(Get-WinForgeJsonValue -Object $Health -Name "Unread" -Default @())
+    $unread = @(Get-TFToolkitJsonValue -Object $Health -Name "Unread" -Default @())
 
-    if ($unread.Count -gt 0 -and [string]$Health.Label -in @((Get-WinForgeText 'Ótima'), (Get-WinForgeText 'Boa'), (Get-WinForgeText 'Incompleta'))) { return (Get-WinForgeText 'Seu PC parece bem') }
+    if ($unread.Count -gt 0 -and [string]$Health.Label -in @((Get-TFToolkitText 'Ótima'), (Get-TFToolkitText 'Boa'), (Get-TFToolkitText 'Incompleta'))) { return (Get-TFToolkitText 'Seu PC parece bem') }
 
     switch ([string]$Health.Label) {
-        (Get-WinForgeText 'Ótima') { return (Get-WinForgeText 'Seu PC está em ótima forma') }
-        (Get-WinForgeText 'Boa') { return (Get-WinForgeText 'Seu PC está bem') }
-        (Get-WinForgeText 'Pede atenção') { return (Get-WinForgeText 'Seu PC pede atenção') }
-        (Get-WinForgeText 'Crítica') { return (Get-WinForgeText 'Seu PC precisa de cuidados') }
+        (Get-TFToolkitText 'Ótima') { return (Get-TFToolkitText 'Seu PC está em ótima forma') }
+        (Get-TFToolkitText 'Boa') { return (Get-TFToolkitText 'Seu PC está bem') }
+        (Get-TFToolkitText 'Pede atenção') { return (Get-TFToolkitText 'Seu PC pede atenção') }
+        (Get-TFToolkitText 'Crítica') { return (Get-TFToolkitText 'Seu PC precisa de cuidados') }
     }
 
-    return (Get-WinForgeText 'Saúde do PC: {0}' "$($Health.Label)")
+    return (Get-TFToolkitText 'Saúde do PC: {0}' "$($Health.Label)")
 }
 
 
@@ -650,11 +650,11 @@ function Get-WinForgeHealthHeadline {
 # Resumo da execução (o que a tela mostra sem os detalhes técnicos)
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeActivityEntry {
+function Get-TFToolkitActivityEntry {
     <#
-    Uma linha da saída que vale para o resumo da execução: as mensagens de estado do WinForge ("[OK] texto", "[!]",
+    Uma linha da saída que vale para o resumo da execução: as mensagens de estado do TF-Toolkit ("[OK] texto", "[!]",
     "[X]", "[i]", "[..]"), as etapas ("[>] título"), as partes de um fluxo em etapas que não são etapas ("[>>] título",
-    Write-WinForgePhase) e as etapas ignoradas de uma tabela de resultados ("[-]"). Devolve Kind (Ok | Warn | Bad | Info |
+    Write-TFToolkitPhase) e as etapas ignoradas de uma tabela de resultados ("[-]"). Devolve Kind (Ok | Warn | Bad | Info |
     Run | Step | Phase | Skip) e o texto sem a marca, ou $null para as demais linhas (tabelas, saída de programas, linhas
     em branco).
     #>
@@ -662,7 +662,7 @@ function Get-WinForgeActivityEntry {
 
     if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
 
-    # -cmatch: as marcas são exatamente estas ("[ok]" ou "[I]" não são mensagens do WinForge).
+    # -cmatch: as marcas são exatamente estas ("[ok]" ou "[I]" não são mensagens do TF-Toolkit).
     if ($Text -cnotmatch '^\s*\[(OK|!|X|i|\.\.|>>|>|-)\]\s+(\S.*?)\s*$') { return $null }
 
     $kind = switch -CaseSensitive ($Matches[1]) {
@@ -680,12 +680,12 @@ function Get-WinForgeActivityEntry {
 }
 
 
-function Get-WinForgeFactEntry {
+function Get-TFToolkitFactEntry {
     <#
-    Uma linha "rótulo : valor" do WinForge (Write-WinForgeKeyValue: dois espaços, o rótulo e " : " em cinza-escuro e o
+    Uma linha "rótulo : valor" do TF-Toolkit (Write-TFToolkitKeyValue: dois espaços, o rótulo e " : " em cinza-escuro e o
     valor), que entra no resumo da execução como um fato: o espaço livre depois de uma limpeza, a próxima execução de uma
     tarefa, a duração de uma etapa. Colors são as cores dos pedaços da linha, na ordem; a cor separa uma linha do
-    WinForge da saída de um programa que por acaso tenha " : " (o ipconfig, por exemplo). Devolve Kind = "Fact", Label,
+    TF-Toolkit da saída de um programa que por acaso tenha " : " (o ipconfig, por exemplo). Devolve Kind = "Fact", Label,
     Value, Text ("rótulo: valor") e Level (a cor do valor: Green = Ok, Yellow = Warn, Red = Bad, as outras = Normal), ou
     $null.
     #>
@@ -709,7 +709,7 @@ function Get-WinForgeFactEntry {
 }
 
 
-function Get-WinForgeOverallProgress {
+function Get-TFToolkitOverallProgress {
     <#
     O andamento da execução inteira, em porcentagem (com uma casa), na etapa Index de Total: as etapas anteriores já
     feitas mais Fraction (de 0 a 1) da etapa atual, que a ferramenta da vez informa. A barra de uma execução de 22 etapas
@@ -731,7 +731,7 @@ function Get-WinForgeOverallProgress {
 }
 
 
-function Get-WinForgeSummaryMaxHeight {
+function Get-TFToolkitSummaryMaxHeight {
     <#
     A altura máxima do resumo quando ele é o conteúdo da tela de execução: do topo dele até o cartão dos detalhes
     técnicos, menos o que fica embaixo dele no cartão do resultado (20 de margem interna, 1 de borda), o espaço entre os
@@ -755,18 +755,18 @@ function Get-WinForgeSummaryMaxHeight {
 }
 
 
-function Test-WinForgeRuleLine {
-    # A linha de traços que o WinForge desenha embaixo do título de uma seção.
+function Test-TFToolkitRuleLine {
+    # A linha de traços que o TF-Toolkit desenha embaixo do título de uma seção.
     param ([AllowEmptyString()][string]$Text)
 
     return ($Text -match ('^\s*[' + [char]0x2500 + [char]0x2501 + '\-=]{4,}\s*$'))
 }
 
 
-function Get-WinForgeSectionTitle {
+function Get-TFToolkitSectionTitle {
     <#
-    O título de uma seção (Write-WinForgeSection): dois espaços e o texto em ciano, numa linha curta. Só é confirmado como
-    seção quando a linha seguinte é a de traços (Test-WinForgeRuleLine). Devolve o título ou $null.
+    O título de uma seção (Write-TFToolkitSection): dois espaços e o texto em ciano, numa linha curta. Só é confirmado como
+    seção quando a linha seguinte é a de traços (Test-TFToolkitRuleLine). Devolve o título ou $null.
     #>
     param (
         [AllowEmptyString()][string]$Text,
@@ -785,9 +785,9 @@ function Get-WinForgeSectionTitle {
 }
 
 
-function Get-WinForgeMessagePlan {
+function Get-TFToolkitMessagePlan {
     <#
-    O desenho de uma mensagem da janela (Show-GuiMessage, no WinForge.Gui.ps1): o ícone, a cor dele e os botões, da
+    O desenho de uma mensagem da janela (Show-GuiMessage, no TF-Toolkit.Gui.ps1): o ícone, a cor dele e os botões, da
     esquerda para a direita, em duas colunas de mesma largura, como nas caixas de diálogo do Windows 11 (o OK sozinho fica
     na coluna da direita). Cada botão tem Answer (OK, Yes ou No), Text, Kind (Primary, Secondary ou Danger) e Icon.
     - Buttons: OK ou YesNo. Default: a resposta que começa com o foco (o Enter), Yes ou No.
@@ -819,7 +819,7 @@ function Get-WinForgeMessagePlan {
         return [PSCustomObject]@{
             Icon          = $glyph.Name
             IconColor     = $glyph.Color
-            Buttons       = @([PSCustomObject]@{ Answer = "OK"; Text = (Get-WinForgeText 'OK'); Kind = "Primary"; Icon = "" })
+            Buttons       = @([PSCustomObject]@{ Answer = "OK"; Text = (Get-TFToolkitText 'OK'); Kind = "Primary"; Icon = "" })
             DefaultAnswer = "OK"
             CancelAnswer  = "OK"
         }
@@ -832,8 +832,8 @@ function Get-WinForgeMessagePlan {
         Icon          = $glyph.Name
         IconColor     = $glyph.Color
         Buttons       = @(
-            [PSCustomObject]@{ Answer = "Yes"; Text = $(if ($YesText) { $YesText } else { Get-WinForgeText 'Sim' }); Kind = $yesKind; Icon = $YesIcon }
-            [PSCustomObject]@{ Answer = "No"; Text = $(if ($NoText) { $NoText } else { Get-WinForgeText 'Não' }); Kind = $noKind; Icon = "" }
+            [PSCustomObject]@{ Answer = "Yes"; Text = $(if ($YesText) { $YesText } else { Get-TFToolkitText 'Sim' }); Kind = $yesKind; Icon = $YesIcon }
+            [PSCustomObject]@{ Answer = "No"; Text = $(if ($NoText) { $NoText } else { Get-TFToolkitText 'Não' }); Kind = $noKind; Icon = "" }
         )
         DefaultAnswer = $Default
         CancelAnswer  = "No"

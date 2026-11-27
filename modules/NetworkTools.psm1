@@ -11,32 +11,32 @@
 # Provedores
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeDnsProviders {
+function Get-TFToolkitDnsProviders {
     # Servidores públicos conhecidos: endereços IPv4 e IPv6 publicados pelos próprios provedores.
     return @(
         [PSCustomObject]@{
             Id          = "cloudflare"
             Name        = "Cloudflare"
-            Description = (Get-WinForgeText 'Rápido e focado em privacidade (1.1.1.1)')
+            Description = (Get-TFToolkitText 'Rápido e focado em privacidade (1.1.1.1)')
             Servers     = @("1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001")
         },
         [PSCustomObject]@{
             Id          = "google"
             Name        = "Google"
-            Description = (Get-WinForgeText 'Muito disponível e estável (8.8.8.8)')
+            Description = (Get-TFToolkitText 'Muito disponível e estável (8.8.8.8)')
             Servers     = @("8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844")
         },
         [PSCustomObject]@{
             Id          = "quad9"
             Name        = "Quad9"
-            Description = (Get-WinForgeText 'Bloqueia sites maliciosos conhecidos (9.9.9.9)')
+            Description = (Get-TFToolkitText 'Bloqueia sites maliciosos conhecidos (9.9.9.9)')
             Servers     = @("9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9")
         },
         [PSCustomObject]@{
             # Filtra conteúdo: é escolha de quem quer o bloqueio, nunca a sugestão em destaque.
             Id          = "cloudflare-familia"
-            Name        = (Get-WinForgeText 'Cloudflare para famílias')
-            Description = (Get-WinForgeText 'Bloqueia sites adultos e maliciosos (1.1.1.3)')
+            Name        = (Get-TFToolkitText 'Cloudflare para famílias')
+            Description = (Get-TFToolkitText 'Bloqueia sites adultos e maliciosos (1.1.1.3)')
             Servers     = @("1.1.1.3", "1.0.0.3", "2606:4700:4700::1113", "2606:4700:4700::1003")
             Filters     = $true
         }
@@ -44,7 +44,7 @@ function Get-WinForgeDnsProviders {
 }
 
 
-function Measure-WinForgeDnsLatency {
+function Measure-TFToolkitDnsLatency {
     <#
     Tempo de resposta de um servidor DNS, em ms: a mediana de consultas feitas direto a ele (sem o cache do Windows nem o
     arquivo hosts). $null quando ele não responde deste PC (rede que bloqueia DNS externo, sem internet) ou quando o
@@ -75,7 +75,7 @@ function Measure-WinForgeDnsLatency {
 }
 
 
-function Get-WinForgeDnsPrimaryServer {
+function Get-TFToolkitDnsPrimaryServer {
     # O servidor que o Windows consulta primeiro: o primeiro IPv4 da lista (o IPv6 pode nem ter rota), ou o primeiro.
     param ([AllowEmptyCollection()][string[]]$Servers = @())
 
@@ -88,15 +88,15 @@ function Get-WinForgeDnsPrimaryServer {
 }
 
 
-function Get-WinForgeDnsProviderName {
-    # O provedor conhecido (Get-WinForgeDnsProviders) de uma lista de servidores DNS, pelo primeiro endereço dela:
+function Get-TFToolkitDnsProviderName {
+    # O provedor conhecido (Get-TFToolkitDnsProviders) de uma lista de servidores DNS, pelo primeiro endereço dela:
     # "Cloudflare" para 1.1.1.1 e 1.0.0.1. Vazio quando não é de nenhum.
     param ([AllowEmptyCollection()][string[]]$Servers = @())
 
-    $first = Get-WinForgeDnsPrimaryServer -Servers $Servers
+    $first = Get-TFToolkitDnsPrimaryServer -Servers $Servers
     if ([string]::IsNullOrWhiteSpace($first)) { return "" }
 
-    foreach ($provider in @(Get-WinForgeDnsProviders)) {
+    foreach ($provider in @(Get-TFToolkitDnsProviders)) {
         if (@($provider.Servers | Where-Object { $_ -eq $first.Trim() }).Count -gt 0) { return [string]$provider.Name }
     }
 
@@ -104,7 +104,7 @@ function Get-WinForgeDnsProviderName {
 }
 
 
-function Get-WinForgeDnsLatencyText {
+function Get-TFToolkitDnsLatencyText {
     # "12 ms" para quem respondeu; "sem resposta deste PC" para quem foi consultado e não respondeu, e só quando outros
     # responderam (sem nenhuma resposta, a medição inteira não aconteceu e nada é dito). Quem não foi consultado: vazio.
     param (
@@ -115,11 +115,11 @@ function Get-WinForgeDnsLatencyText {
 
     if (-not $Measured -or [string]::IsNullOrWhiteSpace($Server) -or -not $Latency.ContainsKey($Server)) { return "" }
     if ($null -ne $Latency[$Server]) { return "$($Latency[$Server]) ms" }
-    return (Get-WinForgeText 'sem resposta deste PC')
+    return (Get-TFToolkitText 'sem resposta deste PC')
 }
 
 
-function Get-WinForgeDnsSuggestion {
+function Get-TFToolkitDnsSuggestion {
     <#
     Qual opção vai em destaque no menu, pelo tempo medido: Index (-1 = nenhuma) e Reason. Sem medição, a primeira, como
     sempre. Um provedor que filtra conteúdo nunca é sugerido. Para o destaque não pular entre execuções por 1 ou 2 ms, o
@@ -141,7 +141,7 @@ function Get-WinForgeDnsSuggestion {
     $best = $null
 
     for ($i = 0; $i -lt $Providers.Count; $i++) {
-        if ([bool](Get-WinForgeJsonValue -Object $Providers[$i] -Name "Filters" -Default $false)) { continue }
+        if ([bool](Get-TFToolkitJsonValue -Object $Providers[$i] -Name "Filters" -Default $false)) { continue }
 
         $ms = $Latency[[string]$Providers[$i].Servers[0]]
         if ($null -eq $ms) { continue }
@@ -164,7 +164,7 @@ function Get-WinForgeDnsSuggestion {
 }
 
 
-function Format-WinForgeDnsModeLatency {
+function Format-TFToolkitDnsModeLatency {
     # "Automático (do roteador): 192.168.0.1, fe80::1" vira "... 192.168.0.1 (4 ms), fe80::1": o tempo ao lado do servidor
     # medido, e não no fim, onde pareceria valer para a lista toda.
     param (
@@ -180,8 +180,8 @@ function Format-WinForgeDnsModeLatency {
 }
 
 
-function Get-WinForgeDnsBackupPath {
-    return (Join-Path (Get-WinForgeDataPath) "dns-backup.json")
+function Get-TFToolkitDnsBackupPath {
+    return (Join-Path (Get-TFToolkitDataPath) "dns-backup.json")
 }
 
 
@@ -189,7 +189,7 @@ function Get-WinForgeDnsBackupPath {
 # Adaptadores e backup
 # ---------------------------------------------------------------------------
 
-function ConvertTo-WinForgeDnsServerList {
+function ConvertTo-TFToolkitDnsServerList {
     # Os endereços de um valor NameServer do registro ("8.8.8.8,8.8.4.4", ou separados por espaço). Lista vazia sem valor.
     param ($Value)
 
@@ -199,7 +199,7 @@ function ConvertTo-WinForgeDnsServerList {
 }
 
 
-function Get-WinForgeDnsAdapters {
+function Get-TFToolkitDnsAdapters {
     <#
     Os adaptadores físicos ativos (Ethernet e Wi-Fi) com o DNS de cada um: Guid, Alias, Index, Servers (os que estão em
     uso, IPv4 e IPv6, para mostrar) e Mode (Automatic = vem do roteador/DHCP, Static = endereços fixos em alguma família,
@@ -220,14 +220,14 @@ function Get-WinForgeDnsAdapters {
             $servers = @(
                 Get-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ErrorAction SilentlyContinue |
                     ForEach-Object { $_.ServerAddresses } |
-                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and -not (Test-WinForgeDnsPlaceholder -Address $_) }
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and -not (Test-TFToolkitDnsPlaceholder -Address $_) }
             )
 
             $guid = [string]$adapter.InterfaceGuid
-            $v4 = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$guid" -Name "NameServer"
-            $v6 = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters\Interfaces\$guid" -Name "NameServer"
-            $v4Servers = @(ConvertTo-WinForgeDnsServerList -Value $v4)
-            $v6Servers = @(ConvertTo-WinForgeDnsServerList -Value $v6)
+            $v4 = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$guid" -Name "NameServer"
+            $v6 = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters\Interfaces\$guid" -Name "NameServer"
+            $v4Servers = @(ConvertTo-TFToolkitDnsServerList -Value $v4)
+            $v6Servers = @(ConvertTo-TFToolkitDnsServerList -Value $v6)
 
             # O NameServer do IPv4 existe em todo adaptador com TCP/IP (vazio quando é automático): sem ele, não dá para
             # saber. O do IPv6 só existe quando alguém pôs endereços fixos.
@@ -252,26 +252,26 @@ function Get-WinForgeDnsAdapters {
 }
 
 
-function Get-WinForgeDnsModeText {
+function Get-TFToolkitDnsModeText {
     param ([Parameter(Mandatory)]$Adapter)
 
-    $servers = if (@($Adapter.Servers).Count -gt 0) { @($Adapter.Servers) -join ", " } else { (Get-WinForgeText 'nenhum') }
+    $servers = if (@($Adapter.Servers).Count -gt 0) { @($Adapter.Servers) -join ", " } else { (Get-TFToolkitText 'nenhum') }
 
-    # Um fixo de um provedor conhecido diz qual ("Fixo (Cloudflare): 1.1.1.1, ..."): depois de uma troca pelo WinForge, a
+    # Um fixo de um provedor conhecido diz qual ("Fixo (Cloudflare): 1.1.1.1, ..."): depois de uma troca pelo TF-Toolkit, a
     # pessoa reconhece o que escolheu.
-    $provider = $(if ($Adapter.Mode -eq "Static") { Get-WinForgeDnsProviderName -Servers @($Adapter.Servers) } else { "" })
+    $provider = $(if ($Adapter.Mode -eq "Static") { Get-TFToolkitDnsProviderName -Servers @($Adapter.Servers) } else { "" })
 
     switch ($Adapter.Mode) {
-        "Automatic" { return (Get-WinForgeText 'Automático (do roteador): {0}' "$servers") }
-        "Static"    { return $(if ($provider) { (Get-WinForgeText 'Fixo ({0}): {1}' "$provider" "$servers") } else { (Get-WinForgeText 'Fixo: {0}' "$servers") }) }
+        "Automatic" { return (Get-TFToolkitText 'Automático (do roteador): {0}' "$servers") }
+        "Static"    { return $(if ($provider) { (Get-TFToolkitText 'Fixo ({0}): {1}' "$provider" "$servers") } else { (Get-TFToolkitText 'Fixo: {0}' "$servers") }) }
         default     { return $servers }
     }
 }
 
 
-function Test-WinForgeDnsAlready {
+function Test-TFToolkitDnsAlready {
     <#
-    Se o adaptador (Get-WinForgeDnsAdapters) já usa o DNS escolhido: sem endereços, o automático nas duas famílias; com
+    Se o adaptador (Get-TFToolkitDnsAdapters) já usa o DNS escolhido: sem endereços, o automático nas duas famílias; com
     eles, os mesmos endereços fixos, na mesma ordem, no IPv4 e no IPv6. Trocar para o que já está em uso não muda nada, e
     anotaria uma mudança no Histórico de mudanças.
     #>
@@ -297,7 +297,7 @@ function Test-WinForgeDnsAlready {
 }
 
 
-function ConvertFrom-WinForgeDnsBackupEntry {
+function ConvertFrom-TFToolkitDnsBackupEntry {
     <#
     Uma entrada do backup (lida do JSON) com o modo e os servidores de cada família. $null sem Guid.
     O backup antigo (versão 1) só tinha um modo para o adaptador e os servidores em uso, IPv4 e IPv6 misturados, sem
@@ -307,18 +307,18 @@ function ConvertFrom-WinForgeDnsBackupEntry {
     #>
     param ($Entry)
 
-    $guid = [string](Get-WinForgeJsonValue -Object $Entry -Name "Guid" -Default "")
+    $guid = [string](Get-TFToolkitJsonValue -Object $Entry -Name "Guid" -Default "")
 
     if ([string]::IsNullOrWhiteSpace($guid)) { return $null }
 
-    $mode = [string](Get-WinForgeJsonValue -Object $Entry -Name "Mode" -Default "Unknown")
-    $servers = @(@(Get-WinForgeJsonValue -Object $Entry -Name "Servers" -Default @()) | ForEach-Object { [string]$_ } | Where-Object { $_ })
-    $v4Mode = [string](Get-WinForgeJsonValue -Object $Entry -Name "V4Mode" -Default "")
+    $mode = [string](Get-TFToolkitJsonValue -Object $Entry -Name "Mode" -Default "Unknown")
+    $servers = @(@(Get-TFToolkitJsonValue -Object $Entry -Name "Servers" -Default @()) | ForEach-Object { [string]$_ } | Where-Object { $_ })
+    $v4Mode = [string](Get-TFToolkitJsonValue -Object $Entry -Name "V4Mode" -Default "")
 
     if ($v4Mode) {
-        $v4Servers = @(@(Get-WinForgeJsonValue -Object $Entry -Name "V4Servers" -Default @()) | ForEach-Object { [string]$_ } | Where-Object { $_ })
-        $v6Mode = [string](Get-WinForgeJsonValue -Object $Entry -Name "V6Mode" -Default "Unknown")
-        $v6Servers = @(@(Get-WinForgeJsonValue -Object $Entry -Name "V6Servers" -Default @()) | ForEach-Object { [string]$_ } | Where-Object { $_ })
+        $v4Servers = @(@(Get-TFToolkitJsonValue -Object $Entry -Name "V4Servers" -Default @()) | ForEach-Object { [string]$_ } | Where-Object { $_ })
+        $v6Mode = [string](Get-TFToolkitJsonValue -Object $Entry -Name "V6Mode" -Default "Unknown")
+        $v6Servers = @(@(Get-TFToolkitJsonValue -Object $Entry -Name "V6Servers" -Default @()) | ForEach-Object { [string]$_ } | Where-Object { $_ })
     }
     elseif ($mode -eq "Automatic") {
         $v4Mode = "Automatic"; $v4Servers = @(); $v6Mode = "Automatic"; $v6Servers = @()
@@ -341,7 +341,7 @@ function ConvertFrom-WinForgeDnsBackupEntry {
 
     return [PSCustomObject]@{
         Guid      = $guid
-        Alias     = [string](Get-WinForgeJsonValue -Object $Entry -Name "Alias" -Default "")
+        Alias     = [string](Get-TFToolkitJsonValue -Object $Entry -Name "Alias" -Default "")
         Mode      = $mode
         Servers   = @($servers)
         V4Mode    = $v4Mode
@@ -352,18 +352,18 @@ function ConvertFrom-WinForgeDnsBackupEntry {
 }
 
 
-function Read-WinForgeDnsBackup {
+function Read-TFToolkitDnsBackup {
     <#
     O backup do DNS original: lista de Guid, Alias, Mode, Servers e o modo e os servidores de cada família (V4Mode,
     V4Servers, V6Mode, V6Servers). Vazio quando não existe, está estragado sem cópia anterior ou é de outro formato.
-    -Status devolve Status (o de Read-WinForgeStateFile: "Unreadable" = existe, mas não deu para ler agora) e Entries.
+    -Status devolve Status (o de Read-TFToolkitStateFile: "Unreadable" = existe, mas não deu para ler agora) e Entries.
     #>
     param ([switch]$Status)
 
     $read = [PSCustomObject]@{ Status = "Unreadable"; Document = $null }
 
     try {
-        $read = Read-WinForgeStateFile -Path (Get-WinForgeDnsBackupPath)
+        $read = Read-TFToolkitStateFile -Path (Get-TFToolkitDnsBackupPath)
     }
     catch {
         # Fica como ilegível: quem grava desiste.
@@ -372,10 +372,10 @@ function Read-WinForgeDnsBackup {
     $entries = @()
     $document = $read.Document
 
-    if ($null -ne $document -and [string](Get-WinForgeJsonValue -Object $document -Name "Format" -Default "") -eq "WinForge.DnsBackup") {
+    if ($null -ne $document -and [string](Get-TFToolkitJsonValue -Object $document -Name "Format" -Default "") -eq "TFToolkit.DnsBackup") {
         $entries = @(
-            foreach ($entry in @(Get-WinForgeJsonValue -Object $document -Name "Adapters" -Default @())) {
-                $converted = ConvertFrom-WinForgeDnsBackupEntry -Entry $entry
+            foreach ($entry in @(Get-TFToolkitJsonValue -Object $document -Name "Adapters" -Default @())) {
+                $converted = ConvertFrom-TFToolkitDnsBackupEntry -Entry $entry
                 if ($null -ne $converted) { $converted }
             }
         )
@@ -389,7 +389,7 @@ function Read-WinForgeDnsBackup {
 }
 
 
-function Save-WinForgeDnsBackup {
+function Save-TFToolkitDnsBackup {
     <#
     Guarda o DNS atual dos adaptadores que ainda não têm backup. O que já foi guardado nunca é sobrescrito: o backup é
     sempre o DNS de ANTES da primeira troca, mesmo que a pessoa troque de provedor várias vezes. Gravação atômica, dentro
@@ -401,11 +401,11 @@ function Save-WinForgeDnsBackup {
         [object[]]$Adapters
     )
 
-    [void](Invoke-WinForgeStateLock -ScriptBlock {
-            $current = Read-WinForgeDnsBackup -Status
+    [void](Invoke-TFToolkitStateLock -ScriptBlock {
+            $current = Read-TFToolkitDnsBackup -Status
 
             if ($current.Status -eq "Unreadable") {
-                throw (Get-WinForgeText 'o backup do DNS de antes existe, mas não pôde ser lido agora ({0}); para não perdê-lo, nada foi alterado. Tente de novo em instantes.' "$(Get-WinForgeDnsBackupPath)")
+                throw (Get-TFToolkitText 'o backup do DNS de antes existe, mas não pôde ser lido agora ({0}); para não perdê-lo, nada foi alterado. Tente de novo em instantes.' "$(Get-TFToolkitDnsBackupPath)")
             }
 
             $existing = @($current.Entries)
@@ -418,16 +418,16 @@ function Save-WinForgeDnsBackup {
                         Alias     = $adapter.Alias
                         Mode      = $adapter.Mode
                         Servers   = @($adapter.Servers)
-                        V4Mode    = [string](Get-WinForgeJsonValue -Object $adapter -Name "V4Mode" -Default "Unknown")
-                        V4Servers = @(Get-WinForgeJsonValue -Object $adapter -Name "V4Servers" -Default @())
-                        V6Mode    = [string](Get-WinForgeJsonValue -Object $adapter -Name "V6Mode" -Default "Unknown")
-                        V6Servers = @(Get-WinForgeJsonValue -Object $adapter -Name "V6Servers" -Default @())
+                        V4Mode    = [string](Get-TFToolkitJsonValue -Object $adapter -Name "V4Mode" -Default "Unknown")
+                        V4Servers = @(Get-TFToolkitJsonValue -Object $adapter -Name "V4Servers" -Default @())
+                        V6Mode    = [string](Get-TFToolkitJsonValue -Object $adapter -Name "V6Mode" -Default "Unknown")
+                        V6Servers = @(Get-TFToolkitJsonValue -Object $adapter -Name "V6Servers" -Default @())
                     }
                 }
             }
 
             $document = [ordered]@{
-                Format   = "WinForge.DnsBackup"
+                Format   = "TFToolkit.DnsBackup"
                 Version  = 2
                 SavedAt  = (Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)
                 Adapters = @($entries | ForEach-Object {
@@ -444,22 +444,22 @@ function Save-WinForgeDnsBackup {
                     })
             }
 
-            Write-WinForgeStateJson -Path (Get-WinForgeDnsBackupPath) -InputObject $document -Depth 5
+            Write-TFToolkitStateJson -Path (Get-TFToolkitDnsBackupPath) -InputObject $document -Depth 5
         })
 }
 
 
-function Remove-WinForgeDnsBackup {
+function Remove-TFToolkitDnsBackup {
     # Apaga o backup depois de desfeito, com a cópia anterior que a gravação atômica guarda (.bak): sem ela, um backup
     # estragado no futuro poderia voltar com o DNS de uma troca antiga.
-    $path = Get-WinForgeDnsBackupPath
+    $path = Get-TFToolkitDnsBackupPath
 
     Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath "$path.bak" -Force -ErrorAction SilentlyContinue
 }
 
 
-function Set-WinForgeAdapterDns {
+function Set-TFToolkitAdapterDns {
     # Define os servidores do adaptador; sem endereços, volta ao automático.
     param (
         [Parameter(Mandatory)]
@@ -477,7 +477,7 @@ function Set-WinForgeAdapterDns {
 }
 
 
-function Test-WinForgeDnsWorking {
+function Test-TFToolkitDnsWorking {
     # Depois de uma troca, o DNS novo precisa resolver nomes de verdade. Tenta duas vezes, com uma pausa.
     param (
         [string[]]$Names = @("www.microsoft.com", "www.google.com")
@@ -487,7 +487,7 @@ function Test-WinForgeDnsWorking {
         Clear-DnsClientCache -ErrorAction SilentlyContinue
 
         foreach ($name in $Names) {
-            if (Test-WinForgeDnsResolution -Name $name) {
+            if (Test-TFToolkitDnsResolution -Name $name) {
                 return $true
             }
         }
@@ -499,7 +499,7 @@ function Test-WinForgeDnsWorking {
 }
 
 
-function Restore-WinForgeDnsFromBackup {
+function Restore-TFToolkitDnsFromBackup {
     <#
     Devolve cada adaptador do backup ao DNS original: primeiro as duas famílias voltam ao automático
     (-ResetServerAddresses) e depois só as famílias que eram fixas recebem os endereços delas. Assim um IPv4 fixo não
@@ -531,8 +531,8 @@ function Restore-WinForgeDnsFromBackup {
         }
 
         # Sem saber o que havia, qualquer escolha seria um palpite (fixar os servidores em uso, ou o automático).
-        $v4Mode = [string](Get-WinForgeJsonValue -Object $entry -Name "V4Mode" -Default "Unknown")
-        $v6Mode = [string](Get-WinForgeJsonValue -Object $entry -Name "V6Mode" -Default "Unknown")
+        $v4Mode = [string](Get-TFToolkitJsonValue -Object $entry -Name "V4Mode" -Default "Unknown")
+        $v6Mode = [string](Get-TFToolkitJsonValue -Object $entry -Name "V6Mode" -Default "Unknown")
 
         if ($v4Mode -notin @("Automatic", "Static") -or $v6Mode -notin @("Automatic", "Static")) {
             $unknown += $name
@@ -540,8 +540,8 @@ function Restore-WinForgeDnsFromBackup {
         }
 
         $static = @()
-        if ($v4Mode -eq "Static") { $static += @(Get-WinForgeJsonValue -Object $entry -Name "V4Servers" -Default @()) }
-        if ($v6Mode -eq "Static") { $static += @(Get-WinForgeJsonValue -Object $entry -Name "V6Servers" -Default @()) }
+        if ($v4Mode -eq "Static") { $static += @(Get-TFToolkitJsonValue -Object $entry -Name "V4Servers" -Default @()) }
+        if ($v6Mode -eq "Static") { $static += @(Get-TFToolkitJsonValue -Object $entry -Name "V6Servers" -Default @()) }
         $static = @($static | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | ForEach-Object { ([string]$_).Trim() })
 
         # O backup fica numa pasta em que qualquer programa da conta grava, e o desfazer roda como Administrador: só
@@ -553,10 +553,10 @@ function Restore-WinForgeDnsFromBackup {
         }
 
         try {
-            Set-WinForgeAdapterDns -Adapter $adapter
+            Set-TFToolkitAdapterDns -Adapter $adapter
 
             if ($static.Count -gt 0) {
-                Set-WinForgeAdapterDns -Adapter $adapter -Servers $static
+                Set-TFToolkitAdapterDns -Adapter $adapter -Servers $static
             }
 
             $restored++
@@ -574,40 +574,40 @@ function Restore-WinForgeDnsFromBackup {
 # Trocar e desfazer
 # ---------------------------------------------------------------------------
 
-function Set-WinForgeDnsProvider {
-    $title = (Get-WinForgeText 'Trocar o servidor DNS')
+function Set-TFToolkitDnsProvider {
+    $title = (Get-TFToolkitText 'Trocar o servidor DNS')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Trocar o DNS exige privilégios de Administrador.'))) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador') -Title $title)
+        if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Trocar o DNS exige privilégios de Administrador.'))) {
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador') -Title $title)
             return
         }
 
-        $adapters = @(Get-WinForgeDnsAdapters)
+        $adapters = @(Get-TFToolkitDnsAdapters)
 
         if ($adapters.Count -eq 0) {
-            # Como no teste de conectividade: sem Wi-Fi nem cabo, não é um erro do WinForge, é ligar um deles.
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Nenhum adaptador de rede ativo (Ethernet ou Wi-Fi) foi encontrado.')
-            Exit-WinForgeAction -Result (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'sem adaptador ativo') -Title $title) `
-                    -Headline (Get-WinForgeText 'Nenhum Wi-Fi ou cabo conectado') -Note (Get-WinForgeText 'Ligue o Wi-Fi ou conecte o cabo; confira também o modo avião.') `
-                    -Next "NetworkSettings" -NextLabel (Get-WinForgeText 'Abrir as configurações de rede'))
+            # Como no teste de conectividade: sem Wi-Fi nem cabo, não é um erro do TF-Toolkit, é ligar um deles.
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Nenhum adaptador de rede ativo (Ethernet ou Wi-Fi) foi encontrado.')
+            Exit-TFToolkitAction -Result (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'sem adaptador ativo') -Title $title) `
+                    -Headline (Get-TFToolkitText 'Nenhum Wi-Fi ou cabo conectado') -Note (Get-TFToolkitText 'Ligue o Wi-Fi ou conecte o cabo; confira também o modo avião.') `
+                    -Next "NetworkSettings" -NextLabel (Get-TFToolkitText 'Abrir as configurações de rede'))
             return
         }
 
-        $providers = @(Get-WinForgeDnsProviders)
+        $providers = @(Get-TFToolkitDnsProviders)
 
         # O tempo de resposta do DNS atual e de cada opção, medido agora deste PC: é ele que diz qual DNS abre os sites
         # mais rápido aqui, e não a fama do provedor. Um por servidor (dois adaptadores com o mesmo DNS medem uma vez).
         # Dois públicos seguidos sem resposta indicam uma rede que bloqueia DNS externo: os outros não são consultados,
         # para o menu não esperar o tempo limite de cada um.
         $latency = @{}
-        $currentServers = @($adapters | ForEach-Object { Get-WinForgeDnsPrimaryServer -Servers @($_.Servers) } | Where-Object { $_ } | Select-Object -Unique)
+        $currentServers = @($adapters | ForEach-Object { Get-TFToolkitDnsPrimaryServer -Servers @($_.Servers) } | Where-Object { $_ } | Select-Object -Unique)
         $targets = @(
-            @($currentServers | ForEach-Object { [PSCustomObject]@{ Server = $_; Label = (Get-WinForgeText 'DNS atual ({0})' "$_"); Public = $false } }) +
+            @($currentServers | ForEach-Object { [PSCustomObject]@{ Server = $_; Label = (Get-TFToolkitText 'DNS atual ({0})' "$_"); Public = $false } }) +
             @($providers | ForEach-Object { [PSCustomObject]@{ Server = $_.Servers[0]; Label = "$($_.Name) ($($_.Servers[0]))"; Public = $true } })
         )
         $publicMisses = 0
@@ -619,34 +619,34 @@ function Set-WinForgeDnsProvider {
 
                 # Um público que já foi medido como DNS atual de um adaptador (o 8.8.8.8, por exemplo) conta do mesmo jeito.
                 if (-not $latency.ContainsKey($target.Server)) {
-                    Write-Progress -Activity (Get-WinForgeText 'Medindo o tempo de resposta do DNS') -Status $target.Label -PercentComplete ([int](100 * $i / $targets.Count))
-                    $latency[$target.Server] = Measure-WinForgeDnsLatency -Server $target.Server
+                    Write-Progress -Activity (Get-TFToolkitText 'Medindo o tempo de resposta do DNS') -Status $target.Label -PercentComplete ([int](100 * $i / $targets.Count))
+                    $latency[$target.Server] = Measure-TFToolkitDnsLatency -Server $target.Server
                 }
 
                 if ($target.Public) { $publicMisses = $(if ($null -eq $latency[$target.Server]) { $publicMisses + 1 } else { 0 }) }
             }
         }
         finally {
-            Write-Progress -Activity (Get-WinForgeText 'Medindo o tempo de resposta do DNS') -Completed
+            Write-Progress -Activity (Get-TFToolkitText 'Medindo o tempo de resposta do DNS') -Completed
         }
 
         $measured = @($latency.Values | Where-Object { $null -ne $_ }).Count -gt 0
-        $suggestion = Get-WinForgeDnsSuggestion -Providers $providers -Latency $latency -Current $currentServers
+        $suggestion = Get-TFToolkitDnsSuggestion -Providers $providers -Latency $latency -Current $currentServers
 
         # Num PC do domínio de uma empresa, o DNS dela é o que acha os servidores da empresa (o login, as pastas e as
         # impressoras da rede), e um DNS público não os conhece: nada fica em destaque, e o aviso diz por quê.
-        $system = @(Get-WinForgeCimOrNull -ClassName "Win32_ComputerSystem") | Select-Object -First 1
+        $system = @(Get-TFToolkitCimOrNull -ClassName "Win32_ComputerSystem") | Select-Object -First 1
 
-        if ($null -ne $system -and [bool](Get-WinForgeJsonValue -Object $system -Name "PartOfDomain" -Default $false)) {
+        if ($null -ne $system -and [bool](Get-TFToolkitJsonValue -Object $system -Name "PartOfDomain" -Default $false)) {
             $suggestion = [PSCustomObject]@{ Index = -1; Reason = "Domain"; BestMs = $null; CurrentMs = $null }
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'DNS atual')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'DNS atual')
 
         foreach ($adapter in $adapters) {
-            $primary = Get-WinForgeDnsPrimaryServer -Servers @($adapter.Servers)
-            $text = Format-WinForgeDnsModeLatency -Text (Get-WinForgeDnsModeText -Adapter $adapter) -Server $primary -Value (Get-WinForgeDnsLatencyText -Latency $latency -Server $primary -Measured $measured)
-            Write-WinForgeKeyValue -Label $adapter.Alias -Value $text
+            $primary = Get-TFToolkitDnsPrimaryServer -Servers @($adapter.Servers)
+            $text = Format-TFToolkitDnsModeLatency -Text (Get-TFToolkitDnsModeText -Adapter $adapter) -Server $primary -Value (Get-TFToolkitDnsLatencyText -Latency $latency -Server $primary -Measured $measured)
+            Write-TFToolkitKeyValue -Label $adapter.Alias -Value $text
         }
 
         Write-Host ""
@@ -656,19 +656,19 @@ function Set-WinForgeDnsProvider {
         # melhor, trocar só vale por outro motivo (o filtro para famílias, por exemplo).
         switch ($suggestion.Reason) {
             "NotMeasured" {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Um DNS mais rápido abre as páginas com menos espera.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Um DNS mais rápido abre as páginas com menos espera.')
             }
             "Blocked" {
-                Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Nenhum DNS público respondeu: a rede parece bloquear DNS externo, e trocar pode deixar o PC sem sites. Mantenha o atual.')
+                Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Nenhum DNS público respondeu: a rede parece bloquear DNS externo, e trocar pode deixar o PC sem sites. Mantenha o atual.')
             }
             "Domain" {
-                Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Este PC faz parte do domínio de uma empresa: o DNS dela é o que encontra os servidores da empresa, e trocá-lo pode impedir o login e o acesso à rede. Mantenha o atual.')
+                Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Este PC faz parte do domínio de uma empresa: o DNS dela é o que encontra os servidores da empresa, e trocá-lo pode impedir o login e o acesso à rede. Mantenha o atual.')
             }
             "CurrentFast" {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O DNS atual já é tão rápido quanto o melhor da lista ({0} ms): trocar não deixa as páginas mais rápidas.' "$($suggestion.CurrentMs)")
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O DNS atual já é tão rápido quanto o melhor da lista ({0} ms): trocar não deixa as páginas mais rápidas.' "$($suggestion.CurrentMs)")
             }
             default {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Quanto menor o tempo, mais rápido. Em destaque, o mais rápido entre os que não filtram conteúdo.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Quanto menor o tempo, mais rápido. Em destaque, o mais rápido entre os que não filtram conteúdo.')
             }
         }
 
@@ -676,23 +676,23 @@ function Set-WinForgeDnsProvider {
 
         for ($i = 0; $i -lt $providers.Count; $i++) {
             $provider = $providers[$i]
-            $time = Get-WinForgeDnsLatencyText -Latency $latency -Server $provider.Servers[0] -Measured $measured
+            $time = Get-TFToolkitDnsLatencyText -Latency $latency -Server $provider.Servers[0] -Measured $measured
             $description = $(if ($time) { "$($provider.Description) · $time" } else { $provider.Description })
             $options += @{ Key = [string]($i + 1); Label = $provider.Name; Description = $description; Accent = ($i -eq $suggestion.Index) }
         }
 
-        $options += @{ Key = "A"; Label = (Get-WinForgeText 'Automático'); Description = (Get-WinForgeText 'O DNS do roteador ou da operadora') }
-        $options += @{ Key = "X"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+        $options += @{ Key = "A"; Label = (Get-TFToolkitText 'Automático'); Description = (Get-TFToolkitText 'O DNS do roteador ou da operadora') }
+        $options += @{ Key = "X"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
 
-        $answer = Read-WinForgeChoice -Message (Get-WinForgeText 'Qual DNS usar?') -Options $options -DefaultKey "X" -ShowMenu `
-            -TextPrompt (Get-WinForgeText 'DNS (número, A = automático, X = cancelar; ENTER = cancelar)')
+        $answer = Read-TFToolkitChoice -Message (Get-TFToolkitText 'Qual DNS usar?') -Options $options -DefaultKey "X" -ShowMenu `
+            -TextPrompt (Get-TFToolkitText 'DNS (número, A = automático, X = cancelar; ENTER = cancelar)')
 
         $servers = $null
         $choiceName = ""
 
         if ($answer -ieq "A") {
             $servers = @()
-            $choiceName = (Get-WinForgeText 'Automático')
+            $choiceName = (Get-TFToolkitText 'Automático')
         }
         elseif ($answer -match "^[0-9]+$" -and [int]$answer -ge 1 -and [int]$answer -le $providers.Count) {
             $provider = $providers[[int]$answer - 1]
@@ -701,8 +701,8 @@ function Set-WinForgeDnsProvider {
         }
 
         if ($null -eq $servers) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada. Nada foi alterado.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada. Nada foi alterado.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
@@ -714,207 +714,207 @@ function Set-WinForgeDnsProvider {
 
         foreach ($adapter in @($adapters | Where-Object { $_.Mode -eq "Unknown" })) {
             $notChanged += $adapter.Alias
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0}: não foi possível ler o DNS que ele usa agora; para poder desfazer depois, ele não foi alterado.' "$($adapter.Alias)")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0}: não foi possível ler o DNS que ele usa agora; para poder desfazer depois, ele não foi alterado.' "$($adapter.Alias)")
         }
 
         if ($changeable.Count -eq 0) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhum adaptador foi alterado: o DNS atual não pôde ser lido') -Title $title)
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhum adaptador foi alterado: o DNS atual não pôde ser lido') -Title $title)
             return
         }
 
         # O que já usa o DNS escolhido fica como está: sem backup, sem troca e sem nada no Histórico de mudanças.
-        $changeable = @($changeable | Where-Object { -not (Test-WinForgeDnsAlready -Adapter $_ -Servers $servers) })
+        $changeable = @($changeable | Where-Object { -not (Test-TFToolkitDnsAlready -Adapter $_ -Servers $servers) })
 
         if ($changeable.Count -eq 0) {
-            $headline = $(if ($servers.Count -eq 0) { (Get-WinForgeText 'Este PC já usa o DNS automático') } else { (Get-WinForgeText 'Este PC já usa {0}' "$choiceName") })
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText '{0}: nada mudou.' "$headline")
-            $kept = $(if ($notChanged.Count -eq 1) { (Get-WinForgeText '1 adaptador não foi alterado ({0})' "$($notChanged[0])") } else { (Get-WinForgeText '{0} adaptadores não foram alterados ({1})' "$($notChanged.Count)" "$($notChanged -join ', ')") })
+            $headline = $(if ($servers.Count -eq 0) { (Get-TFToolkitText 'Este PC já usa o DNS automático') } else { (Get-TFToolkitText 'Este PC já usa {0}' "$choiceName") })
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText '{0}: nada mudou.' "$headline")
+            $kept = $(if ($notChanged.Count -eq 1) { (Get-TFToolkitText '1 adaptador não foi alterado ({0})' "$($notChanged[0])") } else { (Get-TFToolkitText '{0} adaptadores não foram alterados ({1})' "$($notChanged.Count)" "$($notChanged -join ', ')") })
             $final = $(if ($notChanged.Count -gt 0) {
-                    Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail $kept -Title $title) -Headline $headline -Note (Get-WinForgeText '{0}; o motivo está no resumo.' "$($kept.Substring(0, 1).ToUpper())$($kept.Substring(1))")
+                    Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail $kept -Title $title) -Headline $headline -Note (Get-TFToolkitText '{0}; o motivo está no resumo.' "$($kept.Substring(0, 1).ToUpper())$($kept.Substring(1))")
                 }
                 else {
-                    Set-WinForgeResultView -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'o DNS escolhido já estava em uso') -Title $title) -Headline $headline -Note (Get-WinForgeText 'Nada mudou.')
+                    Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'o DNS escolhido já estava em uso') -Title $title) -Headline $headline -Note (Get-TFToolkitText 'Nada mudou.')
                 })
-            Exit-WinForgeAction -Result $final
+            Exit-TFToolkitAction -Result $final
             return
         }
 
-        Save-WinForgeDnsBackup -Adapters $changeable
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para voltar ao DNS de antes, use Rede > Desfazer a troca de DNS.')
+        Save-TFToolkitDnsBackup -Adapters $changeable
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para voltar ao DNS de antes, use Rede > Desfazer a troca de DNS.')
 
         foreach ($adapter in $changeable) {
             try {
-                Set-WinForgeAdapterDns -Adapter $adapter -Servers $servers
+                Set-TFToolkitAdapterDns -Adapter $adapter -Servers $servers
                 $changed += $adapter
-                Write-WinForgeStatus -Type Success -Message (Get-WinForgeText '{0}: DNS {1}' "$($adapter.Alias)" "$choiceName")
+                Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText '{0}: DNS {1}' "$($adapter.Alias)" "$choiceName")
             }
             catch {
                 $errors += "$($adapter.Alias): $($_.Exception.Message)"
                 $notChanged += $adapter.Alias
-                Write-WinForgeStatus -Type Error -Message (Get-WinForgeText '{0}: não foi possível trocar ({1})' "$($adapter.Alias)" "$($_.Exception.Message)")
+                Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText '{0}: não foi possível trocar ({1})' "$($adapter.Alias)" "$($_.Exception.Message)")
             }
         }
 
         if ($changed.Count -eq 0) {
-            $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhum adaptador foi alterado') -Title $title
+            $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhum adaptador foi alterado') -Title $title
         }
         else {
-            Write-Progress -Activity $title -Status (Get-WinForgeText 'conferindo se o novo DNS resolve nomes')
+            Write-Progress -Activity $title -Status (Get-TFToolkitText 'conferindo se o novo DNS resolve nomes')
 
-            try { $working = Test-WinForgeDnsWorking } finally { Write-Progress -Activity $title -Completed }
+            try { $working = Test-TFToolkitDnsWorking } finally { Write-Progress -Activity $title -Completed }
 
             if ($working) {
-                Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'O novo DNS está funcionando.')
-                [void](Add-WinForgeChange -Action "DNS" -Text $(if ($servers.Count -eq 0) { (Get-WinForgeText 'DNS automático') } else { (Get-WinForgeText 'trocado para {0}' "$choiceName") }) -Undo @{ Kind = "dns" })
+                Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'O novo DNS está funcionando.')
+                [void](Add-TFToolkitChange -Action "DNS" -Text $(if ($servers.Count -eq 0) { (Get-TFToolkitText 'DNS automático') } else { (Get-TFToolkitText 'trocado para {0}' "$choiceName") }) -Undo @{ Kind = "dns" })
                 # Com um adaptador de fora, o título ainda diz qual DNS ficou; a frase, qual não mudou.
-                $headline = $(if ($servers.Count -eq 0) { (Get-WinForgeText 'DNS automático') } else { (Get-WinForgeText 'DNS trocado para {0}' "$choiceName") })
-                $partial = $(if ($notChanged.Count -eq 1) { (Get-WinForgeText '1 adaptador não foi alterado ({0})' "$($notChanged[0])") } else { (Get-WinForgeText '{0} adaptadores não foram alterados ({1})' "$($notChanged.Count)" "$($notChanged -join ', ')") })
+                $headline = $(if ($servers.Count -eq 0) { (Get-TFToolkitText 'DNS automático') } else { (Get-TFToolkitText 'DNS trocado para {0}' "$choiceName") })
+                $partial = $(if ($notChanged.Count -eq 1) { (Get-TFToolkitText '1 adaptador não foi alterado ({0})' "$($notChanged[0])") } else { (Get-TFToolkitText '{0} adaptadores não foram alterados ({1})' "$($notChanged.Count)" "$($notChanged -join ', ')") })
 
                 $final = if ($notChanged.Count -gt 0) {
-                    Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail $partial -Title $title) -Headline $headline `
-                        -Note (Get-WinForgeText '{0}; o motivo está no resumo.' "$($partial.Substring(0, 1).ToUpper())$($partial.Substring(1))")
+                    Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail $partial -Title $title) -Headline $headline `
+                        -Note (Get-TFToolkitText '{0}; o motivo está no resumo.' "$($partial.Substring(0, 1).ToUpper())$($partial.Substring(1))")
                 }
                 else {
                     # Na janela, o título diz qual DNS ficou; a frase, como voltar (ou, no automático, de onde ele vem).
-                    Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail $(if ($servers.Count -eq 0) { (Get-WinForgeText 'DNS automático') } else { "DNS $choiceName" }) -Title $title) `
-                        -Headline $(if ($servers.Count -eq 0) { (Get-WinForgeText 'DNS automático') } else { (Get-WinForgeText 'DNS trocado para {0}' "$choiceName") }) `
-                        -Note $(if ($servers.Count -eq 0) { (Get-WinForgeText 'O DNS vem do roteador ou da operadora.') } else { (Get-WinForgeText 'O novo DNS está funcionando. Para voltar ao de antes, use Desfazer a troca de DNS.') })
+                    Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail $(if ($servers.Count -eq 0) { (Get-TFToolkitText 'DNS automático') } else { "DNS $choiceName" }) -Title $title) `
+                        -Headline $(if ($servers.Count -eq 0) { (Get-TFToolkitText 'DNS automático') } else { (Get-TFToolkitText 'DNS trocado para {0}' "$choiceName") }) `
+                        -Note $(if ($servers.Count -eq 0) { (Get-TFToolkitText 'O DNS vem do roteador ou da operadora.') } else { (Get-TFToolkitText 'O novo DNS está funcionando. Para voltar ao de antes, use Desfazer a troca de DNS.') })
                 }
             }
             else {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O novo DNS não funcionou neste PC; voltando ao de antes.')
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O novo DNS não funcionou neste PC; voltando ao de antes.')
 
                 # Volta ao DNS de logo antes desta troca (o que estava em uso e resolvia nomes), lido no começo da ação, e
                 # não ao original guardado no backup: depois de uma troca que deu certo, o original pode ser justamente o
                 # DNS que não funcionava, e a volta deixaria o PC sem resolver nomes. O backup continua com o original,
                 # para o "Desfazer a troca de DNS".
-                $undo = Restore-WinForgeDnsFromBackup -Backup @($changed) -Adapters $adapters
+                $undo = Restore-TFToolkitDnsFromBackup -Backup @($changed) -Adapters $adapters
 
                 if ($undo.Failed.Count -eq 0 -and $undo.Unknown.Count -eq 0) {
-                    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'O DNS de antes foi restaurado.')
-                    $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'o novo DNS não resolveu nomes; desfeito') -Title $title) `
-                        -Headline (Get-WinForgeText 'O novo DNS não funcionou') -Note (Get-WinForgeText 'O DNS de antes foi restaurado; a rede pode estar bloqueando DNS externo.')
+                    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'O DNS de antes foi restaurado.')
+                    $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'o novo DNS não resolveu nomes; desfeito') -Title $title) `
+                        -Headline (Get-TFToolkitText 'O novo DNS não funcionou') -Note (Get-TFToolkitText 'O DNS de antes foi restaurado; a rede pode estar bloqueando DNS externo.')
                 }
                 else {
-                    $problems = @($undo.Failed) + @($undo.Unknown | ForEach-Object { (Get-WinForgeText '{0}: o DNS de antes não é conhecido (escolha Automático em Rede > Trocar o servidor DNS)' "${_}") })
-                    Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível restaurar tudo: {0}. Use Rede > Desfazer a troca de DNS.' "$($problems -join '; ')")
-                    $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o novo DNS não resolveu nomes e a restauração falhou') -Title $title) `
-                        -Headline (Get-WinForgeText 'O DNS de antes não voltou') -Note (Get-WinForgeText 'O novo DNS não funcionou, e o de antes não pôde ser restaurado: use Desfazer a troca de DNS.') `
-                        -Next "network.dns-undo" -NextLabel (Get-WinForgeText 'Desfazer a troca de DNS')
+                    $problems = @($undo.Failed) + @($undo.Unknown | ForEach-Object { (Get-TFToolkitText '{0}: o DNS de antes não é conhecido (escolha Automático em Rede > Trocar o servidor DNS)' "${_}") })
+                    Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível restaurar tudo: {0}. Use Rede > Desfazer a troca de DNS.' "$($problems -join '; ')")
+                    $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o novo DNS não resolveu nomes e a restauração falhou') -Title $title) `
+                        -Headline (Get-TFToolkitText 'O DNS de antes não voltou') -Note (Get-TFToolkitText 'O novo DNS não funcionou, e o de antes não pôde ser restaurado: use Desfazer a troca de DNS.') `
+                        -Next "network.dns-undo" -NextLabel (Get-TFToolkitText 'Desfazer a troca de DNS')
                 }
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível trocar o DNS: {0}' "$($_.Exception.Message)")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível trocar o DNS: {0}' "$($_.Exception.Message)")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
-function Undo-WinForgeDnsChange {
-    $title = (Get-WinForgeText 'Desfazer a troca de DNS')
+function Undo-TFToolkitDnsChange {
+    $title = (Get-TFToolkitText 'Desfazer a troca de DNS')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Desfazer a troca de DNS exige privilégios de Administrador.'))) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador') -Title $title)
+        if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Desfazer a troca de DNS exige privilégios de Administrador.'))) {
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador') -Title $title)
             return
         }
 
-        $read = Read-WinForgeDnsBackup -Status
+        $read = Read-TFToolkitDnsBackup -Status
 
         if ($read.Status -eq "Unreadable") {
             # Dizer "não há o que desfazer" seria falso: o backup existe, só não pôde ser lido agora.
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'O backup do DNS de antes existe, mas não pôde ser lido agora ({0}). Nada foi alterado; tente de novo em instantes.' "$(Get-WinForgeDnsBackupPath)")
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o backup do DNS não pôde ser lido') -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'O backup do DNS de antes existe, mas não pôde ser lido agora ({0}). Nada foi alterado; tente de novo em instantes.' "$(Get-TFToolkitDnsBackupPath)")
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o backup do DNS não pôde ser lido') -Title $title)
             return
         }
 
         $backup = @($read.Entries)
 
         if ($backup.Count -eq 0) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O WinForge não trocou o DNS neste PC: não há o que desfazer.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'nenhuma troca para desfazer') -Title $title)
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O TF-Toolkit não trocou o DNS neste PC: não há o que desfazer.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'nenhuma troca para desfazer') -Title $title)
             return
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'DNS de antes')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'DNS de antes')
 
         foreach ($entry in $backup) {
-            Write-WinForgeKeyValue -Label $(if ($entry.Alias) { $entry.Alias } else { $entry.Guid }) -Value (Get-WinForgeDnsModeText -Adapter $entry)
+            Write-TFToolkitKeyValue -Label $(if ($entry.Alias) { $entry.Alias } else { $entry.Guid }) -Value (Get-TFToolkitDnsModeText -Adapter $entry)
         }
 
         Write-Host ""
 
-        $undo = Restore-WinForgeDnsFromBackup -Backup $backup -Adapters @(Get-WinForgeDnsAdapters)
+        $undo = Restore-TFToolkitDnsFromBackup -Backup $backup -Adapters @(Get-TFToolkitDnsAdapters)
 
         foreach ($name in $undo.Missing) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0} não está ativo agora; o DNS dele não foi restaurado.' "$name")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0} não está ativo agora; o DNS dele não foi restaurado.' "$name")
         }
 
         foreach ($problem in $undo.Failed) {
-            Write-WinForgeStatus -Type Error -Message $problem
+            Write-TFToolkitStatus -Type Error -Message $problem
         }
 
         foreach ($name in $undo.Unknown) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0} ficou como está (o DNS de antes não era conhecido); se precisar, escolha Automático em Rede > Trocar o servidor DNS.' "$name")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0} ficou como está (o DNS de antes não era conhecido); se precisar, escolha Automático em Rede > Trocar o servidor DNS.' "$name")
         }
 
-        $restoredText = $(if ($undo.Restored -eq 1) { (Get-WinForgeText '1 adaptador voltou ao DNS de antes') } else { (Get-WinForgeText '{0} adaptadores voltaram ao DNS de antes' "$($undo.Restored)") })
+        $restoredText = $(if ($undo.Restored -eq 1) { (Get-TFToolkitText '1 adaptador voltou ao DNS de antes') } else { (Get-TFToolkitText '{0} adaptadores voltaram ao DNS de antes' "$($undo.Restored)") })
 
         if ($undo.Restored -gt 0) {
-            Write-WinForgeStatus -Type Success -Message "$restoredText."
+            Write-TFToolkitStatus -Type Success -Message "$restoredText."
             Clear-DnsClientCache -ErrorAction SilentlyContinue
         }
 
         if ($undo.Failed.Count -eq 0 -and $undo.Missing.Count -eq 0) {
             # Os desconhecidos não têm como voltar: guardar o backup só repetiria o mesmo aviso.
-            Remove-WinForgeDnsBackup
-            Set-WinForgeChangesUndone -Kind "dns" -Key "Kind" -Value "dns"
+            Remove-TFToolkitDnsBackup
+            Set-TFToolkitChangesUndone -Kind "dns" -Key "Kind" -Value "dns"
 
             if ($undo.Unknown.Count -gt 0) {
-                $verb = $(if ($undo.Unknown.Count -eq 1) { (Get-WinForgeText 'não foi alterado') } else { (Get-WinForgeText 'não foram alterados') })
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0}; {1} {2} (o DNS de antes não era conhecido)' "$restoredText" "$(Join-WinForgeList -Items @($undo.Unknown))" "$verb") -Title $title) `
-                    -Headline $(if ($undo.Restored -gt 0) { (Get-WinForgeText 'DNS de antes restaurado em parte') } else { (Get-WinForgeText 'O DNS de antes não voltou') }) `
-                    -Note (Get-WinForgeText '{0} {1}: o DNS de antes não era conhecido.' "$(Join-WinForgeList -Items @($undo.Unknown))" "$verb")
+                $verb = $(if ($undo.Unknown.Count -eq 1) { (Get-TFToolkitText 'não foi alterado') } else { (Get-TFToolkitText 'não foram alterados') })
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0}; {1} {2} (o DNS de antes não era conhecido)' "$restoredText" "$(Join-TFToolkitList -Items @($undo.Unknown))" "$verb") -Title $title) `
+                    -Headline $(if ($undo.Restored -gt 0) { (Get-TFToolkitText 'DNS de antes restaurado em parte') } else { (Get-TFToolkitText 'O DNS de antes não voltou') }) `
+                    -Note (Get-TFToolkitText '{0} {1}: o DNS de antes não era conhecido.' "$(Join-TFToolkitList -Items @($undo.Unknown))" "$verb")
             }
             else {
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail $restoredText -Title $title) -Headline (Get-WinForgeText 'DNS de antes restaurado') -Note "$restoredText."
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail $restoredText -Title $title) -Headline (Get-TFToolkitText 'DNS de antes restaurado') -Note "$restoredText."
             }
         }
         else {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O backup foi mantido para você tentar de novo.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O backup foi mantido para você tentar de novo.')
 
             # Na janela, o título diz se o DNS de antes voltou; a frase, o que fazer com o resto.
             if ($undo.Restored -gt 0) {
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'restauração parcial: {0}' "$restoredText") -Title $title) `
-                    -Headline (Get-WinForgeText 'DNS de antes restaurado em parte') -Note (Get-WinForgeText '{0}; o que faltou está no resumo.' "$($restoredText.Substring(0, 1).ToUpper())$($restoredText.Substring(1))")
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'restauração parcial: {0}' "$restoredText") -Title $title) `
+                    -Headline (Get-TFToolkitText 'DNS de antes restaurado em parte') -Note (Get-TFToolkitText '{0}; o que faltou está no resumo.' "$($restoredText.Substring(0, 1).ToUpper())$($restoredText.Substring(1))")
             }
             elseif ($undo.Failed.Count -gt 0) {
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhum adaptador foi restaurado') -Title $title) `
-                    -Headline (Get-WinForgeText 'O DNS de antes não voltou') -Note (Get-WinForgeText 'O motivo está no resumo; o backup foi mantido para tentar de novo.')
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhum adaptador foi restaurado') -Title $title) `
+                    -Headline (Get-TFToolkitText 'O DNS de antes não voltou') -Note (Get-TFToolkitText 'O motivo está no resumo; o backup foi mantido para tentar de novo.')
             }
             else {
                 # Só faltam adaptadores desligados (Wi-Fi apagado, cabo fora): não é um erro, é ligá-los e repetir.
-                $missing = Join-WinForgeList -Items @($undo.Missing)
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'nenhum adaptador do backup está ativo agora; ligue-os e repita') -Title $title) `
-                    -Headline (Get-WinForgeText 'O DNS de antes não voltou') `
-                    -Note $(if (@($undo.Missing).Count -eq 1) { (Get-WinForgeText 'O adaptador {0} não está ativo agora: ligue-o e repita; o backup foi mantido.' "$missing") } else { (Get-WinForgeText 'Os adaptadores {0} não estão ativos agora: ligue-os e repita; o backup foi mantido.' "$missing") })
+                $missing = Join-TFToolkitList -Items @($undo.Missing)
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'nenhum adaptador do backup está ativo agora; ligue-os e repita') -Title $title) `
+                    -Headline (Get-TFToolkitText 'O DNS de antes não voltou') `
+                    -Note $(if (@($undo.Missing).Count -eq 1) { (Get-TFToolkitText 'O adaptador {0} não está ativo agora: ligue-o e repita; o backup foi mantido.' "$missing") } else { (Get-TFToolkitText 'Os adaptadores {0} não estão ativos agora: ligue-os e repita; o backup foi mantido.' "$missing") })
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível desfazer: {0}' "$($_.Exception.Message)")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível desfazer: {0}' "$($_.Exception.Message)")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -922,7 +922,7 @@ function Undo-WinForgeDnsChange {
 # Relatório de Wi-Fi
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeWifiReportSource {
+function Get-TFToolkitWifiReportSource {
     # Onde o Windows grava o relatório mais recente do Wi-Fi.
     $programData = if ([string]::IsNullOrWhiteSpace($env:ProgramData)) { "C:\ProgramData" } else { $env:ProgramData }
 
@@ -930,68 +930,68 @@ function Get-WinForgeWifiReportSource {
 }
 
 
-function Show-WinForgeWifiReport {
-    $title = (Get-WinForgeText 'Relatório de Wi-Fi')
+function Show-TFToolkitWifiReport {
+    $title = (Get-TFToolkitText 'Relatório de Wi-Fi')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'O relatório de Wi-Fi exige privilégios de Administrador.'))) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador') -Title $title)
+        if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'O relatório de Wi-Fi exige privilégios de Administrador.'))) {
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador') -Title $title)
             return
         }
 
-        $source = Get-WinForgeWifiReportSource
+        $source = Get-TFToolkitWifiReportSource
         $startedAt = Get-Date
 
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'o Windows está gerando o relatório (leva alguns segundos)')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'o Windows está gerando o relatório (leva alguns segundos)')
 
-        try { $run = Invoke-WinForgeCapture -FilePath "netsh" -Arguments @("wlan", "show", "wlanreport") } finally { Write-Progress -Activity $title -Completed }
+        try { $run = Invoke-TFToolkitCapture -FilePath "netsh" -Arguments @("wlan", "show", "wlanreport") } finally { Write-Progress -Activity $title -Completed }
 
         $fresh = (Test-Path -LiteralPath $source -PathType Leaf) -and ((Get-Item -LiteralPath $source).LastWriteTime -ge $startedAt.AddSeconds(-5))
 
         if (-not $fresh) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O Windows não gerou o relatório (código {0}). Este PC pode não ter Wi-Fi, ou o serviço de Wi-Fi está parado.' "$($run.ExitCode)")
-            Exit-WinForgeAction -Result (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'o Windows não gerou o relatório') -Title $title) `
-                    -Headline (Get-WinForgeText 'Relatório não gerado') -Note (Get-WinForgeText 'Este PC pode não ter Wi-Fi, ou o serviço de Wi-Fi está parado.'))
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O Windows não gerou o relatório (código {0}). Este PC pode não ter Wi-Fi, ou o serviço de Wi-Fi está parado.' "$($run.ExitCode)")
+            Exit-TFToolkitAction -Result (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'o Windows não gerou o relatório') -Title $title) `
+                    -Headline (Get-TFToolkitText 'Relatório não gerado') -Note (Get-TFToolkitText 'Este PC pode não ter Wi-Fi, ou o serviço de Wi-Fi está parado.'))
             return
         }
 
-        # Na pasta dos outros relatórios, a que Sobre o WinForge > Pasta de logs e relatórios abre.
-        $folder = Join-Path (Get-WinForgeDataPath) "reports"
+        # Na pasta dos outros relatórios, a que Sobre o TF-Toolkit > Pasta de logs e relatórios abre.
+        $folder = Join-Path (Get-TFToolkitDataPath) "reports"
         [void](New-Item -ItemType Directory -Path $folder -Force -ErrorAction Stop)
         $target = Join-Path $folder "Relatorio-WiFi-$((Get-Date).ToString('yyyy-MM-dd-HHmm', [System.Globalization.CultureInfo]::InvariantCulture)).html"
         Copy-Item -LiteralPath $source -Destination $target -Force -ErrorAction Stop
 
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Relatório gerado.')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Arquivo') -Value $target
-        $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'relatório salvo') -Title $title) -Headline (Get-WinForgeText 'Relatório do Wi-Fi gerado') -Note (Get-WinForgeText 'Salvo em {0}.' "$target")
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Relatório gerado.')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Arquivo') -Value $target
+        $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'relatório salvo') -Title $title) -Headline (Get-TFToolkitText 'Relatório do Wi-Fi gerado') -Note (Get-TFToolkitText 'Salvo em {0}.' "$target")
         # O resumo no alto mostra as sessões de Wi-Fi dos últimos dias. Quedas repetidas no mesmo horário costumam vir do
         # roteador, do canal ou da distância.
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Como ler: as barras vermelhas são quedas, com o motivo logo abaixo.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Como ler: as barras vermelhas são quedas, com o motivo logo abaixo.')
         Write-Host ""
 
-        if (Confirm-WinForgeAction -Message (Get-WinForgeText 'Abrir o relatório agora?') -DefaultKey "S" -YesLabel (Get-WinForgeText 'Abrir') -NoLabel (Get-WinForgeText 'Agora não')) {
+        if (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Abrir o relatório agora?') -DefaultKey "S" -YesLabel (Get-TFToolkitText 'Abrir') -NoLabel (Get-TFToolkitText 'Agora não')) {
             try {
                 # Pelo explorer.exe, que entrega a abertura ao Explorador da sessão: o navegador abre sem os privilégios de
                 # Administrador desta ação (aberto direto daqui, ele herdaria a elevação).
                 Start-Process -FilePath "explorer.exe" -ArgumentList "`"$target`"" -ErrorAction Stop
             }
             catch {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível abrir o relatório: {0}' "$($_.Exception.Message)")
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'relatório salvo; não foi possível abri-lo') -Title $title) `
-                    -Headline (Get-WinForgeText 'Relatório do Wi-Fi gerado') -Note (Get-WinForgeText 'Salvo em {0}; não foi possível abri-lo daqui.' "$target")
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível abrir o relatório: {0}' "$($_.Exception.Message)")
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'relatório salvo; não foi possível abri-lo') -Title $title) `
+                    -Headline (Get-TFToolkitText 'Relatório do Wi-Fi gerado') -Note (Get-TFToolkitText 'Salvo em {0}; não foi possível abri-lo daqui.' "$target")
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível gerar o relatório de Wi-Fi: {0}' "$($_.Exception.Message)")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível gerar o relatório de Wi-Fi: {0}' "$($_.Exception.Message)")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -999,11 +999,11 @@ function Show-WinForgeWifiReport {
 # Senha do Wi-Fi (Rede > Senha do Wi-Fi)
 # ---------------------------------------------------------------------------
 
-function Test-WinForgeWifiAdapter {
+function Test-TFToolkitWifiAdapter {
     # Se o PC tem um adaptador de Wi-Fi (ligado ou desligado): $true, $false, ou $null quando não dá para saber.
     try {
         $adapters = @(Get-NetAdapter -Physical -ErrorAction Stop)
-        return (@($adapters | Where-Object { [string](Get-WinForgeJsonValue -Object $_ -Name "PhysicalMediaType" -Default "") -match '802\.11' -or [string](Get-WinForgeJsonValue -Object $_ -Name "NdisPhysicalMedium" -Default "") -eq "9" }).Count -gt 0)
+        return (@($adapters | Where-Object { [string](Get-TFToolkitJsonValue -Object $_ -Name "PhysicalMediaType" -Default "") -match '802\.11' -or [string](Get-TFToolkitJsonValue -Object $_ -Name "NdisPhysicalMedium" -Default "") -eq "9" }).Count -gt 0)
     }
     catch {
         return $null
@@ -1011,7 +1011,7 @@ function Test-WinForgeWifiAdapter {
 }
 
 
-function Read-WinForgeWifiProfiles {
+function Read-TFToolkitWifiProfiles {
     <#
     As redes Wi-Fi salvas neste PC, com a senha: Name (o nome do perfil), Ssid, Key (a senha; vazia numa rede aberta ou
     de empresa, que não guarda senha) e Kind (Personal, Open, Enterprise ou Unreadable: uma rede com senha que o Windows
@@ -1019,7 +1019,7 @@ function Read-WinForgeWifiProfiles {
     muda com o idioma; os arquivos, com as senhas em texto, ficam numa pasta temporária só o tempo de ler e saem na hora.
     Pede Administrador (sem ele, o Windows não entrega as senhas). Lança erro quando o Windows não exporta.
     #>
-    $folder = Join-Path ([System.IO.Path]::GetTempPath()) ("WinForge-wifi-{0}" -f [guid]::NewGuid().ToString("N"))
+    $folder = Join-Path ([System.IO.Path]::GetTempPath()) ("TF-Toolkit-wifi-{0}" -f [guid]::NewGuid().ToString("N"))
     $profiles = @()
 
     [void](New-Item -ItemType Directory -Path $folder -Force -ErrorAction Stop)
@@ -1028,14 +1028,14 @@ function Read-WinForgeWifiProfiles {
         # Sem o argumento folder=, o netsh grava na pasta atual: assim um caminho com espaços não vira problema de aspas.
         Push-Location -LiteralPath $folder
 
-        try { $run = Invoke-WinForgeCapture -FilePath "netsh" -Arguments @("wlan", "export", "profile", "key=clear") }
+        try { $run = Invoke-TFToolkitCapture -FilePath "netsh" -Arguments @("wlan", "export", "profile", "key=clear") }
         finally { Pop-Location }
 
         $files = @(Get-ChildItem -LiteralPath $folder -Filter "*.xml" -File -ErrorAction SilentlyContinue)
 
         if ($run.ExitCode -ne 0 -and $files.Count -eq 0) {
             $reason = @($run.Lines | ForEach-Object { ([string]$_).Trim() } | Where-Object { $_ }) | Select-Object -First 2
-            throw (Get-WinForgeText 'o Windows não entregou as redes Wi-Fi ({0}); se o PC tem Wi-Fi, confira se ele está ligado' "$((@($reason) -join ' ').TrimEnd('.'))")
+            throw (Get-TFToolkitText 'o Windows não entregou as redes Wi-Fi ({0}); se o PC tem Wi-Fi, confira se ele está ligado' "$((@($reason) -join ' ').TrimEnd('.'))")
         }
 
         foreach ($file in $files) {
@@ -1074,7 +1074,7 @@ function Read-WinForgeWifiProfiles {
         }
     }
     finally {
-        Remove-WinForgeFolder -Path $folder -Quiet
+        Remove-TFToolkitFolder -Path $folder -Quiet
     }
 
     # Com dois adaptadores de Wi-Fi (o do notebook e um USB), o Windows exporta cada rede uma vez por adaptador
@@ -1091,45 +1091,45 @@ function Read-WinForgeWifiProfiles {
 }
 
 
-function Show-WinForgeWifiPassword {
-    $title = (Get-WinForgeText 'Senha do Wi-Fi')
-    Enter-WinForgeAction -Title $title
+function Show-TFToolkitWifiPassword {
+    $title = (Get-TFToolkitText 'Senha do Wi-Fi')
+    Enter-TFToolkitAction -Title $title
 
     $final = $null
 
     try {
-        if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Ver a senha do Wi-Fi exige privilégios de Administrador.'))) {
-            $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador') -Title $title
+        if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Ver a senha do Wi-Fi exige privilégios de Administrador.'))) {
+            $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador') -Title $title
         }
         else {
             $profiles = @()
             $noWifi = $false
 
             try {
-                $profiles = @(Read-WinForgeWifiProfiles)
+                $profiles = @(Read-TFToolkitWifiProfiles)
             }
             catch {
                 # Sem adaptador de Wi-Fi, o Windows não entrega rede nenhuma: não é um erro.
-                if ((Test-WinForgeWifiAdapter) -eq $false) { $noWifi = $true } else { throw }
+                if ((Test-TFToolkitWifiAdapter) -eq $false) { $noWifi = $true } else { throw }
             }
 
             if ($noWifi) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Este PC não tem adaptador de Wi-Fi: sem ele, o Windows não mostra as redes salvas.')
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'este PC não tem Wi-Fi') -Title $title) `
-                    -Headline (Get-WinForgeText 'Este PC não tem Wi-Fi') -Note (Get-WinForgeText 'Sem adaptador de Wi-Fi, não há redes salvas para mostrar.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Este PC não tem adaptador de Wi-Fi: sem ele, o Windows não mostra as redes salvas.')
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'este PC não tem Wi-Fi') -Title $title) `
+                    -Headline (Get-TFToolkitText 'Este PC não tem Wi-Fi') -Note (Get-TFToolkitText 'Sem adaptador de Wi-Fi, não há redes salvas para mostrar.')
             }
             elseif ($profiles.Count -eq 0) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nenhuma rede Wi-Fi salva neste PC (ou ele não tem Wi-Fi).')
-                $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'nenhuma rede Wi-Fi salva') -Title $title) `
-                    -Headline (Get-WinForgeText 'Nenhuma rede Wi-Fi salva') -Note (Get-WinForgeText 'O Windows guarda a senha de uma rede quando o PC se conecta a ela.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nenhuma rede Wi-Fi salva neste PC (ou ele não tem Wi-Fi).')
+                $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'nenhuma rede Wi-Fi salva') -Title $title) `
+                    -Headline (Get-TFToolkitText 'Nenhuma rede Wi-Fi salva') -Note (Get-TFToolkitText 'O Windows guarda a senha de uma rede quando o PC se conecta a ela.')
             }
             else {
                 # A rede conectada agora vem primeiro e já marcada.
                 $connected = ""
 
                 try {
-                    $wlan = Invoke-WinForgeCapture -FilePath "netsh" -Arguments @("wlan", "show", "interfaces")
-                    $connected = [string](@(ConvertFrom-WinForgeWlanInterfaces -Lines @($wlan.Lines)) | Select-Object -First 1 -ExpandProperty Ssid -ErrorAction SilentlyContinue)
+                    $wlan = Invoke-TFToolkitCapture -FilePath "netsh" -Arguments @("wlan", "show", "interfaces")
+                    $connected = [string](@(ConvertFrom-TFToolkitWlanInterfaces -Lines @($wlan.Lines)) | Select-Object -First 1 -ExpandProperty Ssid -ErrorAction SilentlyContinue)
                 }
                 catch {
                     $connected = ""
@@ -1142,62 +1142,62 @@ function Show-WinForgeWifiPassword {
                 foreach ($profile in $ordered) {
                     $position++
                     $about = switch ($profile.Kind) {
-                        "Open" { (Get-WinForgeText 'rede aberta, sem senha') }
-                        "Enterprise" { (Get-WinForgeText 'rede de empresa: a senha é a da sua conta, e não fica guardada') }
-                        "Unreadable" { (Get-WinForgeText 'o Windows não entregou a senha desta rede') }
-                        default { $(if ($connected -and $profile.Ssid -ceq $connected) { (Get-WinForgeText 'conectada agora') } else { "" }) }
+                        "Open" { (Get-TFToolkitText 'rede aberta, sem senha') }
+                        "Enterprise" { (Get-TFToolkitText 'rede de empresa: a senha é a da sua conta, e não fica guardada') }
+                        "Unreadable" { (Get-TFToolkitText 'o Windows não entregou a senha desta rede') }
+                        default { $(if ($connected -and $profile.Ssid -ceq $connected) { (Get-TFToolkitText 'conectada agora') } else { "" }) }
                     }
 
                     # O destaque marca a rede conectada; sem nenhuma, a primeira da lista é só a primeira em ordem alfabética.
                     $options += @{ Key = [string]$position; Label = $profile.Ssid; Description = $about; Accent = ($position -eq 1 -and $connected -and $profile.Ssid -ceq $connected) }
                 }
 
-                $options += @{ Key = "0"; Label = (Get-WinForgeText 'Voltar'); Exit = $true }
+                $options += @{ Key = "0"; Label = (Get-TFToolkitText 'Voltar'); Exit = $true }
 
-                $answer = Read-WinForgeChoice -Message (Get-WinForgeText 'De qual rede?') -Options $options -DefaultKey "1" -ShowMenu
+                $answer = Read-TFToolkitChoice -Message (Get-TFToolkitText 'De qual rede?') -Options $options -DefaultKey "1" -ShowMenu
                 $index = 0
 
                 if (-not ([int]::TryParse([string]$answer, [ref]$index)) -or $index -lt 1 -or $index -gt $ordered.Count) {
-                    $final = New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title
+                    $final = New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title
                 }
                 else {
                     $chosen = $ordered[$index - 1]
                     Write-Host ""
-                    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Rede') -Value $chosen.Ssid
+                    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Rede') -Value $chosen.Ssid
 
                     if ($chosen.Kind -eq "Personal") {
-                        Write-WinForgeSecret -Label (Get-WinForgeText 'Senha') -Value $chosen.Key
+                        Write-TFToolkitSecret -Label (Get-TFToolkitText 'Senha') -Value $chosen.Key
                         Write-Host ""
-                        Write-WinForgeStatus -Type Info -Notice -Message (Get-WinForgeText 'A senha aparece só na tela: ela não vai para o log do WinForge.')
+                        Write-TFToolkitStatus -Type Info -Notice -Message (Get-TFToolkitText 'A senha aparece só na tela: ela não vai para o log do TF-Toolkit.')
 
-                        $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'senha mostrada na tela') -Title $title) `
-                            -Headline (Get-WinForgeText 'Senha de {0}' "$($chosen.Ssid)") -Note (Get-WinForgeText 'A senha está no resumo, abaixo; ela não vai para o log do WinForge.')
+                        $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'senha mostrada na tela') -Title $title) `
+                            -Headline (Get-TFToolkitText 'Senha de {0}' "$($chosen.Ssid)") -Note (Get-TFToolkitText 'A senha está no resumo, abaixo; ela não vai para o log do TF-Toolkit.')
                     }
                     elseif ($chosen.Kind -eq "Unreadable") {
-                        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O Windows não entregou a senha desta rede em texto: ela não pode ser mostrada daqui.')
-                        $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'o Windows não entregou a senha desta rede') -Title $title) `
-                            -Headline (Get-WinForgeText 'A senha de {0} não pôde ser mostrada' "$($chosen.Ssid)") -Note (Get-WinForgeText 'O Windows não a entregou em texto.')
+                        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O Windows não entregou a senha desta rede em texto: ela não pode ser mostrada daqui.')
+                        $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'o Windows não entregou a senha desta rede') -Title $title) `
+                            -Headline (Get-TFToolkitText 'A senha de {0} não pôde ser mostrada' "$($chosen.Ssid)") -Note (Get-TFToolkitText 'O Windows não a entregou em texto.')
                     }
                     else {
-                        $text = $(if ($chosen.Kind -eq "Open") { (Get-WinForgeText 'Esta rede é aberta: não tem senha.') } else { (Get-WinForgeText 'Esta é uma rede de empresa: entra com o usuário e a senha da sua conta, e o Windows não guarda uma senha da rede.') })
-                        Write-WinForgeStatus -Type Info -Message $text
-                        $final = New-WinForgeResult -Kind Skipped -Detail $(if ($chosen.Kind -eq "Open") { (Get-WinForgeText 'rede aberta, sem senha') } else { (Get-WinForgeText 'rede de empresa, sem senha guardada') }) -Title $title
+                        $text = $(if ($chosen.Kind -eq "Open") { (Get-TFToolkitText 'Esta rede é aberta: não tem senha.') } else { (Get-TFToolkitText 'Esta é uma rede de empresa: entra com o usuário e a senha da sua conta, e o Windows não guarda uma senha da rede.') })
+                        Write-TFToolkitStatus -Type Info -Message $text
+                        $final = New-TFToolkitResult -Kind Skipped -Detail $(if ($chosen.Kind -eq "Open") { (Get-TFToolkitText 'rede aberta, sem senha') } else { (Get-TFToolkitText 'rede de empresa, sem senha guardada') }) -Title $title
 
                         # Na janela, o título diz que não há senha a mostrar (e não "Nada a fazer"); a frase, por quê.
-                        [void](Set-WinForgeResultView -Result $final `
-                                -Headline $(if ($chosen.Kind -eq "Open") { (Get-WinForgeText '{0} não tem senha' "$($chosen.Ssid)") } else { (Get-WinForgeText '{0} não guarda senha' "$($chosen.Ssid)") }) `
-                                -Note $(if ($chosen.Kind -eq "Open") { (Get-WinForgeText 'É uma rede aberta.') } else { (Get-WinForgeText 'É uma rede de empresa: entra com o usuário e a senha da sua conta.') }))
+                        [void](Set-TFToolkitResultView -Result $final `
+                                -Headline $(if ($chosen.Kind -eq "Open") { (Get-TFToolkitText '{0} não tem senha' "$($chosen.Ssid)") } else { (Get-TFToolkitText '{0} não guarda senha' "$($chosen.Ssid)") }) `
+                                -Note $(if ($chosen.Kind -eq "Open") { (Get-TFToolkitText 'É uma rede aberta.') } else { (Get-TFToolkitText 'É uma rede de empresa: entra com o usuário e a senha da sua conta.') }))
                     }
                 }
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler as redes Wi-Fi: {0}.' "$(([string]$_.Exception.Message).TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail ([string]$_.Exception.Message).TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler as redes Wi-Fi: {0}.' "$(([string]$_.Exception.Message).TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail ([string]$_.Exception.Message).TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -1206,7 +1206,7 @@ function Show-WinForgeWifiPassword {
 # Acertar a data e a hora
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeClockOffset {
+function Get-TFToolkitClockOffset {
     <#
     Quanto o relógio do PC está adiantado (positivo) ou atrasado (negativo), em segundos, pela hora do servidor do teste
     de internet do próprio Windows (www.msftconnecttest.com, o do indicador de conexão): o cabeçalho Date da resposta, mais
@@ -1252,23 +1252,23 @@ function Get-WinForgeClockOffset {
 }
 
 
-function Get-WinForgeClockOffsetText {
+function Get-TFToolkitClockOffsetText {
     # "Certo", "3min 05s adiantado", "4 dias atrasado". Até 10 segundos é "certo": a medida tem um a dois de folga.
     param ([double]$Seconds)
 
     $abs = [Math]::Abs($Seconds)
 
-    if ($abs -le 10) { return (Get-WinForgeText 'Certo') }
+    if ($abs -le 10) { return (Get-TFToolkitText 'Certo') }
 
-    $amount = $(if ($abs -ge 172800) { Format-WinForgeCount -Count ([int][Math]::Floor($abs / 86400)) -One (Get-WinForgeText 'dia') -Many (Get-WinForgeText 'dias') } else { Format-WinForgeDuration -Span ([TimeSpan]::FromSeconds($abs)) })
+    $amount = $(if ($abs -ge 172800) { Format-TFToolkitCount -Count ([int][Math]::Floor($abs / 86400)) -One (Get-TFToolkitText 'dia') -Many (Get-TFToolkitText 'dias') } else { Format-TFToolkitDuration -Span ([TimeSpan]::FromSeconds($abs)) })
 
-    if ($Seconds -gt 0) { return (Get-WinForgeText '{0} adiantado' "$amount") }
+    if ($Seconds -gt 0) { return (Get-TFToolkitText '{0} adiantado' "$amount") }
 
-    return (Get-WinForgeText '{0} atrasado' "$amount")
+    return (Get-TFToolkitText '{0} atrasado' "$amount")
 }
 
 
-function Write-WinForgeClockState {
+function Write-TFToolkitClockState {
     # A hora do PC, o fuso (só uma vez na tela: -NoZone no "antes") e, quando foi medido, quanto o relógio está fora da
     # hora certa.
     param (
@@ -1276,33 +1276,33 @@ function Write-WinForgeClockState {
         [switch]$NoZone
     )
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Hora no PC') -Value (Format-WinForgeDateTime -When (Get-Date))
-    if (-not $NoZone) { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Fuso horário') -Value ([string][System.TimeZoneInfo]::Local.DisplayName) }
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Relógio') -Value $(if ($null -eq $Offset) { (Get-WinForgeText 'Não foi possível medir (sem resposta do servidor da Microsoft)') } else { Get-WinForgeClockOffsetText -Seconds $Offset }) `
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Hora no PC') -Value (Format-TFToolkitDateTime -When (Get-Date))
+    if (-not $NoZone) { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Fuso horário') -Value ([string][System.TimeZoneInfo]::Local.DisplayName) }
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Relógio') -Value $(if ($null -eq $Offset) { (Get-TFToolkitText 'Não foi possível medir (sem resposta do servidor da Microsoft)') } else { Get-TFToolkitClockOffsetText -Seconds $Offset }) `
         -Level $(if ($null -ne $Offset -and [Math]::Abs([double]$Offset) -gt 10) { "Warn" } else { "Normal" })
 }
 
 
-function Invoke-WinForgeTimeResync {
+function Invoke-TFToolkitTimeResync {
     # "w32tm /resync"; sem sucesso, de novo com /rediscover, que redetecta a rede e as fontes de hora antes de sincronizar.
     # Devolve o resultado da última tentativa (ExitCode, Lines e Text).
-    Write-WinForgeCommand -Command "w32tm /resync"
-    $run = Invoke-WinForgeCapture -FilePath "w32tm.exe" -Arguments @("/resync") -Echo
+    Write-TFToolkitCommand -Command "w32tm /resync"
+    $run = Invoke-TFToolkitCapture -FilePath "w32tm.exe" -Arguments @("/resync") -Echo
 
     if ($run.ExitCode -ne 0) {
-        Write-WinForgeCommand -Command "w32tm /resync /rediscover"
-        $run = Invoke-WinForgeCapture -FilePath "w32tm.exe" -Arguments @("/resync", "/rediscover") -Echo
+        Write-TFToolkitCommand -Command "w32tm /resync /rediscover"
+        $run = Invoke-TFToolkitCapture -FilePath "w32tm.exe" -Arguments @("/resync", "/rediscover") -Echo
     }
 
     return $run
 }
 
 
-function Get-WinForgeTimeSource {
+function Get-TFToolkitTimeSource {
     # De onde o Windows pega a hora ("time.windows.com", o servidor do domínio), sem as opções do fim (",0x9"); vazio
     # quando o w32tm não respondeu.
     try {
-        $run = Invoke-WinForgeCapture -FilePath "w32tm.exe" -Arguments @("/query", "/source")
+        $run = Invoke-TFToolkitCapture -FilePath "w32tm.exe" -Arguments @("/query", "/source")
     }
     catch {
         return ""
@@ -1316,151 +1316,151 @@ function Get-WinForgeTimeSource {
 }
 
 
-function Sync-WinForgeTime {
+function Sync-TFToolkitTime {
     <#
     Acertar a data e a hora: pede ao serviço Horário do Windows para sincronizar agora (w32tm /resync), e confere o
-    resultado na hora de um servidor da Microsoft (Get-WinForgeClockOffset), sem depender só do código de saída do w32tm.
+    resultado na hora de um servidor da Microsoft (Get-TFToolkitClockOffset), sem depender só do código de saída do w32tm.
     O Windows não acerta sozinho um relógio muito errado: num PC fora de domínio, o padrão é corrigir no máximo 15 horas
     para mais ou para menos (MaxPosPhaseCorrection e MaxNegPhaseCorrection); acima disso, ele só registra um evento. Com
     o relógio ainda errado depois de sincronizar, e a pessoa concordando, o relógio vai para a hora do servidor e o
-    Windows sincroniza de novo. Num PC de domínio, a hora vem do domínio, e o WinForge não a muda por fora. Um serviço
+    Windows sincroniza de novo. Num PC de domínio, a hora vem do domínio, e o TF-Toolkit não a muda por fora. Um serviço
     desativado não é ligado, e o Windows configurado para não sincronizar (Type = NoSync, nos parâmetros do Horário do
     Windows) fica como está: nos dois casos, a tela diz isso e só oferece pôr o relógio na hora do servidor.
     #>
-    $title = (Get-WinForgeText 'Acertar a data e a hora')
+    $title = (Get-TFToolkitText 'Acertar a data e a hora')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Acertar a data e a hora exige privilégios de Administrador.'))) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador') -Title $title)
+        if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Acertar a data e a hora exige privilégios de Administrador.'))) {
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador') -Title $title)
             return
         }
 
-        $state = Get-WinForgeServiceState -Name "W32Time"
+        $state = Get-TFToolkitServiceState -Name "W32Time"
 
         if ($null -eq $state -or [bool]$state.Missing) {
-            $text = $(if ($null -eq $state) { (Get-WinForgeText 'o Windows não respondeu sobre o serviço Horário do Windows') } else { (Get-WinForgeText 'o serviço Horário do Windows não existe neste Windows') })
-            Write-WinForgeStatus -Type Error -Message "$(ConvertTo-WinForgeHeadline -Text $text)."
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail $text -Title $title)
+            $text = $(if ($null -eq $state) { (Get-TFToolkitText 'o Windows não respondeu sobre o serviço Horário do Windows') } else { (Get-TFToolkitText 'o serviço Horário do Windows não existe neste Windows') })
+            Write-TFToolkitStatus -Type Error -Message "$(ConvertTo-TFToolkitHeadline -Text $text)."
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail $text -Title $title)
             return
         }
 
-        $system = @(Get-WinForgeCimOrNull -ClassName "Win32_ComputerSystem") | Select-Object -First 1
-        $domain = ($null -ne $system -and [bool](Get-WinForgeJsonValue -Object $system -Name "PartOfDomain" -Default $false))
+        $system = @(Get-TFToolkitCimOrNull -ClassName "Win32_ComputerSystem") | Select-Object -First 1
+        $domain = ($null -ne $system -and [bool](Get-TFToolkitJsonValue -Object $system -Name "PartOfDomain" -Default $false))
         $disabled = ($state.StartType -eq "Disabled")
-        $noSource = ([string](Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" -Name "Type") -eq "NoSync")
+        $noSource = ([string](Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" -Name "Type") -eq "NoSync")
 
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'conferindo a hora')
-        try { $before = Get-WinForgeClockOffset } finally { Write-Progress -Activity $title -Completed }
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'conferindo a hora')
+        try { $before = Get-TFToolkitClockOffset } finally { Write-Progress -Activity $title -Completed }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Antes')
-        Write-WinForgeClockState -Offset $before -NoZone
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Antes')
+        Write-TFToolkitClockState -Offset $before -NoZone
         Write-Host ""
 
         $synced = $false
         $setDirect = $false
 
         if ($disabled) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O serviço Horário do Windows está desativado: o relógio não se acerta sozinho. O WinForge não liga um serviço desativado.')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O serviço Horário do Windows está desativado: o relógio não se acerta sozinho. O TF-Toolkit não liga um serviço desativado.')
         }
         elseif ($noSource) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O Windows está configurado para não sincronizar o relógio. A sincronização automática fica em Configurações > Hora e idioma > Data e hora.')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O Windows está configurado para não sincronizar o relógio. A sincronização automática fica em Configurações > Hora e idioma > Data e hora.')
         }
         else {
-            Write-Progress -Activity $title -Status (Get-WinForgeText 'sincronizando o relógio')
+            Write-Progress -Activity $title -Status (Get-TFToolkitText 'sincronizando o relógio')
 
             try {
                 # O serviço costuma ficar parado até ser chamado; ligá-lo é o que o próprio Windows faz para sincronizar.
-                if ($state.Status -ne "Running") { Start-WinForgeService -Name "W32Time" }
-                $synced = ((Invoke-WinForgeTimeResync).ExitCode -eq 0)
+                if ($state.Status -ne "Running") { Start-TFToolkitService -Name "W32Time" }
+                $synced = ((Invoke-TFToolkitTimeResync).ExitCode -eq 0)
             }
             catch {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O serviço Horário do Windows não respondeu: {0}.' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O serviço Horário do Windows não respondeu: {0}.' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
             }
             finally {
                 Write-Progress -Activity $title -Completed
             }
         }
 
-        $after = Get-WinForgeClockOffset
+        $after = Get-TFToolkitClockOffset
 
         # Fora de domínio, com o relógio ainda errado e a hora do servidor lida, a pessoa decide se o relógio vai para ela.
         if ($null -ne $after -and [Math]::Abs([double]$after) -gt 10 -and -not $domain) {
             Write-Host ""
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O relógio continua errado: {0}.' "$((Get-WinForgeClockOffsetText -Seconds $after).ToLower())")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O relógio continua errado: {0}.' "$((Get-TFToolkitClockOffsetText -Seconds $after).ToLower())")
 
-            if (Confirm-WinForgeAction -Message (Get-WinForgeText 'Pôr o relógio na hora do servidor da Microsoft agora?') -DefaultKey "S" -YesLabel (Get-WinForgeText 'Acertar') -NoLabel (Get-WinForgeText 'Agora não')) {
+            if (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Pôr o relógio na hora do servidor da Microsoft agora?') -DefaultKey "S" -YesLabel (Get-TFToolkitText 'Acertar') -NoLabel (Get-TFToolkitText 'Agora não')) {
                 try {
                     [void](Set-Date -Date ((Get-Date).AddSeconds(-[double]$after)) -ErrorAction Stop)
                     $setDirect = $true
 
                     # Com o relógio perto da hora certa, o Windows consegue sincronizar e acertar os segundos.
-                    if (-not $disabled -and -not $noSource) { $synced = ((Invoke-WinForgeTimeResync).ExitCode -eq 0) -or $synced }
+                    if (-not $disabled -and -not $noSource) { $synced = ((Invoke-TFToolkitTimeResync).ExitCode -eq 0) -or $synced }
                 }
                 catch {
-                    Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'O Windows não deixou mudar o relógio: {0}.' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
+                    Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'O Windows não deixou mudar o relógio: {0}.' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
                 }
 
-                $after = Get-WinForgeClockOffset
+                $after = Get-TFToolkitClockOffset
             }
         }
 
-        $source = $(if ($synced) { Get-WinForgeTimeSource } else { "" })
+        $source = $(if ($synced) { Get-TFToolkitTimeSource } else { "" })
 
         Write-Host ""
-        Write-WinForgeSection -Title (Get-WinForgeText 'Agora')
-        Write-WinForgeClockState -Offset $after
-        if ($source) { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Servidor de hora') -Value $source }
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Agora')
+        Write-TFToolkitClockState -Offset $after
+        if ($source) { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Servidor de hora') -Value $source }
 
         if ($synced -or $setDirect) {
-            [void](Add-WinForgeChange -Action $title -Text $(if ($setDirect) { (Get-WinForgeText 'relógio posto na hora do servidor da Microsoft') } elseif ($source) { (Get-WinForgeText 'relógio sincronizado com {0}' "$source") } else { (Get-WinForgeText 'relógio sincronizado') }))
+            [void](Add-TFToolkitChange -Action $title -Text $(if ($setDirect) { (Get-TFToolkitText 'relógio posto na hora do servidor da Microsoft') } elseif ($source) { (Get-TFToolkitText 'relógio sincronizado com {0}' "$source") } else { (Get-TFToolkitText 'relógio sincronizado') }))
         }
 
         $right = ($null -ne $after -and [Math]::Abs([double]$after) -le 10)
-        $zone = (Get-WinForgeText 'Fuso horário: {0}.' "$([System.TimeZoneInfo]::Local.DisplayName)")
+        $zone = (Get-TFToolkitText 'Fuso horário: {0}.' "$([System.TimeZoneInfo]::Local.DisplayName)")
         $noSync = $(
-            if ($disabled) { (Get-WinForgeText 'O serviço Horário do Windows está desativado: com o tempo, o relógio volta a errar.') }
-            elseif ($noSource) { (Get-WinForgeText 'O Windows está configurado para não sincronizar o relógio: com o tempo, ele volta a errar. A sincronização automática fica em Configurações > Hora e idioma > Data e hora.') }
-            else { (Get-WinForgeText 'O Windows não recebeu a hora do servidor dele. Confira a internet; uma rede que bloqueia a porta UDP 123 também impede.') }
+            if ($disabled) { (Get-TFToolkitText 'O serviço Horário do Windows está desativado: com o tempo, o relógio volta a errar.') }
+            elseif ($noSource) { (Get-TFToolkitText 'O Windows está configurado para não sincronizar o relógio: com o tempo, ele volta a errar. A sincronização automática fica em Configurações > Hora e idioma > Data e hora.') }
+            else { (Get-TFToolkitText 'O Windows não recebeu a hora do servidor dele. Confira a internet; uma rede que bloqueia a porta UDP 123 também impede.') }
         )
 
         if ($right -and $synced) {
-            $final = New-WinForgeResult -Kind Ok -Detail $(if ($source) { (Get-WinForgeText 'relógio certo, sincronizado com {0}' "$source") } else { (Get-WinForgeText 'relógio certo e sincronizado') }) -Title $title
-            [void](Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'O relógio está certo') -Note $(if ($source) { (Get-WinForgeText 'Sincronizado com {0}.' "$source") } else { $zone }))
+            $final = New-TFToolkitResult -Kind Ok -Detail $(if ($source) { (Get-TFToolkitText 'relógio certo, sincronizado com {0}' "$source") } else { (Get-TFToolkitText 'relógio certo e sincronizado') }) -Title $title
+            [void](Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'O relógio está certo') -Note $(if ($source) { (Get-TFToolkitText 'Sincronizado com {0}.' "$source") } else { $zone }))
         }
         elseif ($right) {
-            Write-WinForgeStatus -Type Warning -Message $noSync
-            $final = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'o relógio está certo, mas o Windows não sincronizou') -Title $title
-            [void](Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'O relógio está certo, mas não sincroniza') -Note $noSync)
+            Write-TFToolkitStatus -Type Warning -Message $noSync
+            $final = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'o relógio está certo, mas o Windows não sincronizou') -Title $title
+            [void](Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'O relógio está certo, mas não sincroniza') -Note $noSync)
         }
         elseif ($null -ne $after) {
-            $offText = (Get-WinForgeClockOffsetText -Seconds $after).ToLower()
+            $offText = (Get-TFToolkitClockOffsetText -Seconds $after).ToLower()
             # Num PC de domínio, o Windows acerta aos poucos pela hora do domínio, que é quem manda ali.
-            $hint = $(if ($domain) { (Get-WinForgeText 'Neste PC de empresa, a hora vem do domínio, e o Windows a acerta aos poucos: confira em alguns minutos e, se continuar, fale com o suporte de TI.') } elseif (-not $synced) { $noSync } else { (Get-WinForgeText 'Acerte em Configurações > Hora e idioma > Data e hora.') })
-            Write-WinForgeStatus -Type Info -Message $hint
-            $final = New-WinForgeResult -Kind $(if ($domain -and $synced) { "Warning" } else { "Failed" }) -Detail (Get-WinForgeText 'o relógio continua errado: {0}' "$offText") -Title $title
-            [void](Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'O relógio continua errado') -Note "$(ConvertTo-WinForgeHeadline -Text $offText). $hint")
+            $hint = $(if ($domain) { (Get-TFToolkitText 'Neste PC de empresa, a hora vem do domínio, e o Windows a acerta aos poucos: confira em alguns minutos e, se continuar, fale com o suporte de TI.') } elseif (-not $synced) { $noSync } else { (Get-TFToolkitText 'Acerte em Configurações > Hora e idioma > Data e hora.') })
+            Write-TFToolkitStatus -Type Info -Message $hint
+            $final = New-TFToolkitResult -Kind $(if ($domain -and $synced) { "Warning" } else { "Failed" }) -Detail (Get-TFToolkitText 'o relógio continua errado: {0}' "$offText") -Title $title
+            [void](Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'O relógio continua errado') -Note "$(ConvertTo-TFToolkitHeadline -Text $offText). $hint")
         }
         elseif ($synced) {
             # Sem a hora do servidor da Microsoft para conferir, vale o que o Windows respondeu.
-            $final = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'o Windows sincronizou o relógio') -Title $title
-            [void](Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'O Windows sincronizou o relógio') -Note $zone)
+            $final = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'o Windows sincronizou o relógio') -Title $title
+            [void](Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'O Windows sincronizou o relógio') -Note $zone)
         }
         else {
-            Write-WinForgeStatus -Type Info -Message $noSync
-            $final = New-WinForgeResult -Kind Failed -Detail $(if ($disabled) { (Get-WinForgeText 'o serviço Horário do Windows está desativado') } elseif ($noSource) { (Get-WinForgeText 'o Windows está configurado para não sincronizar o relógio') } else { (Get-WinForgeText 'o Windows não recebeu a hora do servidor') }) -Title $title
-            [void](Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'O relógio não foi sincronizado') -Note $noSync)
+            Write-TFToolkitStatus -Type Info -Message $noSync
+            $final = New-TFToolkitResult -Kind Failed -Detail $(if ($disabled) { (Get-TFToolkitText 'o serviço Horário do Windows está desativado') } elseif ($noSource) { (Get-TFToolkitText 'o Windows está configurado para não sincronizar o relógio') } else { (Get-TFToolkitText 'o Windows não recebeu a hora do servidor') }) -Title $title
+            [void](Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'O relógio não foi sincronizado') -Note $noSync)
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível acertar a data e a hora: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível acertar a data e a hora: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 Export-ModuleMember -Function *

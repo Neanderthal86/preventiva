@@ -9,7 +9,7 @@
     <!-- A largura dos cartões: o script a ajusta ao tamanho da janela (de 252 a 300), para a linha de cartões preencher a
          página (Update-GuiContentWidth). -->
     <sys:Double x:Key="CardWidth">252</sys:Double>
-    <!-- A fonte e a escala de tamanhos do Windows 11 (GuiDesign.psm1, Get-WinForgeTypeRamp): o script troca os valores pelo
+    <!-- A fonte e a escala de tamanhos do Windows 11 (GuiDesign.psm1, Get-TFToolkitTypeRamp): o script troca os valores pelo
          tamanho do texto escolhido no Windows e, no Windows 11, pela Segoe UI Variable (Set-GuiTypography). DisplayFont é a
          dos títulos em negrito (o nome da página, o logotipo): a variação Display da Segoe UI Variable, quando o Windows a
          tem com o negrito de verdade. -->
@@ -26,7 +26,7 @@
     <sys:Double x:Key="BodyLineHeight">20</sys:Double>
     <sys:Double x:Key="SubtitleLineHeight">28</sys:Double>
     <!-- Cores do tema. Os valores abaixo são os do tema claro; o script troca cada pincel pelo do tema em uso
-         (claro ou escuro, como o Windows ou como a pessoa escolheu em Sobre o WinForge). -->
+         (claro ou escuro, como o Windows ou como a pessoa escolheu em Sobre o TF-Toolkit). -->
     <SolidColorBrush x:Key="WindowBrush" Color="#F5F6F6"/>
     <SolidColorBrush x:Key="SidebarBrush" Color="#EEF0F0"/>
     <SolidColorBrush x:Key="SidebarLineBrush" Color="#14000000"/>
@@ -65,7 +65,7 @@
          curvas de fora coincidem. Os gatilhos trocam o contorno em "Line"; o fundo sob o mouse e o pressionado ficam em
          camadas por cima do fundo ("Hover" e "Press"), e o do mouse entra e sai numa transição de 83 ms, como no Windows 11.
          Só a opacidade é animada. Com os efeitos de animação do Windows desligados, o script troca a duração das transições
-         por zero antes de montar a janela (Convert-WinForgeXamlMotion). -->
+         por zero antes de montar a janela (Convert-TFToolkitXamlMotion). -->
 
     <!-- Contorno de foco (só aparece navegando pelo teclado), na cor de destaque para texto: passa de 3:1 sobre todos os
          fundos nos dois temas -->
@@ -978,7 +978,7 @@
     </Grid.ColumnDefinitions>
 
     <!-- Barra lateral -->
-    <!-- Um tom à parte da janela e uma linha fina separando, como no desenho do WinForge 4.0 -->
+    <!-- Um tom à parte da janela e uma linha fina separando, como no desenho do TF-Toolkit 4.0 -->
     <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource SidebarLineBrush}" BorderThickness="0,0,1,0"
             Padding="12,16,12,14">
       <!-- Linhas na ordem da tela (logotipo, busca, páginas, rodapé): é também a ordem do Tab -->
@@ -989,7 +989,7 @@
           <RowDefinition Height="*"/>
           <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <!-- O logotipo: a bigorna de assets/WinForge.svg, sem o quadrado do ícone, nas cores do tema (o corpo na cor do
+        <!-- O logotipo: a bigorna de assets/TF-Toolkit.svg, sem o quadrado do ícone, nas cores do tema (o corpo na cor do
              texto e a face na cor de destaque), e o nome em negrito. A bigorna acompanha o tamanho do nome; com o texto do
              Windows grande, os dois diminuem juntos até caber na barra (DownOnly). -->
         <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="6,2,0,0"
@@ -1031,7 +1031,7 @@
                 </Canvas>
               </Viewbox>
               <!-- A caixa fica só na coluna do texto: a última coluna é da dica Ctrl K (caixa vazia) ou do botão de limpar. -->
-              <TextBox x:Name="SearchBox" Grid.Column="1" Style="{StaticResource SearchTextBox}" AutomationProperties.Name="Buscar no WinForge"
+              <TextBox x:Name="SearchBox" Grid.Column="1" Style="{StaticResource SearchTextBox}" AutomationProperties.Name="Buscar no TF-Toolkit"
                        AutomationProperties.AcceleratorKey="Ctrl+K" MaxLength="200"
                        ToolTip="Buscar ações, atalhos e ajustes (Ctrl+K ou Ctrl+F). Seta para baixo vai aos resultados; Esc volta."/>
               <!-- A dica começa onde o texto começa: Padding (6) + o recuo interno do texto (2). A janela confere com o cursor. -->
@@ -1080,7 +1080,7 @@
 
         <StackPanel Grid.Row="3">
           <Border Height="1" Background="{DynamicResource SidebarLineBrush}" Margin="4,6,4,8"/>
-          <!-- Páginas com Placement = Footer (Sobre o WinForge) -->
+          <!-- Páginas com Placement = Footer (Sobre o TF-Toolkit) -->
           <StackPanel x:Name="FooterNav"/>
           <DockPanel Margin="10,8,4,0">
             <Viewbox DockPanel.Dock="Left" Width="13" Height="13" VerticalAlignment="Top" Margin="0,1,8,0" IsHitTestVisible="False">
@@ -1266,7 +1266,7 @@
                 <StackPanel x:Name="DetailsActions" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
                   <Button x:Name="CopyButton" Style="{StaticResource GhostButton}" Content="Copiar" ToolTip="Copia o texto dos detalhes técnicos"/>
                   <Button x:Name="SaveButton" Style="{StaticResource GhostButton}" Content="Salvar" ToolTip="Salva o texto dos detalhes técnicos em um arquivo .txt"/>
-                  <Button x:Name="LogButton" Style="{StaticResource GhostButton}" Content="Abrir log" ToolTip="Abre o log completo desta sessão do WinForge"/>
+                  <Button x:Name="LogButton" Style="{StaticResource GhostButton}" Content="Abrir log" ToolTip="Abre o log completo desta sessão do TF-Toolkit"/>
                 </StackPanel>
                 <Button x:Name="DetailsToggle" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" AutomationProperties.Name="Mostrar os detalhes técnicos">
                   <StackPanel Orientation="Horizontal">

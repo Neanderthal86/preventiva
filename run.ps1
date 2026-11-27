@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # Tech Fontes - TF-Toolkit v4.0 (One-Line Runner)
 # Uso: irm techfontes.com.br/p | iex
 # ============================================================
@@ -77,9 +77,9 @@ try {
     New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
     Copy-Item -Path (Join-Path $repoFolder.FullName "*") -Destination $InstallDir -Recurse -Force
 
-    $guiScript = Join-Path $InstallDir "WinForge.Gui.ps1"
+    $guiScript = Join-Path $InstallDir "TF-Toolkit.Gui.ps1"
     if (-not (Test-Path -LiteralPath $guiScript)) {
-        throw "WinForge.Gui.ps1 nao encontrado em $InstallDir"
+        throw "TF-Toolkit.Gui.ps1 nao encontrado em $InstallDir"
     }
 
     $ts2 = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"

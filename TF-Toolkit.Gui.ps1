@@ -1,14 +1,14 @@
 ﻿#requires -Version 5.1
 <#
 .SYNOPSIS
-    WinForge com janela (WPF): as ações rodam dentro da própria janela, sem abrir terminal.
+    TF-Toolkit com janela (WPF): as ações rodam dentro da própria janela, sem abrir terminal.
 
 .DESCRIPTION
     A barra lateral e os cartões vêm da tabela de navegação (modules\Navigation.psm1), a mesma que monta os menus
-    do WinForge.Console.ps1. Cada ação roda num runspace separado com um host próprio (modules\GuiHost.psm1):
+    do TF-Toolkit.Console.ps1. Cada ação roda num runspace separado com um host próprio (modules\GuiHost.psm1):
     a saída aparece no painel e as perguntas viram botões, listas de marcação ou caixa de texto.
 
-    Abra pelo WinForge.cmd. A janela abre sempre como Administrador e em modo STA (exigido pelo WPF): sem um deles, o
+    Abra pelo TF-Toolkit.cmd. A janela abre sempre como Administrador e em modo STA (exigido pelo WPF): sem um deles, o
     script se reabre pedindo a permissão ao Windows. Se a pessoa recusa o aviso do Windows, a janela abre assim mesmo,
     sem Administrador, e se reabre elevada, na mesma página, quando uma ação exige.
 
@@ -40,28 +40,28 @@ param (
 
 $ErrorActionPreference = "Continue"
 
-function Get-WinForgeStartupText {
-    # As mensagens de antes dos módulos (ou de quando eles não carregaram). Com o Core carregado, valem Get-WinForgeText e
-    # o idioma do WinForge; sem ele, estas poucas mensagens trazem a tradução aqui mesmo, pelo idioma do Windows.
+function Get-TFToolkitStartupText {
+    # As mensagens de antes dos módulos (ou de quando eles não carregaram). Com o Core carregado, valem Get-TFToolkitText e
+    # o idioma do TF-Toolkit; sem ele, estas poucas mensagens trazem a tradução aqui mesmo, pelo idioma do Windows.
     param ([string]$Text)
 
-    $command = Get-Command -Name Get-WinForgeText -CommandType Function -ErrorAction SilentlyContinue
+    $command = Get-Command -Name Get-TFToolkitText -CommandType Function -ErrorAction SilentlyContinue
 
     if ($null -ne $command) { return (& $command $Text @args) }
 
     $table = @{
-        "Não foi possível abrir a janela do WinForge. Abra o WinForge de novo." = @("The WinForge window could not be opened. Open WinForge again.", "No se pudo abrir la ventana de WinForge. Abre WinForge de nuevo.")
+        "Não foi possível abrir a janela do TF-Toolkit. Abra o TF-Toolkit de novo." = @("The TF-Toolkit window could not be opened. Open TF-Toolkit again.", "No se pudo abrir la ventana de TF-Toolkit. Abre TF-Toolkit de nuevo.")
         "Módulo obrigatório não encontrado: {0}" = @("Required module not found: {0}", "No se encontró un módulo necesario: {0}")
         "Arquivo da janela não encontrado: {0}" = @("Window file not found: {0}", "No se encontró el archivo de la ventana: {0}")
-        "Extraia de novo o WinForge.zip inteiro (Extrair tudo), numa pasta sem colchetes no nome, e abra o WinForge da pasta extraída." = @("Extract the whole WinForge.zip again (Extract all) to a folder without brackets in its name, and open WinForge from the extracted folder.", "Vuelve a extraer todo WinForge.zip (Extraer todo) en una carpeta sin corchetes en el nombre y abre WinForge desde la carpeta extraída.")
-        "O WinForge não abriu porque falta um arquivo dele: {0}.`n`n{1} Se o arquivo sumir outra vez, veja se o antivírus o pôs em quarentena." = @("WinForge did not open because one of its files is missing: {0}.`n`n{1} If the file disappears again, check whether the antivirus quarantined it.", "WinForge no se abrió porque falta uno de sus archivos: {0}.`n`n{1} Si el archivo vuelve a desaparecer, revisa si el antivirus lo puso en cuarentena.")
-        "O WinForge não abriu.`n`n{0} Se continuar, mande este detalhe ao suporte:`n`n{1}" = @("WinForge did not open.`n`n{0} If it keeps happening, send this detail to support:`n`n{1}", "WinForge no se abrió.`n`n{0} Si sigue pasando, envía este detalle al soporte:`n`n{1}")
+        "Extraia de novo o TF-Toolkit.zip inteiro (Extrair tudo), numa pasta sem colchetes no nome, e abra o TF-Toolkit da pasta extraída." = @("Extract the whole TF-Toolkit.zip again (Extract all) to a folder without brackets in its name, and open TF-Toolkit from the extracted folder.", "Vuelve a extraer todo TF-Toolkit.zip (Extraer todo) en una carpeta sin corchetes en el nombre y abre TF-Toolkit desde la carpeta extraída.")
+        "O TF-Toolkit não abriu porque falta um arquivo dele: {0}.`n`n{1} Se o arquivo sumir outra vez, veja se o antivírus o pôs em quarentena." = @("TF-Toolkit did not open because one of its files is missing: {0}.`n`n{1} If the file disappears again, check whether the antivirus quarantined it.", "TF-Toolkit no se abrió porque falta uno de sus archivos: {0}.`n`n{1} Si el archivo vuelve a desaparecer, revisa si el antivirus lo puso en cuarentena.")
+        "O TF-Toolkit não abriu.`n`n{0} Se continuar, mande este detalhe ao suporte:`n`n{1}" = @("TF-Toolkit did not open.`n`n{0} If it keeps happening, send this detail to support:`n`n{1}", "TF-Toolkit no se abrió.`n`n{0} Si sigue pasando, envía este detalle al soporte:`n`n{1}")
         "Ação desconhecida: '{0}'. Use -Action Menu, Report, Shortcut, ScheduledMaintenance ou Check." = @("Unknown action: '{0}'. Use -Action Menu, Report, Shortcut, ScheduledMaintenance or Check.", "Acción desconocida: '{0}'. Usa -Action Menu, Report, Shortcut, ScheduledMaintenance o Check.")
         "O -Json só vale com -Action Check (a verificação rápida)." = @("-Json only works with -Action Check (the quick check).", "-Json solo funciona con -Action Check (la verificación rápida).")
         "Idioma desconhecido: '{0}'. Use -Language pt, en ou es." = @("Unknown language: '{0}'. Use -Language pt, en or es.", "Idioma desconocido: '{0}'. Usa -Language pt, en o es.")
         "Arquivo de módulos não encontrado: {0}" = @("Module list not found: {0}", "No se encontró la lista de módulos: {0}")
-        "Extraia o WinForge por completo antes de executar." = @("Extract all of WinForge before running it.", "Extrae WinForge por completo antes de ejecutarlo.")
-        "Não foi possível carregar o WinForge: {0}" = @("WinForge could not be loaded: {0}", "No se pudo cargar WinForge: {0}")
+        "Extraia o TF-Toolkit por completo antes de executar." = @("Extract all of TF-Toolkit before running it.", "Extrae TF-Toolkit por completo antes de ejecutarlo.")
+        "Não foi possível carregar o TF-Toolkit: {0}" = @("TF-Toolkit could not be loaded: {0}", "No se pudo cargar TF-Toolkit: {0}")
     }
 
     $language = ""
@@ -86,7 +86,7 @@ function Show-GuiStartupMessage {
 
     try {
         Add-Type -AssemblyName PresentationFramework
-        [void][System.Windows.MessageBox]::Show($Text, "WinForge", "OK", $Icon)
+        [void][System.Windows.MessageBox]::Show($Text, "TF-Toolkit", "OK", $Icon)
     }
     catch {
         Write-Host $Text
@@ -152,13 +152,13 @@ $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $isAdmin = (New-Object Security.Principal.WindowsPrincipal $identity).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 $isSta = ([Threading.Thread]::CurrentThread.ApartmentState -eq "STA")
 
-# Com uma janela do WinForge já aberta (a trava de Enter-WinForgeWindowLock, de mesmo nome), esta abertura só passa o
+# Com uma janela do TF-Toolkit já aberta (a trava de Enter-TFToolkitWindowLock, de mesmo nome), esta abertura só passa o
 # pedido para ela, mais abaixo: sem o aviso do Windows e sem outra reabertura. Existir sem dar acesso (a trava de uma
 # janela elevada, vista daqui sem elevação) também é estar aberta.
 $windowOpen = $false
 
 try {
-    $existing = [System.Threading.Mutex]::OpenExisting("Local\WinForge.Window.$($identity.User.Value)")
+    $existing = [System.Threading.Mutex]::OpenExisting("Local\TFToolkit.Window.$($identity.User.Value)")
     $existing.Dispose()
     $windowOpen = $true
 }
@@ -171,7 +171,7 @@ catch {
 
 if (-not $windowOpen -and ((-not $isAdmin -and -not $Relaunched) -or -not $isSta)) {
     if ($Relaunched) {
-        Show-GuiStartupMessage -Text (Get-WinForgeStartupText 'Não foi possível abrir a janela do WinForge. Abra o WinForge de novo.')
+        Show-GuiStartupMessage -Text (Get-TFToolkitStartupText 'Não foi possível abrir a janela do TF-Toolkit. Abra o TF-Toolkit de novo.')
         exit 1
     }
 
@@ -181,7 +181,7 @@ if (-not $windowOpen -and ((-not $isAdmin -and -not $Relaunched) -or -not $isSta
     if (-not $isSta) {
         if (Start-GuiRelaunch -Page $Page -Action $Action) { exit }
 
-        Show-GuiStartupMessage -Text (Get-WinForgeStartupText 'Não foi possível abrir a janela do WinForge. Abra o WinForge de novo.')
+        Show-GuiStartupMessage -Text (Get-TFToolkitStartupText 'Não foi possível abrir a janela do TF-Toolkit. Abra o TF-Toolkit de novo.')
         exit 1
     }
 }
@@ -211,7 +211,7 @@ try {
 
         if (-not (Test-Path -LiteralPath $modulePath)) {
             $script:MissingFile = "modules\$name.psm1"
-            throw (Get-WinForgeStartupText 'Módulo obrigatório não encontrado: {0}' "$modulePath")
+            throw (Get-TFToolkitStartupText 'Módulo obrigatório não encontrado: {0}' "$modulePath")
         }
 
         try {
@@ -225,8 +225,8 @@ try {
 
     # Uma janela só: se já há uma aberta, o pedido (e a ação, se veio do monitor) vai para ela, e esta abertura termina.
     # A reabertura pedida por uma janela aberta (-Handover) espera por ela, que fecha logo depois de abrir esta.
-    if (-not (Enter-WinForgeWindowLock -WaitMilliseconds $(if ($Handover) { 15000 } else { 0 }))) {
-        if (Send-WinForgeWindowRequest -Action $Action) { exit 0 }
+    if (-not (Enter-TFToolkitWindowLock -WaitMilliseconds $(if ($Handover) { 15000 } else { 0 }))) {
+        if (Send-TFToolkitWindowRequest -Action $Action) { exit 0 }
     }
     elseif ($windowOpen -and ((-not $isAdmin -and -not $Relaunched) -or -not $isSta)) {
         # A janela que estava aberta fechou enquanto esta carregava: faz o que a partida faria (pedir o Administrador e,
@@ -237,34 +237,34 @@ try {
 
     if (-not (Test-Path -LiteralPath $xamlPath)) {
         $script:MissingFile = "gui\MainWindow.xaml"
-        throw (Get-WinForgeStartupText 'Arquivo da janela não encontrado: {0}' "$xamlPath")
+        throw (Get-TFToolkitStartupText 'Arquivo da janela não encontrado: {0}' "$xamlPath")
     }
 
     # Os textos fixos da janela vêm traduzidos antes de ela ser montada. Com os efeitos de animação do Windows desligados,
-    # as transições dos botões e da chave passam a durar zero (Convert-WinForgeXamlMotion).
+    # as transições dos botões e da chave passam a durar zero (Convert-TFToolkitXamlMotion).
     $animate = $true
     try { $animate = [bool][System.Windows.SystemParameters]::ClientAreaAnimation } catch { $animate = $true }
-    $xamlText = Convert-WinForgeXamlMotion -Xaml (Get-Content -LiteralPath $xamlPath -Raw -Encoding UTF8) -Animate $animate
-    [xml]$xaml = Convert-WinForgeXamlText -Xaml $xamlText
+    $xamlText = Convert-TFToolkitXamlMotion -Xaml (Get-Content -LiteralPath $xamlPath -Raw -Encoding UTF8) -Animate $animate
+    [xml]$xaml = Convert-TFToolkitXamlText -Xaml $xamlText
     $window = [System.Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $xaml))
 }
 catch {
     # Quase sempre é um arquivo que faltou (zip extraído pela metade, antivírus) ou uma pasta com colchetes no nome.
-    $extract = (Get-WinForgeStartupText 'Extraia de novo o WinForge.zip inteiro (Extrair tudo), numa pasta sem colchetes no nome, e abra o WinForge da pasta extraída.')
+    $extract = (Get-TFToolkitStartupText 'Extraia de novo o TF-Toolkit.zip inteiro (Extrair tudo), numa pasta sem colchetes no nome, e abra o TF-Toolkit da pasta extraída.')
 
     if (-not [string]::IsNullOrEmpty([string]$script:MissingFile)) {
-        Show-GuiStartupMessage -Text (Get-WinForgeStartupText "O WinForge não abriu porque falta um arquivo dele: {0}.`n`n{1} Se o arquivo sumir outra vez, veja se o antivírus o pôs em quarentena." "$($script:MissingFile)" "$extract")
+        Show-GuiStartupMessage -Text (Get-TFToolkitStartupText "O TF-Toolkit não abriu porque falta um arquivo dele: {0}.`n`n{1} Se o arquivo sumir outra vez, veja se o antivírus o pôs em quarentena." "$($script:MissingFile)" "$extract")
     }
     else {
-        Show-GuiStartupMessage -Text (Get-WinForgeStartupText "O WinForge não abriu.`n`n{0} Se continuar, mande este detalhe ao suporte:`n`n{1}" "$extract" "$($_.Exception.Message)")
+        Show-GuiStartupMessage -Text (Get-TFToolkitStartupText "O TF-Toolkit não abriu.`n`n{0} Se continuar, mande este detalhe ao suporte:`n`n{1}" "$extract" "$($_.Exception.Message)")
     }
 
     exit 1
 }
 
-# O processo ganha o nome "WinForge" para a barra de tarefas, com o identificador desta pasta (Get-WinForgeAppId): sem
+# O processo ganha o nome "TF-Toolkit" para a barra de tarefas, com o identificador desta pasta (Get-TFToolkitAppId): sem
 # isso a janela é agrupada com o PowerShell e mostra o ícone dele. É cosmético: qualquer falha é ignorada.
-try { [void](Initialize-WinForgeAppIdentity) } catch { }
+try { [void](Initialize-TFToolkitAppIdentity) } catch { }
 
 # --- Elementos da janela -------------------------------------------------------------------------------
 $navPanel = $window.FindName("NavPanel")
@@ -365,7 +365,7 @@ $script:HomeHealth = $null
 $script:HomeFactInfo = @{}
 # A hora da leitura e o botão de ler de novo ficam logo abaixo da frase da nota de saúde, que é refeita a cada leitura: o
 # texto e se o botão vale ficam aqui, e os controles da nota atual (HomeStampText e HomeRefreshButton) os mostram.
-$script:HomeStamp = @{ Text = (Get-WinForgeText 'Lendo o PC...'); CanRefresh = $false; ReadAt = $null }
+$script:HomeStamp = @{ Text = (Get-TFToolkitText 'Lendo o PC...'); CanRefresh = $false; ReadAt = $null }
 $script:HomeStampText = $null
 $script:HomeRefreshButton = $null
 # O botão de ler de novo tinha o foco do teclado quando foi desligado no começo da leitura (Set-GuiHomeStamp).
@@ -381,7 +381,7 @@ $script:HomeSnapshotSeconds = 30
 # Sobe a cada vez que a leitura guardada é descartada (uma ação terminou, Atualizar): uma leitura que começou antes disso
 # termina e aparece, mas não é guardada.
 $script:HomeCacheVersion = 0
-# As etapas do Início rodam num runspace à parte (New-WinForgeGuiReader), para a janela não parar enquanto o PC é lido.
+# As etapas do Início rodam num runspace à parte (New-TFToolkitGuiReader), para a janela não parar enquanto o PC é lido.
 # HomeReaderOwner é a etapa em andamento (a leitura que a pediu e o nome); HomeReaderWaiting, a leitura cuja próxima
 # etapa espera o leitor ficar livre. Se o leitor não abrir, as etapas rodam aqui mesmo, como antes.
 $script:HomeReader = $null
@@ -435,26 +435,26 @@ $script:ForceClose = $false
 $script:StartPage = $Page
 # A ação pedida na abertura: as do monitor na bandeja, ou qualquer uma na reabertura pedida pela própria janela
 # (-Handover, quando uma ação precisou do Administrador). Outro programa desta conta não escolhe o que a janela roda.
-$script:StartAction = $(if ($Action -match '^[a-z0-9][a-z0-9.-]*$' -and ($Handover -or $Action -in @(Get-WinForgeAgentActionIds))) { $Action } else { "" })
+$script:StartAction = $(if ($Action -match '^[a-z0-9][a-z0-9.-]*$' -and ($Handover -or $Action -in @(Get-TFToolkitAgentActionIds))) { $Action } else { "" })
 
 # --- Tema --------------------------------------------------------------------------------------------------
-# Claro ou escuro, como o Windows (o padrão) ou como a pessoa escolheu em Sobre o WinForge > Aparência. As cores vêm de
+# Claro ou escuro, como o Windows (o padrão) ou como a pessoa escolheu em Sobre o TF-Toolkit > Aparência. As cores vêm de
 # modules\GuiDesign.psm1; Set-GuiTheme (mais abaixo) aplica o tema escolhido antes de a janela aparecer.
 $script:ThemeName = ""
 $script:ThemePreference = "System"
-$script:Theme = Get-WinForgePalette -Name "Light"
-$script:LevelColors = Get-WinForgeLevelColors -Theme $script:Theme
+$script:Theme = Get-TFToolkitPalette -Name "Light"
+$script:LevelColors = Get-TFToolkitLevelColors -Theme $script:Theme
 # As cores do sistema com o contraste alto ligado (ThemeName = "Contrast"): mudam com o tema de contraste escolhido.
 $script:ThemeSignature = ""
 # O tamanho do texto escolhido no Windows (1 a 2,25) e a escala de tamanhos já multiplicada por ele (Set-GuiTypography).
 $script:TextScale = 1.0
-$script:Type = Get-WinForgeTypeRamp
+$script:Type = Get-TFToolkitTypeRamp
 # A entrelinha de cada tamanho da escala (Set-GuiTypography): New-GuiText a usa nos textos que montam.
 $script:LineBySize = @{}
 $script:FontApplied = $false
 # A fonte dos títulos escolhida na abertura (Set-GuiTypography), que os títulos montados pelo script recebem direto.
 $script:DisplayFontFamily = $null
-$script:ColorMap = Get-WinForgeConsolePalette -Name "Light"
+$script:ColorMap = Get-TFToolkitConsolePalette -Name "Light"
 $script:IconCache = @{}
 $script:NavParts = @{}
 $script:SelectedNav = ""
@@ -465,7 +465,7 @@ $script:PendingSection = $null
 $script:UncoveredLines = 0
 $script:SummaryExpanded = $false
 # Quem protege o PC, pela última leitura do Início (Active, Other, Off...): com outro antivírus, as ações do Defender
-# (Verificar vírus e as outras) saem da página Segurança e da busca. Vem guardado da última vez que o WinForge abriu (lido
+# (Verificar vírus e as outras) saem da página Segurança e da busca. Vem guardado da última vez que o TF-Toolkit abriu (lido
 # antes da primeira página): sem isso, o botão apareceria por alguns segundos e sumiria quando a leitura terminasse. ""
 # enquanto não se sabe.
 $script:AntivirusMode = ""
@@ -482,7 +482,7 @@ $script:CardWidth = 252.0
 $script:RunStepSeen = $false
 $script:RunStepIndex = 0
 $script:RunStepTotal = 0
-# Numa parte do fluxo que não é etapa (Write-WinForgePhase: as perguntas antes da parte automática, o fim do Otimizar),
+# Numa parte do fluxo que não é etapa (Write-TFToolkitPhase: as perguntas antes da parte automática, o fim do Otimizar),
 # a última etapa já terminou: a barra fica com ela inteira, mesmo com a barra de progresso de uma ferramenta nessa parte.
 $script:RunStepDone = $false
 # O padrão de "Etapa N de M:" no idioma da tela (montado na primeira linha que chega).
@@ -532,7 +532,7 @@ function New-GuiBrush {
 
 function Show-GuiMessage {
     <#
-    Uma mensagem com o desenho do WinForge (New-GuiMessageDialog): Title é a frase em destaque, Text o que vem embaixo, e
+    Uma mensagem com o desenho do TF-Toolkit (New-GuiMessageDialog): Title é a frase em destaque, Text o que vem embaixo, e
     os botões dizem o que fazem (YesText e NoText; sem eles, Sim e Não), no idioma da tela. Default: a resposta que começa
     com o foco, a do Enter. Nas perguntas Sim/Não é Não, salvo quando a pessoa acabou de pedir aquilo (reabrir como
     Administrador): um Enter a mais nunca interrompe nem apaga nada. Danger: o Sim interrompe ou perde algo (o botão de
@@ -562,7 +562,7 @@ function Show-GuiMessage {
         $dialog = $null
 
         try {
-            $plan = Get-WinForgeMessagePlan -Buttons $Buttons -Icon $Icon -Default $Default -YesText $YesText -NoText $NoText -YesIcon $YesIcon -Danger:$Danger
+            $plan = Get-TFToolkitMessagePlan -Buttons $Buttons -Icon $Icon -Default $Default -YesText $YesText -NoText $NoText -YesIcon $YesIcon -Danger:$Danger
             $dialog = New-GuiMessageDialog -Plan $plan -Title $Title -Text $Text
             [void]$dialog.ShowDialog()
 
@@ -598,11 +598,11 @@ function Show-GuiSystemMessage {
     $defaultResult = $(if ($Buttons -eq "OK") { "OK" } else { $Default })
 
     try {
-        return [string][System.Windows.MessageBox]::Show($window, $body, "WinForge", $Buttons, $Icon, $defaultResult)
+        return [string][System.Windows.MessageBox]::Show($window, $body, "TF-Toolkit", $Buttons, $Icon, $defaultResult)
     }
     catch {
         # Janela já fechada ou ainda não exibida: mostra a mensagem sem dono.
-        return [string][System.Windows.MessageBox]::Show($body, "WinForge", $Buttons, $Icon, $defaultResult)
+        return [string][System.Windows.MessageBox]::Show($body, "TF-Toolkit", $Buttons, $Icon, $defaultResult)
     }
 }
 
@@ -610,7 +610,7 @@ function New-GuiMessageDialog {
     <#
     A janela de uma mensagem (Show-GuiMessage), no desenho das caixas de diálogo do Windows 11: o ícone, a frase em
     destaque e o texto no fundo do cartão; os botões numa faixa embaixo, no fundo da janela, em duas colunas de mesma
-    largura. Plan: Get-WinForgeMessagePlan. Usa os estilos, as cores, a fonte e os tamanhos da janela do WinForge (o tema,
+    largura. Plan: Get-TFToolkitMessagePlan. Usa os estilos, as cores, a fonte e os tamanhos da janela do TF-Toolkit (o tema,
     o contraste alto e o tamanho do texto do Windows). Tag guarda a resposta (Answer), se a pessoa respondeu (Answered), a
     do Esc (Cancel), o texto que o Ctrl+C copia, como na caixa do Windows (Copy), e o texto para o leitor de tela (Message).
     #>
@@ -626,7 +626,7 @@ function New-GuiMessageDialog {
     $area = [System.Windows.SystemParameters]::WorkArea
 
     $dialog = New-Object System.Windows.Window
-    $dialog.Title = "WinForge"
+    $dialog.Title = "TF-Toolkit"
     $dialog.SizeToContent = "WidthAndHeight"
     $dialog.ResizeMode = "NoResize"
     $dialog.ShowInTaskbar = $false
@@ -750,7 +750,7 @@ function New-GuiMessageDialog {
     }
 
     # O leitor de tela: o nome da janela é a frase em destaque, e o texto é lido assim que ela aparece.
-    Set-GuiAutomationName -Element $dialog -Name $(if ($Title) { $Title } else { "WinForge" })
+    Set-GuiAutomationName -Element $dialog -Name $(if ($Title) { $Title } else { "TF-Toolkit" })
     [System.Windows.Automation.AutomationProperties]::SetHelpText($dialog, $Text)
 
     try {
@@ -1047,7 +1047,7 @@ function New-GuiIcon {
     if ($Stroke -le 0) { $Stroke = 36 / $Size }
 
     if (-not $script:IconCache.ContainsKey($Name)) {
-        $geometry = [System.Windows.Media.Geometry]::Parse((Get-WinForgeIconData -Name $Name))
+        $geometry = [System.Windows.Media.Geometry]::Parse((Get-TFToolkitIconData -Name $Name))
         $geometry.Freeze()
         $script:IconCache[$Name] = $geometry
     }
@@ -1121,7 +1121,7 @@ function New-GuiSectionHeading {
 
     $heading = New-GuiText -Text $Text -Size $script:Type.Subtitle -Display
     $heading.Margin = New-Object System.Windows.Thickness (0, 30, 12, 14)
-    Set-GuiAutomationName -Element $heading -Name (Get-WinForgeText 'Seção: {0}' "$Text")
+    Set-GuiAutomationName -Element $heading -Name (Get-TFToolkitText 'Seção: {0}' "$Text")
 
     return $heading
 }
@@ -1133,7 +1133,7 @@ function New-GuiGroupHeading {
 
     $heading = New-GuiText -Text $Text -Size $script:Type.Body -Bold $true
     $heading.Margin = New-Object System.Windows.Thickness (0, $(if ($First) { 2 } else { 14 }), 0, 10)
-    Set-GuiAutomationName -Element $heading -Name (Get-WinForgeText 'Seção: {0}' "$Text")
+    Set-GuiAutomationName -Element $heading -Name (Get-TFToolkitText 'Seção: {0}' "$Text")
 
     return $heading
 }
@@ -1159,9 +1159,9 @@ function New-GuiNotice {
 }
 
 # --- Barra de título escura, ícone e barra de tarefas ------------------------------------------------------
-if (-not ("WinForge.NativeWindow" -as [type])) {
+if (-not ("TFToolkit.NativeWindow" -as [type])) {
     # C# 5 (Windows PowerShell 5.1): sem recursos mais novos da linguagem.
-    Add-Type -Namespace WinForge -Name NativeWindow -MemberDefinition @'
+    Add-Type -namespace TFToolkit -Name NativeWindow -MemberDefinition @'
 [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
 public static extern int DwmSetWindowAttribute(System.IntPtr hwnd, int attribute, ref int value, int size);
 
@@ -1192,8 +1192,8 @@ function Set-GuiTitleBarTheme {
         $dark = $(if ($script:ThemeName -eq "Dark" -or ($script:ThemeName -eq "Contrast" -and (Test-GuiDarkColor -Hex $script:Theme.Window))) { 1 } else { 0 })
 
         # 20 = modo escuro (Windows 10 20H1+ e 11); 19 = valor usado por builds anteriores do Windows 10.
-        if ([WinForge.NativeWindow]::DwmSetWindowAttribute($handle, 20, [ref]$dark, 4) -ne 0) {
-            [void][WinForge.NativeWindow]::DwmSetWindowAttribute($handle, 19, [ref]$dark, 4)
+        if ([TFToolkit.NativeWindow]::DwmSetWindowAttribute($handle, 20, [ref]$dark, 4) -ne 0) {
+            [void][TFToolkit.NativeWindow]::DwmSetWindowAttribute($handle, 19, [ref]$dark, 4)
         }
 
         # Windows 11 (build 22000+): cor exata da barra, do texto e da borda. COLORREF = 0x00BBGGRR. Com o contraste alto,
@@ -1204,14 +1204,14 @@ function Set-GuiTitleBarTheme {
             $border = -1
         }
         else {
-            $caption = ConvertTo-WinForgeColorRef -Hex $script:Theme.Window
-            $text = ConvertTo-WinForgeColorRef -Hex $script:Theme.Text
+            $caption = ConvertTo-TFToolkitColorRef -Hex $script:Theme.Window
+            $text = ConvertTo-TFToolkitColorRef -Hex $script:Theme.Text
             # O contorno é translúcido: a borda da janela usa o cinza que ele dá sobre o cartão.
-            $border = ConvertTo-WinForgeColorRef -Hex (ConvertTo-WinForgeOpaqueColor -Hex $script:Theme.Line -Background $script:Theme.Card)
+            $border = ConvertTo-TFToolkitColorRef -Hex (ConvertTo-TFToolkitOpaqueColor -Hex $script:Theme.Line -Background $script:Theme.Card)
         }
-        [void][WinForge.NativeWindow]::DwmSetWindowAttribute($handle, 35, [ref]$caption, 4)
-        [void][WinForge.NativeWindow]::DwmSetWindowAttribute($handle, 36, [ref]$text, 4)
-        [void][WinForge.NativeWindow]::DwmSetWindowAttribute($handle, 34, [ref]$border, 4)
+        [void][TFToolkit.NativeWindow]::DwmSetWindowAttribute($handle, 35, [ref]$caption, 4)
+        [void][TFToolkit.NativeWindow]::DwmSetWindowAttribute($handle, 36, [ref]$text, 4)
+        [void][TFToolkit.NativeWindow]::DwmSetWindowAttribute($handle, 34, [ref]$border, 4)
     }
     catch {
         # Cosmético: em versões sem suporte a barra continua com o tema padrão do Windows.
@@ -1251,7 +1251,7 @@ function Test-GuiHighContrast {
 }
 
 function Get-GuiSystemColors {
-    # As cores do sistema que a janela usa com o contraste alto ligado (Get-WinForgeHighContrastPalette), em "#RRGGBB".
+    # As cores do sistema que a janela usa com o contraste alto ligado (Get-TFToolkitHighContrastPalette), em "#RRGGBB".
     $toHex = { param ($color) "#{0:X2}{1:X2}{2:X2}" -f $color.R, $color.G, $color.B }
 
     return @{
@@ -1271,7 +1271,7 @@ function Get-GuiThemeState {
         return [PSCustomObject]@{ Name = "Contrast"; Signature = (@($colors.Keys | Sort-Object | ForEach-Object { "$_=$($colors[$_])" }) -join ";"); Colors = $colors }
     }
 
-    return [PSCustomObject]@{ Name = (Resolve-WinForgeTheme -Preference $script:ThemePreference -SystemTheme (Get-GuiSystemTheme)); Signature = ""; Colors = $null }
+    return [PSCustomObject]@{ Name = (Resolve-TFToolkitTheme -Preference $script:ThemePreference -SystemTheme (Get-GuiSystemTheme)); Signature = ""; Colors = $null }
 }
 
 function Set-GuiTheme {
@@ -1288,15 +1288,15 @@ function Set-GuiTheme {
 
     if ($Name -eq "Contrast") {
         if ($null -eq $Colors) { $Colors = Get-GuiSystemColors }
-        $script:Theme = Get-WinForgeHighContrastPalette -Colors $Colors
-        $script:ColorMap = Get-WinForgeHighContrastConsolePalette -Text $script:Theme.Text
+        $script:Theme = Get-TFToolkitHighContrastPalette -Colors $Colors
+        $script:ColorMap = Get-TFToolkitHighContrastConsolePalette -Text $script:Theme.Text
     }
     else {
-        $script:Theme = Get-WinForgePalette -Name $Name
-        $script:ColorMap = Get-WinForgeConsolePalette -Name $Name
+        $script:Theme = Get-TFToolkitPalette -Name $Name
+        $script:ColorMap = Get-TFToolkitConsolePalette -Name $Name
     }
 
-    $script:LevelColors = Get-WinForgeLevelColors -Theme $script:Theme
+    $script:LevelColors = Get-TFToolkitLevelColors -Theme $script:Theme
     $script:BrushCache = @{}
 
     foreach ($key in @($script:Theme.Keys)) {
@@ -1325,7 +1325,7 @@ function Get-GuiTextScaleSetting {
     $value = $null
     try { $value = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Accessibility" -Name "TextScaleFactor" -ErrorAction Stop } catch { $value = $null }
 
-    return (Get-WinForgeTextScale -Value $value)
+    return (Get-TFToolkitTextScale -Value $value)
 }
 
 function Get-GuiUiFont {
@@ -1402,8 +1402,8 @@ function Set-GuiTypography {
     $changed = ($scale -ne $script:TextScale)
 
     $script:TextScale = $scale
-    $script:Type = Get-WinForgeTypeRamp -Scale $scale
-    $lines = Get-WinForgeLineRamp -Scale $scale
+    $script:Type = Get-TFToolkitTypeRamp -Scale $scale
+    $lines = Get-TFToolkitLineRamp -Scale $scale
     $script:LineBySize = @{}
     foreach ($key in @($script:Type.Keys)) { $script:LineBySize["$($script:Type[$key])"] = $lines[$key] }
     Set-GuiResource -Dictionary $window.Resources -Key "BodyLineHeight" -Value ([double]$lines.Body)
@@ -1449,7 +1449,7 @@ function Update-GuiThemedContent {
 }
 
 function Set-GuiThemePreference {
-    # A escolha de Sobre o WinForge > Aparência. Vale na hora e fica guardada nas preferências.
+    # A escolha de Sobre o TF-Toolkit > Aparência. Vale na hora e fica guardada nas preferências.
     param ([ValidateSet("System", "Light", "Dark")][string]$Value)
 
     # A opção que já está marcada não muda nada (nem refaz a página), como no Idioma.
@@ -1457,7 +1457,7 @@ function Set-GuiThemePreference {
 
     $script:ThemePreference = $Value
     $script:AppearanceRefocus = $true
-    [void](Set-WinForgeSetting -Name "Theme" -Value $Value)
+    [void](Set-TFToolkitSetting -Name "Theme" -Value $Value)
 
     if (-not (Update-GuiTheme) -and $pagesView.Visibility -eq "Visible" -and $script:CurrentPage -eq "app") {
         # O tema na tela continua o mesmo (por exemplo, "Automático" com o Windows no claro): só a opção marcada muda.
@@ -1475,7 +1475,7 @@ function Set-GuiThemePreference {
 
 function Set-GuiLanguagePreference {
     <#
-    A escolha de Sobre o WinForge > Idioma. Fica guardada e vale quando a janela abre de novo (os textos são montados ao
+    A escolha de Sobre o TF-Toolkit > Idioma. Fica guardada e vale quando a janela abre de novo (os textos são montados ao
     abrir). Quando muda o idioma de verdade e nenhuma ação está rodando, oferece reabrir agora, na mesma página; com uma
     ação rodando, só avisa (reabrir no meio dela a interromperia).
     #>
@@ -1483,8 +1483,8 @@ function Set-GuiLanguagePreference {
 
     if ($Value -eq $script:LanguagePreference) { return }
 
-    if (-not (Set-WinForgeLanguagePreference -Language $Value)) {
-        [void](Show-GuiMessage -Icon Warning -Title (Get-WinForgeText 'O idioma não foi guardado') -Text (Get-WinForgeText 'Tente de novo.'))
+    if (-not (Set-TFToolkitLanguagePreference -Language $Value)) {
+        [void](Show-GuiMessage -Icon Warning -Title (Get-TFToolkitText 'O idioma não foi guardado') -Text (Get-TFToolkitText 'Tente de novo.'))
         return
     }
 
@@ -1499,14 +1499,14 @@ function Set-GuiLanguagePreference {
     }
 
     # A escolha dá o idioma que já está na tela (Automático num Windows em português, por exemplo): nada a reabrir.
-    if ((Get-WinForgeLanguageFor -Preference $Value) -eq (Get-WinForgeLanguage)) { return }
+    if ((Get-TFToolkitLanguageFor -Preference $Value) -eq (Get-TFToolkitLanguage)) { return }
 
     if ($script:Running) {
-        [void](Show-GuiMessage -Title (Get-WinForgeText 'O novo idioma vale quando o WinForge abrir de novo') -Text (Get-WinForgeText 'Feche e abra o WinForge depois que a ação terminar.'))
+        [void](Show-GuiMessage -Title (Get-TFToolkitText 'O novo idioma vale quando o TF-Toolkit abrir de novo') -Text (Get-TFToolkitText 'Feche e abra o TF-Toolkit depois que a ação terminar.'))
         return
     }
 
-    $answer = Show-GuiMessage -Buttons YesNo -Icon Question -Default Yes -Title (Get-WinForgeText 'Reabrir o WinForge agora?') -Text (Get-WinForgeText 'O novo idioma vale quando o WinForge abrir de novo.') -YesText (Get-WinForgeText 'Reabrir') -NoText (Get-WinForgeText 'Agora não')
+    $answer = Show-GuiMessage -Buttons YesNo -Icon Question -Default Yes -Title (Get-TFToolkitText 'Reabrir o TF-Toolkit agora?') -Text (Get-TFToolkitText 'O novo idioma vale quando o TF-Toolkit abrir de novo.') -YesText (Get-TFToolkitText 'Reabrir') -NoText (Get-TFToolkitText 'Agora não')
     if ($answer -ne "Yes") { return }
 
     # O idioma de um WINFORGE_LANG herdado passaria na frente da escolha que a pessoa acabou de fazer.
@@ -1517,15 +1517,15 @@ function Set-GuiLanguagePreference {
         $window.Close()
     }
     else {
-        [void](Show-GuiMessage -Icon Warning -Title (Get-WinForgeText 'O WinForge não foi reaberto') -Text (Get-WinForgeText 'Feche e abra de novo para ver o novo idioma.'))
+        [void](Show-GuiMessage -Icon Warning -Title (Get-TFToolkitText 'O TF-Toolkit não foi reaberto') -Text (Get-TFToolkitText 'Feche e abra de novo para ver o novo idioma.'))
     }
 }
 
 function Get-GuiIconDecoder {
-    # Abre assets\WinForge.ico com todos os tamanhos. O arquivo é lido para a memória (e não aberto por endereço) para
+    # Abre assets\TF-Toolkit.ico com todos os tamanhos. O arquivo é lido para a memória (e não aberto por endereço) para
     # funcionar com qualquer caractere no caminho, como # e %. Devolve $null se não houver ícone ou se ele for inválido.
     try {
-        $path = Get-WinForgeIconPath
+        $path = Get-TFToolkitIconPath
 
         if ($null -eq $path) { return $null }
 
@@ -1540,10 +1540,10 @@ function Get-GuiIconDecoder {
 }
 
 function Set-GuiFallbackWindowIcon {
-    # Reserva para quando o .ico não está na pasta: o mesmo desenho de assets\WinForge.svg (Get-WinForgeLogoDrawing),
+    # Reserva para quando o .ico não está na pasta: o mesmo desenho de assets\TF-Toolkit.svg (Get-TFToolkitLogoDrawing),
     # reduzido da caixa de 1024 para 64 px.
     try {
-        $logo = Get-WinForgeLogoDrawing
+        $logo = Get-TFToolkitLogoDrawing
         $k = 64.0 / $logo.Box
         $tile = New-Object System.Windows.Rect ($logo.TileX * $k, $logo.TileX * $k, $logo.TileSize * $k, $logo.TileSize * $k)
 
@@ -1617,8 +1617,8 @@ function Set-GuiTaskbarFlash {
     param ([bool]$On)
 
     try {
-        $info = New-Object WinForge.NativeWindow+FlashInfo
-        $info.cbSize = [uint32][System.Runtime.InteropServices.Marshal]::SizeOf([type][WinForge.NativeWindow+FlashInfo])
+        $info = New-Object TFToolkit.NativeWindow+FlashInfo
+        $info.cbSize = [uint32][System.Runtime.InteropServices.Marshal]::SizeOf([type][TFToolkit.NativeWindow+FlashInfo])
         $info.hwnd = (New-Object System.Windows.Interop.WindowInteropHelper $window).Handle
         $info.uCount = [uint32]0
         $info.dwTimeout = [uint32]0
@@ -1626,7 +1626,7 @@ function Set-GuiTaskbarFlash {
         # 2 = botão da barra de tarefas; 12 = pisca até a janela ir para o primeiro plano. 0 = parar.
         $info.dwFlags = $(if ($On) { [uint32]14 } else { [uint32]0 })
 
-        [void][WinForge.NativeWindow]::FlashWindowEx([ref]$info)
+        [void][TFToolkit.NativeWindow]::FlashWindowEx([ref]$info)
     }
     catch {
         # Cosmético.
@@ -1636,8 +1636,8 @@ function Set-GuiTaskbarFlash {
 $window.Add_SourceInitialized({
     Set-GuiTitleBarTheme -Target $window
 
-    # "Fixar na barra de tarefas" passa a abrir o WinForge (com o ícone dele), e não o PowerShell. Cosmético.
-    try { [void](Set-WinForgeWindowIdentity -Handle (New-Object System.Windows.Interop.WindowInteropHelper $window).Handle) } catch { }
+    # "Fixar na barra de tarefas" passa a abrir o TF-Toolkit (com o ícone dele), e não o PowerShell. Cosmético.
+    try { [void](Set-TFToolkitWindowIdentity -Handle (New-Object System.Windows.Interop.WindowInteropHelper $window).Handle) } catch { }
 })
 Set-GuiWindowIcon
 
@@ -1650,8 +1650,8 @@ catch {
 }
 
 # O tema entra antes de qualquer controle ser montado pelo script (cada um guarda a cor com que foi criado).
-try { $script:ThemePreference = Get-WinForgeThemePreference } catch { $script:ThemePreference = "System" }
-try { $script:LanguagePreference = Get-WinForgeLanguagePreference } catch { $script:LanguagePreference = "Auto" }
+try { $script:ThemePreference = Get-TFToolkitThemePreference } catch { $script:ThemePreference = "System" }
+try { $script:LanguagePreference = Get-TFToolkitLanguagePreference } catch { $script:LanguagePreference = "Auto" }
 [void](Set-GuiTypography)
 $startTheme = Get-GuiThemeState
 Set-GuiTheme -Name $startTheme.Name -Colors $startTheme.Colors -Signature $startTheme.Signature
@@ -1710,7 +1710,7 @@ function Complete-GuiOutputLine {
     $script:CurrentText = ""
 
     # Setas giratórias de programas nativos (- \ | /) não acrescentam informação.
-    if (Test-WinForgeSpinnerLine -Text $text) {
+    if (Test-TFToolkitSpinnerLine -Text $text) {
         foreach ($run in $runs) { [void]$script:OutPara.Inlines.Remove($run) }
         return
     }
@@ -1719,7 +1719,7 @@ function Complete-GuiOutputLine {
     # (confirmados pela linha de traços que vem logo depois deles).
     Add-GuiActivityFromLine -Text $text -Colors @($runs | ForEach-Object { [string]$_.Tag })
 
-    $isProgress = Test-WinForgeProgressLine -Text $text
+    $isProgress = Test-TFToolkitProgressLine -Text $text
 
     # Linhas de progresso consecutivas substituem a anterior em vez de empilhar.
     if ($isProgress -and $script:LastLineProgress) {
@@ -1839,7 +1839,7 @@ function Add-GuiActivityFromLine {
     }
 
     $color = $(if (@($Colors).Count -gt 0) { [string]$Colors[0] } else { "" })
-    $isRule = Test-WinForgeRuleLine -Text $Text
+    $isRule = Test-TFToolkitRuleLine -Text $Text
 
     if ($null -ne $script:PendingSection -and $isRule) {
         $title = $script:PendingSection
@@ -1854,21 +1854,21 @@ function Add-GuiActivityFromLine {
         $script:UncoveredLines++
     }
 
-    $entry = Get-WinForgeActivityEntry -Text $Text
+    $entry = Get-TFToolkitActivityEntry -Text $Text
 
     if ($null -ne $entry) {
         Add-GuiActivity -Kind $entry.Kind -Text $entry.Text
         return
     }
 
-    $fact = Get-WinForgeFactEntry -Text $Text -Colors $Colors
+    $fact = Get-TFToolkitFactEntry -Text $Text -Colors $Colors
 
     if ($null -ne $fact) {
         Add-GuiActivity -Kind "Fact" -Text $fact.Text -Label $fact.Label -Value $fact.Value -Level $fact.Level
         return
     }
 
-    $script:PendingSection = Get-WinForgeSectionTitle -Text $Text -Color $color
+    $script:PendingSection = Get-TFToolkitSectionTitle -Text $Text -Color $color
 
     if ($null -eq $script:PendingSection) {
         $script:UncoveredLines++
@@ -1876,7 +1876,7 @@ function Add-GuiActivityFromLine {
 }
 
 function Test-GuiSummaryIsContent {
-    # O resumo diz tudo o que a ação escreveu: só mensagens do WinForge, linhas "rótulo : valor" e seções, sem tabela nem
+    # O resumo diz tudo o que a ação escreveu: só mensagens do TF-Toolkit, linhas "rótulo : valor" e seções, sem tabela nem
     # texto de programa (que só os detalhes técnicos mostram).
     return ($script:ActivityEntries.Count -gt 0 -and $script:UncoveredLines -eq 0 -and $null -eq $script:PendingSection)
 }
@@ -1946,7 +1946,7 @@ function New-GuiActivityText {
     # link que abre o item, como os botões dos pontos de atenção do Início: o próximo passo fica a um clique.
     param ([string]$Text)
 
-    $reference = Find-WinForgeNavReference -Text $Text
+    $reference = Find-TFToolkitNavReference -Text $Text
 
     if ($null -eq $reference) { return (New-GuiText -Text $Text -Size $script:Type.Body) }
 
@@ -1963,16 +1963,16 @@ function New-GuiActivityText {
         [void]$link.Inlines.Add((New-Object System.Windows.Documents.Run $linked))
         $link.Style = $window.FindResource("SummaryLink")
         $link.Tag = $reference.ItemId
-        $link.ToolTip = (Get-WinForgeText 'Abrir {0}' "$linked")
+        $link.ToolTip = (Get-TFToolkitText 'Abrir {0}' "$linked")
         $link.Add_Click({
             param ($sender, $eventArgs)
-            $item = Get-WinForgeNavItem -Id ([string]$sender.Tag)
+            $item = Get-TFToolkitNavItem -Id ([string]$sender.Tag)
             if ($null -ne $item) { Invoke-GuiNavItem -Item $item }
         })
         [void]$block.Inlines.Add($link)
 
         $rest = $rest.Substring($reference.Start + $reference.Length)
-        $reference = Find-WinForgeNavReference -Text $rest
+        $reference = Find-TFToolkitNavReference -Text $rest
     }
 
     if ($rest) { [void]$block.Inlines.Add((New-Object System.Windows.Documents.Run $rest)) }
@@ -2017,7 +2017,7 @@ function Add-GuiActivity {
     # meio dela ("Lixeira", "Reparar imagem e componentes") a faria parecer outra etapa. Sem etapas, vale o último título.
     # O padrão sai do mesmo texto que o Otimizar escreve ("Etapa {0} de {1}: {2}"), no idioma da tela.
     if ($null -eq $script:RunStepPattern) {
-        $script:RunStepPattern = '^' + ([regex]::Escape((Get-WinForgeText 'Etapa {0} de {1}: {2}')) -replace '\\\{0}', '(?<index>[0-9]+)' -replace '\\\{1}', '(?<total>[0-9]+)' -replace '\\\{2}.*$', '')
+        $script:RunStepPattern = '^' + ([regex]::Escape((Get-TFToolkitText 'Etapa {0} de {1}: {2}')) -replace '\\\{0}', '(?<index>[0-9]+)' -replace '\\\{1}', '(?<total>[0-9]+)' -replace '\\\{2}.*$', '')
     }
 
     if ($Kind -eq "Step" -and $Text -match $script:RunStepPattern) {
@@ -2052,7 +2052,7 @@ function Update-GuiOverallProgress {
     if ($script:RunStepTotal -le 0) { return $false }
     if ($script:RunStepDone) { $Fraction = 1.0 }
 
-    $value = Get-WinForgeOverallProgress -Index $script:RunStepIndex -Total $script:RunStepTotal -Fraction $Fraction
+    $value = Get-TFToolkitOverallProgress -Index $script:RunStepIndex -Total $script:RunStepTotal -Fraction $Fraction
     $runProgress.IsIndeterminate = $false
     $runProgress.Value = $value
     Set-GuiTaskbarProgress -State Normal -Value ($value / 100)
@@ -2106,7 +2106,7 @@ function Set-GuiDetailsOpen {
     $script:DetailsOpen = $Open
     $detailsPanel.Visibility = $(if ($Open) { "Visible" } else { "Collapsed" })
     $detailsActions.Visibility = $detailsPanel.Visibility
-    Set-GuiAutomationName -Element $detailsToggle -Name $(if ($Open) { (Get-WinForgeText 'Ocultar os detalhes técnicos') } else { (Get-WinForgeText 'Mostrar os detalhes técnicos') })
+    Set-GuiAutomationName -Element $detailsToggle -Name $(if ($Open) { (Get-TFToolkitText 'Ocultar os detalhes técnicos') } else { (Get-TFToolkitText 'Mostrar os detalhes técnicos') })
     $detailsCard.VerticalAlignment = $(if ($Open) { "Stretch" } else { "Top" })
     Update-GuiSummaryHeight -Refresh
 
@@ -2114,7 +2114,7 @@ function Set-GuiDetailsOpen {
     if ($promptBar.Visibility -eq "Visible") { Update-GuiPromptFit }
 
     try {
-        $detailsChevron.Data = [System.Windows.Media.Geometry]::Parse((Get-WinForgeIconData -Name $(if ($Open) { "chevron-down" } else { "chevron-right" })))
+        $detailsChevron.Data = [System.Windows.Media.Geometry]::Parse((Get-TFToolkitIconData -Name $(if ($Open) { "chevron-down" } else { "chevron-right" })))
     }
     catch {
         # Cosmético.
@@ -2143,7 +2143,7 @@ function Update-GuiSummaryHeight {
         if ($Refresh) { $runView.UpdateLayout() }
 
         $top = $activityScroll.TranslatePoint((New-Object System.Windows.Point (0, 0)), $runView).Y
-        $activityScroll.MaxHeight = Get-WinForgeSummaryMaxHeight -ViewHeight $runView.ActualHeight -Top $top -DetailsHeight $detailsCard.ActualHeight
+        $activityScroll.MaxHeight = Get-TFToolkitSummaryMaxHeight -ViewHeight $runView.ActualHeight -Top $top -DetailsHeight $detailsCard.ActualHeight
     }
     catch {
         $activityScroll.MaxHeight = 232
@@ -2165,11 +2165,11 @@ function Set-GuiPromptState {
             $runHero.Visibility = "Collapsed"
         }
 
-        Set-GuiRunStatus -Text (Get-WinForgeText 'Esperando a sua resposta') -DotColor $script:Theme.Warn
+        Set-GuiRunStatus -Text (Get-TFToolkitText 'Esperando a sua resposta') -DotColor $script:Theme.Warn
     }
     else {
         Restore-GuiAroundPrompt
-        Set-GuiRunStatus -Text (Get-WinForgeText 'Em execução') -DotColor $script:Theme.Accent
+        Set-GuiRunStatus -Text (Get-TFToolkitText 'Em execução') -DotColor $script:Theme.Accent
     }
 }
 
@@ -2231,7 +2231,7 @@ function Test-GuiSummaryHasVisibleRows {
 
 function Get-GuiPromptLayoutNow {
     <#
-    As medidas da tela agora em Get-WinForgePromptLayout. Uma lista (ou opções em linha) pede pelo menos 40% da altura da
+    As medidas da tela agora em Get-TFToolkitPromptLayout. Uma lista (ou opções em linha) pede pelo menos 40% da altura da
     tela, e o resumo cede antes dela. Abertos, os detalhes técnicos ficam com o cabeçalho e um pedaço da saída, que cede
     espaço antes do resumo e da lista; fechados, só com o cabeçalho.
     O painel em volta já limita o cartão ao fim da tela; a conta precisa das medidas sem limite: o cartão é medido de
@@ -2272,7 +2272,7 @@ function Get-GuiPromptLayoutNow {
     $minList = $(if ($list -gt 0) { [Math]::Max(160.0, [Math]::Floor(0.4 * $view)) } else { 160.0 })
     $summary = $(if ($runHero.Visibility -eq "Visible" -and $activityPanel.Visibility -eq "Visible") { [double]$activityScroll.ActualHeight } else { 0.0 })
 
-    return (Get-WinForgePromptLayout -ViewHeight $view `
+    return (Get-TFToolkitPromptLayout -ViewHeight $view `
         -PromptTop $promptBar.TranslatePoint((New-Object System.Windows.Point (0, 0)), $runView).Y `
         -Margin $promptBar.Margin.Bottom -DetailsHeight $details -DetailsMinHeight $detailsMin -PromptHeight $prompt `
         -ListHeight $list -SummaryHeight $summary -MinList $minList)
@@ -2291,7 +2291,7 @@ function Update-GuiPromptFit {
     <#
     A tela de execução não rola, e os botões da pergunta têm de ficar sempre à vista, em qualquer tamanho de janela: o
     cartão da pergunta fica limitado ao espaço que sobra até os detalhes técnicos (dentro dele, só a lista encolhe e
-    rola), e o resumo acima encolhe antes quando a lista ficaria apertada (Get-WinForgePromptLayout). Um resumo com menos
+    rola), e o resumo acima encolhe antes quando a lista ficaria apertada (Get-TFToolkitPromptLayout). Um resumo com menos
     de três linhas à vista não ajuda: ele some, e com ele o cartão do andamento, e a etapa vai para o alto da pergunta, em
     letra pequena. O que a pergunta precisa do resumo já está dentro dela (Set-GuiPromptContext). Roda quando a pergunta
     aparece, quando a janela muda de tamanho e quando os detalhes abrem ou fecham.
@@ -2330,7 +2330,7 @@ function Update-GuiPromptFit {
 
         # Nem sem o cartão do andamento a pergunta cabe (janela baixa, texto grande): as linhas do resumo copiadas para
         # dentro dela saem antes, para os botões continuarem à vista. Elas continuam no resumo e nos detalhes técnicos.
-        if ([bool](Get-WinForgeJsonValue -Object $layout -Name "Cramped" -Default $false) -and $promptContext.Visibility -eq "Visible") {
+        if ([bool](Get-TFToolkitJsonValue -Object $layout -Name "Cramped" -Default $false) -and $promptContext.Visibility -eq "Visible") {
             $promptContext.Visibility = "Collapsed"
             $runView.UpdateLayout()
             $layout = Get-GuiPromptLayoutNow
@@ -2370,7 +2370,7 @@ function Submit-GuiPrompt {
     $script:ShownPrompt = $null
     $promptBar.Visibility = "Collapsed"
     Set-GuiPromptState -Shown $false
-    Complete-WinForgeGuiPrompt -Session $script:GuiSession -Prompt $prompt -Answer $Answer -ChoiceIndex $Index
+    Complete-TFToolkitGuiPrompt -Session $script:GuiSession -Prompt $prompt -Answer $Answer -ChoiceIndex $Index
 }
 
 function Submit-GuiMultiPrompt {
@@ -2389,7 +2389,7 @@ function Submit-GuiMultiPrompt {
     $script:ShownPrompt = $null
     $promptBar.Visibility = "Collapsed"
     Set-GuiPromptState -Shown $false
-    Complete-WinForgeGuiPrompt -Session $script:GuiSession -Prompt $prompt -Keys $keys -Accepted:$Accepted
+    Complete-TFToolkitGuiPrompt -Session $script:GuiSession -Prompt $prompt -Keys $keys -Accepted:$Accepted
 }
 
 function Update-GuiPromptTheme {
@@ -2422,7 +2422,7 @@ function Update-GuiPromptFilter {
     # maiúsculas nem de acentos). O que já está marcado continua marcado mesmo escondido, e conta no Confirmar; "Marcar
     # todos" e "Limpar" valem para os itens à vista.
     $typed = [string]$promptFilter.Text
-    $words = @((ConvertTo-WinForgeSearchText -Text $typed) -split '\s+' | Where-Object { $_ })
+    $words = @((ConvertTo-TFToolkitSearchText -Text $typed) -split '\s+' | Where-Object { $_ })
     $shown = 0
 
     foreach ($child in $promptList.Children) {
@@ -2442,7 +2442,7 @@ function Update-GuiPromptFilter {
 
     foreach ($child in $promptButtons.Children) {
         if ($child.Tag -is [hashtable] -and $child.Tag.Role -eq "all") {
-            $child.Content = $(if ($words.Count -gt 0) { (Get-WinForgeText 'Marcar os {0} à vista' "$shown") } else { (Get-WinForgeText 'Marcar todos') })
+            $child.Content = $(if ($words.Count -gt 0) { (Get-TFToolkitText 'Marcar os {0} à vista' "$shown") } else { (Get-TFToolkitText 'Marcar todos') })
         }
     }
 }
@@ -2460,7 +2460,7 @@ function Update-GuiMultiPromptCount {
             $label = [string]$child.Tag.Label
 
             if ($review) {
-                $child.Content = $(if ($changes -gt 0) { "$label ($changes)" } else { (Get-WinForgeText 'Continuar') })
+                $child.Content = $(if ($changes -gt 0) { "$label ($changes)" } else { (Get-TFToolkitText 'Continuar') })
                 $child.IsEnabled = $true
             }
             else {
@@ -2545,7 +2545,7 @@ function New-GuiPromptOption {
 function Show-GuiPromptBar {
     param ($Prompt)
 
-    $plan = Get-WinForgePromptPlan -Prompt $Prompt
+    $plan = Get-TFToolkitPromptPlan -Prompt $Prompt
 
     $promptLabel.Text = $plan.Label
     $promptButtons.Children.Clear()
@@ -2574,7 +2574,7 @@ function Show-GuiPromptBar {
     if ($plan.Kind -eq "multi") {
         foreach ($option in $plan.Options) {
             # O texto em que o filtro procura: o nome e a descrição do item, sem acentos.
-            $script:PromptFilterTexts[[string]$option.Key] = ConvertTo-WinForgeSearchText -Text "$($option.Label) $($option.Description)"
+            $script:PromptFilterTexts[[string]$option.Key] = ConvertTo-TFToolkitSearchText -Text "$($option.Label) $($option.Description)"
 
             $box = New-Object System.Windows.Controls.CheckBox
             $box.Style = $window.FindResource("ListCheckBox")
@@ -2607,8 +2607,8 @@ function Show-GuiPromptBar {
         $script:PromptReview = $review
         $script:PromptInitialKeys = $(if ($review) { @($plan.Options | Where-Object { [bool]$_.Selected } | ForEach-Object { [string]$_.Key }) } else { @() })
 
-        $confirmLabel = $(if ($null -ne $Prompt.PSObject.Properties["ConfirmLabel"] -and -not [string]::IsNullOrWhiteSpace([string]$Prompt.ConfirmLabel)) { [string]$Prompt.ConfirmLabel } elseif ($review) { (Get-WinForgeText 'Aplicar') } else { (Get-WinForgeText 'Confirmar') })
-        $cancelLabel = $(if ($null -ne $Prompt.PSObject.Properties["CancelLabel"] -and -not [string]::IsNullOrWhiteSpace([string]$Prompt.CancelLabel)) { [string]$Prompt.CancelLabel } else { (Get-WinForgeText 'Cancelar') })
+        $confirmLabel = $(if ($null -ne $Prompt.PSObject.Properties["ConfirmLabel"] -and -not [string]::IsNullOrWhiteSpace([string]$Prompt.ConfirmLabel)) { [string]$Prompt.ConfirmLabel } elseif ($review) { (Get-TFToolkitText 'Aplicar') } else { (Get-TFToolkitText 'Confirmar') })
+        $cancelLabel = $(if ($null -ne $Prompt.PSObject.Properties["CancelLabel"] -and -not [string]::IsNullOrWhiteSpace([string]$Prompt.CancelLabel)) { [string]$Prompt.CancelLabel } else { (Get-TFToolkitText 'Cancelar') })
 
         $confirm = New-GuiPromptButton -Text "$confirmLabel (0)" -Accent $true -Tag @{ Role = "confirm"; Label = $confirmLabel }
         $confirm.Add_Click({ Submit-GuiMultiPrompt -Accepted $true })
@@ -2618,7 +2618,7 @@ function Show-GuiPromptBar {
         $noSelectAll = ($null -ne $Prompt.PSObject.Properties["NoSelectAll"] -and [bool]$Prompt.NoSelectAll)
 
         if (-not $noSelectAll) {
-            $all = New-GuiPromptButton -Text (Get-WinForgeText 'Marcar todos') -Tag @{ Role = "all" }
+            $all = New-GuiPromptButton -Text (Get-TFToolkitText 'Marcar todos') -Tag @{ Role = "all" }
             $all.Add_Click({
                 foreach ($child in $promptList.Children) { if ($child.Visibility -eq "Visible") { $child.IsChecked = $true } }
                 Update-GuiMultiPromptCount
@@ -2627,7 +2627,7 @@ function Show-GuiPromptBar {
         }
 
         if (-not $review) {
-            $none = New-GuiPromptButton -Text (Get-WinForgeText 'Desmarcar tudo') -Tag @{ Role = "none" }
+            $none = New-GuiPromptButton -Text (Get-TFToolkitText 'Desmarcar tudo') -Tag @{ Role = "none" }
             $none.Add_Click({
                 foreach ($child in $promptList.Children) { if ($child.Visibility -eq "Visible") { $child.IsChecked = $false } }
                 Update-GuiMultiPromptCount
@@ -2663,10 +2663,10 @@ function Show-GuiPromptBar {
             $accent = ([bool]$definition.Accent -and -not $plan.ShowText)
 
             if ($asRows -and -not $definition.Exit) {
-                $control = New-GuiPromptOption -Text $definition.Text -Description $definition.Description -Accent $accent -Danger ([bool](Get-WinForgeJsonValue -Object $definition -Name "Danger" -Default $false)) -Tag $tag
+                $control = New-GuiPromptOption -Text $definition.Text -Description $definition.Description -Accent $accent -Danger ([bool](Get-TFToolkitJsonValue -Object $definition -Name "Danger" -Default $false)) -Tag $tag
             }
             else {
-                $control = New-GuiPromptButton -Text $definition.Text -Description $definition.Description -Accent $accent -Exit ([bool]$definition.Exit) -Danger ([bool](Get-WinForgeJsonValue -Object $definition -Name "Danger" -Default $false)) -Tag $tag
+                $control = New-GuiPromptButton -Text $definition.Text -Description $definition.Description -Accent $accent -Exit ([bool]$definition.Exit) -Danger ([bool](Get-TFToolkitJsonValue -Object $definition -Name "Danger" -Default $false)) -Tag $tag
             }
 
             if ($null -eq $firstControl) { $firstControl = $control }
@@ -2781,7 +2781,7 @@ function Update-GuiRunStrip {
 
     if ($script:Running) {
         $runStripDot.Fill = New-GuiBrush $script:Theme.Accent
-        $text = (Get-WinForgeText 'Em execução · {0}' "$(Format-WinForgeClock -Span (Get-GuiRunElapsed))")
+        $text = (Get-TFToolkitText 'Em execução · {0}' "$(Format-TFToolkitClock -Span (Get-GuiRunElapsed))")
 
         # A etapa do Otimizar diz mais do que a ferramenta da vez ("Etapa 9 de 22: Reparar o Windows").
         if ($script:RunStepSeen -and -not [string]::IsNullOrWhiteSpace($runStepText.Text)) {
@@ -2790,20 +2790,20 @@ function Update-GuiRunStrip {
         elseif (-not [string]::IsNullOrWhiteSpace($progressText.Text)) {
             $text += " · $($progressText.Text)"
         }
-        elseif (-not [string]::IsNullOrWhiteSpace($runStepText.Text) -and $runStepText.Text -ne (Get-WinForgeText 'Em andamento')) {
+        elseif (-not [string]::IsNullOrWhiteSpace($runStepText.Text) -and $runStepText.Text -ne (Get-TFToolkitText 'Em andamento')) {
             $text += " · $($runStepText.Text)"
         }
 
         if ($null -ne $script:ShownPrompt) {
-            $text = (Get-WinForgeText 'Esperando a sua resposta')
+            $text = (Get-TFToolkitText 'Esperando a sua resposta')
             $runStripDot.Fill = New-GuiBrush $script:Theme.Warn
         }
 
         $runStripText.Text = $text
         $runStripStop.Visibility = "Visible"
         $runStripDismiss.Visibility = "Collapsed"
-        $runStripView.Content = (Get-WinForgeText 'Ver')
-        Set-GuiAutomationName -Element $runStripView -Name (Get-WinForgeText 'Ver a ação em andamento: {0}' "$($runTitle.Text)")
+        $runStripView.Content = (Get-TFToolkitText 'Ver')
+        Set-GuiAutomationName -Element $runStripView -Name (Get-TFToolkitText 'Ver a ação em andamento: {0}' "$($runTitle.Text)")
     }
     else {
         $view = $script:LastRunView
@@ -2812,8 +2812,8 @@ function Update-GuiRunStrip {
         $runStripText.Text = "$($view.StatusText) · $($view.ElapsedText)"
         $runStripStop.Visibility = "Collapsed"
         $runStripDismiss.Visibility = "Visible"
-        $runStripView.Content = (Get-WinForgeText 'Ver resultado')
-        Set-GuiAutomationName -Element $runStripView -Name (Get-WinForgeText 'Ver o resultado: {0}' "$($runTitle.Text)")
+        $runStripView.Content = (Get-TFToolkitText 'Ver resultado')
+        Set-GuiAutomationName -Element $runStripView -Name (Get-TFToolkitText 'Ver o resultado: {0}' "$($runTitle.Text)")
     }
 }
 
@@ -2833,18 +2833,18 @@ function Set-GuiResultView {
 
     # O próximo passo que o resultado pede (abrir a Segurança do Windows com ameaças pendentes) é o botão de destaque da
     # tela; o Voltar fica discreto (um destaque só por tela).
-    $next = [string](Get-WinForgeJsonValue -Object $View -Name "Next" -Default "")
+    $next = [string](Get-TFToolkitJsonValue -Object $View -Name "Next" -Default "")
     $hasNext = ($View.ShowBanner -and -not [string]::IsNullOrWhiteSpace($next))
     $resultAction.Visibility = $(if ($hasNext) { "Visible" } else { "Collapsed" })
     $resultAction.Tag = $(if ($hasNext) { $next } else { $null })
     $backButton.Style = $window.FindResource($(if ($hasNext) { "PillButton" } else { "PrimaryButton" }))
 
     if ($hasNext) {
-        $label = [string](Get-WinForgeJsonValue -Object $View -Name "NextLabel" -Default "")
+        $label = [string](Get-TFToolkitJsonValue -Object $View -Name "NextLabel" -Default "")
 
         if ([string]::IsNullOrWhiteSpace($label)) {
-            $item = Get-WinForgeNavItem -Id $next
-            $label = $(if ($null -ne $item) { [string]$item.Label } else { (Get-WinForgeText 'Abrir') })
+            $item = Get-TFToolkitNavItem -Id $next
+            $label = $(if ($null -ne $item) { [string]$item.Label } else { (Get-TFToolkitText 'Abrir') })
         }
 
         $resultAction.Content = $label
@@ -2865,7 +2865,7 @@ function Set-GuiResultView {
 
         # A faixa já diz tudo (nada encontrado na verificação de vírus): o resumo só a repetiria, e os detalhes técnicos
         # continuam à mão.
-        if ([bool](Get-WinForgeJsonValue -Object $View -Name "HideSummary" -Default $false)) {
+        if ([bool](Get-TFToolkitJsonValue -Object $View -Name "HideSummary" -Default $false)) {
             $activityPanel.Visibility = "Collapsed"
         }
     }
@@ -2887,7 +2887,7 @@ function Invoke-GuiNextStep {
 
     if ([string]::IsNullOrWhiteSpace($Next)) { return }
 
-    $item = Get-WinForgeNavItem -Id $Next
+    $item = Get-TFToolkitNavItem -Id $Next
 
     if ($null -ne $item) {
         Invoke-GuiNavItem -Item $item
@@ -2919,14 +2919,14 @@ function Complete-GuiRun {
     # Um ajuste é liga/desliga: "Executar de novo" o desfaria sem perguntar. Para ele, a volta é pela lista de ajustes. O
     # Otimizar leva mais de uma hora e pergunta tudo de novo: o botão do lado do resultado seria só ruído.
     $isTweak = ($script:LastAction -is [hashtable] -and -not [string]::IsNullOrEmpty([string]$script:LastAction["FocusTweak"]))
-    $isLong = ($script:LastAction -is [hashtable] -and [string]$script:LastAction["Command"] -eq "Invoke-WinForgeRecommendedMaintenance")
+    $isLong = ($script:LastAction -is [hashtable] -and [string]$script:LastAction["Command"] -eq "Invoke-TFToolkitRecommendedMaintenance")
     Set-GuiTaskbarProgress -State None
 
     # A ação pode ter mudado o PC (espaço livre, última manutenção...): a próxima leitura do Início não usa a guardada.
     Clear-GuiHomeCache
 
     # O desfecho vem da própria ação (OK, ressalvas, falha); sem ele, só se sabe que o PowerShell terminou.
-    $view = Get-WinForgeRunView -Status $Status -Outcome $Outcome -Elapsed (Get-GuiRunElapsed)
+    $view = Get-TFToolkitRunView -Status $Status -Outcome $Outcome -Elapsed (Get-GuiRunElapsed)
     $script:LastRunView = $view
 
     # A chave que mudou na própria linha (a tela de execução não abriu): sem nada a ler além do novo estado, a linha mostra
@@ -2936,12 +2936,12 @@ function Complete-GuiRun {
     $quietDone = ($null -ne $inPlace -and $runView.Visibility -ne "Visible" -and (Test-GuiQuietOutcome -Status $Status -Outcome $Outcome))
 
     # Com um próximo passo na faixa (ameaças que pedem ação), rodar de novo não resolve nada: o botão sairia do lugar dele.
-    $hasNext = -not [string]::IsNullOrWhiteSpace([string](Get-WinForgeJsonValue -Object $view -Name "Next" -Default ""))
-    $hideSummary = [bool](Get-WinForgeJsonValue -Object $view -Name "HideSummary" -Default $false)
+    $hasNext = -not [string]::IsNullOrWhiteSpace([string](Get-TFToolkitJsonValue -Object $view -Name "Next" -Default ""))
+    $hideSummary = [bool](Get-TFToolkitJsonValue -Object $view -Name "HideSummary" -Default $false)
     # "Nada a fazer" (outro antivírus no lugar, nada para limpar) também não muda rodando de novo; "Cancelado" muda.
-    $nothing = ($null -ne $Outcome -and [string]$Outcome.Kind -eq "Skipped" -and -not (Test-WinForgeCanceledText -Text ([string]$Outcome.Detail)) -and -not (Test-WinForgeRestartingText -Text ([string]$Outcome.Detail)))
+    $nothing = ($null -ne $Outcome -and [string]$Outcome.Kind -eq "Skipped" -and -not (Test-TFToolkitCanceledText -Text ([string]$Outcome.Detail)) -and -not (Test-TFToolkitRestartingText -Text ([string]$Outcome.Detail)))
     # Os históricos, só de ver (sem veredito), mostrariam a mesma coisa de novo.
-    $viewOnly = (-not $view.ShowBanner -and $script:LastAction -is [hashtable] -and [string]$script:LastAction["Command"] -in @("Show-WinForgeMaintenanceHistory", "Show-WinForgeChangeHistory"))
+    $viewOnly = (-not $view.ShowBanner -and $script:LastAction -is [hashtable] -and [string]$script:LastAction["Command"] -in @("Show-TFToolkitMaintenanceHistory", "Show-TFToolkitChangeHistory"))
     $rerunButton.Visibility = $(if ($null -ne $script:LastAction -and -not $isTweak -and -not $isLong -and -not $hasNext -and -not $nothing -and -not $viewOnly) { "Visible" } else { "Collapsed" })
 
     # Uma tela que só mostra informações não tem veredito. Quando o resumo diz tudo o que ela escreveu (dados "rótulo :
@@ -2961,7 +2961,7 @@ function Complete-GuiRun {
         # Com o resumo de etapas (o "Resumo" do fim do Otimizar), a tela abre nele, e não no fim da lista: é lá que está a
         # etapa que o botão da faixa resolve. Com um próximo passo na faixa de outra ação (as ameaças que pedem ação), abre
         # na última seção, a da lista: numa janela baixa, o fim dela deixaria a primeira ameaça cortada.
-        if ($view.ShowBanner) { Show-GuiSummarySection -Title $(if ($hasNext -and -not $isLong) { "" } else { (Get-WinForgeText 'Resumo') }) }
+        if ($view.ShowBanner) { Show-GuiSummarySection -Title $(if ($hasNext -and -not $isLong) { "" } else { (Get-TFToolkitText 'Resumo') }) }
     }
 
     if ($null -ne $inPlace -and -not $quietDone -and $script:CurrentPage -eq $inPlace.Page -and $pagesView.Visibility -eq "Visible") {
@@ -3013,18 +3013,18 @@ function Complete-GuiRun {
 
     # A atualização com um clique: o instalador da versão nova espera esta janela fechar para trocar os arquivos. Um
     # instante para a faixa "Instalando a..." aparecer antes.
-    if ((Get-WinForgeAppExitRequest) -eq "update") { $script:UpdateExitTimer.Start() }
+    if ((Get-TFToolkitAppExitRequest) -eq "update") { $script:UpdateExitTimer.Start() }
 }
 
 function Show-GuiUpdateResult {
     # Aberta pelo instalador depois de uma atualização: diz como ela terminou, uma vez.
     $update = $null
 
-    try { $update = Read-WinForgeUpdateResult } catch { $update = $null }
+    try { $update = Read-TFToolkitUpdateResult } catch { $update = $null }
 
     if ($null -eq $update) { return }
 
-    $message = Get-WinForgeUpdateResultText -Result $update
+    $message = Get-TFToolkitUpdateResultText -Result $update
     [void](Show-GuiMessage -Icon $(if ($message.Ok) { "Information" } else { "Warning" }) -Title $message.Title -Text $message.Text)
 }
 
@@ -3033,7 +3033,7 @@ function Update-GuiRunView {
         if ($null -eq $script:GuiSession) { return }
 
         $atBottom = (($outputBox.VerticalOffset + $outputBox.ViewportHeight) -ge ($outputBox.ExtentHeight - 24))
-        $update = Read-WinForgeGuiUpdate -Session $script:GuiSession
+        $update = Read-TFToolkitGuiUpdate -Session $script:GuiSession
 
         foreach ($item in $update.Items) {
             $script:OutputBacklog.Enqueue($item)
@@ -3069,7 +3069,7 @@ function Update-GuiRunView {
         $backlogEmpty = ($script:OutputBacklog.Count -eq 0)
 
         if ($update.Status -eq "Running") {
-            $runElapsed.Text = "· $(Format-WinForgeClock -Span (Get-GuiRunElapsed))"
+            $runElapsed.Text = "· $(Format-TFToolkitClock -Span (Get-GuiRunElapsed))"
         }
 
         if ($update.ProgressVersion -ne $script:ProgressVersionShown) {
@@ -3083,7 +3083,7 @@ function Update-GuiRunView {
 
                 # Uma ação que ainda não escreveu nenhum título (o Verificar o PC lendo o PC, o ponto de restauração sendo
                 # criado) mostra o que está fazendo em destaque, em vez de "Em andamento".
-                if ($runStepText.Text -eq (Get-WinForgeText 'Em andamento') -and -not [string]::IsNullOrWhiteSpace([string]$info.Activity)) { Set-GuiRunStep -Text ([string]$info.Activity) }
+                if ($runStepText.Text -eq (Get-TFToolkitText 'Em andamento') -and -not [string]::IsNullOrWhiteSpace([string]$info.Activity)) { Set-GuiRunStep -Text ([string]$info.Activity) }
 
                 # Com etapas numeradas, a barra é a da execução inteira, e a porcentagem da ferramenta fica no texto. Sem
                 # porcentagem (a verificação de vírus, o Windows Update procurando), a faixa corre por cima da barra: parada,
@@ -3141,8 +3141,8 @@ function Update-GuiRunView {
         # Sem a saída na tela não há como acompanhar a ação: interrompe-a em vez de deixá-la rodando escondida. A sessão
         # é descartada (a próxima ação abre outra): parada assim, ela ficaria marcada como "em execução" para sempre e
         # recusaria qualquer ação nova até a janela ser reaberta.
-        try { Stop-WinForgeGuiCommand -Session $script:GuiSession } catch { }
-        try { Close-WinForgeGuiSession -Session $script:GuiSession } catch { }
+        try { Stop-TFToolkitGuiCommand -Session $script:GuiSession } catch { }
+        try { Close-TFToolkitGuiSession -Session $script:GuiSession } catch { }
         $script:GuiSession = $null
         $script:OutputBacklog.Clear()
 
@@ -3159,15 +3159,15 @@ function Update-GuiRunView {
 
         # O resultado aparece como o de uma ação interrompida (com os detalhes abertos), e não uma tela parada.
         try {
-            $script:LastRunView = Get-WinForgeRunView -Status "Stopped" -Elapsed $elapsed
+            $script:LastRunView = Get-TFToolkitRunView -Status "Stopped" -Elapsed $elapsed
             Set-GuiResultView -View $script:LastRunView
             Set-GuiDetailsOpen -Open $true
         }
         catch {
-            Set-GuiRunStatus -Text (Get-WinForgeText 'Não foi concluído') -DotColor $script:Theme.Bad
+            Set-GuiRunStatus -Text (Get-TFToolkitText 'Não foi concluído') -DotColor $script:Theme.Bad
         }
 
-        [void](Show-GuiMessage -Icon Error -Title (Get-WinForgeText 'Ação interrompida') -Text (Get-WinForgeText "A janela parou de acompanhar a ação e, por segurança, ela foi interrompida.`n`nO que já foi feito continua feito. Tente de novo; se acontecer outra vez, abra Sobre o WinForge > Pasta de logs e relatórios e envie o log mais recente ao suporte.`n`nDetalhe técnico: {0}" "$failure"))
+        [void](Show-GuiMessage -Icon Error -Title (Get-TFToolkitText 'Ação interrompida') -Text (Get-TFToolkitText "A janela parou de acompanhar a ação e, por segurança, ela foi interrompida.`n`nO que já foi feito continua feito. Tente de novo; se acontecer outra vez, abra Sobre o TF-Toolkit > Pasta de logs e relatórios e envie o log mais recente ao suporte.`n`nDetalhe técnico: {0}" "$failure"))
     }
 }
 
@@ -3194,8 +3194,8 @@ function Request-GuiAdministrator {
 
     if ($script:IsAdmin) { return $true }
 
-    $answer = Show-GuiMessage -Buttons YesNo -Icon Question -Default Yes -Title (Get-WinForgeText 'Reabrir como Administrador?') -Text (Get-WinForgeText "{0}`n`nPara continuar, o WinForge precisa ser reaberto como Administrador, na mesma página." "$Reason") `
-        -YesText (Get-WinForgeText 'Reabrir') -YesIcon "admin" -NoText (Get-WinForgeText 'Cancelar')
+    $answer = Show-GuiMessage -Buttons YesNo -Icon Question -Default Yes -Title (Get-TFToolkitText 'Reabrir como Administrador?') -Text (Get-TFToolkitText "{0}`n`nPara continuar, o TF-Toolkit precisa ser reaberto como Administrador, na mesma página." "$Reason") `
+        -YesText (Get-TFToolkitText 'Reabrir') -YesIcon "admin" -NoText (Get-TFToolkitText 'Cancelar')
 
     if ($answer -ne "Yes") { return $false }
 
@@ -3208,7 +3208,7 @@ function Request-GuiAdministrator {
         $window.Close()
     }
     else {
-        [void](Show-GuiMessage -Icon Warning -Title (Get-WinForgeText 'O WinForge continua sem Administrador') -Text (Get-WinForgeText 'O Windows não concedeu a permissão. Tente de novo e aceite o aviso do Windows (Controle de Conta de Usuário).'))
+        [void](Show-GuiMessage -Icon Warning -Title (Get-TFToolkitText 'O TF-Toolkit continua sem Administrador') -Text (Get-TFToolkitText 'O Windows não concedeu a permissão. Tente de novo e aceite o aviso do Windows (Controle de Conta de Usuário).'))
     }
 
     return $false
@@ -3253,11 +3253,11 @@ function Wait-GuiWarmup {
     $deadline = (Get-Date).AddSeconds(30)
 
     while ($null -ne $reader.Ps -and (Get-Date) -lt $deadline) {
-        if ($null -ne (Receive-WinForgeGuiRead -Reader $reader)) { break }
+        if ($null -ne (Receive-TFToolkitGuiRead -Reader $reader)) { break }
         Start-Sleep -Milliseconds 50
     }
 
-    Close-WinForgeGuiReader -Reader $reader
+    Close-TFToolkitGuiReader -Reader $reader
     $script:WarmupReader = $null
 }
 
@@ -3279,18 +3279,18 @@ function Start-GuiAction {
     )
 
     if ($script:Running) {
-        [void](Show-GuiMessage -Icon Information -Title (Get-WinForgeText 'Já existe uma ação em andamento') -Text (Get-WinForgeText "`"{0}`" ainda está rodando. Aguarde terminar ou use Parar.`n`nPara voltar a ela, use o botão Ver, na faixa no alto da página." "$($runTitle.Text)"))
+        [void](Show-GuiMessage -Icon Information -Title (Get-TFToolkitText 'Já existe uma ação em andamento') -Text (Get-TFToolkitText "`"{0}`" ainda está rodando. Aguarde terminar ou use Parar.`n`nPara voltar a ela, use o botão Ver, na faixa no alto da página." "$($runTitle.Text)"))
         return
     }
 
-    if ($RequiresAdmin -and -not (Request-GuiAdministrator -Reason (Get-WinForgeText 'A ação ''{0}'' precisa de permissão de Administrador.' "$Label") -Action $NavId)) {
+    if ($RequiresAdmin -and -not (Request-GuiAdministrator -Reason (Get-TFToolkitText 'A ação ''{0}'' precisa de permissão de Administrador.' "$Label") -Action $NavId)) {
         return
     }
 
     try {
         if ($null -eq $script:GuiSession) {
             Wait-GuiWarmup
-            $script:GuiSession = New-WinForgeGuiSession -ModuleRoot $moduleRoot -Modules $script:ActionModules
+            $script:GuiSession = New-TFToolkitGuiSession -ModuleRoot $moduleRoot -Modules $script:ActionModules
         }
 
         Reset-GuiOutput
@@ -3303,9 +3303,9 @@ function Start-GuiAction {
         $script:LastRunView = $null
         $runTitle.Text = $Label
         try { $runStatus.ClearValue([System.Windows.Automation.AutomationProperties]::NameProperty) } catch { Write-Verbose "Leitor de tela: $($_.Exception.Message)" }
-        Set-GuiRunStatus -Text (Get-WinForgeText 'Em execução') -DotColor $script:Theme.Accent
+        Set-GuiRunStatus -Text (Get-TFToolkitText 'Em execução') -DotColor $script:Theme.Accent
         $runElapsed.Text = "· 00:00"
-        Set-GuiRunStep -Text (Get-WinForgeText 'Em andamento')
+        Set-GuiRunStep -Text (Get-TFToolkitText 'Em andamento')
         $progressText.Text = ""
         $runProgress.IsIndeterminate = $true
         $runProgress.Tag = $null
@@ -3318,8 +3318,8 @@ function Start-GuiAction {
         $rerunButton.Visibility = "Collapsed"
         $promptBar.Visibility = "Collapsed"
         Set-GuiDetailsOpen -Open $false
-        $copyButton.Content = (Get-WinForgeText 'Copiar')
-        $saveButton.Content = (Get-WinForgeText 'Salvar')
+        $copyButton.Content = (Get-TFToolkitText 'Copiar')
+        $saveButton.Content = (Get-TFToolkitText 'Salvar')
         $script:ShownPrompt = $null
         $script:ProgressVersionShown = -1
         Set-GuiTaskbarFlash -On $false
@@ -3339,9 +3339,9 @@ function Start-GuiAction {
             [void]$runView.Focus()
         }
 
-        $started = Start-WinForgeGuiCommand -Session $script:GuiSession -Command $Command -Columns (Get-GuiOutputColumns)
+        $started = Start-TFToolkitGuiCommand -Session $script:GuiSession -Command $Command -Columns (Get-GuiOutputColumns)
 
-        if (-not $started) { throw (Get-WinForgeText 'Já existe uma ação em execução.') }
+        if (-not $started) { throw (Get-TFToolkitText 'Já existe uma ação em execução.') }
 
         $script:Running = $true
         Set-GuiTaskbarProgress -State Indeterminate
@@ -3358,7 +3358,7 @@ function Start-GuiAction {
         $pagesView.Visibility = "Visible"
         $runView.Visibility = "Collapsed"
         Set-GuiTaskbarProgress -State None
-        [void](Show-GuiMessage -Icon Error -Title (Get-WinForgeText "`"{0}`" não começou" "$Label") -Text (Get-WinForgeText "Tente de novo. Se continuar, feche e abra o WinForge.`n`nDetalhe técnico: {0}" "$($_.Exception.Message)"))
+        [void](Show-GuiMessage -Icon Error -Title (Get-TFToolkitText "`"{0}`" não começou" "$Label") -Text (Get-TFToolkitText "Tente de novo. Se continuar, feche e abra o TF-Toolkit.`n`nDetalhe técnico: {0}" "$($_.Exception.Message)"))
     }
 }
 
@@ -3371,7 +3371,7 @@ function Test-GuiInPlaceHere {
 
 function Test-GuiQuietOutcome {
     # Se o fim de uma ação não tem nada a ler além do novo estado (a chave de um ajuste que mudou sem aviso: Quiet, de
-    # Set-WinForgeResultView): ela terminou, deu certo e não pede reinício nem um próximo passo.
+    # Set-TFToolkitResultView): ela terminou, deu certo e não pede reinício nem um próximo passo.
     param (
         [string]$Status,
         $Outcome = $null
@@ -3379,19 +3379,19 @@ function Test-GuiQuietOutcome {
 
     if ($Status -ne "Completed" -or $null -eq $Outcome) { return $false }
     if ([string]$Outcome.Kind -ne "Ok") { return $false }
-    if ([bool](Get-WinForgeJsonValue -Object $Outcome -Name "RebootRequired" -Default $false)) { return $false }
-    if (-not [string]::IsNullOrWhiteSpace([string](Get-WinForgeJsonValue -Object $Outcome -Name "Next" -Default ""))) { return $false }
+    if ([bool](Get-TFToolkitJsonValue -Object $Outcome -Name "RebootRequired" -Default $false)) { return $false }
+    if (-not [string]::IsNullOrWhiteSpace([string](Get-TFToolkitJsonValue -Object $Outcome -Name "Next" -Default ""))) { return $false }
 
-    return [bool](Get-WinForgeJsonValue -Object $Outcome -Name "Quiet" -Default $false)
+    return [bool](Get-TFToolkitJsonValue -Object $Outcome -Name "Quiet" -Default $false)
 }
 
 function Get-GuiOutsideNote {
-    # O que a dica e o leitor de tela dizem de um item que abre fora do WinForge: o site abre no navegador; os outros, no
+    # O que a dica e o leitor de tela dizem de um item que abre fora do TF-Toolkit: o site abre no navegador; os outros, no
     # Windows (uma janela dele ou o Explorador de Arquivos).
     param ([Parameter(Mandatory)]$Item)
 
-    if ([string](Get-WinForgeJsonValue -Object $Item -Name "Shortcut" -Default "") -eq "Website") { return (Get-WinForgeText 'Abre no navegador') }
-    return (Get-WinForgeText 'Abre no Windows')
+    if ([string](Get-TFToolkitJsonValue -Object $Item -Name "Shortcut" -Default "") -eq "Website") { return (Get-TFToolkitText 'Abre no navegador') }
+    return (Get-TFToolkitText 'Abre no Windows')
 }
 
 function Open-GuiShortcut {
@@ -3402,7 +3402,7 @@ function Open-GuiShortcut {
     $opened = $false
 
     try {
-        $opened = [bool](Open-WinForgeShortcut -Name $Name -Quiet)
+        $opened = [bool](Open-TFToolkitShortcut -Name $Name -Quiet)
     }
     catch {
         $opened = $false
@@ -3411,14 +3411,14 @@ function Open-GuiShortcut {
     # Recusar o aviso de Administrador do Windows (a Restauração do Sistema pede) foi a resposta da pessoa: sem mensagem.
     if (-not $opened) {
         $cancelled = $false
-        try { $cancelled = ([string](Get-WinForgeShortcutLastError) -eq "Cancelled") } catch { $cancelled = $false }
+        try { $cancelled = ([string](Get-TFToolkitShortcutLastError) -eq "Cancelled") } catch { $cancelled = $false }
         if ($cancelled) { return }
     }
 
     if (-not $opened) {
         # As pastas (Downloads e logs) existem em qualquer edição; para elas, "recurso inexistente" seria enganoso.
-        $reason = $(if ($Name -in @("Downloads", "LogFolder")) { (Get-WinForgeText 'O Explorador de Arquivos não abriu a pasta. Tente abri-la manualmente.') } elseif ($Name -eq "Website") { (Get-WinForgeText 'O navegador não abriu. O endereço do site é {0}.' "$(Get-WinForgeWebsiteUrl)") } else { (Get-WinForgeText 'O recurso pode não existir nesta edição do Windows.') })
-        [void](Show-GuiMessage -Icon Warning -Title (Get-WinForgeText "`"{0}`" não abriu" "$Title") -Text $reason)
+        $reason = $(if ($Name -in @("Downloads", "LogFolder")) { (Get-TFToolkitText 'O Explorador de Arquivos não abriu a pasta. Tente abri-la manualmente.') } elseif ($Name -eq "Website") { (Get-TFToolkitText 'O navegador não abriu. O endereço do site é {0}.' "$(Get-TFToolkitWebsiteUrl)") } else { (Get-TFToolkitText 'O recurso pode não existir nesta edição do Windows.') })
+        [void](Show-GuiMessage -Icon Warning -Title (Get-TFToolkitText "`"{0}`" não abriu" "$Title") -Text $reason)
     }
 }
 
@@ -3427,7 +3427,7 @@ function Get-GuiNavCommand {
     param ([Parameter(Mandatory)]$Item)
 
     if ([string]$Item.Command -notmatch '^[A-Za-z]+-[A-Za-z0-9]+$') {
-        throw (Get-WinForgeText 'Comando inválido na navegação: {0}' "$($Item.Command)")
+        throw (Get-TFToolkitText 'Comando inválido na navegação: {0}' "$($Item.Command)")
     }
 
     return [string]$Item.Command
@@ -3443,10 +3443,10 @@ function Get-GuiTweakCommand {
     )
 
     if ($Id -notmatch '^[a-z0-9][a-z0-9-]*$') {
-        throw (Get-WinForgeText 'Identificador de ajuste inválido: {0}' "$Id")
+        throw (Get-TFToolkitText 'Identificador de ajuste inválido: {0}' "$Id")
     }
 
-    $command = "Invoke-WinForgeTweakToggle -Tweak (Get-WinForgeTweakById -Id '$Id')"
+    $command = "Invoke-TFToolkitTweakToggle -Tweak (Get-TFToolkitTweakById -Id '$Id')"
     if (-not $Ask) { $command += " -AlreadyConfirmed" }
     if ($Want) { $command += " -Want $Want" }
 
@@ -3475,7 +3475,7 @@ function Invoke-GuiNavItem {
     if ($Item.Kind -eq "Page") {
         # Resultado de busca que leva a uma página (ou a um ajuste do Windows): a página destaca o ajuste e, se ele está
         # no grupo recolhido, abre o grupo.
-        $focus = Get-WinForgeSearchFocus -Item $Item
+        $focus = Get-TFToolkitSearchFocus -Item $Item
 
         if ($focus.Advanced) { $script:TweaksAdvancedOpen = $true }
 
@@ -3509,7 +3509,7 @@ function Invoke-GuiNavItem {
         Start-GuiAction -Label $Item.Label -Command (Get-GuiNavCommand -Item $Item) -RequiresAdmin ([bool]$Item.RequiresAdmin) -NavId ([string]$Item.Id)
     }
     catch {
-        [void](Show-GuiMessage -Icon Error -Title (Get-WinForgeText "`"{0}`" não começou" "$($Item.Label)") -Text $_.Exception.Message)
+        [void](Show-GuiMessage -Icon Error -Title (Get-TFToolkitText "`"{0}`" não começou" "$($Item.Label)") -Text $_.Exception.Message)
     }
 }
 
@@ -3533,7 +3533,7 @@ function New-GuiActionRow {
     $needsAdmin = ([bool]$Item.RequiresAdmin -and -not $script:IsAdmin)
     $outside = ([string]$Item.Kind -eq "Shortcut")
     $about = [string]$Item.Description
-    $detail = [string](Get-WinForgeJsonValue -Object $Item -Name "Detail" -Default "")
+    $detail = [string](Get-TFToolkitJsonValue -Object $Item -Name "Detail" -Default "")
 
     $button = New-Object System.Windows.Controls.Button
     $button.Style = $window.FindResource("RowButton")
@@ -3543,7 +3543,7 @@ function New-GuiActionRow {
     $row.LastChildFill = $true
 
     if (-not $NoIcon) {
-        $icon = New-GuiIcon -Name (Get-WinForgeIconName -Id ([string]$Item.Id)) -Size 20 -Color $script:Theme.Text
+        $icon = New-GuiIcon -Name (Get-TFToolkitIconName -Id ([string]$Item.Id)) -Size 20 -Color $script:Theme.Text
         $icon.Margin = New-Object System.Windows.Thickness (0, 0, 16, 0)
         Set-GuiDock -Element $icon -Side "Left"
         [void]$row.Children.Add($icon)
@@ -3555,7 +3555,7 @@ function New-GuiActionRow {
     $end.Margin = New-Object System.Windows.Thickness (16, 0, 0, 0)
 
     if ($EnterHint) {
-        $key = New-GuiKeyChip -Text (Get-WinForgeText 'Enter')
+        $key = New-GuiKeyChip -Text (Get-TFToolkitText 'Enter')
         $key.VerticalAlignment = "Center"
         $key.Margin = New-Object System.Windows.Thickness (0, 0, 12, 0)
         [void]$end.Children.Add($key)
@@ -3590,14 +3590,14 @@ function New-GuiActionRow {
     $button.Content = $row
 
     # A dica e o leitor de tela dizem o que a linha mostra em símbolo (o escudo, o "abre fora").
-    $note = $(if ($outside) { (Get-GuiOutsideNote -Item $Item) } elseif ($needsAdmin) { (Get-WinForgeText 'Pede Administrador ao executar') } else { "" })
+    $note = $(if ($outside) { (Get-GuiOutsideNote -Item $Item) } elseif ($needsAdmin) { (Get-TFToolkitText 'Pede Administrador ao executar') } else { "" })
     $tip = @(@($(if ($detail) { $detail } else { $about }), $note) | Where-Object { -not [string]::IsNullOrEmpty($_) })
     if ($tip.Count -gt 0) { $button.ToolTip = ($tip -join "`n") }
 
     # O ">" do caminho é para os olhos: o leitor de tela o leria ("maior"). Falado, o caminho vai com vírgulas.
     $spoken = $(if ($Context) { "$($Item.Label), $($Context.Replace(' > ', ', ')). $about" } else { "$($Item.Label). $about" })
     if ($outside) { $spoken += ". $(Get-GuiOutsideNote -Item $Item)" }
-    elseif ($needsAdmin) { $spoken += (Get-WinForgeText '. Pede Administrador ao executar') }
+    elseif ($needsAdmin) { $spoken += (Get-TFToolkitText '. Pede Administrador ao executar') }
     Set-GuiAutomationName -Element $button -Name $spoken
 
     if ($detail) {
@@ -3605,7 +3605,7 @@ function New-GuiActionRow {
     }
 
     if ($EnterHint) {
-        [System.Windows.Automation.AutomationProperties]::SetHelpText($button, (Get-WinForgeText 'Primeiro resultado: o Enter na caixa de busca abre este'))
+        [System.Windows.Automation.AutomationProperties]::SetHelpText($button, (Get-TFToolkitText 'Primeiro resultado: o Enter na caixa de busca abre este'))
     }
 
     $button.Add_Click({
@@ -3670,10 +3670,10 @@ function New-GuiHeroCard {
     $needsAdmin = ([bool]$Item.RequiresAdmin -and -not $script:IsAdmin)
     $outside = ([string]$Item.Kind -eq "Shortcut")
     $about = [string]$Item.Description
-    $detail = [string](Get-WinForgeJsonValue -Object $Item -Name "Detail" -Default "")
-    $verb = [string](Get-WinForgeJsonValue -Object $Item -Name "ButtonText" -Default "")
+    $detail = [string](Get-TFToolkitJsonValue -Object $Item -Name "Detail" -Default "")
+    $verb = [string](Get-TFToolkitJsonValue -Object $Item -Name "ButtonText" -Default "")
 
-    $note = $(if ($outside) { (Get-GuiOutsideNote -Item $Item) } elseif ($needsAdmin) { (Get-WinForgeText 'Pede Administrador ao executar') } else { "" })
+    $note = $(if ($outside) { (Get-GuiOutsideNote -Item $Item) } elseif ($needsAdmin) { (Get-TFToolkitText 'Pede Administrador ao executar') } else { "" })
     $tip = @(@($(if ($detail) { $detail } else { $about }), $note) | Where-Object { -not [string]::IsNullOrEmpty($_) })
 
     $row = New-Object System.Windows.Controls.DockPanel
@@ -3686,7 +3686,7 @@ function New-GuiHeroCard {
     $tile.Background = New-GuiBrush $script:Theme.Accent
     $tile.Margin = New-Object System.Windows.Thickness (0, 0, 18, 0)
     $tile.VerticalAlignment = "Center"
-    $tile.Child = New-GuiIcon -Name (Get-WinForgeIconName -Id ([string]$Item.Id)) -Size 24 -Color $script:Theme.OnAccent
+    $tile.Child = New-GuiIcon -Name (Get-TFToolkitIconName -Id ([string]$Item.Id)) -Size 24 -Color $script:Theme.OnAccent
     Set-GuiDock -Element $tile -Side "Left"
     [void]$row.Children.Add($tile)
 
@@ -3700,7 +3700,7 @@ function New-GuiHeroCard {
         $go = New-GuiButton -Text $verb -Kind Primary -Icon $(if ($outside) { "external" } elseif ($needsAdmin) { "admin" } else { "" }) -Tag $Item
         $go.VerticalAlignment = "Center"
         if ($tip.Count -gt 0) { $go.ToolTip = ($tip -join "`n") }
-        Set-GuiAutomationName -Element $go -Name "$($verb): $($Item.Label)$(if ($outside) { ". $(Get-GuiOutsideNote -Item $Item)" } elseif ($needsAdmin) { (Get-WinForgeText '. Pede Administrador ao executar') })"
+        Set-GuiAutomationName -Element $go -Name "$($verb): $($Item.Label)$(if ($outside) { ". $(Get-GuiOutsideNote -Item $Item)" } elseif ($needsAdmin) { (Get-TFToolkitText '. Pede Administrador ao executar') })"
         if ($detail) {
             try { [System.Windows.Automation.AutomationProperties]::SetHelpText($go, $detail) } catch { Write-Verbose "Leitor de tela: $($_.Exception.Message)" }
         }
@@ -3711,7 +3711,7 @@ function New-GuiHeroCard {
         [void]$end.Children.Add($go)
     }
     else {
-        $chip = New-GuiChip -Text (Get-WinForgeText 'Recomendado')
+        $chip = New-GuiChip -Text (Get-TFToolkitText 'Recomendado')
         $chip.VerticalAlignment = "Center"
         $chip.Margin = New-Object System.Windows.Thickness (0, 0, 12, 0)
         [void]$end.Children.Add($chip)
@@ -3769,9 +3769,9 @@ function New-GuiHeroCard {
 
     if ($tip.Count -gt 0) { $button.ToolTip = ($tip -join "`n") }
 
-    $spoken = "$($Item.Label). $about$(Get-WinForgeText '. Recomendado')"
+    $spoken = "$($Item.Label). $about$(Get-TFToolkitText '. Recomendado')"
     if ($outside) { $spoken += ". $(Get-GuiOutsideNote -Item $Item)" }
-    elseif ($needsAdmin) { $spoken += (Get-WinForgeText '. Pede Administrador ao executar') }
+    elseif ($needsAdmin) { $spoken += (Get-TFToolkitText '. Pede Administrador ao executar') }
     Set-GuiAutomationName -Element $button -Name $spoken
 
     if ($detail) {
@@ -3790,7 +3790,7 @@ function Invoke-GuiSetupStep {
     # Um passo da configuração inicial (no fim do Início): roda o item da navegação (ou o comando próprio do passo).
     param ([Parameter(Mandatory)]$Step)
 
-    $item = Get-WinForgeNavItem -Id ([string]$Step.NavId)
+    $item = Get-TFToolkitNavItem -Id ([string]$Step.NavId)
 
     if ([string]$Step.Command) {
         Start-GuiAction -Label $(if ($null -ne $item) { [string]$item.Label } else { [string]$Step.Label }) -Command ([string]$Step.Command) -RequiresAdmin ([bool]$Step.Admin) -NavId ([string]$Step.NavId)
@@ -3802,9 +3802,9 @@ function Invoke-GuiSetupStep {
 
 function New-GuiSetupCard {
     <#
-    A configuração inicial, no fim do Início, enquanto faltar algum passo (Get-WinForgeSetupChecklist): o atalho, o monitor
+    A configuração inicial, no fim do Início, enquanto faltar algum passo (Get-TFToolkitSetupChecklist): o atalho, o monitor
     na bandeja e a manutenção mensal. Uma faixa de uma linha com o próximo passo (o ícone e o nome), quantos estão feitos,
-    "Agora não" (fecha a faixa de vez; os três continuam em Sobre o WinForge e em Manutenção) e o botão que faz o passo.
+    "Agora não" (fecha a faixa de vez; os três continuam em Sobre o TF-Toolkit e em Manutenção) e o botão que faz o passo.
     Checklist: a lista já lida (Update-GuiSetupCard). $null quando a faixa não aparece.
     #>
     param ($Checklist)
@@ -3830,10 +3830,10 @@ function New-GuiSetupCard {
     $end.VerticalAlignment = "Center"
     $end.Margin = New-Object System.Windows.Thickness (16, 0, 0, 0)
 
-    $later = New-GuiButton -Text (Get-WinForgeText 'Agora não') -Kind Ghost
+    $later = New-GuiButton -Text (Get-TFToolkitText 'Agora não') -Kind Ghost
     $later.VerticalAlignment = "Center"
     $later.Margin = New-Object System.Windows.Thickness (0, 0, 12, 0)
-    $later.ToolTip = (Get-WinForgeText 'O cartão não volta; os três ficam em Sobre o WinForge e em Manutenção.')
+    $later.ToolTip = (Get-TFToolkitText 'O cartão não volta; os três ficam em Sobre o TF-Toolkit e em Manutenção.')
     $later.Add_Click({
         param ($sender, $eventArgs)
         Close-GuiSetupCard -Button $sender
@@ -3843,7 +3843,7 @@ function New-GuiSetupCard {
     $needsAdmin = ([bool]$next.Admin -and -not $script:IsAdmin)
     $button = New-GuiButton -Text ([string]$next.Button) -Icon $(if ($needsAdmin) { "admin" } else { "" }) -Tag $next
     $button.VerticalAlignment = "Center"
-    $button.ToolTip = $(if ($needsAdmin) { (Get-WinForgeText "{0}`nPede Administrador ao executar." "$($next.Description)") } else { [string]$next.Description })
+    $button.ToolTip = $(if ($needsAdmin) { (Get-TFToolkitText "{0}`nPede Administrador ao executar." "$($next.Description)") } else { [string]$next.Description })
     Set-GuiAutomationName -Element $button -Name "$($next.Button): $($next.Label)"
     $button.Add_Click({
         param ($sender, $eventArgs)
@@ -3862,7 +3862,7 @@ function New-GuiSetupCard {
     $title.TextTrimming = "CharacterEllipsis"
     [void]$texts.Children.Add($title)
 
-    $progress = (Get-WinForgeText 'Configuração inicial · {0} de {1} etapas concluídas' "$done" "$($steps.Count)")
+    $progress = (Get-TFToolkitText 'Configuração inicial · {0} de {1} etapas concluídas' "$done" "$($steps.Count)")
     $line = New-GuiText -Text $progress -Size $script:Type.Body -Color $script:Theme.Muted
     $line.TextWrapping = "NoWrap"
     $line.TextTrimming = "CharacterEllipsis"
@@ -3873,7 +3873,7 @@ function New-GuiSetupCard {
     $card = New-GuiPanelBorder -Padding (New-Object System.Windows.Thickness (20, 14, 16, 14)) -Content $row
     $card.Margin = New-Object System.Windows.Thickness (0, 32, 12, 0)
     $card.ToolTip = (@($steps | ForEach-Object { "$(if ($_.Done) { '✓' } else { '•' }) $($_.Label): $($_.Description)" }) -join "`n")
-    Set-GuiAutomationName -Element $card -Name "$(Get-WinForgeText 'Configuração inicial'): $($next.Label). $progress"
+    Set-GuiAutomationName -Element $card -Name "$(Get-TFToolkitText 'Configuração inicial'): $($next.Label). $progress"
 
     return $card
 }
@@ -3881,7 +3881,7 @@ function New-GuiSetupCard {
 function Update-GuiSetupCard {
     <#
     Põe (ou tira) a configuração inicial no lugar dela, no fim do Início ($script:HomeSetup). ScheduleDone: se a
-    manutenção mensal desta pasta está agendada, que vem da leitura do Início (Read-WinForgeHomeSchedule): ela consulta o
+    manutenção mensal desta pasta está agendada, que vem da leitura do Início (Read-TFToolkitHomeSchedule): ela consulta o
     Agendador de Tarefas fora da thread da janela, com prazo, e um Agendador travado não congela a janela. Os outros dois
     passos são leituras rápidas (arquivos e registro). Refaz a faixa só quando ela muda: um botão com o foco não some à toa.
     #>
@@ -3891,7 +3891,7 @@ function Update-GuiSetupCard {
 
     $checklist = $null
 
-    try { $checklist = Get-WinForgeSetupChecklist -ScheduleDone $ScheduleDone } catch { $checklist = $null }
+    try { $checklist = Get-TFToolkitSetupChecklist -ScheduleDone $ScheduleDone } catch { $checklist = $null }
 
     $key = ""
 
@@ -3906,7 +3906,7 @@ function Update-GuiSetupCard {
     $script:HomeSetup.Children.Clear()
 
     $card = New-GuiSetupCard -Checklist $checklist
-    if ($null -ne $card) { [void](Add-GuiHomePart -Element $card -Name (Get-WinForgeText 'Configuração inicial') -Panel $script:HomeSetup) }
+    if ($null -ne $card) { [void](Add-GuiHomePart -Element $card -Name (Get-TFToolkitText 'Configuração inicial') -Panel $script:HomeSetup) }
 }
 
 function Close-GuiSetupCard {
@@ -3914,7 +3914,7 @@ function Close-GuiSetupCard {
     # leitura, e animaria a entrada). O foco do teclado vai para o que vem antes dela, em vez de se perder com o botão.
     param ($Button = $null)
 
-    Close-WinForgeSetupCard
+    Close-TFToolkitSetupCard
 
     if ($null -ne $Button) {
         try { [void]$Button.MoveFocus((New-Object System.Windows.Input.TraversalRequest ([System.Windows.Input.FocusNavigationDirection]::Previous))) } catch { Write-Verbose "Foco: $($_.Exception.Message)" }
@@ -3956,15 +3956,15 @@ function New-GuiHomeCard {
     $stack = New-Object System.Windows.Controls.StackPanel
 
     $head = New-Object System.Windows.Controls.DockPanel
-    $icon = New-GuiIcon -Name (Get-WinForgeIconName -Id "fact.$Id") -Size 18 -Color $script:Theme.Muted
+    $icon = New-GuiIcon -Name (Get-TFToolkitIconName -Id "fact.$Id") -Size 18 -Color $script:Theme.Muted
     $icon.Margin = New-Object System.Windows.Thickness (0, 0, 10, 0)
     Set-GuiDock -Element $icon -Side "Left"
     [void]$head.Children.Add($icon)
 
-    $target = Get-WinForgeHomeFactTarget -Id $Id
+    $target = Get-TFToolkitHomeFactTarget -Id $Id
     $item = $null
 
-    if (-not [string]::IsNullOrEmpty($target)) { $item = Get-WinForgeNavItem -Id $target }
+    if (-not [string]::IsNullOrEmpty($target)) { $item = Get-TFToolkitNavItem -Id $target }
 
     if ($null -ne $item) {
         $chevron = New-GuiIcon -Name "chevron-right" -Size 14 -Color $script:Theme.Dim
@@ -4044,7 +4044,7 @@ function New-GuiHomeCard {
         $card.Style = $window.FindResource("CardButton")
         $card.Tag = $item
         $card.Content = $stack
-        Set-GuiAutomationName -Element $card -Name (Get-WinForgeText '{0}: lendo. Abre: {1}' "$($Label)" "$($item.Label)")
+        Set-GuiAutomationName -Element $card -Name (Get-TFToolkitText '{0}: lendo. Abre: {1}' "$($Label)" "$($item.Label)")
         $card.Add_Click({
             param ($sender, $eventArgs)
             Invoke-GuiNavItem -Item $sender.Tag
@@ -4052,7 +4052,7 @@ function New-GuiHomeCard {
     }
     else {
         $card = New-GuiPanelBorder -Padding (New-Object System.Windows.Thickness (20, 18, 20, 18)) -Content $stack
-        Set-GuiAutomationName -Element $card -Name (Get-WinForgeText '{0}: lendo' "$($Label)")
+        Set-GuiAutomationName -Element $card -Name (Get-TFToolkitText '{0}: lendo' "$($Label)")
     }
 
     # A largura é a da coluna da fileira, e não a de um cartão de ação (CardWidth).
@@ -4090,14 +4090,14 @@ function New-GuiHomeStrip {
 
     foreach ($id in $Ids) {
         $label = [string]$Labels[$id]
-        $target = Get-WinForgeHomeFactTarget -Id $id
+        $target = Get-TFToolkitHomeFactTarget -Id $id
         $item = $null
-        if (-not [string]::IsNullOrEmpty($target)) { $item = Get-WinForgeNavItem -Id $target }
+        if (-not [string]::IsNullOrEmpty($target)) { $item = Get-TFToolkitNavItem -Id $target }
 
         $row = New-Object System.Windows.Controls.DockPanel
         $row.LastChildFill = $true
 
-        $icon = New-GuiIcon -Name (Get-WinForgeIconName -Id "fact.$id") -Size 18 -Color $script:Theme.Muted
+        $icon = New-GuiIcon -Name (Get-TFToolkitIconName -Id "fact.$id") -Size 18 -Color $script:Theme.Muted
         $icon.Margin = New-Object System.Windows.Thickness (0, 0, 12, 0)
         Set-GuiDock -Element $icon -Side "Left"
         [void]$row.Children.Add($icon)
@@ -4131,7 +4131,7 @@ function New-GuiHomeStrip {
         $cell.HorizontalContentAlignment = "Stretch"
         $cell.Tag = $item
         $cell.Content = $row
-        Set-GuiAutomationName -Element $cell -Name $(if ($null -ne $item) { (Get-WinForgeText '{0}: lendo. Abre: {1}' "$label" "$($item.Label)") } else { (Get-WinForgeText '{0}: lendo' "$label") })
+        Set-GuiAutomationName -Element $cell -Name $(if ($null -ne $item) { (Get-TFToolkitText '{0}: lendo. Abre: {1}' "$label" "$($item.Label)") } else { (Get-TFToolkitText '{0}: lendo' "$label") })
         $cell.Add_Click({
             param ($sender, $eventArgs)
             if ($null -ne $sender.Tag) { Invoke-GuiNavItem -Item $sender.Tag }
@@ -4176,7 +4176,7 @@ function New-GuiHomeStrip {
 
 function Update-GuiHomeStripLayout {
     # As colunas da linha do Início: as partes visíveis lado a lado, ou uma embaixo da outra quando alguma não cabe
-    # inteira (Get-WinForgeHomeColumns), com o traço entre elas do lado certo.
+    # inteira (Get-TFToolkitHomeColumns), com o traço entre elas do lado certo.
     param ([Parameter(Mandatory)]$Strip)
 
     $visible = @($Strip.Cells | Where-Object { $_.Visibility -ne "Collapsed" })
@@ -4189,7 +4189,7 @@ function Update-GuiHomeStripLayout {
         foreach ($holder in $visible) { $need = [Math]::Max($need, (Measure-GuiNaturalWidth -Element $holder.Child) + 1) }
     }
 
-    $columns = Get-WinForgeHomeColumns -Width $Strip.Grid.ActualWidth -Count $visible.Count -MinWidth $need
+    $columns = Get-TFToolkitHomeColumns -Width $Strip.Grid.ActualWidth -Count $visible.Count -MinWidth $need
     $Strip.Grid.Columns = [Math]::Max(1, $columns)
 
     $first = $true
@@ -4246,7 +4246,7 @@ function Update-GuiHomeColumns {
         }
     }
 
-    $columns = Get-WinForgeHomeColumns -Width $Grid.ActualWidth -Count $rule.Count -MinWidth $need
+    $columns = Get-TFToolkitHomeColumns -Width $Grid.ActualWidth -Count $rule.Count -MinWidth $need
     if ($Grid.Columns -ne $columns) { $Grid.Columns = $columns }
     Set-GuiHomeDividers -Holders $rule.Divided -Columns $columns
 }
@@ -4310,35 +4310,35 @@ function Set-GuiHomeColumns {
 
 function New-GuiValueSummary {
     <#
-    "Histórico neste PC", no fim do Início: o que o WinForge já fez aqui, só com o que ele anota
-    (Get-WinForgeHomeValueSummary): o espaço que as manutenções liberaram, quantas foram feitas e as mudanças anotadas (com
+    "Histórico neste PC", no fim do Início: o que o TF-Toolkit já fez aqui, só com o que ele anota
+    (Get-TFToolkitHomeValueSummary): o espaço que as manutenções liberaram, quantas foram feitas e as mudanças anotadas (com
     quantas têm desfazer). Os números ficam grandes, direto na página, com um traço entre eles; cada um leva à tela de onde
     vem. Só os números que existem aparecem; sem nenhum, $null. Devolve o título, o traço e a fileira, nesta ordem.
     #>
     $summary = $null
 
-    try { $summary = Get-WinForgeHomeValueSummary } catch { return $null }
+    try { $summary = Get-TFToolkitHomeValueSummary } catch { return $null }
 
     if ($null -eq $summary -or -not $summary.Visible) { return $null }
 
     $cells = @()
 
     if ($null -ne $summary.Freed) {
-        $cells += [PSCustomObject]@{ Label = (Get-WinForgeText 'Liberado nas manutenções'); Value = (Format-WinForgeBytes -Bytes ([int64]$summary.Freed)); Note = ""; Opens = "maintenance.history" }
+        $cells += [PSCustomObject]@{ Label = (Get-TFToolkitText 'Liberado nas manutenções'); Value = (Format-TFToolkitBytes -Bytes ([int64]$summary.Freed)); Note = ""; Opens = "maintenance.history" }
     }
 
     # Com o histórico cheio, ele guarda só as últimas: "20+".
     if ([int]$summary.Runs -gt 0) {
-        $cells += [PSCustomObject]@{ Label = (Get-WinForgeText 'Manutenções feitas'); Value = "$($summary.Runs)$(if ($summary.Full) { '+' })"; Note = ""; Opens = "maintenance.history" }
+        $cells += [PSCustomObject]@{ Label = (Get-TFToolkitText 'Manutenções feitas'); Value = "$($summary.Runs)$(if ($summary.Full) { '+' })"; Note = ""; Opens = "maintenance.history" }
     }
 
     if ([int]$summary.Changes -gt 0) {
-        $cells += [PSCustomObject]@{ Label = (Get-WinForgeText 'Mudanças anotadas'); Value = "$($summary.Changes)"; Note = $(if ([int]$summary.Undoable -gt 0) { (Get-WinForgeText '{0} com desfazer' "$($summary.Undoable)") } else { "" }); Opens = "maintenance.changes" }
+        $cells += [PSCustomObject]@{ Label = (Get-TFToolkitText 'Mudanças anotadas'); Value = "$($summary.Changes)"; Note = $(if ([int]$summary.Undoable -gt 0) { (Get-TFToolkitText '{0} com desfazer' "$($summary.Undoable)") } else { "" }); Opens = "maintenance.changes" }
     }
 
     if ($cells.Count -eq 0) { return $null }
 
-    $heading = New-GuiSectionHeading -Text (Get-WinForgeText 'Histórico neste PC')
+    $heading = New-GuiSectionHeading -Text (Get-TFToolkitText 'Histórico neste PC')
     $heading.Margin = New-Object System.Windows.Thickness (0, 30, 12, 12)
 
     $rule = New-Object System.Windows.Controls.Border
@@ -4351,7 +4351,7 @@ function New-GuiValueSummary {
     $holders = @()
 
     foreach ($cell in $cells) {
-        $item = Get-WinForgeNavItem -Id $cell.Opens
+        $item = Get-TFToolkitNavItem -Id $cell.Opens
 
         $button = New-Object System.Windows.Controls.Button
         $button.Style = $window.FindResource("RowButton")
@@ -4387,7 +4387,7 @@ function New-GuiValueSummary {
         $button.Content = $stack
 
         $spoken = "$($cell.Label): $($cell.Value)$(if ($cell.Note) { " $($cell.Note)" })"
-        if ($null -ne $item) { $spoken += (Get-WinForgeText '. Abre: {0}' "$($item.Label)") }
+        if ($null -ne $item) { $spoken += (Get-TFToolkitText '. Abre: {0}' "$($item.Label)") }
         Set-GuiAutomationName -Element $button -Name $spoken
         if ($null -ne $item) { $button.ToolTip = [string]$item.Label }
 
@@ -4418,7 +4418,7 @@ function Add-GuiHomePart {
     Põe uma parte do Início na tela (em Panel; sem ele, na página). Cada parte vem numa peça só ("Seu PC" com o título, os
     cartões e a linha; o histórico com o título, o traço e os números) e entra inteira. Se o WPF recusar a entrada (um valor
     que ele não aceita só aparece quando a parte entra na tela), ela fica de fora inteira, sem um título ou um traço
-    sobrando; o alto da página diz qual parte faltou, e o motivo vai para o log da janela (Add-WinForgeWindowProblem), que
+    sobrando; o alto da página diz qual parte faltou, e o motivo vai para o log da janela (Add-TFToolkitWindowProblem), que
     o Pacote de suporte leva. Sem isso, a janela, que roda sem console, perdia a parte sem deixar rastro. $true quando entrou.
     #>
     param (
@@ -4443,7 +4443,7 @@ function Add-GuiHomePart {
             $exception = $exception.InnerException
         }
 
-        Add-WinForgeWindowProblem -Part "$(Get-WinForgeText 'Início') > $Name ($($Element.GetType().Name))" -Reason $reasons
+        Add-TFToolkitWindowProblem -Part "$(Get-TFToolkitText 'Início') > $Name ($($Element.GetType().Name))" -Reason $reasons
         Show-GuiHomeProblem -Name $Name
         return $false
     }
@@ -4459,7 +4459,7 @@ function Show-GuiHomeProblem {
     if ($Name -notin @($script:HomeProblemParts)) { $script:HomeProblemParts = @($script:HomeProblemParts) + $Name }
 
     $script:HomeProblems.Children.Clear()
-    $text = (Get-WinForgeText 'Parte do Início não pôde ser mostrada: {0}. O motivo vai no Pacote de suporte (Sobre o WinForge).' "$(Join-WinForgeList -Items @($script:HomeProblemParts))")
+    $text = (Get-TFToolkitText 'Parte do Início não pôde ser mostrada: {0}. O motivo vai no Pacote de suporte (Sobre o TF-Toolkit).' "$(Join-TFToolkitList -Items @($script:HomeProblemParts))")
 
     try { [void]$script:HomeProblems.Children.Add((New-GuiNotice -Text $text)) } catch { Write-Verbose "Aviso do Início: $($_.Exception.Message)" }
 }
@@ -4470,7 +4470,7 @@ function Show-GuiHomePage {
     param ([switch]$Rerender)
 
     # Sem a frase embaixo do título: a nota de saúde, "Seu PC" e "Histórico neste PC" já dizem o que a página tem.
-    $pageTitle.Text = (Get-WinForgeText 'Início')
+    $pageTitle.Text = (Get-TFToolkitText 'Início')
     $pageSubtitle.Text = ""
     $contentPanel.Children.Clear()
     $script:HomeFacts = @{}
@@ -4490,7 +4490,7 @@ function Show-GuiHomePage {
     $script:HomeProblemParts = @()
     [void]$contentPanel.Children.Add($script:HomeProblems)
 
-    # Avisos (por exemplo, WinForge elevado com outra conta) entram aqui quando a leitura do sistema termina.
+    # Avisos (por exemplo, TF-Toolkit elevado com outra conta) entram aqui quando a leitura do sistema termina.
     $script:HomeBanner = New-Object System.Windows.Controls.StackPanel
     [void]$contentPanel.Children.Add($script:HomeBanner)
 
@@ -4503,10 +4503,10 @@ function Show-GuiHomePage {
     # "Seu PC": o disco, a proteção e o Windows em três cartões; embaixo, numa linha só, a última manutenção, o reinício
     # pendente e (num notebook) a bateria. O título, os cartões e a linha numa peça só.
     $yourPc = New-Object System.Windows.Controls.StackPanel
-    [void]$yourPc.Children.Add((New-GuiSectionHeading -Text (Get-WinForgeText 'Seu PC')))
+    [void]$yourPc.Children.Add((New-GuiSectionHeading -Text (Get-TFToolkitText 'Seu PC')))
 
-    $labels = Get-WinForgeHomeFactLabels
-    $optional = @(Get-WinForgeHomeOptionalFacts)
+    $labels = Get-TFToolkitHomeFactLabels
+    $optional = @(Get-TFToolkitHomeOptionalFacts)
     $stripIds = @(@("maintenance", "reboot", "battery") | Where-Object { $labels.Contains($_) })
     $cardIds = @(@($labels.Keys) | Where-Object { $_ -notin $stripIds })
 
@@ -4538,13 +4538,13 @@ function Show-GuiHomePage {
     }
 
     # Fora da tela, "Seu PC" não recebe leitura: os fatos dele não teriam onde aparecer.
-    if (-not (Add-GuiHomePart -Element $yourPc -Name (Get-WinForgeText 'Seu PC'))) {
+    if (-not (Add-GuiHomePart -Element $yourPc -Name (Get-TFToolkitText 'Seu PC'))) {
         $script:HomeFacts = @{}
     }
 
-    # O que o WinForge já fez neste PC: só aparece com algo anotado (uma manutenção, uma mudança).
+    # O que o TF-Toolkit já fez neste PC: só aparece com algo anotado (uma manutenção, uma mudança).
     $summary = New-GuiValueSummary
-    if ($null -ne $summary) { [void](Add-GuiHomePart -Element $summary -Name (Get-WinForgeText 'Histórico neste PC')) }
+    if ($null -ne $summary) { [void](Add-GuiHomePart -Element $summary -Name (Get-TFToolkitText 'Histórico neste PC')) }
 
     # Enquanto faltar o atalho, o monitor ou a manutenção mensal: a configuração inicial, no fim da página. Ela entra
     # quando se sabe se a manutenção mensal está agendada (a leitura do Início, ou a última leitura, Update-GuiSetupCard).
@@ -4666,9 +4666,9 @@ function New-GuiHomeStampBar {
     $refresh.Padding = New-Object System.Windows.Thickness (6, 4, 6, 4)
     $refresh.Margin = New-Object System.Windows.Thickness (4, 0, 0, 0)
     $refresh.VerticalAlignment = "Center"
-    $refresh.ToolTip = (Get-WinForgeText 'Ler o PC de novo (F5)')
+    $refresh.ToolTip = (Get-TFToolkitText 'Ler o PC de novo (F5)')
     $refresh.IsEnabled = [bool]$script:HomeStamp.CanRefresh
-    Set-GuiAutomationName -Element $refresh -Name (Get-WinForgeText 'Ler o estado do PC de novo')
+    Set-GuiAutomationName -Element $refresh -Name (Get-TFToolkitText 'Ler o estado do PC de novo')
     $refresh.Add_Click({ Request-GuiHomeRefresh })
     [void]$bar.Children.Add($refresh)
 
@@ -4683,12 +4683,12 @@ function Get-GuiHomeStampText {
     # ficar aberta de um dia para o outro, e só a hora enganaria.
     param ([Parameter(Mandatory)][datetime]$ReadAt, [datetime]$Now = (Get-Date))
 
-    $time = Format-WinForgeDateTime -When $ReadAt -Pattern "HH:mm"
+    $time = Format-TFToolkitDateTime -When $ReadAt -Pattern "HH:mm"
 
-    if ($ReadAt.Date -eq $Now.Date) { return (Get-WinForgeText 'Atualizado às {0}' "$time") }
-    if ($ReadAt.Date -eq $Now.Date.AddDays(-1)) { return (Get-WinForgeText 'Atualizado ontem às {0}' "$time") }
+    if ($ReadAt.Date -eq $Now.Date) { return (Get-TFToolkitText 'Atualizado às {0}' "$time") }
+    if ($ReadAt.Date -eq $Now.Date.AddDays(-1)) { return (Get-TFToolkitText 'Atualizado ontem às {0}' "$time") }
 
-    return (Get-WinForgeText 'Atualizado em {0} às {1}' "$(Format-WinForgeDateTime -When $ReadAt -Pattern 'dd/MM')" "$time")
+    return (Get-TFToolkitText 'Atualizado em {0} às {1}' "$(Format-TFToolkitDateTime -When $ReadAt -Pattern 'dd/MM')" "$time")
 }
 
 function Set-GuiHomeFact {
@@ -4701,7 +4701,7 @@ function Set-GuiHomeFact {
     # bateria" (PC de mesa, nenhuma bateria ou um nobreak) diz que não há. Uma leitura que não terminou não decide nada.
     if ($id -eq "battery") {
         if ([bool]$Fact.Visible) { $script:HasBattery = $true }
-        elseif ([string]$Fact.Text -eq (Get-WinForgeText 'Sem bateria')) { $script:HasBattery = $false }
+        elseif ([string]$Fact.Text -eq (Get-TFToolkitText 'Sem bateria')) { $script:HasBattery = $false }
     }
 
     if (-not $script:HomeFacts.ContainsKey($id)) { return }
@@ -4723,11 +4723,11 @@ function Set-GuiHomeCardText {
     $colors = @{ Normal = $script:Theme.Text; Ok = $script:Theme.Ok; Warn = $script:Theme.Warn; Muted = $script:Theme.Muted }
     $level = [string]$Fact.Level
     $text = [string]$Fact.Text
-    $shown = [string](Get-WinForgeJsonValue -Object $Fact -Name "Value" -Default $text)
-    $more = [string](Get-WinForgeJsonValue -Object $Fact -Name "Detail" -Default "")
+    $shown = [string](Get-TFToolkitJsonValue -Object $Fact -Name "Value" -Default $text)
+    $more = [string](Get-TFToolkitJsonValue -Object $Fact -Name "Detail" -Default "")
 
     # O valor fica sozinho no cartão: começa em maiúscula ("há 5 horas" vira "Há 5 horas").
-    $Parts.Value.Text = ConvertTo-WinForgeHeadline -Text $shown
+    $Parts.Value.Text = ConvertTo-TFToolkitHeadline -Text $shown
     $Parts.Value.Foreground = New-GuiBrush $(if ($colors.ContainsKey($level)) { $colors[$level] } else { $script:Theme.Text })
     $Parts.Value.Visibility = "Visible"
     $Parts.ValueBox.Visibility = "Visible"
@@ -4740,7 +4740,7 @@ function Set-GuiHomeCardText {
 
     if ($null -ne $Parts.Track) {
         # A barra de uso só com um número de 0 a 100 (uma leitura que falhou não tem barra).
-        $usage = Get-WinForgeJsonValue -Object $Fact -Name "Usage" -Default $null
+        $usage = Get-TFToolkitJsonValue -Object $Fact -Name "Usage" -Default $null
         $percent = -1.0
         if ($null -ne $usage -and -not [double]::TryParse([string]$usage, [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$percent)) { $percent = -1.0 }
 
@@ -4748,7 +4748,7 @@ function Set-GuiHomeCardText {
             $Parts.UsedColumn.Width = New-Object System.Windows.GridLength ($percent, [System.Windows.GridUnitType]::Star)
             $Parts.FreeColumn.Width = New-Object System.Windows.GridLength ((100.0 - $percent), [System.Windows.GridUnitType]::Star)
             $Parts.Fill.Background = New-GuiBrush $(if ($level -eq "Warn") { $script:Theme.Warn } else { $script:Theme.Bar })
-            $Parts.Extra.Text = (Get-WinForgeText '{0}% em uso' "$([int]$percent)")
+            $Parts.Extra.Text = (Get-TFToolkitText '{0}% em uso' "$([int]$percent)")
             $Parts.Extra.Visibility = "Visible"
             $Parts.Track.Visibility = "Visible"
         }
@@ -4765,7 +4765,7 @@ function Set-GuiHomeCardText {
 
     # O leitor de tela lê o nome do botão no lugar do conteúdo: a frase inteira precisa estar nele.
     $name = "$($Parts.Label): $text"
-    if (-not [string]::IsNullOrEmpty($Parts.Opens)) { $name += (Get-WinForgeText '. Abre: {0}' "$($Parts.Opens)") }
+    if (-not [string]::IsNullOrEmpty($Parts.Opens)) { $name += (Get-TFToolkitText '. Abre: {0}' "$($Parts.Opens)") }
     Set-GuiAutomationName -Element $Parts.Card -Name $name
 
     # O texto novo pode não caber mais lado a lado (ou voltar a caber): a linha ou a fileira refaz as colunas.
@@ -4776,7 +4776,7 @@ function Set-GuiHomeCardText {
 function Get-GuiSavedAntivirusMode {
     # Quem protegia o PC na última leitura do Início, guardado nas preferências (Save-GuiAntivirusMode); "" sem registro.
     try {
-        $mode = [string](Get-WinForgeSetting -Name "AntivirusMode" -Default "")
+        $mode = [string](Get-TFToolkitSetting -Name "AntivirusMode" -Default "")
         if ($mode -in @("Active", "Other", "Off", "Passive", "Unavailable")) { return $mode }
     }
     catch {
@@ -4787,13 +4787,13 @@ function Get-GuiSavedAntivirusMode {
 }
 
 function Save-GuiAntivirusMode {
-    # Guarda quem protege o PC, lido pelo Início, para a próxima vez que o WinForge abrir (só quando muda).
+    # Guarda quem protege o PC, lido pelo Início, para a próxima vez que o TF-Toolkit abrir (só quando muda).
     param ([AllowEmptyString()][string]$Mode)
 
     if ([string]::IsNullOrEmpty($Mode) -or $Mode -eq [string]$script:AntivirusMode) { return }
 
     $script:AntivirusMode = $Mode
-    [void](Set-WinForgeSetting -Name "AntivirusMode" -Value $Mode)
+    [void](Set-TFToolkitSetting -Name "AntivirusMode" -Value $Mode)
 }
 
 function Show-GuiHomeResult {
@@ -4807,16 +4807,16 @@ function Show-GuiHomeResult {
     # Quem protege o PC, pelo cartão Proteção: com outro antivírus (ou nenhum funcionando), o que só o Defender faz
     # (Verificar vírus) sai da página Segurança. Sem leitura, fica como estava.
     foreach ($fact in @($Snapshot.Facts)) {
-        if ($null -ne $fact -and [string](Get-WinForgeJsonValue -Object $fact -Name "Id" -Default "") -eq "security") {
-            Save-GuiAntivirusMode -Mode ([string](Get-WinForgeJsonValue -Object $fact -Name "AntivirusMode" -Default ""))
+        if ($null -ne $fact -and [string](Get-TFToolkitJsonValue -Object $fact -Name "Id" -Default "") -eq "security") {
+            Save-GuiAntivirusMode -Mode ([string](Get-TFToolkitJsonValue -Object $fact -Name "AntivirusMode" -Default ""))
         }
     }
 
-    $failed = [bool](Get-WinForgeJsonValue -Object $Snapshot -Name "Failed" -Default $false)
+    $failed = [bool](Get-TFToolkitJsonValue -Object $Snapshot -Name "Failed" -Default $false)
 
     # A hora e o botão de ler de novo antes da nota: ela nasce com o botão ligado, que pode receber o foco de volta.
     if ($failed) {
-        Set-GuiHomeStamp -Text (Get-WinForgeText 'A leitura não terminou') -CanRefresh $true
+        Set-GuiHomeStamp -Text (Get-TFToolkitText 'A leitura não terminou') -CanRefresh $true
     }
     else {
         Set-GuiHomeStamp -Text (Get-GuiHomeStampText -ReadAt $Snapshot.ReadAt) -CanRefresh $true -ReadAt $Snapshot.ReadAt
@@ -4828,7 +4828,7 @@ function Show-GuiHomeResult {
     Add-GuiHomeNotices -Notices $Snapshot.Notices
 
     # A configuração inicial, com o agendamento lido junto (uma leitura de antes da R40 não o tem: não agendada).
-    Update-GuiSetupCard -ScheduleDone ([bool](Get-WinForgeJsonValue -Object $Snapshot -Name "ScheduleSetup" -Default $false))
+    Update-GuiSetupCard -ScheduleDone ([bool](Get-TFToolkitJsonValue -Object $Snapshot -Name "ScheduleSetup" -Default $false))
 }
 
 function Update-GuiHomeStampAge {
@@ -4846,7 +4846,7 @@ function Update-GuiHomeStampAge {
 }
 
 function Add-GuiHomeNotices {
-    # Os avisos de destaque do Início (por exemplo, WinForge elevado com outra conta), acima da nota de saúde.
+    # Os avisos de destaque do Início (por exemplo, TF-Toolkit elevado com outra conta), acima da nota de saúde.
     param ([object[]]$Notices = @())
 
     foreach ($notice in @($Notices | Where-Object { $null -ne $_ })) {
@@ -4859,9 +4859,9 @@ function Get-GuiHomeReadingText {
     # sendo atualizada. Sem contagem de etapas: cada cartão já mostra quando chega, e nem toda etapa tem cartão.
     param ([switch]$Refresh)
 
-    if ($Refresh) { return (Get-WinForgeText 'Atualizando...') }
+    if ($Refresh) { return (Get-TFToolkitText 'Atualizando...') }
 
-    return (Get-WinForgeText 'Lendo o PC...')
+    return (Get-TFToolkitText 'Lendo o PC...')
 }
 
 function Stop-GuiHomeRead {
@@ -4871,7 +4871,7 @@ function Stop-GuiHomeRead {
     $script:HomeReaderOwner = $null
     $script:HomeReaderWaiting = $null
 
-    try { Set-GuiHomeStamp -Text (Get-WinForgeText 'A leitura não terminou') -CanRefresh $true } catch { Write-Verbose "Início: $($_.Exception.Message)" }
+    try { Set-GuiHomeStamp -Text (Get-TFToolkitText 'A leitura não terminou') -CanRefresh $true } catch { Write-Verbose "Início: $($_.Exception.Message)" }
 }
 
 function Start-GuiHomeRead {
@@ -4880,7 +4880,7 @@ function Start-GuiHomeRead {
     # mostram a leitura anterior, que a nova troca no lugar.
     param ([switch]$Refresh)
 
-    $steps = @(Get-WinForgeHomeSteps)
+    $steps = @(Get-TFToolkitHomeSteps)
 
     $script:HomeRead = [PSCustomObject]@{
         Steps = $steps; Next = 0; Facts = @(); Notices = @(); Issues = @(); Unread = @(); Failed = $false
@@ -4912,7 +4912,7 @@ function Step-GuiHomeRead {
     }
 
     try {
-        $result = Read-WinForgeHomeStep -Name ([string]$read.Steps[$read.Next])
+        $result = Read-TFToolkitHomeStep -Name ([string]$read.Steps[$read.Next])
     }
     catch {
         $result = $null
@@ -4987,7 +4987,7 @@ function Start-GuiHomeBackgroundStep {
 
     if ($null -eq $script:HomeReader) {
         try {
-            $script:HomeReader = New-WinForgeGuiReader -ModuleRoot $moduleRoot -Modules @(Get-WinForgeHomeReaderModules)
+            $script:HomeReader = New-TFToolkitGuiReader -ModuleRoot $moduleRoot -Modules @(Get-TFToolkitHomeReaderModules)
         }
         catch {
             $script:HomeReaderBroken = $true
@@ -5008,13 +5008,13 @@ function Update-GuiHomeReader {
     $owner = $script:HomeReaderOwner
 
     if ($null -ne $owner -and $null -ne $reader) {
-        $done = Receive-WinForgeGuiRead -Reader $reader
+        $done = Receive-TFToolkitGuiRead -Reader $reader
 
-        if ($null -eq $done -and (Get-WinForgeGuiReadSeconds -Reader $reader) -ge $script:HomeStepTimeoutSeconds) {
-            Close-WinForgeGuiReader -Reader $reader
+        if ($null -eq $done -and (Get-TFToolkitGuiReadSeconds -Reader $reader) -ge $script:HomeStepTimeoutSeconds) {
+            Close-TFToolkitGuiReader -Reader $reader
             $script:HomeReader = $null
             $reader = $null
-            $done = [PSCustomObject]@{ Output = @(New-WinForgeHomeStepFailure -Name $owner.Name); Failed = $false }
+            $done = [PSCustomObject]@{ Output = @(New-TFToolkitHomeStepFailure -Name $owner.Name); Failed = $false }
         }
 
         if ($null -ne $done) {
@@ -5022,10 +5022,10 @@ function Update-GuiHomeReader {
             $result = @($done.Output | Where-Object { $null -ne $_ -and $null -ne $_.PSObject.Properties["Facts"] }) | Select-Object -Last 1
 
             if ($null -eq $result -and $null -ne $reader) {
-                # O leitor terminou sem resultado: Read-WinForgeHomeStep nunca lança erro, então quem falhou foi o leitor
+                # O leitor terminou sem resultado: Read-TFToolkitHomeStep nunca lança erro, então quem falhou foi o leitor
                 # (os módulos não carregaram nele, por exemplo), e falharia igual nas outras etapas. Ele é descartado, e
                 # esta etapa e as próximas rodam aqui mesmo, em vez de todos os cartões dizerem "Não foi possível ler".
-                Close-WinForgeGuiReader -Reader $reader
+                Close-TFToolkitGuiReader -Reader $reader
                 $script:HomeReader = $null
                 $script:HomeReaderBroken = $true
                 Invoke-GuiDeferred -Action { Step-GuiHomeRead }
@@ -5047,10 +5047,10 @@ function Update-GuiHomeReader {
 
             try {
                 if ($null -eq $script:HomeReader) {
-                    $script:HomeReader = New-WinForgeGuiReader -ModuleRoot $moduleRoot -Modules @(Get-WinForgeHomeReaderModules)
+                    $script:HomeReader = New-TFToolkitGuiReader -ModuleRoot $moduleRoot -Modules @(Get-TFToolkitHomeReaderModules)
                 }
 
-                $started = Start-WinForgeGuiRead -Reader $script:HomeReader -Command "Read-WinForgeHomeStep" -Arguments @{ Name = $name }
+                $started = Start-TFToolkitGuiRead -Reader $script:HomeReader -Command "Read-TFToolkitHomeStep" -Arguments @{ Name = $name }
             }
             catch {
                 $script:HomeReaderBroken = $true
@@ -5082,8 +5082,8 @@ function Complete-GuiHomeRead {
         # Um cartão cuja etapa falhou por inteiro não fica esperando para sempre (o da bateria, que só existe em
         # alguns PCs, continua escondido); se ele entra na nota, a nota diz que ele ficou de fora.
         $known = @($read.Facts | ForEach-Object { [string]$_.Id })
-        $optional = @(Get-WinForgeHomeOptionalFacts)
-        $scored = @(Get-WinForgeHomeScoredFacts)
+        $optional = @(Get-TFToolkitHomeOptionalFacts)
+        $scored = @(Get-TFToolkitHomeScoredFacts)
         $unread = @($read.Unread)
         $missing = @()
 
@@ -5091,7 +5091,7 @@ function Complete-GuiHomeRead {
         # diz "Não foi possível ler", e não volta a esperar.
         foreach ($id in @($script:HomeFacts.Keys)) {
             if ($id -notin $known) {
-                $fact = [PSCustomObject]@{ Id = $id; Text = (Get-WinForgeText 'Não foi possível ler'); Level = "Muted"; Visible = ($id -notin $optional) }
+                $fact = [PSCustomObject]@{ Id = $id; Text = (Get-TFToolkitText 'Não foi possível ler'); Level = "Muted"; Visible = ($id -notin $optional) }
                 Set-GuiHomeFact -Fact $fact
                 $missing += $fact
                 if ($id -in $scored) { $unread += $script:HomeFactInfo[$id].Label }
@@ -5113,7 +5113,7 @@ function Complete-GuiHomeRead {
         # lido (com a nota dizendo que falhou), em vez de ler o PC outra vez.
         $built = $snapshot
         $script:HomeLastSnapshot = $snapshot
-        $snapshot.Health = Get-WinForgeHealthScore -Issues $read.Issues -Unread $unread
+        $snapshot.Health = Get-TFToolkitHealthScore -Issues $read.Issues -Unread $unread
 
         Show-GuiHomeResult -Snapshot $snapshot
 
@@ -5129,7 +5129,7 @@ function Complete-GuiHomeRead {
         $script:HomeSnapshot = $null
         if ($null -ne $built) { $built.Failed = $true; $built.Health = $null }
 
-        Set-GuiHomeStamp -Text (Get-WinForgeText 'A leitura não terminou') -CanRefresh $true
+        Set-GuiHomeStamp -Text (Get-TFToolkitText 'A leitura não terminou') -CanRefresh $true
 
         try { Update-GuiHealthCard -Failed } catch { Write-Verbose "Nota de saúde: $($_.Exception.Message)" }
     }
@@ -5157,7 +5157,7 @@ function Request-GuiHomeRefresh {
 function New-GuiScoreBlock {
     <#
     A nota de saúde, à direita do cartão: o número grande com "/ 100" na mesma linha de base, os dez traços
-    (Get-WinForgeScoreMarks: cheios na cor da nota, vazios no trilho) e, embaixo, a hora da leitura com o botão de ler de
+    (Get-TFToolkitScoreMarks: cheios na cor da nota, vazios no trilho) e, embaixo, a hora da leitura com o botão de ler de
     novo. Score negativo = ainda sem nota (um traço no lugar do número, os traços vazios). A largura (Width) acompanha o
     tamanho do texto do Windows, e o número diminui até caber nela.
     #>
@@ -5203,7 +5203,7 @@ function New-GuiScoreBlock {
     $marks.Height = [Math]::Max(4, [Math]::Round(5 * [Math]::Sqrt($script:TextScale)))
     $marks.Margin = New-Object System.Windows.Thickness (0, 8, -4, 0)
     $marks.IsHitTestVisible = $false
-    $filled = Get-WinForgeScoreMarks -Score $Score -Count 10
+    $filled = Get-TFToolkitScoreMarks -Score $Score -Count 10
 
     for ($i = 0; $i -lt 10; $i++) {
         $mark = New-Object System.Windows.Controls.Border
@@ -5234,7 +5234,7 @@ function New-GuiHealthButtons {
     $buttons = New-Object System.Windows.Controls.WrapPanel
 
     foreach ($entry in @(@{ Id = "maintenance.checkup"; Icon = "scan" }, @{ Id = "maintenance.recommended"; Icon = "sparkles" })) {
-        $navItem = Get-WinForgeNavItem -Id $entry.Id
+        $navItem = Get-TFToolkitNavItem -Id $entry.Id
 
         if ($null -eq $navItem) { continue }
 
@@ -5283,7 +5283,7 @@ function Set-GuiHeroLayout {
 
 function Update-GuiHeroBand {
     <#
-    A faixa inclinada atrás da nota (Get-WinForgeHeroBand): começa no alto um pouco à esquerda da nota e desce inclinada,
+    A faixa inclinada atrás da nota (Get-TFToolkitHeroBand): começa no alto um pouco à esquerda da nota e desce inclinada,
     com uma linha fina no lado inclinado e outra paralela a ele. Só com a nota ao lado da frase e fora do contraste alto;
     refeita quando o cartão muda de tamanho. Com pontos de atenção embaixo, ela fica só na parte de cima, até o traço que
     os separa (Get-GuiHeroBandHeight).
@@ -5297,7 +5297,7 @@ function Update-GuiHeroBand {
         $width = [double]$frame.ActualWidth
         $height = Get-GuiHeroBandHeight -Parts $Parts
         $start = $width - $Parts.Inset - $Parts.ScoreWidth - [Math]::Round(0.45 * $Parts.ScoreWidth)
-        $band = Get-WinForgeHeroBand -Width $width -Height $height -Start $start -Slant ([Math]::Round(0.9 * $height)) -Gap 12
+        $band = Get-TFToolkitHeroBand -Width $width -Height $height -Start $start -Slant ([Math]::Round(0.9 * $height)) -Gap 12
     }
 
     if ($null -eq $band) {
@@ -5341,7 +5341,7 @@ function Update-GuiHealthCard {
     e que diminui até caber, sem cortar), o resumo e os botões Verificar o PC e Otimizar. À direita, numa faixa inclinada: a
     nota, os dez traços e a hora da leitura com o botão de ler de novo (New-GuiScoreBlock). Embaixo, cada ponto de atenção
     com o botão que o resolve. Numa janela estreita (ou com o texto do Windows grande), a nota desce para baixo dos botões e
-    a faixa some (Test-WinForgeHeroWide). Sem nota (Health $null), o cartão mostra que a leitura está em andamento; com
+    a faixa some (Test-TFToolkitHeroWide). Sem nota (Health $null), o cartão mostra que a leitura está em andamento; com
     -Failed, que a nota não pôde ser montada.
     #>
     param (
@@ -5359,24 +5359,24 @@ function Update-GuiHealthCard {
     $tone = "Muted"
 
     # Nada do que forma a nota foi lido, e nenhum ponto apareceu: um "100" não diria nada sobre o PC.
-    $unknown = ($null -ne $Health -and -not (Test-WinForgeHealthKnown -Health $Health))
+    $unknown = ($null -ne $Health -and -not (Test-TFToolkitHealthKnown -Health $Health))
 
     if ($Failed -or $unknown -or $null -eq $Health) {
         if ($Failed) {
-            $title = (Get-WinForgeText 'Não foi possível calcular a nota')
-            $line = (Get-WinForgeText 'Os cartões abaixo mostram o que foi lido. Tente ler de novo.')
-            $spoken = (Get-WinForgeText 'Saúde do PC: não foi possível calcular a nota')
+            $title = (Get-TFToolkitText 'Não foi possível calcular a nota')
+            $line = (Get-TFToolkitText 'Os cartões abaixo mostram o que foi lido. Tente ler de novo.')
+            $spoken = (Get-TFToolkitText 'Saúde do PC: não foi possível calcular a nota')
         }
         elseif ($unknown) {
-            $title = (Get-WinForgeText 'Não foi possível avaliar o PC')
-            $line = (Get-WinForgeText 'Nenhuma das leituras que formam a nota respondeu. Tente ler de novo.')
-            $spoken = (Get-WinForgeText 'Saúde do PC: não foi possível avaliar')
+            $title = (Get-TFToolkitText 'Não foi possível avaliar o PC')
+            $line = (Get-TFToolkitText 'Nenhuma das leituras que formam a nota respondeu. Tente ler de novo.')
+            $spoken = (Get-TFToolkitText 'Saúde do PC: não foi possível avaliar')
         }
         else {
             # "Lendo", e não "Verificando": verificar é com Verificar o PC e Verificar vírus, que mudam o PC.
-            $title = (Get-WinForgeText 'Lendo o estado do PC...')
-            $line = (Get-WinForgeText 'Cada cartão abaixo aparece assim que é lido.')
-            $spoken = (Get-WinForgeText 'Saúde do PC: lendo o estado do PC')
+            $title = (Get-TFToolkitText 'Lendo o estado do PC...')
+            $line = (Get-TFToolkitText 'Cada cartão abaixo aparece assim que é lido.')
+            $spoken = (Get-TFToolkitText 'Saúde do PC: lendo o estado do PC')
         }
     }
     else {
@@ -5384,18 +5384,18 @@ function Update-GuiHealthCard {
         $score = [int]$Health.Score
         $issues = @($Health.Issues | Where-Object { $null -ne $_ })
 
-        $title = Get-WinForgeHealthHeadline -Health $Health
+        $title = Get-TFToolkitHealthHeadline -Health $Health
 
         # Com os pontos à vista logo abaixo, a frase não os conta de novo: fica só o que não pôde ser lido.
-        $line = Get-WinForgeHealthSummary -Health $Health -WithoutCount:($issues.Count -gt 0)
-        $spoken = (Get-WinForgeText 'Saúde do PC: nota {0} de 100, {1}. {2}' "$($Health.Score)" "$($Health.Label)" "$(Get-WinForgeHealthSummary -Health $Health)")
+        $line = Get-TFToolkitHealthSummary -Health $Health -WithoutCount:($issues.Count -gt 0)
+        $spoken = (Get-TFToolkitText 'Saúde do PC: nota {0} de 100, {1}. {2}' "$($Health.Score)" "$($Health.Label)" "$(Get-TFToolkitHealthSummary -Health $Health)")
     }
 
     $colors = $script:LevelColors[$tone]
 
-    # Um botão por ação e um destaque só (Get-WinForgeHealthActionPlan): o ponto que se resolve com Verificar o PC não
+    # Um botão por ação e um destaque só (Get-TFToolkitHealthActionPlan): o ponto que se resolve com Verificar o PC não
     # ganha outro botão igual, e, sendo o mais pesado, é o da nota que fica em destaque.
-    $plan = Get-WinForgeHealthActionPlan -Issues $issues
+    $plan = Get-TFToolkitHealthActionPlan -Issues $issues
     $primaryId = [string]$plan.PrimaryId
 
     # A frase, o resumo e os botões (coluna 0) | a nota (coluna 1, ou embaixo, na linha 1, quando não cabe ao lado).
@@ -5418,7 +5418,7 @@ function Update-GuiHealthCard {
     $glyph = New-GuiIcon -Name $colors.Icon -Size 18 -Color $colors.Dot
     $glyph.Margin = New-Object System.Windows.Thickness (0, 0, 8, 0)
     [void]$kicker.Children.Add($glyph)
-    $kickerText = New-GuiText -Text (Get-WinForgeText 'Saúde do PC') -Size $script:Type.Body -Color $colors.Dot -Bold $true
+    $kickerText = New-GuiText -Text (Get-TFToolkitText 'Saúde do PC') -Size $script:Type.Body -Color $colors.Dot -Bold $true
     $kickerText.VerticalAlignment = "Center"
     [void]$kicker.Children.Add($kickerText)
     [void]$text.Children.Add($kicker)
@@ -5481,7 +5481,7 @@ function Update-GuiHealthCard {
             $fix.VerticalAlignment = "Center"
             Set-GuiDock -Element $fix -Side "Right"
             # A gravidade não fica só na cor e no desenho do ícone: o leitor de tela ouve "(grave)".
-            Set-GuiAutomationName -Element $fix -Name "$($issue.ButtonText): $($issue.Text)$(if ($issue.Severe) { (Get-WinForgeText ' (grave)') })"
+            Set-GuiAutomationName -Element $fix -Name "$($issue.ButtonText): $($issue.Text)$(if ($issue.Severe) { (Get-TFToolkitText ' (grave)') })"
             $fix.Add_Click({
                 param ($sender, $eventArgs)
                 Invoke-GuiNextStep -Next ([string]$sender.Tag.Target) -Title ([string]$sender.Tag.ButtonText)
@@ -5539,7 +5539,7 @@ function Update-GuiHealthCard {
         if (-not $eventArgs.WidthChanged) { return }
 
         try {
-            Set-GuiHeroLayout -Grid $sender -Wide (Test-WinForgeHeroWide -Width $sender.ActualWidth -ScoreWidth ($sender.Tag.ScoreWidth + 32) -MinText (320 * $script:TextScale))
+            Set-GuiHeroLayout -Grid $sender -Wide (Test-TFToolkitHeroWide -Width $sender.ActualWidth -ScoreWidth ($sender.Tag.ScoreWidth + 32) -MinText (320 * $script:TextScale))
         }
         catch {
             Write-Verbose "Arranjo da nota: $($_.Exception.Message)"
@@ -5563,7 +5563,7 @@ function Update-GuiHealthCard {
     Set-GuiPanelContent -Panel $border -Content $frame
     Set-GuiAutomationName -Element $border -Name $spoken
 
-    if ((Add-GuiHomePart -Element $border -Name (Get-WinForgeText 'Saúde do PC') -Panel $script:HomeHealth) -and $focus) {
+    if ((Add-GuiHomePart -Element $border -Name (Get-TFToolkitText 'Saúde do PC') -Panel $script:HomeHealth) -and $focus) {
         Restore-GuiHomeHealthFocus -Key $focus
     }
 }
@@ -5642,11 +5642,11 @@ function Restore-GuiHomeHealthFocus {
 
 function New-GuiPageStatus {
     <#
-    O resumo no alto de uma página (Manutenção, Limpeza, Desempenho, Rede, Atualizações, Programas e Sobre o WinForge):
-    uma linha por informação, com o rótulo à esquerda. Vem de leituras rápidas (arquivos pequenos do WinForge, o espaço do
+    O resumo no alto de uma página (Manutenção, Limpeza, Desempenho, Rede, Atualizações, Programas e Sobre o TF-Toolkit):
+    uma linha por informação, com o rótulo à esquerda. Vem de leituras rápidas (arquivos pequenos do TF-Toolkit, o espaço do
     disco, a memória, o que o Windows diz da conexão, o Registro, se o winget existe), então não atrasa a página; se a
     leitura falhar, ou não houver o que dizer, a página aparece sem ele. As páginas de ajustes passam as linhas já lidas
-    (Rows, de Get-WinForgeTweaksPageStatus), feitas da lista que acabaram de ler. Uma linha com destino (Opens, um item da
+    (Rows, de Get-TFToolkitTweaksPageStatus), feitas da lista que acabaram de ler. Uma linha com destino (Opens, um item da
     navegação) é um botão com a seta, como as linhas das listas: a da Manutenção abre o Histórico de manutenções; as da
     Limpeza, do Desempenho, da Rede, das Atualizações e dos Programas, quando pedem atenção, o que resolve (a Limpeza
     personalizada, Programas pesando agora, Tempo ligado e energia, Testar conectividade, Suporte do Windows, o Windows
@@ -5662,13 +5662,13 @@ function New-GuiPageStatus {
     }
     else {
         $reader = switch ([string]$Page.Id) {
-            "maintenance" { "Get-WinForgeMaintenancePageStatus" }
-            "cleanup"     { "Get-WinForgeCleanupPageStatus" }
-            "performance" { "Get-WinForgePerformancePageStatus" }
-            "network"     { "Get-WinForgeNetworkPageStatus" }
-            "updates"     { "Get-WinForgeUpdatesPageStatus" }
-            "software"    { "Get-WinForgeSoftwarePageStatus" }
-            "app"         { "Get-WinForgeAboutPageStatus" }
+            "maintenance" { "Get-TFToolkitMaintenancePageStatus" }
+            "cleanup"     { "Get-TFToolkitCleanupPageStatus" }
+            "performance" { "Get-TFToolkitPerformancePageStatus" }
+            "network"     { "Get-TFToolkitNetworkPageStatus" }
+            "updates"     { "Get-TFToolkitUpdatesPageStatus" }
+            "software"    { "Get-TFToolkitSoftwarePageStatus" }
+            "app"         { "Get-TFToolkitAboutPageStatus" }
             default       { $null }
         }
 
@@ -5696,8 +5696,8 @@ function New-GuiPageStatus {
         [void]$line.Children.Add($label)
 
         $item = $null
-        $opens = [string](Get-WinForgeJsonValue -Object $row -Name "Opens" -Default "")
-        if ($opens) { $item = Get-WinForgeNavItem -Id $opens }
+        $opens = [string](Get-TFToolkitJsonValue -Object $row -Name "Opens" -Default "")
+        if ($opens) { $item = Get-TFToolkitNavItem -Id $opens }
 
         if ($null -ne $item) {
             $chevron = New-GuiIcon -Name "chevron-right" -Size 16 -Color $script:Theme.Muted
@@ -5749,7 +5749,7 @@ function New-GuiPageStatus {
         $button.Padding = New-Object System.Windows.Thickness (18, 17, 18, 17)
         $button.Tag = $entry.Item
         $button.Content = $entry.Line
-        Set-GuiAutomationName -Element $button -Name "$($entry.Spoken)$(Get-WinForgeText '. Abre: {0}' "$($entry.Item.Label)")"
+        Set-GuiAutomationName -Element $button -Name "$($entry.Spoken)$(Get-TFToolkitText '. Abre: {0}' "$($entry.Item.Label)")"
         $button.Add_Click({
             param ($sender, $eventArgs)
             Invoke-GuiNavItem -Item $sender.Tag
@@ -5784,7 +5784,7 @@ function Set-GuiChoiceGroupKeyboard {
 }
 
 function New-GuiAppearanceCard {
-    # Sobre o WinForge > Aparência: como o Windows (o padrão), clara ou escura. Vale na hora, sem reabrir a janela.
+    # Sobre o TF-Toolkit > Aparência: como o Windows (o padrão), clara ou escura. Vale na hora, sem reabrir a janela.
     $border = New-GuiPanelBorder
     $border.Margin = New-Object System.Windows.Thickness (0, 0, 12, 16)
     $border.Tag = "appearance"
@@ -5801,13 +5801,13 @@ function New-GuiAppearanceCard {
 
     $choices = New-Object System.Windows.Controls.StackPanel
     $choices.Orientation = "Horizontal"
-    Set-GuiAutomationName -Element $choices -Name (Get-WinForgeText 'Aparência')
+    Set-GuiAutomationName -Element $choices -Name (Get-TFToolkitText 'Aparência')
     $chosen = $null
 
     foreach ($option in @(
-            @{ Value = "System"; Text = (Get-WinForgeText 'Automático') },
-            @{ Value = "Light"; Text = (Get-WinForgeText 'Claro') },
-            @{ Value = "Dark"; Text = (Get-WinForgeText 'Escuro') }
+            @{ Value = "System"; Text = (Get-TFToolkitText 'Automático') },
+            @{ Value = "Light"; Text = (Get-TFToolkitText 'Claro') },
+            @{ Value = "Dark"; Text = (Get-TFToolkitText 'Escuro') }
         )) {
         $button = New-Object System.Windows.Controls.Button
 
@@ -5823,7 +5823,7 @@ function New-GuiAppearanceCard {
 
         # O leitor de tela diz qual opção está marcada (a cor do botão não chega até ele).
         $selected = ($script:ThemePreference -eq $option.Value)
-        Set-GuiAutomationName -Element $button -Name $(if ($selected) { (Get-WinForgeText 'Aparência: {0}, selecionada' "$($option.Text)") } else { (Get-WinForgeText 'Aparência: {0}' "$($option.Text)") })
+        Set-GuiAutomationName -Element $button -Name $(if ($selected) { (Get-TFToolkitText 'Aparência: {0}, selecionada' "$($option.Text)") } else { (Get-TFToolkitText 'Aparência: {0}' "$($option.Text)") })
         if ($selected -and $script:AppearanceRefocus) { $script:AppearanceFocusTarget = $button }
 
         $button.Add_Click({
@@ -5840,9 +5840,9 @@ function New-GuiAppearanceCard {
 
     $text = New-Object System.Windows.Controls.StackPanel
     $text.VerticalAlignment = "Center"
-    [void]$text.Children.Add((New-GuiText -Text (Get-WinForgeText 'Aparência') -Size $script:Type.Body -Bold $true))
+    [void]$text.Children.Add((New-GuiText -Text (Get-TFToolkitText 'Aparência') -Size $script:Type.Body -Bold $true))
 
-    $hint = New-GuiText -Text (Get-WinForgeText 'Automático acompanha o tema claro ou escuro escolhido nas Configurações do Windows.') -Size $script:Type.Caption -Color $script:Theme.Muted
+    $hint = New-GuiText -Text (Get-TFToolkitText 'Automático acompanha o tema claro ou escuro escolhido nas Configurações do Windows.') -Size $script:Type.Caption -Color $script:Theme.Muted
     $hint.Margin = New-Object System.Windows.Thickness (0, 2, 0, 0)
     [void]$text.Children.Add($hint)
     [void]$row.Children.Add($text)
@@ -5853,14 +5853,14 @@ function New-GuiAppearanceCard {
 }
 
 function New-GuiLanguageCard {
-    # Sobre o WinForge > Idioma: como o Windows (o padrão), português, inglês ou espanhol. Cada idioma aparece escrito
+    # Sobre o TF-Toolkit > Idioma: como o Windows (o padrão), português, inglês ou espanhol. Cada idioma aparece escrito
     # nele mesmo, para quem não lê o idioma atual achar o seu. Vale ao abrir de novo (Set-GuiLanguagePreference).
     $border = New-GuiPanelBorder
     $border.Margin = New-Object System.Windows.Thickness (0, 0, 12, 16)
     $border.Tag = "language"
 
     # A escolha guardada, relida a cada vez: o menu de texto (aberto em outra janela) também pode tê-la mudado.
-    try { $script:LanguagePreference = Get-WinForgeLanguagePreference } catch { Write-Verbose "Idioma: $($_.Exception.Message)" }
+    try { $script:LanguagePreference = Get-TFToolkitLanguagePreference } catch { Write-Verbose "Idioma: $($_.Exception.Message)" }
 
     $row = New-Object System.Windows.Controls.DockPanel
 
@@ -5874,10 +5874,10 @@ function New-GuiLanguageCard {
 
     $choices = New-Object System.Windows.Controls.StackPanel
     $choices.Orientation = "Horizontal"
-    Set-GuiAutomationName -Element $choices -Name (Get-WinForgeText 'Idioma')
+    Set-GuiAutomationName -Element $choices -Name (Get-TFToolkitText 'Idioma')
     $chosen = $null
 
-    foreach ($option in @(Get-WinForgeLanguageChoices)) {
+    foreach ($option in @(Get-TFToolkitLanguageChoices)) {
         $button = New-Object System.Windows.Controls.Button
         $selected = ($script:LanguagePreference -eq [string]$option.Id)
         $button.Style = $window.FindResource($(if ($selected) { "SegmentButtonSelected" } else { "SegmentButton" }))
@@ -5885,7 +5885,7 @@ function New-GuiLanguageCard {
         $button.Tag = [string]$option.Id
 
         # O leitor de tela diz qual opção está marcada (a cor do botão não chega até ele).
-        Set-GuiAutomationName -Element $button -Name $(if ($selected) { (Get-WinForgeText 'Idioma: {0}, selecionado' "$($option.Label)") } else { (Get-WinForgeText 'Idioma: {0}' "$($option.Label)") })
+        Set-GuiAutomationName -Element $button -Name $(if ($selected) { (Get-TFToolkitText 'Idioma: {0}, selecionado' "$($option.Label)") } else { (Get-TFToolkitText 'Idioma: {0}' "$($option.Label)") })
         if ($selected -and $script:LanguageRefocus) { $script:LanguageFocusTarget = $button }
 
         $button.Add_Click({
@@ -5902,9 +5902,9 @@ function New-GuiLanguageCard {
 
     $text = New-Object System.Windows.Controls.StackPanel
     $text.VerticalAlignment = "Center"
-    [void]$text.Children.Add((New-GuiText -Text (Get-WinForgeText 'Idioma') -Size $script:Type.Body -Bold $true))
+    [void]$text.Children.Add((New-GuiText -Text (Get-TFToolkitText 'Idioma') -Size $script:Type.Body -Bold $true))
 
-    $hint = New-GuiText -Text (Get-WinForgeText 'Automático segue o idioma do Windows; fora do português e do espanhol, fica em inglês.') -Size $script:Type.Caption -Color $script:Theme.Muted
+    $hint = New-GuiText -Text (Get-TFToolkitText 'Automático segue o idioma do Windows; fora do português e do espanhol, fica em inglês.') -Size $script:Type.Caption -Color $script:Theme.Muted
     $hint.Margin = New-Object System.Windows.Thickness (0, 2, 0, 0)
     [void]$text.Children.Add($hint)
     [void]$row.Children.Add($text)
@@ -5933,13 +5933,13 @@ function Show-GuiListPage {
     $heroId = ""
 
     if ($Page.Id -eq "app") {
-        # Sobre o WinForge: Criar atalho é o destaque quando falta o atalho desta pasta, um deles abre outra ou o desta
-        # conta precisa ser atualizado (Test-WinForgeAppShortcutNeeded), logo abaixo do resumo que diz isso. Com o atalho
+        # Sobre o TF-Toolkit: Criar atalho é o destaque quando falta o atalho desta pasta, um deles abre outra ou o desta
+        # conta precisa ser atualizado (Test-TFToolkitAppShortcutNeeded), logo abaixo do resumo que diz isso. Com o atalho
         # pronto, é uma linha de Integração com o Windows, sem destaque; o destaque desta página se decide aqui.
         $heroShown = $true
         $accent = @($Page.Items | Where-Object { [bool]$_.Accent }) | Select-Object -First 1
         $needed = $true
-        try { $needed = [bool](Test-WinForgeAppShortcutNeeded) } catch { $needed = $true }
+        try { $needed = [bool](Test-TFToolkitAppShortcutNeeded) } catch { $needed = $true }
 
         if ($null -ne $accent -and $needed) {
             $hero = New-GuiHeroCard -Item $accent
@@ -5954,16 +5954,16 @@ function Show-GuiListPage {
     }
 
     # Com outro antivírus protegendo o PC (o que o Início leu), as ações do Windows Defender não fariam nada; num PC sem
-    # bateria, Saúde da bateria só diria isso: saem da página (Test-WinForgeNavItemHidden, a mesma regra da busca).
+    # bateria, Saúde da bateria só diria isso: saem da página (Test-TFToolkitNavItemHidden, a mesma regra da busca).
     $hidden = Get-GuiHiddenItemState
 
     foreach ($item in $Page.Items) {
-        if (Test-WinForgeNavItemHidden -Id ([string]$item.Id) @hidden) { continue }
+        if (Test-TFToolkitNavItemHidden -Id ([string]$item.Id) @hidden) { continue }
 
         # Itens fora da lista (o histórico de manutenções, aberto pela faixa do alto): a busca e o console chegam neles.
         if ($null -ne $item.PSObject.Properties["Unlisted"] -and [bool]$item.Unlisted) { continue }
 
-        # O destaque já posto no alto (Sobre o WinForge) não se repete na lista.
+        # O destaque já posto no alto (Sobre o TF-Toolkit) não se repete na lista.
         if ($heroId -and [string]$item.Id -eq $heroId) { continue }
 
         if ([bool]$item.Accent -and -not $heroShown) {
@@ -6018,7 +6018,7 @@ function New-GuiTweakRow {
     [void]$text.Children.Add((New-GuiText -Text $Tweak.Name -Size $script:Type.Body -Bold $true))
 
     # A frase curta (até 60 letras); a inteira, quando é outra, aparece ao passar o mouse (a UX15 da R38).
-    $detail = [string](Get-WinForgeTweakField -Entry $Tweak -Name "Detail" -Default $Tweak.Description)
+    $detail = [string](Get-TFToolkitTweakField -Entry $Tweak -Name "Detail" -Default $Tweak.Description)
     $description = New-GuiText -Text $Tweak.Description -Size $script:Type.Caption -Color $script:Theme.Muted
     $description.Margin = New-Object System.Windows.Thickness (0, 2, 0, 0)
     [void]$text.Children.Add($description)
@@ -6037,14 +6037,14 @@ function New-GuiTweakRow {
     [void]$grid.Children.Add($text)
 
     # A chave mostra o recurso do Windows como ele está agora (lido na abertura da página): ativado ou desativado.
-    $inverted = [bool](Get-WinForgeTweakField -Entry $Tweak -Name "Inverted" -Default $false)
-    $state = Get-WinForgeTweakSwitchState -Status $Tweak.Status -Inverted $inverted
+    $inverted = [bool](Get-TFToolkitTweakField -Entry $Tweak -Name "Inverted" -Default $false)
+    $state = Get-TFToolkitTweakSwitchState -Status $Tweak.Status -Inverted $inverted
     $colors = @{ Normal = $script:Theme.Text; Warn = $script:Theme.Warn; Muted = $script:Theme.Muted }
 
     # Elevado com outra conta, o estado lido de um ajuste do perfil do usuário seria o dessa conta, e a chave não o muda: a
     # linha diz "Outra conta", e a chave fica desligada (o resumo do alto diz por quê).
-    $otherAccount = [bool](Get-WinForgeTweakField -Entry $Tweak -Name "OtherAccount" -Default $false)
-    $captionText = $(if ($otherAccount) { (Get-WinForgeText 'Outra conta') } else { $state.Caption })
+    $otherAccount = [bool](Get-TFToolkitTweakField -Entry $Tweak -Name "OtherAccount" -Default $false)
+    $captionText = $(if ($otherAccount) { (Get-TFToolkitText 'Outra conta') } else { $state.Caption })
     $captionColor = $(if ($otherAccount) { $script:Theme.Muted } else { $colors[[string]$state.Level] })
 
     $caption = New-GuiText -Text $captionText -Size $script:Type.Caption -Color $captionColor -Bold $true
@@ -6061,7 +6061,7 @@ function New-GuiTweakRow {
     if ($needsAdmin) {
         $shield = New-GuiIcon -Name "admin" -Size 16 -Color $script:Theme.Muted
         $shield.Margin = New-Object System.Windows.Thickness (0, 0, 8, 0)
-        $shield.ToolTip = (Get-WinForgeText 'Pede Administrador ao executar')
+        $shield.ToolTip = (Get-TFToolkitText 'Pede Administrador ao executar')
         $shield.IsHitTestVisible = $true
         [void]$status.Children.Add($shield)
     }
@@ -6075,7 +6075,7 @@ function New-GuiTweakRow {
     $toggle.IsChecked = $state.IsOn
     $toggle.Tag = $Tweak
     $toggle.VerticalAlignment = "Center"
-    $toggle.ToolTip = $(if ($otherAccount) { (Get-WinForgeText 'Vale para o perfil do usuário, e o WinForge está elevado com outra conta.') } elseif ($needsAdmin) { (Get-WinForgeText 'Ligue para ativar e desligue para desativar. Pede Administrador ao executar.') } else { (Get-WinForgeText 'Ligue para ativar e desligue para desativar.') })
+    $toggle.ToolTip = $(if ($otherAccount) { (Get-TFToolkitText 'Vale para o perfil do usuário, e o TF-Toolkit está elevado com outra conta.') } elseif ($needsAdmin) { (Get-TFToolkitText 'Ligue para ativar e desligue para desativar. Pede Administrador ao executar.') } else { (Get-TFToolkitText 'Ligue para ativar e desligue para desativar.') })
     if ($otherAccount) { $toggle.IsEnabled = $false }
     Set-GuiAutomationName -Element $toggle -Name $Tweak.Name
 
@@ -6089,7 +6089,7 @@ function New-GuiTweakRow {
         # A chave só mostra o estado real: volta ao que era e deixa a ação decidir (o novo estado aparece lido de novo do
         # Windows, na linha ou ao voltar da tela de execução). Assim, uma ação cancelada ou que falha nunca deixa a chave
         # mentindo.
-        $shown = (Get-WinForgeTweakSwitchState -Status $tweak.Status -Inverted ([bool](Get-WinForgeTweakField -Entry $tweak -Name "Inverted" -Default $false))).IsOn
+        $shown = (Get-TFToolkitTweakSwitchState -Status $tweak.Status -Inverted ([bool](Get-TFToolkitTweakField -Entry $tweak -Name "Inverted" -Default $false))).IsOn
         $sender.IsChecked = $shown
 
         # Com o estado não identificado, a ação pergunta o que fazer (a chave não diz se vai ativar ou desativar). Com ele,
@@ -6104,7 +6104,7 @@ function New-GuiTweakRow {
             Start-GuiAction -Label $tweak.Name -Command (Get-GuiTweakCommand -Id $tweak.Id -Ask:(-not $known) -Want $want) -RequiresAdmin ([bool]$tweak.RequiresAdmin) -FocusTweak ([string]$tweak.Id) -InPlace
         }
         catch {
-            [void](Show-GuiMessage -Icon Error -Title (Get-WinForgeText "`"{0}`" não começou" "$($tweak.Name)") -Text $_.Exception.Message)
+            [void](Show-GuiMessage -Icon Error -Title (Get-TFToolkitText "`"{0}`" não começou" "$($tweak.Name)") -Text $_.Exception.Message)
         }
     })
 
@@ -6132,7 +6132,7 @@ function Set-GuiTweakRowBusy {
     $focused = $false
     try { $focused = [bool]$parts.Toggle.IsKeyboardFocusWithin } catch { $focused = $false }
 
-    $parts.Caption.Text = (Get-WinForgeText 'Alterando…')
+    $parts.Caption.Text = (Get-TFToolkitText 'Alterando…')
     $parts.Caption.Foreground = New-GuiBrush $script:Theme.Muted
     $parts.Toggle.IsEnabled = $false
 
@@ -6154,16 +6154,16 @@ function Update-GuiTweakRow {
     if ($null -eq $parts) { return }
 
     $tweak = $parts.Tweak
-    $catalogTweak = Get-WinForgeTweakById -Id $Id
-    if ($null -ne $catalogTweak) { $tweak.Status = [string](Get-WinForgeTweakStatus -Tweak $catalogTweak) }
+    $catalogTweak = Get-TFToolkitTweakById -Id $Id
+    if ($null -ne $catalogTweak) { $tweak.Status = [string](Get-TFToolkitTweakStatus -Tweak $catalogTweak) }
 
-    $state = Get-WinForgeTweakSwitchState -Status ([string]$tweak.Status) -Inverted ([bool](Get-WinForgeTweakField -Entry $tweak -Name "Inverted" -Default $false))
+    $state = Get-TFToolkitTweakSwitchState -Status ([string]$tweak.Status) -Inverted ([bool](Get-TFToolkitTweakField -Entry $tweak -Name "Inverted" -Default $false))
     $colors = @{ Normal = $script:Theme.Text; Warn = $script:Theme.Warn; Muted = $script:Theme.Muted }
 
     $parts.Caption.Text = $state.Caption
     $parts.Caption.Foreground = New-GuiBrush $colors[[string]$state.Level]
     $parts.Toggle.IsChecked = $state.IsOn
-    $parts.Toggle.IsEnabled = (-not [bool](Get-WinForgeTweakField -Entry $tweak -Name "OtherAccount" -Default $false))
+    $parts.Toggle.IsEnabled = (-not [bool](Get-TFToolkitTweakField -Entry $tweak -Name "OtherAccount" -Default $false))
 
     Send-GuiTweakRowNews -Id $Id -Refocus $Refocus
     Set-GuiTweaksStatus
@@ -6199,15 +6199,15 @@ function Send-GuiTweakRowNews {
 }
 
 function Set-GuiTweaksStatus {
-    # O resumo no alto da página de ajustes aberta (Get-WinForgeTweaksPageStatus), logo abaixo dos botões, feito da lista
+    # O resumo no alto da página de ajustes aberta (Get-TFToolkitTweaksPageStatus), logo abaixo dos botões, feito da lista
     # lida (TweaksOverview). Refeito no lugar depois que uma chave muda; se a leitura falhar, a página segue sem ele.
-    $navPage = Get-WinForgeNavPage -Id $script:CurrentPage
+    $navPage = Get-TFToolkitNavPage -Id $script:CurrentPage
     if ($null -eq $navPage -or $navPage.Kind -ne "Tweaks") { return }
 
     $status = $null
 
     try {
-        $status = New-GuiPageStatus -Page $navPage -Rows @(Get-WinForgeTweaksPageStatus -Page ([string]$navPage.Id) -Overview @($script:TweaksOverview))
+        $status = New-GuiPageStatus -Page $navPage -Rows @(Get-TFToolkitTweaksPageStatus -Page ([string]$navPage.Id) -Overview @($script:TweaksOverview))
     }
     catch {
         Write-Verbose "Resumo dos ajustes: $($_.Exception.Message)"
@@ -6240,7 +6240,7 @@ function New-GuiTweaksSkeleton {
     # Início), no lugar de um texto (a UX16 da R38). O leitor de tela ouve que a página está lendo.
     $holder = New-Object System.Windows.Controls.StackPanel
     $holder.Tag = "loading"
-    Set-GuiAutomationName -Element $holder -Name (Get-WinForgeText 'Lendo o estado atual dos ajustes...')
+    Set-GuiAutomationName -Element $holder -Name (Get-TFToolkitText 'Lendo o estado atual dos ajustes...')
 
     [void]$holder.Children.Add((New-GuiHomeSkeleton -Width 140 -Height 16 -Margin (New-Object System.Windows.Thickness (0, 18, 0, 10))))
 
@@ -6319,9 +6319,9 @@ function New-GuiPageActionButton {
     $button = New-GuiButton -Text $Item.Label -Kind $Kind -Icon $icon -Tag $Item
     $button.Margin = New-Object System.Windows.Thickness (0, 0, 8, 8)
 
-    $about = $(if ([string](Get-WinForgeJsonValue -Object $Item -Name "Detail" -Default "")) { [string]$Item.Detail } else { [string]$Item.Description })
-    $button.ToolTip = $(if ($needsAdmin) { (Get-WinForgeText "{0}`nPede Administrador ao executar." "$about") } else { $about })
-    if ($needsAdmin) { Set-GuiAutomationName -Element $button -Name "$($Item.Label)$(Get-WinForgeText '. Pede Administrador ao executar')" }
+    $about = $(if ([string](Get-TFToolkitJsonValue -Object $Item -Name "Detail" -Default "")) { [string]$Item.Detail } else { [string]$Item.Description })
+    $button.ToolTip = $(if ($needsAdmin) { (Get-TFToolkitText "{0}`nPede Administrador ao executar." "$about") } else { $about })
+    if ($needsAdmin) { Set-GuiAutomationName -Element $button -Name "$($Item.Label)$(Get-TFToolkitText '. Pede Administrador ao executar')" }
 
     $button.Add_Click({
         param ($sender, $eventArgs)
@@ -6397,10 +6397,10 @@ function Show-GuiMoreMenu {
 
         $entry.Content = $row
 
-        $about = $(if ([string](Get-WinForgeJsonValue -Object $item -Name "Detail" -Default "")) { [string]$item.Detail } else { [string]$item.Description })
-        $note = $(if ($outside) { (Get-GuiOutsideNote -Item $item) } elseif ($needsAdmin) { (Get-WinForgeText 'Pede Administrador ao executar') } else { "" })
+        $about = $(if ([string](Get-TFToolkitJsonValue -Object $item -Name "Detail" -Default "")) { [string]$item.Detail } else { [string]$item.Description })
+        $note = $(if ($outside) { (Get-GuiOutsideNote -Item $item) } elseif ($needsAdmin) { (Get-TFToolkitText 'Pede Administrador ao executar') } else { "" })
         $entry.ToolTip = (@($about, $note) | Where-Object { -not [string]::IsNullOrEmpty($_) }) -join "`n"
-        Set-GuiAutomationName -Element $entry -Name "$($item.Label)$(if ($outside) { ". $(Get-GuiOutsideNote -Item $item)" } elseif ($needsAdmin) { (Get-WinForgeText '. Pede Administrador ao executar') })"
+        Set-GuiAutomationName -Element $entry -Name "$($item.Label)$(if ($outside) { ". $(Get-GuiOutsideNote -Item $item)" } elseif ($needsAdmin) { (Get-TFToolkitText '. Pede Administrador ao executar') })"
 
         $entry.Add_Click({
             param ($sender, $eventArgs)
@@ -6491,7 +6491,7 @@ function Show-GuiTweaksPage {
     $others = @()
 
     foreach ($item in $Page.Items) {
-        if (-not [string]::IsNullOrEmpty([string](Get-WinForgeJsonValue -Object $item -Name "ListCategory" -Default ""))) { continue }
+        if (-not [string]::IsNullOrEmpty([string](Get-TFToolkitJsonValue -Object $item -Name "ListCategory" -Default ""))) { continue }
 
         if ($item.Accent -and $bar.Children.Count -eq 0) {
             [void]$bar.Children.Add((New-GuiPageActionButton -Item $item -Kind Primary))
@@ -6510,10 +6510,10 @@ function Show-GuiTweaksPage {
         [void]$bar.Children.Add((New-GuiPageActionButton -Item $others[0]))
     }
     elseif ($others.Count -gt 1) {
-        $more = New-GuiButton -Text (Get-WinForgeText 'Mais opções') -Icon "dots" -Tag @($others)
+        $more = New-GuiButton -Text (Get-TFToolkitText 'Mais opções') -Icon "dots" -Tag @($others)
         $more.Margin = New-Object System.Windows.Thickness (0, 0, 8, 8)
         $more.ToolTip = (@($others | ForEach-Object { [string]$_.Label }) -join "`n")
-        try { [System.Windows.Automation.AutomationProperties]::SetHelpText($more, (Join-WinForgeList -Items @($others | ForEach-Object { [string]$_.Label }))) } catch { Write-Verbose "Leitor de tela: $($_.Exception.Message)" }
+        try { [System.Windows.Automation.AutomationProperties]::SetHelpText($more, (Join-TFToolkitList -Items @($others | ForEach-Object { [string]$_.Label }))) } catch { Write-Verbose "Leitor de tela: $($_.Exception.Message)" }
         $more.Add_Click({
             param ($sender, $eventArgs)
             Show-GuiMoreMenu -Anchor $sender -Items @($sender.Tag)
@@ -6521,7 +6521,7 @@ function Show-GuiTweaksPage {
         [void]$bar.Children.Add($more)
     }
 
-    $refresh = New-GuiButton -Text (Get-WinForgeText 'Atualizar estado') -Kind Ghost -Icon "refresh"
+    $refresh = New-GuiButton -Text (Get-TFToolkitText 'Atualizar estado') -Kind Ghost -Icon "refresh"
     $refresh.Margin = New-Object System.Windows.Thickness (0, 0, 0, 8)
     # Atualizar estado relê os ajustes sem voltar a lista para o topo: a lista é refeita depois (Update-GuiTweaksList), e
     # a rolagem volta ao ponto de antes quando ela fica pronta. A página é a aberta (Ajustes do Windows ou Personalização).
@@ -6533,7 +6533,7 @@ function Show-GuiTweaksPage {
 
     [void]$contentPanel.Children.Add($bar)
 
-    # O que a chave faz fica na dica dela; o resumo do alto (os recomendados em uso e o que o WinForge mudou) entra logo
+    # O que a chave faz fica na dica dela; o resumo do alto (os recomendados em uso e o que o TF-Toolkit mudou) entra logo
     # abaixo dos botões depois da leitura (a UX14 da R38).
     [void]$contentPanel.Children.Add((New-GuiTweaksSkeleton))
 
@@ -6559,7 +6559,7 @@ function Set-GuiTweakFocus {
 function Update-GuiTweaksList {
     # A lista da página de ajustes aberta (Ajustes do Windows ou Personalização). Saiu dela antes de a lista ficar pronta:
     # a rolagem pedida pelo Atualizar estado não vale mais.
-    $navPage = Get-WinForgeNavPage -Id $script:CurrentPage
+    $navPage = Get-TFToolkitNavPage -Id $script:CurrentPage
 
     if ($null -eq $navPage -or $navPage.Kind -ne "Tweaks") {
         $script:TweaksScrollBack = $null
@@ -6576,13 +6576,13 @@ function Update-GuiTweaksList {
     $script:TweakRows = @{}
 
     try {
-        $overview = @(Get-WinForgeTweakOverview -Page $navPage.Id)
+        $overview = @(Get-TFToolkitTweakOverview -Page $navPage.Id)
         $script:TweaksOverview = $overview
         $group = $null
         $rows = @{}
 
-        # O resumo do alto: os recomendados em uso e quantos ajustes da página o WinForge mudou. As chaves mostram o estado
-        # do Windows, e não o que o WinForge fez.
+        # O resumo do alto: os recomendados em uso e quantos ajustes da página o TF-Toolkit mudou. As chaves mostram o estado
+        # do Windows, e não o que o TF-Toolkit fez.
         Set-GuiTweaksStatus
 
         $groups = @{}
@@ -6603,7 +6603,7 @@ function Update-GuiTweaksList {
         # As ações e os atalhos da página que pertencem a uma categoria (as teclas do teclado, a cor de destaque) entram no
         # fim do grupo dela, como uma linha com a seta; sem o grupo na tela (nenhum ajuste dele neste Windows), num grupo
         # só delas.
-        foreach ($item in @($navPage.Items | Where-Object { -not [string]::IsNullOrEmpty([string](Get-WinForgeJsonValue -Object $_ -Name "ListCategory" -Default "")) })) {
+        foreach ($item in @($navPage.Items | Where-Object { -not [string]::IsNullOrEmpty([string](Get-TFToolkitJsonValue -Object $_ -Name "ListCategory" -Default "")) })) {
             $category = [string]$item.ListCategory
 
             if (-not $groups.ContainsKey($category)) {
@@ -6616,7 +6616,7 @@ function Update-GuiTweaksList {
             # lugar da frase curta; a frase inteira continua na dica. A cópia não muda o item da tabela de navegação.
             $shown = $item
             $state = ""
-            try { $state = [string](Get-WinForgeTweakActionState -Id ([string]$item.Id)) } catch { Write-Verbose "Estado da linha: $($_.Exception.Message)" }
+            try { $state = [string](Get-TFToolkitTweakActionState -Id ([string]$item.Id)) } catch { Write-Verbose "Estado da linha: $($_.Exception.Message)" }
 
             if (-not [string]::IsNullOrEmpty($state)) {
                 $shown = $item.PSObject.Copy()
@@ -6632,7 +6632,7 @@ function Update-GuiTweaksList {
             $advancedPanel = New-Object System.Windows.Controls.StackPanel
             $advancedPanel.Visibility = $(if ($script:TweaksAdvancedOpen) { "Visible" } else { "Collapsed" })
 
-            $note = New-GuiText -Text (Get-WinForgeText 'Mudam energia e desempenho do PC; em notebook podem gastar bateria. Cada um pode ser desfeito.') -Size $script:Type.Caption -Color $script:Theme.Muted
+            $note = New-GuiText -Text (Get-TFToolkitText 'Mudam energia e desempenho do PC; em notebook podem gastar bateria. Cada um pode ser desfeito.') -Size $script:Type.Caption -Color $script:Theme.Muted
             $note.Margin = New-Object System.Windows.Thickness (4, 4, 0, 0)
             [void]$advancedPanel.Children.Add($note)
 
@@ -6649,7 +6649,7 @@ function Update-GuiTweaksList {
                 Add-GuiTweakToGroup -Group $group -Row $rows[[string]$tweak.Id]
             }
 
-            $toggle = New-GuiButton -Text $(if ($script:TweaksAdvancedOpen) { (Get-WinForgeText 'Ocultar ajustes avançados') } else { (Get-WinForgeText 'Mostrar ajustes avançados ({0})' "$($advancedTweaks.Count)") }) `
+            $toggle = New-GuiButton -Text $(if ($script:TweaksAdvancedOpen) { (Get-TFToolkitText 'Ocultar ajustes avançados') } else { (Get-TFToolkitText 'Mostrar ajustes avançados ({0})' "$($advancedTweaks.Count)") }) `
                 -Tag @{ Panel = $advancedPanel; Count = $advancedTweaks.Count }
             $toggle.Margin = New-Object System.Windows.Thickness (0, 18, 0, 4)
             $toggle.HorizontalAlignment = "Left"
@@ -6659,7 +6659,7 @@ function Update-GuiTweaksList {
                 $panel = $sender.Tag.Panel
                 $script:TweaksAdvancedOpen = ($panel.Visibility -ne "Visible")
                 $panel.Visibility = $(if ($script:TweaksAdvancedOpen) { "Visible" } else { "Collapsed" })
-                $sender.Content = $(if ($script:TweaksAdvancedOpen) { (Get-WinForgeText 'Ocultar ajustes avançados') } else { (Get-WinForgeText 'Mostrar ajustes avançados ({0})' "$($sender.Tag.Count)") })
+                $sender.Content = $(if ($script:TweaksAdvancedOpen) { (Get-TFToolkitText 'Ocultar ajustes avançados') } else { (Get-TFToolkitText 'Mostrar ajustes avançados ({0})' "$($sender.Tag.Count)") })
             })
 
             [void]$contentPanel.Children.Add($toggle)
@@ -6672,8 +6672,8 @@ function Update-GuiTweaksList {
         }
     }
     catch {
-        $failure = New-GuiText -Text (Get-WinForgeText 'Não foi possível ler o estado dos ajustes. Use Atualizar estado, logo acima, para tentar de novo.') -Color $script:Theme.Bad
-        $failure.ToolTip = (Get-WinForgeText 'Detalhe técnico: {0}' "$($_.Exception.Message)")
+        $failure = New-GuiText -Text (Get-TFToolkitText 'Não foi possível ler o estado dos ajustes. Use Atualizar estado, logo acima, para tentar de novo.') -Color $script:Theme.Bad
+        $failure.ToolTip = (Get-TFToolkitText 'Detalhe técnico: {0}' "$($_.Exception.Message)")
         [void]$contentPanel.Children.Add($failure)
     }
     finally {
@@ -6727,7 +6727,7 @@ function Set-GuiSelectedNav {
         $part.Label.FontWeight = $(if ($selected) { "SemiBold" } else { "Normal" })
 
         try {
-            [System.Windows.Automation.AutomationProperties]::SetItemStatus($part.Button, $(if ($selected) { (Get-WinForgeText 'página aberta') } else { "" }))
+            [System.Windows.Automation.AutomationProperties]::SetItemStatus($part.Button, $(if ($selected) { (Get-TFToolkitText 'página aberta') } else { "" }))
         }
         catch {
             Write-Verbose "Leitor de tela: $($_.Exception.Message)"
@@ -6833,7 +6833,7 @@ function Show-GuiPage {
     if (-not $Rerender) { $pageScroll.ScrollToTop() }
 
     $page = $null
-    if ($Id -ne "home") { $page = Get-WinForgeNavPage -Id $Id }
+    if ($Id -ne "home") { $page = Get-TFToolkitNavPage -Id $Id }
 
     if ($null -eq $page) {
         if ($Id -ne "home") {
@@ -6866,7 +6866,7 @@ function Show-GuiPage {
 
 # --- Busca ---------------------------------------------------------------------------------------------------
 function Get-GuiHiddenItemState {
-    # O que o Início leu e decide os itens que saem das páginas e da busca (Test-WinForgeNavItemHidden): quem protege o PC
+    # O que o Início leu e decide os itens que saem das páginas e da busca (Test-TFToolkitNavItemHidden): quem protege o PC
     # e se ele tem bateria. Antes da leitura, "" e $null: nada sai.
     return @{
         AntivirusMode = [string](Get-Variable -Name AntivirusMode -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
@@ -6899,15 +6899,15 @@ function Show-GuiSearchResults {
     # O que a página tira neste PC (as ações do Defender com outro antivírus, a bateria num PC sem ela) também não aparece
     # aqui, e o resumo conta só o que aparece.
     $hidden = Get-GuiHiddenItemState
-    $hits = @(Search-WinForgeNavigation -Query $Query | Where-Object { -not ($_.Kind -eq "Item" -and (Test-WinForgeNavItemHidden -Id ([string]$_.Item.Id) @hidden)) })
+    $hits = @(Search-TFToolkitNavigation -Query $Query | Where-Object { -not ($_.Kind -eq "Item" -and (Test-TFToolkitNavItemHidden -Id ([string]$_.Item.Id) @hidden)) })
     $shown = @($hits | Select-Object -First $script:SearchMaxCards)
     $partial = ($hits.Count -gt 0 -and [bool]$hits[0].Partial)
     $corrected = $(if ($hits.Count -gt 0) { [string]$hits[0].Corrected } else { "" })
     $script:SearchFirst = $(if ($hits.Count -gt 0) { $hits[0] } else { $null })
-    $script:SearchEnterOpens = Test-WinForgeSearchEnterOpens -Hit $script:SearchFirst
+    $script:SearchEnterOpens = Test-TFToolkitSearchEnterOpens -Hit $script:SearchFirst
 
-    $pageTitle.Text = (Get-WinForgeText 'Busca')
-    $pageSubtitle.Text = Get-WinForgeSearchSummary -Query $Query -Total $hits.Count -Shown $shown.Count -Partial:$partial -Corrected $corrected `
+    $pageTitle.Text = (Get-TFToolkitText 'Busca')
+    $pageSubtitle.Text = Get-TFToolkitSearchSummary -Query $Query -Total $hits.Count -Shown $shown.Count -Partial:$partial -Corrected $corrected `
         -EnterSelects:(-not $script:SearchEnterOpens)
     Send-GuiAnnouncement -Element $pageSubtitle
 
@@ -6928,7 +6928,7 @@ function Show-GuiSearchResults {
 
     if ($hits.Count -eq 0) {
         # Uma letra só: o resumo já pede a segunda. Sem resultado: buscas que funcionam, como botões.
-        if (-not (Test-WinForgeSearchTooShort -Query $Query)) { Add-GuiSearchSuggestions }
+        if (-not (Test-TFToolkitSearchTooShort -Query $Query)) { Add-GuiSearchSuggestions }
         return
     }
 
@@ -6937,7 +6937,7 @@ function Show-GuiSearchResults {
 
     foreach ($hit in $shown) {
         $first = ($null -eq $script:SearchFirstCard)
-        $card = New-GuiActionRow -Item (Get-WinForgeSearchCardItem -Hit $hit) -Context (Get-WinForgeSearchContext -Hit $hit) -EnterHint:($first -and $script:SearchEnterOpens)
+        $card = New-GuiActionRow -Item (Get-TFToolkitSearchCardItem -Hit $hit) -Context (Get-TFToolkitSearchContext -Hit $hit) -EnterHint:($first -and $script:SearchEnterOpens)
 
         if ($first) {
             # O primeiro é o que o Enter abre (ou seleciona): ganha o fundo de destaque e, quando abre, a tecla "Enter".
@@ -6962,12 +6962,12 @@ function Show-GuiSearchResults {
 
 function Add-GuiSearchSuggestions {
     # Nada encontrado: buscas que funcionam, do jeito que a pessoa diria, como botões que buscam na hora.
-    [void]$contentPanel.Children.Add((New-GuiText -Text (Get-WinForgeText 'Busque pelo que está acontecendo com o PC ou pelo nome do que procura. Por exemplo:') -Color $script:Theme.Muted))
+    [void]$contentPanel.Children.Add((New-GuiText -Text (Get-TFToolkitText 'Busque pelo que está acontecendo com o PC ou pelo nome do que procura. Por exemplo:') -Color $script:Theme.Muted))
 
     $row = New-Object System.Windows.Controls.WrapPanel
     $row.Margin = New-Object System.Windows.Thickness (0, 12, 0, 0)
 
-    foreach ($tip in @(Get-WinForgeSearchSuggestions)) {
+    foreach ($tip in @(Get-TFToolkitSearchSuggestions)) {
         $button = New-GuiButton -Text $tip -Tag $tip
         $button.Margin = New-Object System.Windows.Thickness (0, 0, 8, 8)
         $button.Add_Click({
@@ -6992,7 +6992,7 @@ function Update-GuiSearch {
     $query = $searchBox.Text
 
     if ([string]::IsNullOrWhiteSpace($query)) { return }
-    if (-not $script:SearchActive -and (Test-WinForgeSearchTooShort -Query $query)) { return }
+    if (-not $script:SearchActive -and (Test-TFToolkitSearchTooShort -Query $query)) { return }
 
     Show-GuiSearchResults -Query $query
 }
@@ -7018,7 +7018,7 @@ function Exit-GuiSearch {
 
 function Show-GuiRunBack {
     # Sai da tela de execução. Uma ação aberta a partir da busca volta para os resultados dela; as demais, para a página.
-    $copyButton.Content = (Get-WinForgeText 'Copiar')
+    $copyButton.Content = (Get-TFToolkitText 'Copiar')
 
     if ($script:SearchActive -and -not [string]::IsNullOrWhiteSpace($searchBox.Text)) {
         Show-GuiSearchResults -Query $searchBox.Text
@@ -7029,7 +7029,7 @@ function Show-GuiRunBack {
     $page = Get-GuiBasePage
     $focus = ""
 
-    $navPage = Get-WinForgeNavPage -Id $page
+    $navPage = Get-TFToolkitNavPage -Id $page
 
     if ($null -ne $navPage -and $navPage.Kind -eq "Tweaks" -and $script:LastAction -is [hashtable]) {
         $focus = [string]$script:LastAction.FocusTweak
@@ -7041,7 +7041,7 @@ function Show-GuiRunBack {
 # --- Barra lateral: Início + páginas da tabela de navegação (as de rodapé ficam embaixo) -----------------------
 function Add-GuiNavButton {
     # Shortcut: a tecla que abre a página ("Ctrl+3"), mostrada ao passar o mouse e dita pelo leitor de tela. Note: uma
-    # linha menor embaixo do nome (a versão, no Sobre o WinForge), que o leitor de tela também ouve.
+    # linha menor embaixo do nome (a versão, no Sobre o TF-Toolkit), que o leitor de tela também ouve.
     param ([string]$Id, [string]$Title, [bool]$Footer = $false, [string]$Shortcut = "", [string]$Note = "")
 
     $button = New-Object System.Windows.Controls.Button
@@ -7057,7 +7057,7 @@ function Add-GuiNavButton {
     $row = New-Object System.Windows.Controls.StackPanel
     $row.Orientation = "Horizontal"
 
-    $icon = New-GuiIcon -Name (Get-WinForgeIconName -Id $Id) -Size 18 -Color $script:Theme.Muted
+    $icon = New-GuiIcon -Name (Get-TFToolkitIconName -Id $Id) -Size 18 -Color $script:Theme.Muted
     $icon.Margin = New-Object System.Windows.Thickness (0, 0, 12, 0)
     [void]$row.Children.Add($icon)
 
@@ -7114,17 +7114,17 @@ function Add-GuiNavHeading {
     $heading.SetResourceReference([System.Windows.Controls.TextBlock]::FontSizeProperty, "CaptionSize")
     $heading.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "MutedBrush")
     $heading.Margin = New-Object System.Windows.Thickness (12, 14, 0, 4)
-    Set-GuiAutomationName -Element $heading -Name (Get-WinForgeText 'Seção: {0}' "$Text")
+    Set-GuiAutomationName -Element $heading -Name (Get-TFToolkitText 'Seção: {0}' "$Text")
     [void]$navPanel.Children.Add($heading)
 }
 
-# A lista principal em grupos (Get-WinForgeNavOrder); Ctrl+1 a Ctrl+9 (e Ctrl+0 para a décima) seguem a ordem da barra:
+# A lista principal em grupos (Get-TFToolkitNavOrder); Ctrl+1 a Ctrl+9 (e Ctrl+0 para a décima) seguem a ordem da barra:
 # Início e as páginas, de cima para baixo.
-$mainNavPages = @(Get-WinForgeNavigation | Where-Object { $_.Placement -ne "Footer" })
-$mainNavOrder = @(Get-WinForgeNavOrder -Pages @($mainNavPages | ForEach-Object { [string]$_.Id }))
+$mainNavPages = @(Get-TFToolkitNavigation | Where-Object { $_.Placement -ne "Footer" })
+$mainNavOrder = @(Get-TFToolkitNavOrder -Pages @($mainNavPages | ForEach-Object { [string]$_.Id }))
 $script:PageShortcuts = @("home") + @($mainNavOrder | ForEach-Object { [string]$_.Id })
 
-Add-GuiNavButton -Id "home" -Title (Get-WinForgeText 'Início') -Shortcut (Get-WinForgePageShortcutKey -Index 0)
+Add-GuiNavButton -Id "home" -Title (Get-TFToolkitText 'Início') -Shortcut (Get-TFToolkitPageShortcutKey -Index 0)
 
 foreach ($entry in $mainNavOrder) {
     $navPage = @($mainNavPages | Where-Object { [string]$_.Id -eq [string]$entry.Id }) | Select-Object -First 1
@@ -7132,12 +7132,12 @@ foreach ($entry in $mainNavOrder) {
     if ($entry.Heading) { Add-GuiNavHeading -Text ([string]$entry.Heading) }
 
     Add-GuiNavButton -Id $navPage.Id -Title $navPage.Title `
-        -Shortcut (Get-WinForgePageShortcutKey -Index ([array]::IndexOf($script:PageShortcuts, [string]$navPage.Id)))
+        -Shortcut (Get-TFToolkitPageShortcutKey -Index ([array]::IndexOf($script:PageShortcuts, [string]$navPage.Id)))
 }
 
-# No rodapé, o Sobre o WinForge com a versão embaixo do nome.
-foreach ($navPage in @(Get-WinForgeNavigation | Where-Object { $_.Placement -eq "Footer" })) {
-    Add-GuiNavButton -Id $navPage.Id -Title $navPage.Title -Footer $true -Note $(if ([string]$navPage.Id -eq "app") { (Get-WinForgeText 'Versão {0}' "$(Get-WinForgeBuild)") } else { "" })
+# No rodapé, o Sobre o TF-Toolkit com a versão embaixo do nome.
+foreach ($navPage in @(Get-TFToolkitNavigation | Where-Object { $_.Placement -eq "Footer" })) {
+    Add-GuiNavButton -Id $navPage.Id -Title $navPage.Title -Footer $true -Note $(if ([string]$navPage.Id -eq "app") { (Get-TFToolkitText 'Versão {0}' "$(Get-TFToolkitBuild)") } else { "" })
 }
 
 # --- Temporizadores, botões do painel de execução e encerramento -----------------------------------------------
@@ -7171,12 +7171,12 @@ $script:SearchTimer.Interval = [TimeSpan]::FromMilliseconds(140)
 $script:SearchTimer.Add_Tick({ Update-GuiSearch })
 
 $script:StopRequested = {
-    $answer = Show-GuiMessage -Buttons YesNo -Icon Warning -Title (Get-WinForgeText "Parar `"{0}`"?" "$($runTitle.Text)") -Text (Get-WinForgeText 'O que já foi feito continua feito, mas a etapa atual fica incompleta. Reparos e instalações em andamento são interrompidos no meio.') `
-        -YesText (Get-WinForgeText 'Parar') -NoText (Get-WinForgeText 'Continuar') -Danger
+    $answer = Show-GuiMessage -Buttons YesNo -Icon Warning -Title (Get-TFToolkitText "Parar `"{0}`"?" "$($runTitle.Text)") -Text (Get-TFToolkitText 'O que já foi feito continua feito, mas a etapa atual fica incompleta. Reparos e instalações em andamento são interrompidos no meio.') `
+        -YesText (Get-TFToolkitText 'Parar') -NoText (Get-TFToolkitText 'Continuar') -Danger
 
     if ($answer -eq "Yes" -and $script:Running -and $null -ne $script:GuiSession) {
-        Set-GuiRunStatus -Text (Get-WinForgeText 'Interrompendo...') -DotColor $script:Theme.Warn
-        Stop-WinForgeGuiCommand -Session $script:GuiSession
+        Set-GuiRunStatus -Text (Get-TFToolkitText 'Interrompendo...') -DotColor $script:Theme.Warn
+        Stop-TFToolkitGuiCommand -Session $script:GuiSession
     }
 }
 
@@ -7198,38 +7198,38 @@ function Get-GuiOutputText {
 $copyButton.Add_Click({
     try {
         [System.Windows.Clipboard]::SetText((Get-GuiOutputText))
-        $copyButton.Content = (Get-WinForgeText 'Copiado')
+        $copyButton.Content = (Get-TFToolkitText 'Copiado')
     }
     catch {
-        [void](Show-GuiMessage -Icon Warning -Title (Get-WinForgeText 'Não foi possível copiar') -Text "$($_.Exception.Message)")
+        [void](Show-GuiMessage -Icon Warning -Title (Get-TFToolkitText 'Não foi possível copiar') -Text "$($_.Exception.Message)")
     }
 })
 
 $saveButton.Add_Click({
     try {
         $dialog = New-Object Microsoft.Win32.SaveFileDialog
-        $dialog.Title = (Get-WinForgeText 'Salvar a saída')
-        $dialog.Filter = (Get-WinForgeText 'Texto (*.txt)|*.txt|Todos os arquivos (*.*)|*.*')
-        $dialog.FileName = Get-WinForgeOutputFileName -Title $runTitle.Text
+        $dialog.Title = (Get-TFToolkitText 'Salvar a saída')
+        $dialog.Filter = (Get-TFToolkitText 'Texto (*.txt)|*.txt|Todos os arquivos (*.*)|*.*')
+        $dialog.FileName = Get-TFToolkitOutputFileName -Title $runTitle.Text
         $dialog.InitialDirectory = [Environment]::GetFolderPath("MyDocuments")
 
         if ($dialog.ShowDialog($window)) {
             # UTF-8 com BOM: o Bloco de Notas do Windows 10 antigo só reconhece os acentos assim.
             [System.IO.File]::WriteAllText($dialog.FileName, (Get-GuiOutputText), (New-Object System.Text.UTF8Encoding($true)))
-            $saveButton.Content = (Get-WinForgeText 'Salvo')
+            $saveButton.Content = (Get-TFToolkitText 'Salvo')
         }
     }
     catch {
-        [void](Show-GuiMessage -Icon Warning -Title (Get-WinForgeText 'Não foi possível salvar') -Text "$($_.Exception.Message)")
+        [void](Show-GuiMessage -Icon Warning -Title (Get-TFToolkitText 'Não foi possível salvar') -Text "$($_.Exception.Message)")
     }
 })
 
 $logButton.Add_Click({
-    # O log de cada sessão fica em %LOCALAPPDATA%\WinForge\logs; abre o mais recente (ou a pasta, se não houver).
+    # O log de cada sessão fica em %LOCALAPPDATA%\TF-Toolkit\logs; abre o mais recente (ou a pasta, se não houver).
     $opened = $false
 
     try {
-        $latest = Get-WinForgeLatestLogFile
+        $latest = Get-TFToolkitLatestLogFile
 
         if ($null -ne $latest) {
             # Pelo Explorador: o log abre no Bloco de Notas da sessão da pessoa, sem o Administrador da janela.
@@ -7241,7 +7241,7 @@ $logButton.Add_Click({
         $opened = $false
     }
 
-    if (-not $opened) { Open-GuiShortcut -Name "LogFolder" -Title (Get-WinForgeText 'Pasta de logs e relatórios') }
+    if (-not $opened) { Open-GuiShortcut -Name "LogFolder" -Title (Get-TFToolkitText 'Pasta de logs e relatórios') }
 })
 
 $rerunButton.Add_Click({
@@ -7431,7 +7431,7 @@ $searchBox.Add_PreviewKeyUp({
         return
     }
 
-    Invoke-GuiNavItem -Item (Get-WinForgeSearchCardItem -Hit $script:SearchFirst)
+    Invoke-GuiNavItem -Item (Get-TFToolkitSearchCardItem -Hit $script:SearchFirst)
 })
 
 # Seta para cima num cartão da primeira linha dos resultados volta para a caixa de busca, com o cursor no fim do texto.
@@ -7462,7 +7462,7 @@ $window.Add_PreviewKeyDown({
     # Com Alt apertado (inclusive o AltGr), o WPF entrega Key = System: não casa com nenhum atalho, que exigem Ctrl sozinho.
     # Os valores de System.Windows.Input.ModifierKeys: Alt = 1, Control = 2, Shift = 4.
     $modifiers = Get-GuiModifierFlags
-    $decision = Resolve-WinForgeKeyAction -Key ([string]$eventArgs.Key) `
+    $decision = Resolve-TFToolkitKeyAction -Key ([string]$eventArgs.Key) `
         -Control (($modifiers -band 2) -ne 0) -Alt (($modifiers -band 1) -ne 0) -Shift (($modifiers -band 4) -ne 0) `
         -PageCount $script:PageShortcuts.Count -SearchActive $script:SearchActive `
         -SearchHasText ($searchBox.Text.Length -gt 0) -PagesVisible ($pagesView.Visibility -eq "Visible") `
@@ -7527,7 +7527,7 @@ function Restore-GuiWindowBounds {
             Height = [System.Windows.SystemParameters]::VirtualScreenHeight
         }
 
-        $bounds = Resolve-WinForgeWindowBounds -Saved (Get-WinForgeSetting -Name "Window") -Screen $screen -MinWidth $window.MinWidth -MinHeight $window.MinHeight
+        $bounds = Resolve-TFToolkitWindowBounds -Saved (Get-TFToolkitSetting -Name "Window") -Screen $screen -MinWidth $window.MinWidth -MinHeight $window.MinHeight
 
         if ($null -ne $bounds) {
             $window.WindowStartupLocation = "Manual"
@@ -7573,7 +7573,7 @@ function Save-GuiWindowBounds {
         $normal = $window.RestoreBounds
 
         if ($normal.Width -gt 0 -and $normal.Height -gt 0) {
-            [void](Set-WinForgeSetting -Name "Window" -Value ([ordered]@{
+            [void](Set-TFToolkitSetting -Name "Window" -Value ([ordered]@{
                         Left      = [int]$normal.Left
                         Top       = [int]$normal.Top
                         Width     = [int]$normal.Width
@@ -7591,16 +7591,16 @@ $window.Add_Closing({
     param ($sender, $eventArgs)
 
     if ($script:Running -and -not $script:ForceClose) {
-        $answer = Show-GuiMessage -Buttons YesNo -Icon Warning -Title (Get-WinForgeText "`"{0}`" ainda está em andamento" "$($runTitle.Text)") `
-            -Text (Get-WinForgeText 'Se você fechar o WinForge agora, a ação é interrompida: o que já foi feito continua feito, mas a etapa atual fica incompleta.') `
-            -YesText (Get-WinForgeText 'Fechar mesmo assim') -NoText (Get-WinForgeText 'Continuar') -Danger
+        $answer = Show-GuiMessage -Buttons YesNo -Icon Warning -Title (Get-TFToolkitText "`"{0}`" ainda está em andamento" "$($runTitle.Text)") `
+            -Text (Get-TFToolkitText 'Se você fechar o TF-Toolkit agora, a ação é interrompida: o que já foi feito continua feito, mas a etapa atual fica incompleta.') `
+            -YesText (Get-TFToolkitText 'Fechar mesmo assim') -NoText (Get-TFToolkitText 'Continuar') -Danger
 
         if ($answer -ne "Yes") {
             $eventArgs.Cancel = $true
             return
         }
 
-        Stop-WinForgeGuiCommand -Session $script:GuiSession
+        Stop-TFToolkitGuiCommand -Session $script:GuiSession
     }
 
     Save-GuiWindowBounds
@@ -7619,11 +7619,11 @@ $window.Add_Closing({
     Set-GuiTaskbarProgress -State None
 
     foreach ($reader in @($script:HomeReader, $script:WarmupReader)) {
-        if ($null -ne $reader) { Close-WinForgeGuiReader -Reader $reader }
+        if ($null -ne $reader) { Close-TFToolkitGuiReader -Reader $reader }
     }
 
     if ($null -ne $script:GuiSession) {
-        Close-WinForgeGuiSession -Session $script:GuiSession
+        Close-TFToolkitGuiSession -Session $script:GuiSession
     }
 })
 
@@ -7631,7 +7631,7 @@ $window.Dispatcher.Add_UnhandledException({
     param ($sender, $eventArgs)
     $eventArgs.Handled = $true
     # A caixa do Windows (-System): a mensagem da própria janela pode ter sido a falha.
-    [void](Show-GuiMessage -System -Icon Error -Title (Get-WinForgeText 'Algo deu errado na janela do WinForge') -Text (Get-WinForgeText "Se uma ação estava rodando, confira o resultado dela antes de continuar. Se o problema se repetir, feche e abra o WinForge; o log fica em Sobre o WinForge > Pasta de logs e relatórios.`n`nDetalhe técnico: {0}" "$($eventArgs.Exception.Message)"))
+    [void](Show-GuiMessage -System -Icon Error -Title (Get-TFToolkitText 'Algo deu errado na janela do TF-Toolkit') -Text (Get-TFToolkitText "Se uma ação estava rodando, confira o resultado dela antes de continuar. Se o problema se repetir, feche e abra o TF-Toolkit; o log fica em Sobre o TF-Toolkit > Pasta de logs e relatórios.`n`nDetalhe técnico: {0}" "$($eventArgs.Exception.Message)"))
 })
 
 # O executor das ações (e a compilação do host) é preparado logo depois de a janela aparecer, e não no primeiro
@@ -7644,22 +7644,22 @@ $script:WarmupTimer.Add_Tick({
             # Primeiro o host da janela (código C#) é compilado num runspace à parte: o Add-Type leva até um segundo, que
             # travaria a janela recém-aberta. O tipo compilado vale para o processo inteiro; depois a sessão abre sem
             # compilar nada. Uma compilação que não termina em 60 segundos é deixada de lado e a sessão compila aqui.
-            if ($null -eq $script:WarmupReader -and -not ('WinForge.GuiHost' -as [type])) {
-                $script:WarmupReader = New-WinForgeGuiReader -ModuleRoot $moduleRoot -Modules @("GuiHost")
-                [void](Start-WinForgeGuiRead -Reader $script:WarmupReader -Command "Initialize-WinForgeGuiHost")
+            if ($null -eq $script:WarmupReader -and -not ('TFToolkit.GuiHost' -as [type])) {
+                $script:WarmupReader = New-TFToolkitGuiReader -ModuleRoot $moduleRoot -Modules @("GuiHost")
+                [void](Start-TFToolkitGuiRead -Reader $script:WarmupReader -Command "Initialize-TFToolkitGuiHost")
                 $script:WarmupTimer.Interval = [TimeSpan]::FromMilliseconds(150)
                 return
             }
 
             if ($null -ne $script:WarmupReader) {
-                $compiling = ($null -ne $script:WarmupReader.Ps -and $null -eq (Receive-WinForgeGuiRead -Reader $script:WarmupReader))
+                $compiling = ($null -ne $script:WarmupReader.Ps -and $null -eq (Receive-TFToolkitGuiRead -Reader $script:WarmupReader))
                 if ($compiling -and ((Get-Date) - $script:WarmupReader.StartedAt).TotalSeconds -lt 60) { return }
 
-                Close-WinForgeGuiReader -Reader $script:WarmupReader
+                Close-TFToolkitGuiReader -Reader $script:WarmupReader
                 $script:WarmupReader = $null
             }
 
-            $script:GuiSession = New-WinForgeGuiSession -ModuleRoot $moduleRoot -Modules $script:ActionModules
+            $script:GuiSession = New-TFToolkitGuiSession -ModuleRoot $moduleRoot -Modules $script:ActionModules
         }
     }
     catch {
@@ -7667,7 +7667,7 @@ $script:WarmupTimer.Add_Tick({
         $script:GuiSession = $null
 
         if ($null -ne $script:WarmupReader) {
-            Close-WinForgeGuiReader -Reader $script:WarmupReader
+            Close-TFToolkitGuiReader -Reader $script:WarmupReader
             $script:WarmupReader = $null
         }
     }
@@ -7698,8 +7698,8 @@ $script:SearchWarmTimer.Add_Tick({
     $script:SearchWarmTimer.Stop()
 
     try {
-        [void](Get-WinForgeSearchIndex)
-        [void](Get-WinForgeSearchVocabulary)
+        [void](Get-TFToolkitSearchIndex)
+        [void](Get-TFToolkitSearchVocabulary)
     }
     catch {
         Write-Verbose "Índice da busca: $($_.Exception.Message)"
@@ -7729,50 +7729,50 @@ $script:StartActionTimer.Interval = [TimeSpan]::FromMilliseconds(900)
 $script:StartActionTimer.Add_Tick({
     $script:StartActionTimer.Stop()
 
-    $item = Get-WinForgeNavItem -Id $script:StartAction
+    $item = Get-TFToolkitNavItem -Id $script:StartAction
     $script:StartAction = ""
 
     if ($null -ne $item) { Invoke-GuiNavItem -Item $item }
 })
 
 function Test-GuiRequestFromOtherFolder {
-    # O pedido veio de uma abertura de outra pasta do WinForge (outra identidade, Get-WinForgeAppId, que compara as pastas
+    # O pedido veio de uma abertura de outra pasta do TF-Toolkit (outra identidade, Get-TFToolkitAppId, que compara as pastas
     # do mesmo jeito em qualquer caminho)? Um pedido sem ela (de uma versão anterior à R40) conta como desta pasta.
     param ([Parameter(Mandatory)]$Request)
 
     $app = [string]$Request.App
     if (-not $app) { return $false }
 
-    try { return ($app -ne [string](Get-WinForgeAppId)) } catch { return $false }
+    try { return ($app -ne [string](Get-TFToolkitAppId)) } catch { return $false }
 }
 
 function Show-GuiOtherFolderMessage {
     <#
-    Outra pasta do WinForge foi aberta (outra versão, extraída de outro zip) com esta janela aberta. Só uma janela do
-    WinForge abre por conta, e a abertura nova só traria esta para a frente: a pessoa veria esta versão achando que é a
-    outra. A mensagem diz de que pasta é cada uma e oferece fechar esta, para abrir a outra de novo. O WinForge não abre
+    Outra pasta do TF-Toolkit foi aberta (outra versão, extraída de outro zip) com esta janela aberta. Só uma janela do
+    TF-Toolkit abre por conta, e a abertura nova só traria esta para a frente: a pessoa veria esta versão achando que é a
+    outra. A mensagem diz de que pasta é cada uma e oferece fechar esta, para abrir a outra de novo. O TF-Toolkit não abre
     a outra sozinho: o pedido vem de um arquivo que qualquer programa da conta grava, e esta janela roda como Administrador.
     #>
     param ([Parameter(Mandatory)]$Request)
 
     $here = ""
-    try { $here = [string](Get-WinForgeAppRoot) } catch { $here = "" }
-    $there = $(if ([string]$Request.Root) { [string]$Request.Root } else { (Get-WinForgeText 'outra pasta') })
+    try { $here = [string](Get-TFToolkitAppRoot) } catch { $here = "" }
+    $there = $(if ([string]$Request.Root) { [string]$Request.Root } else { (Get-TFToolkitText 'outra pasta') })
 
-    $answer = Show-GuiMessage -Buttons YesNo -Icon Warning -Default No -Title (Get-WinForgeText 'Esta janela é de outra pasta do WinForge') `
-        -Text (Get-WinForgeText "Você abriu o WinForge de:`n{0}`n`nEsta janela é de:`n{1}`n`nPara usar o que você abriu, feche esta janela e abra o WinForge de novo." "$there" "$here") `
-        -YesText (Get-WinForgeText 'Fechar esta janela') -NoText (Get-WinForgeText 'Continuar aqui')
+    $answer = Show-GuiMessage -Buttons YesNo -Icon Warning -Default No -Title (Get-TFToolkitText 'Esta janela é de outra pasta do TF-Toolkit') `
+        -Text (Get-TFToolkitText "Você abriu o TF-Toolkit de:`n{0}`n`nEsta janela é de:`n{1}`n`nPara usar o que você abriu, feche esta janela e abra o TF-Toolkit de novo." "$there" "$here") `
+        -YesText (Get-TFToolkitText 'Fechar esta janela') -NoText (Get-TFToolkitText 'Continuar aqui')
 
     if ($answer -eq "Yes") { $window.Close() }
 }
 
 function Receive-GuiWindowRequest {
     <#
-    Um pedido de outra abertura do WinForge (Enter-WinForgeWindowLock), lido a cada meio segundo: a janela vem para a
-    frente e, se o pedido trouxe uma ação do monitor na bandeja, ela roda. Um pedido de outra pasta do WinForge (outra
+    Um pedido de outra abertura do TF-Toolkit (Enter-TFToolkitWindowLock), lido a cada meio segundo: a janela vem para a
+    frente e, se o pedido trouxe uma ação do monitor na bandeja, ela roda. Um pedido de outra pasta do TF-Toolkit (outra
     versão) não roda nada: a janela diz de que pasta é cada uma (Show-GuiOtherFolderMessage).
     #>
-    $request = Receive-WinForgeWindowRequest
+    $request = Receive-TFToolkitWindowRequest
     if ($null -eq $request) { return }
 
     if ($window.WindowState -eq "Minimized") { $window.WindowState = "Normal" }
@@ -7797,13 +7797,13 @@ function Receive-GuiWindowRequest {
 
     # Só as ações que o monitor na bandeja oferece: o pedido vem de um arquivo que qualquer programa desta conta grava
     # sem elevação, e a janela roda como Administrador.
-    if ($request.Action -and $request.Action -in @(Get-WinForgeAgentActionIds)) {
-        $item = Get-WinForgeNavItem -Id $request.Action
+    if ($request.Action -and $request.Action -in @(Get-TFToolkitAgentActionIds)) {
+        $item = Get-TFToolkitNavItem -Id $request.Action
         if ($null -ne $item) { Invoke-GuiNavItem -Item $item }
     }
 }
 
-# Pedidos de outra abertura do WinForge (Enter-WinForgeWindowLock): a janela vem para a frente e, se o pedido trouxe
+# Pedidos de outra abertura do TF-Toolkit (Enter-TFToolkitWindowLock): a janela vem para a frente e, se o pedido trouxe
 # uma ação, ela roda (ou, com outra ação em andamento, a pessoa é avisada). De outra pasta, a janela diz isso.
 $script:RequestTimer = New-Object System.Windows.Threading.DispatcherTimer
 $script:RequestTimer.Interval = [TimeSpan]::FromMilliseconds(500)
@@ -7826,14 +7826,14 @@ $window.Add_ContentRendered({
     if ($script:StartAction) { $script:StartActionTimer.Start() }
 
     # Quanto a janela levou para aparecer desde o começo deste processo (logs\abertura.log).
-    try { Add-WinForgeOpenTime -Kind "Gui" -Seconds ((Get-Date) - (Get-Process -Id $PID).StartTime).TotalSeconds } catch { Write-Verbose "Tempo de abertura: $($_.Exception.Message)" }
+    try { Add-TFToolkitOpenTime -Kind "Gui" -Seconds ((Get-Date) - (Get-Process -Id $PID).StartTime).TotalSeconds } catch { Write-Verbose "Tempo de abertura: $($_.Exception.Message)" }
 })
 
 if ($isAdmin) {
-    $window.FindName("AdminText").Text = (Get-WinForgeText 'Administrador')
+    $window.FindName("AdminText").Text = (Get-TFToolkitText 'Administrador')
 }
 else {
-    $window.FindName("AdminText").Text = (Get-WinForgeText 'Sem Administrador · o WinForge pede de novo quando uma ação precisar')
+    $window.FindName("AdminText").Text = (Get-TFToolkitText 'Sem Administrador · o TF-Toolkit pede de novo quando uma ação precisar')
 }
 
 Restore-GuiWindowBounds

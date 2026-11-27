@@ -1,6 +1,6 @@
-﻿# Integração com o shell do Windows: atalhos (.lnk), pastas especiais e a identidade do WinForge na barra de tarefas
+﻿# Integração com o shell do Windows: atalhos (.lnk), pastas especiais e a identidade do TF-Toolkit na barra de tarefas
 # (AppUserModelID). É a única parte do projeto que usa COM e a API do shell; Launcher.psm1 decide o que criar e onde.
-# Tudo aqui é opcional: se o Windows recusar, o WinForge continua funcionando (só perde o acabamento).
+# Tudo aqui é opcional: se o Windows recusar, o TF-Toolkit continua funcionando (só perde o acabamento).
 
 # C# compatível com o compilador do Windows PowerShell 5.1 (C# 5): sem interpolação de strings, sem "?." e afins.
 $script:ShellInteropSource = @'
@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 
-namespace WinForge
+namespace TFToolkit
 {
     public static class ShellIdentity
     {
@@ -107,7 +107,7 @@ namespace WinForge
             }
         }
 
-        // Faz o botão da barra de tarefas e o "Fixar" da janela abrirem o WinForge (nome, ícone e comando próprios),
+        // Faz o botão da barra de tarefas e o "Fixar" da janela abrirem o TF-Toolkit (nome, ícone e comando próprios),
         // em vez do PowerShell que hospeda a janela. Devolve "" se deu certo ou a mensagem do erro.
         public static string SetWindowRelaunch(IntPtr handle, string appId, string command, string iconResource, string displayName)
         {
@@ -252,9 +252,9 @@ namespace WinForge
 '@
 
 
-function Initialize-WinForgeShellInterop {
+function Initialize-TFToolkitShellInterop {
     # Compila a ponte com o shell uma vez por processo. Devolve $false se não foi possível.
-    if ("WinForge.ShellIdentity" -as [type]) {
+    if ("TFToolkit.ShellIdentity" -as [type]) {
         return $true
     }
 
@@ -268,7 +268,7 @@ function Initialize-WinForgeShellInterop {
 }
 
 
-function Get-WinForgeSpecialFolder {
+function Get-TFToolkitSpecialFolder {
     # Pasta do perfil de quem está executando (respeita OneDrive e nomes em outros idiomas). Vazio se não existir.
     param (
         [Parameter(Mandatory)]
@@ -290,7 +290,7 @@ function Get-WinForgeSpecialFolder {
 }
 
 
-function Set-WinForgeProcessAppId {
+function Set-TFToolkitProcessAppId {
     # Dá ao processo um identificador próprio na barra de tarefas. Sem isso o Windows agrupa a janela com os demais
     # PowerShell e mostra o ícone do PowerShell. Devolve $true se o Windows aceitou.
     param (
@@ -298,12 +298,12 @@ function Set-WinForgeProcessAppId {
         [string]$AppId
     )
 
-    if (-not (Initialize-WinForgeShellInterop)) {
+    if (-not (Initialize-TFToolkitShellInterop)) {
         return $false
     }
 
     try {
-        return ([WinForge.ShellIdentity]::SetProcessAppId($AppId) -eq 0)
+        return ([TFToolkit.ShellIdentity]::SetProcessAppId($AppId) -eq 0)
     }
     catch {
         return $false
@@ -311,8 +311,8 @@ function Set-WinForgeProcessAppId {
 }
 
 
-function Set-WinForgeWindowRelaunch {
-    # Associa à janela o comando, o nome e o ícone do WinForge (usados pelo "Fixar na barra de tarefas").
+function Set-TFToolkitWindowRelaunch {
+    # Associa à janela o comando, o nome e o ícone do TF-Toolkit (usados pelo "Fixar na barra de tarefas").
     # A janela precisa já ter um identificador (Handle válido). Devolve $true se o Windows aceitou.
     param (
         [Parameter(Mandatory)]
@@ -326,15 +326,15 @@ function Set-WinForgeWindowRelaunch {
 
         [string]$IconResource = "",
 
-        [string]$DisplayName = "WinForge"
+        [string]$DisplayName = "TF-Toolkit"
     )
 
-    if (-not (Initialize-WinForgeShellInterop)) {
+    if (-not (Initialize-TFToolkitShellInterop)) {
         return $false
     }
 
     try {
-        return [string]::IsNullOrEmpty([WinForge.ShellIdentity]::SetWindowRelaunch($Handle, $AppId, $Command, $IconResource, $DisplayName))
+        return [string]::IsNullOrEmpty([TFToolkit.ShellIdentity]::SetWindowRelaunch($Handle, $AppId, $Command, $IconResource, $DisplayName))
     }
     catch {
         return $false
@@ -342,7 +342,7 @@ function Set-WinForgeWindowRelaunch {
 }
 
 
-function Save-WinForgeShortcutFile {
+function Save-TFToolkitShortcutFile {
     <#
     Grava um atalho (.lnk). Um erro ao gravar (pasta sem permissão, por exemplo) sobe como exceção; já a gravação do
     identificador da barra de tarefas é opcional e só resulta em AppIdSet = $false.
@@ -389,9 +389,9 @@ function Save-WinForgeShortcutFile {
 
     $appIdSet = $false
 
-    if (-not [string]::IsNullOrEmpty($AppId) -and (Initialize-WinForgeShellInterop)) {
+    if (-not [string]::IsNullOrEmpty($AppId) -and (Initialize-TFToolkitShellInterop)) {
         try {
-            $appIdSet = [string]::IsNullOrEmpty([WinForge.ShellIdentity]::SetShortcutAppId($Path, $AppId))
+            $appIdSet = [string]::IsNullOrEmpty([TFToolkit.ShellIdentity]::SetShortcutAppId($Path, $AppId))
         }
         catch {
             $appIdSet = $false
@@ -405,7 +405,7 @@ function Save-WinForgeShortcutFile {
 }
 
 
-function Get-WinForgeShortcutAppId {
+function Get-TFToolkitShortcutAppId {
     # O identificador da barra de tarefas (AppUserModelID) gravado num atalho (.lnk): "" se ele não tem um, $null se não
     # foi possível ler (o arquivo não é um atalho, o Windows recusou).
     param (
@@ -414,10 +414,10 @@ function Get-WinForgeShortcutAppId {
     )
 
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $null }
-    if (-not (Initialize-WinForgeShellInterop)) { return $null }
+    if (-not (Initialize-TFToolkitShellInterop)) { return $null }
 
     try {
-        return [WinForge.ShellIdentity]::GetShortcutAppId($Path)
+        return [TFToolkit.ShellIdentity]::GetShortcutAppId($Path)
     }
     catch {
         return $null
@@ -425,7 +425,7 @@ function Get-WinForgeShortcutAppId {
 }
 
 
-function Test-WinForgeAdvertisedShortcut {
+function Test-TFToolkitAdvertisedShortcut {
     <#
     Verdadeiro para um atalho "anunciado" do Windows Installer (o do Office e de muitos programas MSI): ele não aponta
     para o programa, e sim para o produto instalado, que o Windows resolve na hora de abrir. O TargetPath que se lê dele
@@ -458,10 +458,10 @@ function Test-WinForgeAdvertisedShortcut {
 }
 
 
-function Get-WinForgeShortcutTarget {
+function Get-TFToolkitShortcutTarget {
     # Para onde um atalho (.lnk) aponta: TargetPath e Arguments. $null se o arquivo não pôde ser lido como atalho.
     # Atalhos de aplicativos da Store voltam com o TargetPath vazio; os anunciados do Windows Installer, com o ícone
-    # guardado (veja Test-WinForgeAdvertisedShortcut).
+    # guardado (veja Test-TFToolkitAdvertisedShortcut).
     param (
         [Parameter(Mandatory)]
         [string]$Path

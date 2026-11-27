@@ -1,73 +1,73 @@
 ﻿# Núcleo: ambiente, sessão, registro, log, formatação e execução de programas nativos.
 # Nada aqui desenha cabeçalhos ou faz perguntas; isso fica em Console.psm1.
 
-$script:WinForgeBuild = "4.0"
+$script:TFToolkitBuild = "4.0"
 
-# A trava dos arquivos de estado (Invoke-WinForgeStateLock): uma por sessão do Windows.
-$script:WinForgeStateLockName = "Local\WinForge.State"
+# A trava dos arquivos de estado (Invoke-TFToolkitStateLock): uma por sessão do Windows.
+$script:TFToolkitStateLockName = "Local\TFToolkit.State"
 
-# O build do Windows, lido uma vez (Get-WinForgeWindowsBuild).
-$script:WinForgeWindowsBuild = 0
-$script:WinForgeSession = $null
-$script:WinForgeLastMaintenance = $null
-$script:WinForgeLogPath = $null
-$script:WinForgeLoggingActive = $false
-# Transcript (console) ou Gui (o host da janela grava o log); Start-WinForgeLogging escolhe.
-$script:WinForgeLogMode = ""
+# O build do Windows, lido uma vez (Get-TFToolkitWindowsBuild).
+$script:TFToolkitWindowsBuild = 0
+$script:TFToolkitSession = $null
+$script:TFToolkitLastMaintenance = $null
+$script:TFToolkitLogPath = $null
+$script:TFToolkitLoggingActive = $false
+# Transcript (console) ou Gui (o host da janela grava o log); Start-TFToolkitLogging escolhe.
+$script:TFToolkitLogMode = ""
 
-# Se o PC usa o Modern Standby, lido uma vez (Test-WinForgeModernStandby); $null até a primeira leitura.
-$script:WinForgeModernStandby = $null
+# Se o PC usa o Modern Standby, lido uma vez (Test-TFToolkitModernStandby); $null até a primeira leitura.
+$script:TFToolkitModernStandby = $null
 
-# Limites de Get-WinForgeDiskSpaceLevel. Na unidade do Windows, o que conta é o espaço que ele precisa para se
+# Limites de Get-TFToolkitDiskSpaceLevel. Na unidade do Windows, o que conta é o espaço que ele precisa para se
 # atualizar (de 6 a 11 GB numa atualização de versão, mais no Windows 11): abaixo de 10 GB livres é "Critical"; abaixo de
 # 20 GB, "Low". Nas outras unidades, a proporção: abaixo de 5% livres é "Critical"; abaixo de 10%, "Low".
-$script:WinForgeCriticalDiskBytes = 10GB
-$script:WinForgeLowDiskBytes = 20GB
-$script:WinForgeLowDiskPercent = 10
+$script:TFToolkitCriticalDiskBytes = 10GB
+$script:TFToolkitLowDiskBytes = 20GB
+$script:TFToolkitLowDiskPercent = 10
 
 
 # ---------------------------------------------------------------------------
 # Versão e pasta de dados
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeBuild {
-    return $script:WinForgeBuild
+function Get-TFToolkitBuild {
+    return $script:TFToolkitBuild
 }
 
 
-function Test-WinForgeGuiMode {
-    # Verdadeiro dentro da janela: o executor das ações define $global:WinForgeGuiMode. A leitura não falha quando a
+function Test-TFToolkitGuiMode {
+    # Verdadeiro dentro da janela: o executor das ações define $global:TFToolkitGuiMode. A leitura não falha quando a
     # variável não existe (console), nem sob Set-StrictMode.
-    $variable = Get-Variable -Name WinForgeGuiMode -Scope Global -ErrorAction SilentlyContinue
+    $variable = Get-Variable -Name TFToolkitGuiMode -Scope Global -ErrorAction SilentlyContinue
 
     return ($null -ne $variable -and [bool]$variable.Value)
 }
 
 
-function Request-WinForgeAppExit {
+function Request-TFToolkitAppExit {
     <#
-    Pede ao WinForge que feche quando a ação terminar (a atualização com um clique: o instalador espera este processo
+    Pede ao TF-Toolkit que feche quando a ação terminar (a atualização com um clique: o instalador espera este processo
     fechar para trocar os arquivos). Vale para o processo inteiro: a ação roda num runspace e a janela, em outro.
     #>
     param ([string]$Reason = "update")
 
-    [AppDomain]::CurrentDomain.SetData("WinForge.ExitRequest", $Reason)
+    [AppDomain]::CurrentDomain.SetData("TFToolkit.ExitRequest", $Reason)
 }
 
 
-function Get-WinForgeAppExitRequest {
-    # O motivo do pedido de fechar (Request-WinForgeAppExit), ou "" sem pedido.
-    $value = [AppDomain]::CurrentDomain.GetData("WinForge.ExitRequest")
+function Get-TFToolkitAppExitRequest {
+    # O motivo do pedido de fechar (Request-TFToolkitAppExit), ou "" sem pedido.
+    $value = [AppDomain]::CurrentDomain.GetData("TFToolkit.ExitRequest")
 
     return $(if ($null -eq $value) { "" } else { [string]$value })
 }
 
 
-function Get-WinForgeLocalAppDataPath {
+function Get-TFToolkitLocalAppDataPath {
     <#
     A pasta LocalAppData do usuário, sempre um caminho completo. Sem a variável LOCALAPPDATA (um acesso remoto que abre o
     PowerShell sem o ambiente do perfil, por exemplo), vale a pasta que o Windows informa para a conta; sem nenhuma das
-    duas, lança erro: um "WinForge" relativo cairia na pasta atual, e apagar os dados apagaria outra coisa.
+    duas, lança erro: um "TF-Toolkit" relativo cairia na pasta atual, e apagar os dados apagaria outra coisa.
     #>
     $path = [string]$env:LOCALAPPDATA
 
@@ -76,16 +76,16 @@ function Get-WinForgeLocalAppDataPath {
     }
 
     if ([string]::IsNullOrWhiteSpace($path) -or -not [System.IO.Path]::IsPathRooted($path)) {
-        throw (Get-WinForgeText 'A pasta de dados do usuário (LocalAppData) não foi encontrada.')
+        throw (Get-TFToolkitText 'A pasta de dados do usuário (LocalAppData) não foi encontrada.')
     }
 
     return $path
 }
 
 
-function Get-WinForgeDataPath {
+function Get-TFToolkitDataPath {
     # Local persistente para logs, backups de ajustes e relatórios (por usuário elevado).
-    $root = Join-Path (Get-WinForgeLocalAppDataPath) "WinForge"
+    $root = Join-Path (Get-TFToolkitLocalAppDataPath) "TF-Toolkit"
 
     if (-not (Test-Path -LiteralPath $root)) {
         [void](New-Item -Path $root -ItemType Directory -Force)
@@ -104,9 +104,9 @@ function Get-WinForgeDataPath {
 #     anterior em ".bak"; nunca há um instante em que o arquivo não existe;
 #   - ler distingue "não existe" de "não deu para ler": um arquivo estragado volta do ".bak" (e a cópia estragada fica
 #     guardada ao lado); um arquivo preso por outro processo faz a gravação desistir, em vez de gravar quase nada por cima;
-#   - quem lê, altera e grava faz isso dentro da trava (Invoke-WinForgeStateLock).
+#   - quem lê, altera e grava faz isso dentro da trava (Invoke-TFToolkitStateLock).
 
-function Open-WinForgeNamedMutex {
+function Open-TFToolkitNamedMutex {
     <#
     Um mutex com nome que a janela elevada e a não elevada do mesmo usuário (e o monitor, nunca elevado) compartilham.
     Quem cria dá acesso total ao usuário (a conta elevada e a comum têm o mesmo SID). Quem chega depois num processo de
@@ -143,10 +143,10 @@ function Open-WinForgeNamedMutex {
 }
 
 
-function Invoke-WinForgeStateLock {
+function Invoke-TFToolkitStateLock {
     # Roda o bloco com a trava dos arquivos de estado: um mutex com nome, da sessão do Windows, que a conta elevada e a
     # não elevada do mesmo usuário conseguem abrir. A trava é reentrante (uma função que já a tem pode chamar outra que
-    # também a pede). Sem conseguir a trava em 5 segundos, segue sem ela: atrasar é aceitável, travar o WinForge não.
+    # também a pede). Sem conseguir a trava em 5 segundos, segue sem ela: atrasar é aceitável, travar o TF-Toolkit não.
     # As variáveis daqui têm nomes próprios: o bloco enxerga as da função que o chamou e não deve confundi-las com estas.
     param (
         [Parameter(Mandatory)][scriptblock]$ScriptBlock
@@ -156,7 +156,7 @@ function Invoke-WinForgeStateLock {
     $stateLockOwned = $false
 
     try {
-        $stateLockMutex = Open-WinForgeNamedMutex -Name $script:WinForgeStateLockName
+        $stateLockMutex = Open-TFToolkitNamedMutex -Name $script:TFToolkitStateLockName
 
         if ($null -ne $stateLockMutex) {
             try { $stateLockOwned = $stateLockMutex.WaitOne(5000) } catch [System.Threading.AbandonedMutexException] { $stateLockOwned = $true }
@@ -171,7 +171,7 @@ function Invoke-WinForgeStateLock {
 }
 
 
-function Read-WinForgeStateFile {
+function Read-TFToolkitStateFile {
     <#
     Lê um arquivo de estado JSON. Devolve Status e Document:
       Missing    - não existe: comece do zero (a gravação atômica nunca deixa o arquivo sumir; se ele não está lá, nunca
@@ -201,7 +201,7 @@ function Read-WinForgeStateFile {
             break
         }
         catch [System.IO.FileNotFoundException] {
-            return (Read-WinForgeStateFile -Path $Path)
+            return (Read-TFToolkitStateFile -Path $Path)
         }
         catch {
             if ($attempt -eq 4) { return [PSCustomObject]@{ Status = "Unreadable"; Document = $null } }
@@ -209,7 +209,7 @@ function Read-WinForgeStateFile {
         }
     }
 
-    $document = ConvertFrom-WinForgeStateText -Text $text
+    $document = ConvertFrom-TFToolkitStateText -Text $text
 
     if ($null -ne $document) { return [PSCustomObject]@{ Status = "Ok"; Document = $document } }
 
@@ -222,9 +222,9 @@ function Read-WinForgeStateFile {
         return [PSCustomObject]@{ Status = "Unreadable"; Document = $null }
     }
 
-    Remove-WinForgeOldCorruptCopies -Path $Path
+    Remove-TFToolkitOldCorruptCopies -Path $Path
 
-    $fromBackup = ConvertFrom-WinForgeStateText -Path $backup
+    $fromBackup = ConvertFrom-TFToolkitStateText -Path $backup
 
     if ($null -ne $fromBackup) {
         # A cópia anterior volta para o lugar do arquivo: quem lê primeiro quase nunca é quem grava (a janela, o Início, a
@@ -244,7 +244,7 @@ function Read-WinForgeStateFile {
 }
 
 
-function Remove-WinForgeOldCorruptCopies {
+function Remove-TFToolkitOldCorruptCopies {
     # Guarda só as três cópias estragadas mais recentes de um arquivo de estado (".corrompido-<data>"): elas existem para
     # quem quiser recuperar algo à mão, e um arquivo que estraga sempre não pode encher a pasta.
     param ([Parameter(Mandatory)][string]$Path)
@@ -264,7 +264,7 @@ function Remove-WinForgeOldCorruptCopies {
 }
 
 
-function ConvertFrom-WinForgeStateText {
+function ConvertFrom-TFToolkitStateText {
     # O JSON de um texto (ou de um arquivo, com -Path), ou $null se não for um JSON com conteúdo.
     param (
         [AllowNull()][string]$Text = $null,
@@ -293,7 +293,7 @@ function ConvertFrom-WinForgeStateText {
 }
 
 
-function Write-WinForgeStateFile {
+function Write-TFToolkitStateFile {
     # Grava o texto (UTF-8 com BOM, como o Set-Content do Windows PowerShell) de forma atômica: escreve um temporário com
     # nome único na mesma pasta e troca pelo arquivo, guardando o anterior em ".bak". Lança erro se não conseguir.
     param (
@@ -319,8 +319,8 @@ function Write-WinForgeStateFile {
 }
 
 
-function Write-WinForgeStateJson {
-    # Write-WinForgeStateFile de um objeto. Uma lista continua lista no JSON mesmo com um item só (-AsList).
+function Write-TFToolkitStateJson {
+    # Write-TFToolkitStateFile de um objeto. Uma lista continua lista no JSON mesmo com um item só (-AsList).
     param (
         [Parameter(Mandatory)][string]$Path,
         [AllowNull()]$InputObject,
@@ -333,29 +333,29 @@ function Write-WinForgeStateJson {
     # Uma lista vazia vira "" no ConvertTo-Json do Windows PowerShell.
     if ($AsList -and [string]::IsNullOrWhiteSpace($json)) { $json = "[]" }
 
-    Write-WinForgeStateFile -Path $Path -Text $json
+    Write-TFToolkitStateFile -Path $Path -Text $json
 }
 
 
 # ---------------------------------------------------------------------------
-# Preferências do WinForge (settings.json)
+# Preferências do TF-Toolkit (settings.json)
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeSettingsPath {
-    return (Join-Path (Get-WinForgeDataPath) "settings.json")
+function Get-TFToolkitSettingsPath {
+    return (Join-Path (Get-TFToolkitDataPath) "settings.json")
 }
 
 
-function Get-WinForgeSettings {
+function Get-TFToolkitSettings {
     # Todas as preferências como hashtable. Arquivo ausente ou ilegível = nenhuma preferência (um arquivo estragado volta
-    # da cópia anterior, ver Read-WinForgeStateFile). -Status devolve também o estado da leitura, para quem vai gravar.
+    # da cópia anterior, ver Read-TFToolkitStateFile). -Status devolve também o estado da leitura, para quem vai gravar.
     param ([switch]$Status)
 
     $settings = @{}
     $read = [PSCustomObject]@{ Status = "Unreadable"; Document = $null }
 
     try {
-        $read = Read-WinForgeStateFile -Path (Get-WinForgeSettingsPath)
+        $read = Read-TFToolkitStateFile -Path (Get-TFToolkitSettingsPath)
 
         if ($null -ne $read.Document) {
             foreach ($property in $read.Document.PSObject.Properties) {
@@ -373,13 +373,13 @@ function Get-WinForgeSettings {
 }
 
 
-function Get-WinForgeSetting {
+function Get-TFToolkitSetting {
     param (
         [Parameter(Mandatory)][string]$Name,
         $Default = $null
     )
 
-    $settings = Get-WinForgeSettings
+    $settings = Get-TFToolkitSettings
 
     if ($settings.ContainsKey($Name) -and $null -ne $settings[$Name]) {
         return $settings[$Name]
@@ -389,15 +389,15 @@ function Get-WinForgeSetting {
 }
 
 
-function Get-WinForgeLastCheckup {
+function Get-TFToolkitLastCheckup {
     # Quando o Verificar o PC rodou pela última vez (a preferência LastCheckup, gravada no fim dele), ou $null. O Início e
     # o monitor contam essa data como um cuidado com o PC, assim como a última manutenção. -Strict: preferências que
     # existem, mas não puderam ser lidas, são um erro, e não "nunca verificou".
     param ([switch]$Strict)
 
-    $read = Get-WinForgeSettings -Status
+    $read = Get-TFToolkitSettings -Status
 
-    if ($Strict -and [string]$read.Status -eq "Unreadable") { throw (Get-WinForgeText 'As preferências do WinForge existem, mas não puderam ser lidas.') }
+    if ($Strict -and [string]$read.Status -eq "Unreadable") { throw (Get-TFToolkitText 'As preferências do TF-Toolkit existem, mas não puderam ser lidas.') }
 
     $value = $(if ($read.Settings.ContainsKey("LastCheckup") -and $null -ne $read.Settings["LastCheckup"]) { $read.Settings["LastCheckup"] } else { "" })
 
@@ -413,7 +413,7 @@ function Get-WinForgeLastCheckup {
 }
 
 
-function Set-WinForgeSetting {
+function Set-TFToolkitSetting {
     # Grava uma preferência (valor simples, hashtable ou lista) sem perder as outras. Falha em silêncio: uma
     # preferência que não pôde ser salva nunca deve interromper uma ação.
     param (
@@ -422,8 +422,8 @@ function Set-WinForgeSetting {
     )
 
     try {
-        return [bool](Invoke-WinForgeStateLock -ScriptBlock {
-                $current = Get-WinForgeSettings -Status
+        return [bool](Invoke-TFToolkitStateLock -ScriptBlock {
+                $current = Get-TFToolkitSettings -Status
 
                 # Sem conseguir ler o que já está gravado, gravar agora apagaria as outras preferências.
                 if ($current.Status -eq "Unreadable") { return $false }
@@ -434,7 +434,7 @@ function Set-WinForgeSetting {
                 $ordered = [ordered]@{}
                 foreach ($key in ($settings.Keys | Sort-Object)) { $ordered[$key] = $settings[$key] }
 
-                Write-WinForgeStateJson -Path (Get-WinForgeSettingsPath) -InputObject $ordered -Depth 5
+                Write-TFToolkitStateJson -Path (Get-TFToolkitSettingsPath) -InputObject $ordered -Depth 5
                 return $true
             })
     }
@@ -450,106 +450,106 @@ function Set-WinForgeSetting {
 
 # Os idiomas da interface. O português é o do código: como no gettext, o texto em português é a chave das traduções,
 # que ficam em lang\en.po e lang\es.po. Em português, nada é lido.
-$script:WinForgeLanguages = @("pt", "en", "es")
-$script:WinForgeLanguage = $null
-$script:WinForgeLanguageResolving = $false
-$script:WinForgeTextTable = $null
-$script:WinForgeTextLoading = $false
+$script:TFToolkitLanguages = @("pt", "en", "es")
+$script:TFToolkitLanguage = $null
+$script:TFToolkitLanguageResolving = $false
+$script:TFToolkitTextTable = $null
+$script:TFToolkitTextLoading = $false
 
 
-function Get-WinForgeSystemLanguage {
+function Get-TFToolkitSystemLanguage {
     # O idioma da interface pelo idioma de exibição do Windows: português, inglês ou espanhol; qualquer outro, inglês.
     $code = ""
 
     try { $code = [string][System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName } catch { $code = "" }
 
-    if ($code -in $script:WinForgeLanguages) { return $code }
+    if ($code -in $script:TFToolkitLanguages) { return $code }
 
     return "en"
 }
 
 
-function Get-WinForgeLanguagePreference {
-    # A escolha em Sobre o WinForge > Idioma: "Auto" (o do Windows), "pt", "en" ou "es".
+function Get-TFToolkitLanguagePreference {
+    # A escolha em Sobre o TF-Toolkit > Idioma: "Auto" (o do Windows), "pt", "en" ou "es".
     $value = ""
 
-    try { $value = [string](Get-WinForgeSetting -Name "Language" -Default "Auto") } catch { $value = "" }
+    try { $value = [string](Get-TFToolkitSetting -Name "Language" -Default "Auto") } catch { $value = "" }
 
-    if ($value -in $script:WinForgeLanguages) { return $value }
+    if ($value -in $script:TFToolkitLanguages) { return $value }
 
     return "Auto"
 }
 
 
-function Set-WinForgeLanguagePreference {
-    # Grava a escolha do idioma. Vale na próxima vez que o WinForge abrir: as telas já montadas ficam como estão.
+function Set-TFToolkitLanguagePreference {
+    # Grava a escolha do idioma. Vale na próxima vez que o TF-Toolkit abrir: as telas já montadas ficam como estão.
     param (
         [Parameter(Mandatory)][ValidateSet("Auto", "pt", "en", "es")][string]$Language
     )
 
-    return (Set-WinForgeSetting -Name "Language" -Value $Language)
+    return (Set-TFToolkitSetting -Name "Language" -Value $Language)
 }
 
 
-function Get-WinForgeLanguageFor {
+function Get-TFToolkitLanguageFor {
     # O idioma que uma escolha do cartão Idioma dá: o próprio, ou o do Windows com "Auto".
     param ([AllowEmptyString()][string]$Preference = "Auto")
 
-    if ($Preference -in $script:WinForgeLanguages) { return $Preference }
+    if ($Preference -in $script:TFToolkitLanguages) { return $Preference }
 
-    return (Get-WinForgeSystemLanguage)
+    return (Get-TFToolkitSystemLanguage)
 }
 
 
-function Resolve-WinForgeLanguage {
-    # Nesta ordem: WINFORGE_LANG (o -Language do menu de texto), a escolha em Sobre o WinForge e o idioma do Windows.
+function Resolve-TFToolkitLanguage {
+    # Nesta ordem: WINFORGE_LANG (o -Language do menu de texto), a escolha em Sobre o TF-Toolkit e o idioma do Windows.
     $override = ([string]$env:WINFORGE_LANG).Trim().ToLowerInvariant()
 
     if ($override.Length -gt 2) { $override = $override.Substring(0, 2) }
-    if ($override -in $script:WinForgeLanguages) { return $override }
+    if ($override -in $script:TFToolkitLanguages) { return $override }
 
-    return (Get-WinForgeLanguageFor -Preference (Get-WinForgeLanguagePreference))
+    return (Get-TFToolkitLanguageFor -Preference (Get-TFToolkitLanguagePreference))
 }
 
 
-function Get-WinForgeLanguage {
+function Get-TFToolkitLanguage {
     # O idioma em uso ("pt", "en" ou "es"). É resolvido uma vez por processo: a janela, as leituras do Início e as ações
     # rodam em runspaces diferentes do mesmo processo e precisam falar a mesma língua, mesmo que a escolha mude no meio.
-    if ($null -ne $script:WinForgeLanguage) { return $script:WinForgeLanguage }
+    if ($null -ne $script:TFToolkitLanguage) { return $script:TFToolkitLanguage }
 
-    $shared = [string][AppDomain]::CurrentDomain.GetData("WinForge.Language")
+    $shared = [string][AppDomain]::CurrentDomain.GetData("TFToolkit.Language")
 
-    if ($shared -in $script:WinForgeLanguages) {
-        $script:WinForgeLanguage = $shared
+    if ($shared -in $script:TFToolkitLanguages) {
+        $script:TFToolkitLanguage = $shared
         return $shared
     }
 
     # Ler as preferências pode escrever uma mensagem (e pedir o idioma de novo): enquanto isso, vale o do Windows.
-    if ($script:WinForgeLanguageResolving) { return (Get-WinForgeSystemLanguage) }
+    if ($script:TFToolkitLanguageResolving) { return (Get-TFToolkitSystemLanguage) }
 
-    $script:WinForgeLanguageResolving = $true
+    $script:TFToolkitLanguageResolving = $true
 
     try {
-        $language = Resolve-WinForgeLanguage
+        $language = Resolve-TFToolkitLanguage
     }
     finally {
-        $script:WinForgeLanguageResolving = $false
+        $script:TFToolkitLanguageResolving = $false
     }
 
-    $script:WinForgeLanguage = $language
-    [AppDomain]::CurrentDomain.SetData("WinForge.Language", $language)
+    $script:TFToolkitLanguage = $language
+    [AppDomain]::CurrentDomain.SetData("TFToolkit.Language", $language)
 
     return $language
 }
 
 
-function Get-WinForgeLanguageFolder {
+function Get-TFToolkitLanguageFolder {
     # A pasta lang, ao lado de modules.
     return (Join-Path (Split-Path -Parent $PSScriptRoot) "lang")
 }
 
 
-function ConvertFrom-WinForgePoString {
+function ConvertFrom-TFToolkitPoString {
     # O texto de uma linha de .po, sem as aspas e com \n, \t, \r, \" e \\ decodificados.
     param ([string]$Line)
 
@@ -588,12 +588,12 @@ function ConvertFrom-WinForgePoString {
 }
 
 
-function Read-WinForgeTextCatalog {
+function Read-TFToolkitTextCatalog {
     <#
     Lê um arquivo .po (gettext) como um dicionário: o texto em português (msgid) e a tradução (msgstr). Ficam de fora o
     cabeçalho (msgid vazio), as traduções vazias e as marcadas como "fuzzy" (a conferir): nesses casos vale o português.
-    Um texto com contexto (msgctxt) entra como contexto + caractere 4 + texto, a chave que Get-WinForgeContextText procura.
-    O arquivo tem milhares de linhas e é lido ao abrir: o texto entre as aspas sai aqui mesmo, e ConvertFrom-WinForgePoString
+    Um texto com contexto (msgctxt) entra como contexto + caractere 4 + texto, a chave que Get-TFToolkitContextText procura.
+    O arquivo tem milhares de linhas e é lido ao abrir: o texto entre as aspas sai aqui mesmo, e ConvertFrom-TFToolkitPoString
     (uma chamada de função, cara no PowerShell) só entra quando a linha tem barra invertida, o que é raro.
     #>
     param ([Parameter(Mandatory)][string]$Path)
@@ -632,12 +632,12 @@ function Read-WinForgeTextCatalog {
             continue
         }
 
-        # O mesmo que ConvertFrom-WinForgePoString devolve: o que está entre a primeira e a última aspa, decodificado.
+        # O mesmo que ConvertFrom-TFToolkitPoString devolve: o que está entre a primeira e a última aspa, decodificado.
         $first = $line.IndexOf('"')
         $last = $line.LastIndexOf('"')
         $value = ""
         if ($first -ge 0 -and $last -gt $first) { $value = $line.Substring($first + 1, $last - $first - 1) }
-        if ($value.IndexOf('\') -ge 0) { $value = ConvertFrom-WinForgePoString -Line $line }
+        if ($value.IndexOf('\') -ge 0) { $value = ConvertFrom-TFToolkitPoString -Line $line }
 
         if ($line.StartsWith("msgctxt ")) { $context = $value; $field = "ctxt"; continue }
         if ($line.StartsWith("msgid ")) { $id = $value; $field = "id"; continue }
@@ -654,27 +654,27 @@ function Read-WinForgeTextCatalog {
 }
 
 
-function Get-WinForgeTextTable {
+function Get-TFToolkitTextTable {
     # As traduções do idioma em uso: lidas uma vez por processo e divididas entre os runspaces. Em português, vazia.
     # $null enquanto a própria carga roda (uma mensagem escrita no meio dela sai em português).
-    if ($null -ne $script:WinForgeTextTable) { return $script:WinForgeTextTable }
-    if ($script:WinForgeTextLoading) { return $null }
+    if ($null -ne $script:TFToolkitTextTable) { return $script:TFToolkitTextTable }
+    if ($script:TFToolkitTextLoading) { return $null }
 
-    $script:WinForgeTextLoading = $true
+    $script:TFToolkitTextLoading = $true
 
     try {
-        $language = Get-WinForgeLanguage
-        $key = "WinForge.Text.$language"
+        $language = Get-TFToolkitLanguage
+        $key = "TFToolkit.Text.$language"
         $table = [AppDomain]::CurrentDomain.GetData($key)
 
         if ($null -eq $table) {
             $table = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([System.StringComparer]::Ordinal)
 
             if ($language -ne "pt") {
-                $path = Join-Path (Get-WinForgeLanguageFolder) "$language.po"
+                $path = Join-Path (Get-TFToolkitLanguageFolder) "$language.po"
 
                 try {
-                    $table = Read-WinForgeTextCatalog -Path $path
+                    $table = Read-TFToolkitTextCatalog -Path $path
                 }
                 catch {
                     Write-Verbose "Tradução não lida ($path): $($_.Exception.Message)"
@@ -684,18 +684,18 @@ function Get-WinForgeTextTable {
             [AppDomain]::CurrentDomain.SetData($key, $table)
         }
 
-        $script:WinForgeTextTable = $table
+        $script:TFToolkitTextTable = $table
         return $table
     }
     finally {
-        $script:WinForgeTextLoading = $false
+        $script:TFToolkitTextLoading = $false
     }
 }
 
 
-function Get-WinForgeText {
+function Get-TFToolkitText {
     <#
-    O texto da interface no idioma do WinForge. Como no gettext, o texto em português é a chave: em português ele volta
+    O texto da interface no idioma do TF-Toolkit. Como no gettext, o texto em português é a chave: em português ele volta
     como está; em inglês e espanhol, a tradução (sem tradução, o próprio português). Os argumentos preenchem {0}, {1}...
     e já chegam como texto ("$x", a mesma expansão que a string tinha antes). Uma tradução com marcadores errados não
     derruba a ação: vale o modelo em português.
@@ -705,9 +705,9 @@ function Get-WinForgeText {
     $value = $Text
 
     if ($Text.Length -gt 0) {
-        $table = $script:WinForgeTextTable
+        $table = $script:TFToolkitTextTable
 
-        if ($null -eq $table) { $table = Get-WinForgeTextTable }
+        if ($null -eq $table) { $table = Get-TFToolkitTextTable }
 
         if ($null -ne $table -and $table.Count -gt 0) {
             $translated = $null
@@ -727,9 +727,9 @@ function Get-WinForgeText {
 }
 
 
-function Get-WinForgeContextText {
+function Get-TFToolkitContextText {
     <#
-    Como Get-WinForgeText, para o texto em português que muda conforme o uso em outro idioma (o "até" de uma data e o de
+    Como Get-TFToolkitText, para o texto em português que muda conforme o uso em outro idioma (o "até" de uma data e o de
     um tamanho, por exemplo): o contexto separa as traduções, como o msgctxt do gettext. Sem tradução, o português.
     #>
     param (
@@ -740,9 +740,9 @@ function Get-WinForgeContextText {
     $value = $Text
 
     if ($Text.Length -gt 0) {
-        $table = $script:WinForgeTextTable
+        $table = $script:TFToolkitTextTable
 
-        if ($null -eq $table) { $table = Get-WinForgeTextTable }
+        if ($null -eq $table) { $table = Get-TFToolkitTextTable }
 
         if ($null -ne $table -and $table.Count -gt 0) {
             $translated = $null
@@ -762,7 +762,7 @@ function Get-WinForgeContextText {
 }
 
 
-function Test-WinForgeCanceledText {
+function Test-TFToolkitCanceledText {
     # Se o detalhe de um resultado diz que a pessoa cancelou ("cancelado pelo usuário", "operação cancelada"), em
     # qualquer um dos três idiomas: "cancelad" em português e espanhol, "canceled" em inglês.
     param ([AllowEmptyString()][AllowNull()][string]$Text)
@@ -771,7 +771,7 @@ function Test-WinForgeCanceledText {
 }
 
 
-function Test-WinForgeRestartingText {
+function Test-TFToolkitRestartingText {
     # Se o detalhe de um resultado diz que o PC está reiniciando (o Otimizar com um reinício pendente), em qualquer um
     # dos três idiomas.
     param ([AllowEmptyString()][AllowNull()][string]$Text)
@@ -780,10 +780,10 @@ function Test-WinForgeRestartingText {
 }
 
 
-function Get-WinForgeLanguageChoices {
+function Get-TFToolkitLanguageChoices {
     # As opções do cartão Idioma, cada idioma escrito nele mesmo (quem não lê o atual acha o seu).
     return @(
-        [PSCustomObject]@{ Id = "Auto"; Label = (Get-WinForgeText 'Automático') }
+        [PSCustomObject]@{ Id = "Auto"; Label = (Get-TFToolkitText 'Automático') }
         [PSCustomObject]@{ Id = "pt"; Label = "Português" }
         [PSCustomObject]@{ Id = "en"; Label = "English" }
         [PSCustomObject]@{ Id = "es"; Label = "Español" }
@@ -791,14 +791,14 @@ function Get-WinForgeLanguageChoices {
 }
 
 
-function Convert-WinForgeXamlText {
+function Convert-TFToolkitXamlText {
     <#
     Traduz os textos fixos de um XAML (Text, Content, ToolTip, Header, Title e AutomationProperties.Name) antes de a
     janela ser montada. Os valores estão escapados para XML: são lidos sem o escape e voltam escapados.
     #>
     param ([Parameter(Mandatory)][string]$Xaml)
 
-    if ((Get-WinForgeLanguage) -eq "pt") { return $Xaml }
+    if ((Get-TFToolkitLanguage) -eq "pt") { return $Xaml }
 
     return [regex]::Replace($Xaml, '(?<attr>\b(?:Text|Content|ToolTip|Header|Title|AutomationProperties\.Name))="(?<value>[^"]*)"', {
             param ($match)
@@ -807,7 +807,7 @@ function Convert-WinForgeXamlText {
 
             if ($value.Length -eq 0 -or $value.StartsWith("{")) { return $match.Value }
 
-            $translated = Get-WinForgeText $value
+            $translated = Get-TFToolkitText $value
             $escaped = [System.Security.SecurityElement]::Escape($translated)
 
             return "$($match.Groups['attr'].Value)=`"$escaped`""
@@ -819,7 +819,7 @@ function Convert-WinForgeXamlText {
 # Privilégios e sessão
 # ---------------------------------------------------------------------------
 
-function Test-WinForgeAdministrator {
+function Test-TFToolkitAdministrator {
     # Se não for possível verificar (sistema que não é Windows, identidade indisponível), vale "não é administrador":
     # é o lado seguro, e as ações que exigem elevação recusam em vez de falhar no meio.
     try {
@@ -834,7 +834,7 @@ function Test-WinForgeAdministrator {
 }
 
 
-function Get-WinForgeCurrentUserSid {
+function Get-TFToolkitCurrentUserSid {
     # O SID da conta deste processo (S-1-5-21-...), ou "" quando não foi possível ler.
     $identity = $null
 
@@ -851,7 +851,7 @@ function Get-WinForgeCurrentUserSid {
 }
 
 
-function Get-WinForgeTokenElevationType {
+function Get-TFToolkitTokenElevationType {
     <#
     O tipo de elevação deste processo (TokenElevationType, do GetTokenInformation): "Full" quando ele está elevado e a
     conta tem também uma versão sem Administrador (o UAC ligado, com uma conta de Administrador comum); "Limited" quando
@@ -861,8 +861,8 @@ function Get-WinForgeTokenElevationType {
     $identity = $null
 
     try {
-        if (-not ("WinForge.TokenNative" -as [type])) {
-            Add-Type -Namespace WinForge -Name TokenNative -MemberDefinition @'
+        if (-not ("TFToolkit.TokenNative" -as [type])) {
+            Add-Type -namespace TFToolkit -Name TokenNative -MemberDefinition @'
 [System.Runtime.InteropServices.DllImport("advapi32.dll", SetLastError = true)]
 public static extern bool GetTokenInformation(System.IntPtr token, int informationClass, out int information, int length, out int returnLength);
 '@ -ErrorAction Stop
@@ -873,7 +873,7 @@ public static extern bool GetTokenInformation(System.IntPtr token, int informati
         $length = 0
 
         # 18 = TokenElevationType; a resposta é um TOKEN_ELEVATION_TYPE (1, 2 ou 3), de 4 bytes.
-        if (-not [WinForge.TokenNative]::GetTokenInformation($identity.Token, 18, [ref]$type, 4, [ref]$length)) { return "" }
+        if (-not [TFToolkit.TokenNative]::GetTokenInformation($identity.Token, 18, [ref]$type, 4, [ref]$length)) { return "" }
 
         switch ($type) {
             1 { return "Default" }
@@ -892,20 +892,20 @@ public static extern bool GetTokenInformation(System.IntPtr token, int informati
 }
 
 
-function Test-WinForgeModernStandby {
+function Test-TFToolkitModernStandby {
     <#
     Se o PC usa o Modern Standby (o modelo de espera "S0 low power idle", da maioria dos notebooks recentes): o campo AoAc
     de SYSTEM_POWER_CAPABILITIES, do GetPwrCapabilities. Nesses PCs, a Microsoft só permite o plano Equilibrado (ou os
     derivados dele). A leitura é guardada para a sessão; sem conseguir ler (outro sistema, a chamada falhou), $false: nada
     fica escondido por causa de uma leitura que não aconteceu.
     #>
-    if ($null -ne $script:WinForgeModernStandby) { return [bool]$script:WinForgeModernStandby }
+    if ($null -ne $script:TFToolkitModernStandby) { return [bool]$script:TFToolkitModernStandby }
 
     $result = $false
 
     try {
-        if (-not ("WinForge.PowerCapabilitiesNative" -as [type])) {
-            Add-Type -Namespace WinForge -Name PowerCapabilitiesNative -MemberDefinition @'
+        if (-not ("TFToolkit.PowerCapabilitiesNative" -as [type])) {
+            Add-Type -namespace TFToolkit -Name PowerCapabilitiesNative -MemberDefinition @'
 [System.Runtime.InteropServices.DllImport("powrprof.dll", SetLastError = true)]
 [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.U1)]
 public static extern bool GetPwrCapabilities([System.Runtime.InteropServices.Out] byte[] capabilities);
@@ -916,18 +916,18 @@ public static extern bool GetPwrCapabilities([System.Runtime.InteropServices.Out
         # o byte 20.
         $buffer = New-Object byte[] 128
 
-        if ([WinForge.PowerCapabilitiesNative]::GetPwrCapabilities($buffer)) { $result = ($buffer[20] -ne 0) }
+        if ([TFToolkit.PowerCapabilitiesNative]::GetPwrCapabilities($buffer)) { $result = ($buffer[20] -ne 0) }
     }
     catch {
         Write-Verbose "Modern Standby: $($_.Exception.Message)"
     }
 
-    $script:WinForgeModernStandby = $result
+    $script:TFToolkitModernStandby = $result
     return $result
 }
 
 
-function ConvertTo-WinForgeCommandLineArgument {
+function ConvertTo-TFToolkitCommandLineArgument {
     # Protege um valor para a linha de comando do Windows (regras do CommandLineToArgvW). Sem isso, um caminho que
     # termina em barra invertida ("C:\Relatorios\") faz a barra escapar a aspa final e engole os argumentos seguintes.
     param (
@@ -946,7 +946,7 @@ function ConvertTo-WinForgeCommandLineArgument {
 }
 
 
-function Restart-WinForgeAsAdministrator {
+function Restart-TFToolkitAsAdministrator {
     # Relança o script do console como Administrador (UAC) e encerra esta instância.
     param (
         [Parameter(Mandatory)]
@@ -955,29 +955,29 @@ function Restart-WinForgeAsAdministrator {
         [string[]]$ExtraArguments = @()
     )
 
-    if (Test-WinForgeAdministrator) {
+    if (Test-TFToolkitAdministrator) {
         return
     }
 
     # Sem o cabeçalho (ele limparia a tela de quem digitou o comando num terminal) e sem o "Sem privilégios" vermelho:
     # só o que vai acontecer e o que fazer.
-    # Aberto pelo WinForge-Console.cmd, quem pausa no fim é o .cmd (uma pausa só). A janela nova, elevada, não tem o
+    # Aberto pelo TF-Toolkit-Console.cmd, quem pausa no fim é o .cmd (uma pausa só). A janela nova, elevada, não tem o
     # .cmd em volta: a marca sai do ambiente antes de abri-la, para ela mesma pausar.
     $fromCmd = ($env:WINFORGE_FROM_CMD -eq "1")
     Remove-Item -Path Env:WINFORGE_FROM_CMD -ErrorAction SilentlyContinue
 
     Write-Host ""
-    Write-Host (Get-WinForgeText '  O WinForge precisa da permissão de Administrador para cuidar do PC.') -ForegroundColor Yellow
-    Write-Host (Get-WinForgeText '  Clique em Sim no aviso do Windows: o WinForge continua numa janela nova.') -ForegroundColor Cyan
+    Write-Host (Get-TFToolkitText '  O TF-Toolkit precisa da permissão de Administrador para cuidar do PC.') -ForegroundColor Yellow
+    Write-Host (Get-TFToolkitText '  Clique em Sim no aviso do Windows: o TF-Toolkit continua numa janela nova.') -ForegroundColor Cyan
     Write-Host ""
 
     Start-Sleep -Seconds 2
 
     if (-not (Test-Path -LiteralPath $ScriptPath)) {
-        Write-Host (Get-WinForgeText '  Não foi possível identificar o caminho do script principal.') -ForegroundColor Red
-        Write-Host (Get-WinForgeText '  Execute o WinForge a partir de um arquivo .ps1 salvo.') -ForegroundColor Yellow
+        Write-Host (Get-TFToolkitText '  Não foi possível identificar o caminho do script principal.') -ForegroundColor Red
+        Write-Host (Get-TFToolkitText '  Execute o TF-Toolkit a partir de um arquivo .ps1 salvo.') -ForegroundColor Yellow
         Write-Host ""
-        if (-not $fromCmd) { Wait-WinForgeKey }
+        if (-not $fromCmd) { Wait-TFToolkitKey }
         exit 1
     }
 
@@ -999,11 +999,11 @@ function Restart-WinForgeAsAdministrator {
     }
     catch {
         # UAC recusado ou bloqueado por política: não há o que fazer além de avisar. O código de saída diz que nada foi
-        # feito (um script que chamou o WinForge-Console.cmd não deve achar que o relatório saiu).
-        Write-Host (Get-WinForgeText '  Sem a permissão de Administrador, o WinForge não pode continuar no terminal.') -ForegroundColor Red
-        Write-Host (Get-WinForgeText '  Abra o WinForge-Console.cmd de novo e clique em Sim no aviso do Windows.') -ForegroundColor Yellow
+        # feito (um script que chamou o TF-Toolkit-Console.cmd não deve achar que o relatório saiu).
+        Write-Host (Get-TFToolkitText '  Sem a permissão de Administrador, o TF-Toolkit não pode continuar no terminal.') -ForegroundColor Red
+        Write-Host (Get-TFToolkitText '  Abra o TF-Toolkit-Console.cmd de novo e clique em Sim no aviso do Windows.') -ForegroundColor Yellow
         Write-Host ""
-        if (-not $fromCmd) { Wait-WinForgeKey }
+        if (-not $fromCmd) { Wait-TFToolkitKey }
         exit 1
     }
 
@@ -1011,7 +1011,7 @@ function Restart-WinForgeAsAdministrator {
 }
 
 
-function Get-WinForgeSessionShellUser {
+function Get-TFToolkitSessionShellUser {
     <#
     A conta dona do Explorador (explorer.exe) nesta sessão do Windows, como "DOMINIO\conta"; "" sem leitura (o Explorador
     não está aberto, a consulta falhou). É quem está usando o PC nesta sessão, também por Área de Trabalho Remota: o
@@ -1024,10 +1024,10 @@ function Get-WinForgeSessionShellUser {
         if ($null -eq $shell) { return "" }
 
         $owner = Invoke-CimMethod -InputObject $shell -MethodName GetOwner -OperationTimeoutSec 15 -ErrorAction Stop
-        $user = [string](Get-WinForgeJsonValue -Object $owner -Name "User" -Default "")
-        $domain = [string](Get-WinForgeJsonValue -Object $owner -Name "Domain" -Default "")
+        $user = [string](Get-TFToolkitJsonValue -Object $owner -Name "User" -Default "")
+        $domain = [string](Get-TFToolkitJsonValue -Object $owner -Name "Domain" -Default "")
 
-        if ([int](Get-WinForgeJsonValue -Object $owner -Name "ReturnValue" -Default 1) -ne 0 -or [string]::IsNullOrWhiteSpace($user)) { return "" }
+        if ([int](Get-TFToolkitJsonValue -Object $owner -Name "ReturnValue" -Default 1) -ne 0 -or [string]::IsNullOrWhiteSpace($user)) { return "" }
 
         return $(if ([string]::IsNullOrWhiteSpace($domain)) { $user.Trim() } else { "$($domain.Trim())\$($user.Trim())" })
     }
@@ -1037,10 +1037,10 @@ function Get-WinForgeSessionShellUser {
 }
 
 
-function Get-WinForgeInteractiveUser {
+function Get-TFToolkitInteractiveUser {
     # Quem está usando o PC: o dono do Explorador desta sessão (vale também na Área de Trabalho Remota) e, sem ele, quem
     # está no console. "" sem leitura.
-    $shellUser = Get-WinForgeSessionShellUser
+    $shellUser = Get-TFToolkitSessionShellUser
 
     if (-not [string]::IsNullOrWhiteSpace($shellUser)) { return $shellUser }
 
@@ -1059,10 +1059,10 @@ function Get-WinForgeInteractiveUser {
 }
 
 
-function Test-WinForgeUserContextMismatch {
-    # Verdadeiro quando o WinForge foi elevado com outra conta que não a do usuário logado.
+function Test-TFToolkitUserContextMismatch {
+    # Verdadeiro quando o TF-Toolkit foi elevado com outra conta que não a do usuário logado.
     # Nesse caso, HKCU, %LOCALAPPDATA% e Downloads pertencem ao administrador, não ao usuário interativo.
-    $interactiveUser = Get-WinForgeInteractiveUser
+    $interactiveUser = Get-TFToolkitInteractiveUser
 
     if ([string]::IsNullOrWhiteSpace($interactiveUser)) {
         return $false
@@ -1078,7 +1078,7 @@ function Test-WinForgeUserContextMismatch {
 }
 
 
-function Test-WinForgeLaptop {
+function Test-TFToolkitLaptop {
     # O chassi decide primeiro (SMBIOS ChassisTypes): portátil é notebook; gabinete de mesa não é, mesmo com "bateria" (um
     # nobreak USB aparece como bateria no Windows). Só com o chassi desconhecido a bateria desempata.
     $portableTypes = @(8, 9, 10, 11, 12, 14, 18, 21, 30, 31, 32)
@@ -1104,9 +1104,9 @@ function Test-WinForgeLaptop {
 }
 
 
-function Test-WinForgeOnBattery {
+function Test-TFToolkitOnBattery {
     # $true quando o notebook está funcionando na bateria (BatteryStatus 1 = descarregando, 4 = baixa, 5 = crítica).
-    # Desktop, tomada conectada e falha na consulta dão $false: na dúvida, o WinForge não atrapalha o usuário.
+    # Desktop, tomada conectada e falha na consulta dão $false: na dúvida, o TF-Toolkit não atrapalha o usuário.
     try {
         $batteries = @(Get-CimInstance Win32_Battery -OperationTimeoutSec 15 -ErrorAction Stop)
         return (@($batteries | Where-Object { [int]$_.BatteryStatus -in 1, 4, 5 }).Count -gt 0)
@@ -1117,12 +1117,12 @@ function Test-WinForgeOnBattery {
 }
 
 
-function Test-WinForgeMeteredConnection {
+function Test-TFToolkitMeteredConnection {
     <#
     $true quando a conexão com a internet é limitada (o Windows a trata como plano de dados: celular roteado, chip,
     rede marcada como limitada nas Configurações), ou quando o plano está perto do limite, acabou ou em roaming. O próprio
-    Windows não baixa atualizações sozinho numa conexão assim; quem baixa pelo WinForge fica sabendo antes. Sem a
-    informação (Windows sem a API, consulta que falhou), $false: na dúvida, o WinForge não atrapalha.
+    Windows não baixa atualizações sozinho numa conexão assim; quem baixa pelo TF-Toolkit fica sabendo antes. Sem a
+    informação (Windows sem a API, consulta que falhou), $false: na dúvida, o TF-Toolkit não atrapalha.
     #>
     try {
         $network = [Windows.Networking.Connectivity.NetworkInformation, Windows.Networking.Connectivity, ContentType=WindowsRuntime]
@@ -1140,7 +1140,7 @@ function Test-WinForgeMeteredConnection {
 }
 
 
-function Get-WinForgeSystemDriveFreeBytes {
+function Get-TFToolkitSystemDriveFreeBytes {
     # Espaço livre na unidade do Windows, em bytes; -1 quando não for possível saber.
     try {
         $root = [IO.Path]::GetPathRoot($env:SystemRoot)
@@ -1152,7 +1152,7 @@ function Get-WinForgeSystemDriveFreeBytes {
 }
 
 
-function Get-WinForgeSystemDriveSpace {
+function Get-TFToolkitSystemDriveSpace {
     # Espaço livre e total da unidade do Windows, em bytes; $null quando não for possível ler.
     try {
         $root = [IO.Path]::GetPathRoot($env:SystemRoot)
@@ -1174,7 +1174,7 @@ function Get-WinForgeSystemDriveSpace {
 }
 
 
-function Get-WinForgeDiskSpaceLevel {
+function Get-TFToolkitDiskSpaceLevel {
     <#
     Classifica o espaço livre de uma unidade com uma regra só, usada pela tela inicial, pela lista de discos e pela
     checagem da Manutenção. Na unidade do Windows, em gigabytes, e não em proporção: "Critical" = menos de 10 GB livres
@@ -1203,22 +1203,22 @@ function Get-WinForgeDiskSpaceLevel {
     if ($free -lt 0) { return "Unknown" }
 
     if ($System) {
-        if ($free -lt $script:WinForgeCriticalDiskBytes) { return "Critical" }
-        if ($free -lt $script:WinForgeLowDiskBytes) { return "Low" }
+        if ($free -lt $script:TFToolkitCriticalDiskBytes) { return "Critical" }
+        if ($free -lt $script:TFToolkitLowDiskBytes) { return "Low" }
         return "Ok"
     }
 
     if ($total -le 0) { return "Unknown" }
     if ((($free * 100) / $total) -lt 5) { return "Critical" }
-    if ((($free * 100) / $total) -lt $script:WinForgeLowDiskPercent) { return "Low" }
+    if ((($free * 100) / $total) -lt $script:TFToolkitLowDiskPercent) { return "Low" }
 
     return "Ok"
 }
 
 
-function Get-WinForgeRegistryWindowsBuild {
+function Get-TFToolkitRegistryWindowsBuild {
     # A build pelo Registro (CurrentBuildNumber), sem o WMI; 0 sem leitura.
-    $value = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "CurrentBuildNumber"
+    $value = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "CurrentBuildNumber"
     $parsed = 0
 
     if ($null -ne $value -and [int]::TryParse(([string]$value).Trim(), [ref]$parsed) -and $parsed -gt 0) { return $parsed }
@@ -1227,32 +1227,32 @@ function Get-WinForgeRegistryWindowsBuild {
 }
 
 
-function Get-WinForgeWindowsBuild {
-    # O build não muda com o WinForge aberto: a primeira leitura fica guardada (a lista de ajustes pergunta uma vez por
+function Get-TFToolkitWindowsBuild {
+    # O build não muda com o TF-Toolkit aberto: a primeira leitura fica guardada (a lista de ajustes pergunta uma vez por
     # ajuste, e cada pergunta era uma consulta ao Windows).
-    if ($script:WinForgeWindowsBuild -gt 0) { return $script:WinForgeWindowsBuild }
+    if ($script:TFToolkitWindowsBuild -gt 0) { return $script:TFToolkitWindowsBuild }
 
     try {
         $operatingSystem = Get-CimInstance -ClassName Win32_OperatingSystem -OperationTimeoutSec 15 -ErrorAction Stop
         $build = [int]$operatingSystem.BuildNumber
     }
     catch {
-        $build = Get-WinForgeRegistryWindowsBuild
+        $build = Get-TFToolkitRegistryWindowsBuild
         if ($build -le 0) { $build = [int][Environment]::OSVersion.Version.Build }
     }
 
-    if ($build -gt 0) { $script:WinForgeWindowsBuild = $build }
+    if ($build -gt 0) { $script:TFToolkitWindowsBuild = $build }
 
     return $build
 }
 
 
-function Test-WinForgeWindows11 {
-    return (Get-WinForgeWindowsBuild) -ge 22000
+function Test-TFToolkitWindows11 {
+    return (Get-TFToolkitWindowsBuild) -ge 22000
 }
 
 
-function Get-WinForgeWindowsName {
+function Get-TFToolkitWindowsName {
     # "Microsoft Windows 11 Pro" vira "Windows 11 Pro". Em alguns PCs atualizados do 10 para o 11 o nome ainda diz
     # "Windows 10"; a build decide. A tela inicial, o Diagnóstico e o relatório mostram este mesmo nome.
     param (
@@ -1268,12 +1268,12 @@ function Get-WinForgeWindowsName {
 }
 
 
-function Get-WinForgeWindowsDisplayVersion {
+function Get-TFToolkitWindowsDisplayVersion {
     # A versão de mercado (24H2, 23H2...): DisplayVersion desde o 20H2; antes, ReleaseId (2004, 1909...). "" sem leitura.
     try {
         $current = Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -ErrorAction Stop
 
-        return [string](Get-WinForgeJsonValue -Object $current -Name "DisplayVersion" -Default (Get-WinForgeJsonValue -Object $current -Name "ReleaseId" -Default ""))
+        return [string](Get-TFToolkitJsonValue -Object $current -Name "DisplayVersion" -Default (Get-TFToolkitJsonValue -Object $current -Name "ReleaseId" -Default ""))
     }
     catch {
         return ""
@@ -1281,13 +1281,13 @@ function Get-WinForgeWindowsDisplayVersion {
 }
 
 
-function Get-WinForgeSessionInfo {
+function Get-TFToolkitSessionInfo {
     param (
         [switch]$Refresh
     )
 
-    if ($null -ne $script:WinForgeSession -and -not $Refresh) {
-        return $script:WinForgeSession
+    if ($null -ne $script:TFToolkitSession -and -not $Refresh) {
+        return $script:TFToolkitSession
     }
 
     $build = 0
@@ -1298,24 +1298,24 @@ function Get-WinForgeSessionInfo {
         $os = Get-CimInstance Win32_OperatingSystem -OperationTimeoutSec 15 -ErrorAction Stop
         $build = [int]$os.BuildNumber
         $windowsLabel = if ($build -ge 22000) { "Windows 11" } else { "Windows 10" }
-        $caption = Get-WinForgeWindowsName -Caption ([string](Get-WinForgeJsonValue -Object $os -Name "Caption" -Default "")) -Build $build
+        $caption = Get-TFToolkitWindowsName -Caption ([string](Get-TFToolkitJsonValue -Object $os -Name "Caption" -Default "")) -Build $build
     }
     catch {
         # Sem o WMI (o serviço parado ou com defeito), a build ainda vem do Registro: sem ela, o Início não saberia o
         # suporte do Windows. O nome completo fica de fora.
-        $build = Get-WinForgeRegistryWindowsBuild
+        $build = Get-TFToolkitRegistryWindowsBuild
         if ($build -gt 0) { $windowsLabel = $(if ($build -ge 22000) { "Windows 11" } else { "Windows 10" }) }
     }
 
     # Sem a versão, o cartão mostra só o nome e a build.
-    $version = Get-WinForgeWindowsDisplayVersion
+    $version = Get-TFToolkitWindowsDisplayVersion
 
     try {
-        $script:WinForgeSession = [PSCustomObject]@{
-            IsAdmin        = Test-WinForgeAdministrator
+        $script:TFToolkitSession = [PSCustomObject]@{
+            IsAdmin        = Test-TFToolkitAdministrator
             User           = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-            UserMismatch   = Test-WinForgeUserContextMismatch
-            IsLaptop       = Test-WinForgeLaptop
+            UserMismatch   = Test-TFToolkitUserContextMismatch
+            IsLaptop       = Test-TFToolkitLaptop
             WindowsLabel   = $windowsLabel
             WindowsBuild   = $build
             WindowsName    = $caption
@@ -1324,7 +1324,7 @@ function Get-WinForgeSessionInfo {
     }
     catch {
         # As informações de sessão são auxiliares; nunca devem impedir a exibição de uma tela.
-        $script:WinForgeSession = [PSCustomObject]@{
+        $script:TFToolkitSession = [PSCustomObject]@{
             IsAdmin        = $false
             User           = $env:USERNAME
             UserMismatch   = $false
@@ -1336,7 +1336,7 @@ function Get-WinForgeSessionInfo {
         }
     }
 
-    return $script:WinForgeSession
+    return $script:TFToolkitSession
 }
 
 
@@ -1344,7 +1344,7 @@ function Get-WinForgeSessionInfo {
 # Ambiente e log
 # ---------------------------------------------------------------------------
 
-function Set-WinForgeConsoleEncoding {
+function Set-TFToolkitConsoleEncoding {
     # Garante melhor exibição de acentos no Windows PowerShell 5.1 e em consoles legados.
     try {
         $utf8Encoding = New-Object System.Text.UTF8Encoding -ArgumentList $false
@@ -1360,7 +1360,7 @@ function Set-WinForgeConsoleEncoding {
 }
 
 
-function Enable-WinForgeTls12 {
+function Enable-TFToolkitTls12 {
     # O Windows PowerShell 5.1 em alguns sistemas só negocia TLS 1.0/1.1, que os servidores atuais recusam.
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
@@ -1371,7 +1371,7 @@ function Enable-WinForgeTls12 {
 }
 
 
-function Test-WinForgeTcpConnection {
+function Test-TFToolkitTcpConnection {
     # Abre e fecha uma conexão TCP. Mostra se a internet responde mesmo quando o ping (ICMP) é bloqueado.
     # Nunca lança erro: tempo esgotado, recusa ou nome inválido dão $false.
     param (
@@ -1407,7 +1407,7 @@ function Test-WinForgeTcpConnection {
 }
 
 
-function Test-WinForgeDnsResolution {
+function Test-TFToolkitDnsResolution {
     # Verdadeiro se o nome vira ao menos um endereço IP. Nunca lança erro: nome inexistente ou DNS fora do ar dão $false.
     param (
         [Parameter(Mandatory)]
@@ -1423,74 +1423,74 @@ function Test-WinForgeDnsResolution {
 }
 
 
-function Initialize-WinForgeEnvironment {
-    Set-WinForgeConsoleEncoding
-    Enable-WinForgeTls12
+function Initialize-TFToolkitEnvironment {
+    Set-TFToolkitConsoleEncoding
+    Enable-TFToolkitTls12
 }
 
 
-function Get-WinForgeGuiHostUI {
-    # A interface do host da janela (WinForge.GuiHostUI), que grava o log das ações; $null fora da janela.
-    if (-not (Test-WinForgeGuiMode)) { return $null }
+function Get-TFToolkitGuiHostUI {
+    # A interface do host da janela (TFToolkit.GuiHostUI), que grava o log das ações; $null fora da janela.
+    if (-not (Test-TFToolkitGuiMode)) { return $null }
 
-    $variable = Get-Variable -Name WinForgeGuiHost -Scope Global -ErrorAction SilentlyContinue
+    $variable = Get-Variable -Name TFToolkitGuiHost -Scope Global -ErrorAction SilentlyContinue
     if ($null -eq $variable -or $null -eq $variable.Value) { return $null }
 
     try { return $variable.Value.GuiUI } catch { return $null }
 }
 
 
-function Start-WinForgeLogging {
+function Start-TFToolkitLogging {
     <#
-    Abre o log da sessão em %LOCALAPPDATA%\WinForge\logs (os 20 mais recentes ficam). Idempotente: chamar de novo com o
+    Abre o log da sessão em %LOCALAPPDATA%\TF-Toolkit\logs (os 20 mais recentes ficam). Idempotente: chamar de novo com o
     log ativo não abre um segundo. No console, é o transcript do PowerShell; na janela, o próprio host grava cada linha
     que as ações escrevem, com a hora: o transcript não vê o que passa pelo host da janela, e o log ficava vazio.
     #>
-    if ($script:WinForgeLoggingActive) {
+    if ($script:TFToolkitLoggingActive) {
         return $true
     }
 
     try {
-        $logDirectory = Join-Path (Get-WinForgeDataPath) "logs"
+        $logDirectory = Join-Path (Get-TFToolkitDataPath) "logs"
 
         if (-not (Test-Path -LiteralPath $logDirectory)) {
             [void](New-Item -Path $logDirectory -ItemType Directory -Force)
         }
 
         # Mantém apenas os 20 logs mais recentes.
-        Get-ChildItem -LiteralPath $logDirectory -Filter "winforge-*.log" -ErrorAction SilentlyContinue |
+        Get-ChildItem -LiteralPath $logDirectory -Filter "tf-toolkit-*.log" -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime -Descending |
             Select-Object -Skip 20 |
             Remove-Item -Force -ErrorAction SilentlyContinue
 
-        $script:WinForgeLogPath = Join-Path $logDirectory ("winforge-{0:yyyyMMdd-HHmmss}.log" -f (Get-Date))
-        $gui = Get-WinForgeGuiHostUI
+        $script:TFToolkitLogPath = Join-Path $logDirectory ("tf-toolkit-{0:yyyyMMdd-HHmmss}.log" -f (Get-Date))
+        $gui = Get-TFToolkitGuiHostUI
 
         if ($null -ne $gui -and $null -ne $gui.PSObject.Methods["OpenLog"]) {
-            $header = (Get-WinForgeText 'WinForge Build {0} - {1} - {2} - PowerShell {3}' "$($script:WinForgeBuild)" "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "$env:COMPUTERNAME" "$($PSVersionTable.PSVersion)")
-            if (-not $gui.OpenLog($script:WinForgeLogPath, $header)) { throw (Get-WinForgeText 'o log não pôde ser aberto') }
-            $script:WinForgeLogMode = "Gui"
+            $header = (Get-TFToolkitText 'TF-Toolkit Build {0} - {1} - {2} - PowerShell {3}' "$($script:TFToolkitBuild)" "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "$env:COMPUTERNAME" "$($PSVersionTable.PSVersion)")
+            if (-not $gui.OpenLog($script:TFToolkitLogPath, $header)) { throw (Get-TFToolkitText 'o log não pôde ser aberto') }
+            $script:TFToolkitLogMode = "Gui"
         }
         else {
-            [void](Start-Transcript -Path $script:WinForgeLogPath -Force)
-            $script:WinForgeLogMode = "Transcript"
+            [void](Start-Transcript -Path $script:TFToolkitLogPath -Force)
+            $script:TFToolkitLogMode = "Transcript"
         }
 
-        $script:WinForgeLoggingActive = $true
+        $script:TFToolkitLoggingActive = $true
         return $true
     }
     catch {
-        $script:WinForgeLogPath = $null
+        $script:TFToolkitLogPath = $null
         return $false
     }
 }
 
 
-function Stop-WinForgeLogging {
+function Stop-TFToolkitLogging {
     try {
-        if ($script:WinForgeLoggingActive) {
-            if ($script:WinForgeLogMode -eq "Gui") {
-                $gui = Get-WinForgeGuiHostUI
+        if ($script:TFToolkitLoggingActive) {
+            if ($script:TFToolkitLogMode -eq "Gui") {
+                $gui = Get-TFToolkitGuiHostUI
                 if ($null -ne $gui) { $gui.CloseLog() }
             }
             else {
@@ -1502,19 +1502,19 @@ function Stop-WinForgeLogging {
         # O log pode não estar ativo.
     }
 
-    $script:WinForgeLoggingActive = $false
+    $script:TFToolkitLoggingActive = $false
 }
 
 
-function Get-WinForgeLogPath {
-    return $script:WinForgeLogPath
+function Get-TFToolkitLogPath {
+    return $script:TFToolkitLogPath
 }
 
 
-function Write-WinForgeSecret {
+function Write-TFToolkitSecret {
     <#
     Mostra um segredo na tela (a senha de uma rede Wi-Fi, a chave de recuperação do BitLocker) sem que ele vá para o log,
-    como uma linha "rótulo : valor" (Write-WinForgeKeyValue), que o resumo da janela mostra. Na janela, o log grava o
+    como uma linha "rótulo : valor" (Write-TFToolkitKeyValue), que o resumo da janela mostra. Na janela, o log grava o
     rótulo com "[fora do log]" no lugar do valor; no menu de texto, o log é pausado durante a linha.
     #>
     param (
@@ -1524,16 +1524,16 @@ function Write-WinForgeSecret {
     )
 
     $padded = $Label.PadRight($LabelWidth)
-    $gui = Get-WinForgeGuiHostUI
+    $gui = Get-TFToolkitGuiHostUI
 
     if ($null -ne $gui -and $null -ne $gui.PSObject.Methods["WriteSecretValue"]) {
-        $gui.WriteSecretValue($padded, $Value, [ConsoleColor]::Cyan, (Get-WinForgeText '[fora do log]'))
+        $gui.WriteSecretValue($padded, $Value, [ConsoleColor]::Cyan, (Get-TFToolkitText '[fora do log]'))
         return
     }
 
     $paused = $false
 
-    if ($script:WinForgeLoggingActive -and $script:WinForgeLogMode -eq "Transcript") {
+    if ($script:TFToolkitLoggingActive -and $script:TFToolkitLogMode -eq "Transcript") {
         try { [void](Stop-Transcript); $paused = $true } catch { $paused = $false }
     }
 
@@ -1543,12 +1543,12 @@ function Write-WinForgeSecret {
     Write-Host $Value -ForegroundColor Cyan
 
     if ($paused) {
-        try { [void](Start-Transcript -Path $script:WinForgeLogPath -Append) } catch { $script:WinForgeLoggingActive = $false }
+        try { [void](Start-Transcript -Path $script:TFToolkitLogPath -Append) } catch { $script:TFToolkitLoggingActive = $false }
     }
 }
 
 
-function Add-WinForgeOpenTime {
+function Add-TFToolkitOpenTime {
     <#
     Anota em logs\abertura.log quanto a janela (ou o menu) levou para abrir: a data, a versão, os segundos e se abriu como
     Administrador. Ficam as 100 aberturas mais recentes. Serve para medir a abertura num PC de verdade; uma falha aqui não
@@ -1560,12 +1560,12 @@ function Add-WinForgeOpenTime {
     )
 
     try {
-        $folder = Join-Path (Get-WinForgeDataPath) "logs"
+        $folder = Join-Path (Get-TFToolkitDataPath) "logs"
         if (-not (Test-Path -LiteralPath $folder)) { [void](New-Item -ItemType Directory -Path $folder -Force) }
 
         $path = Join-Path $folder "abertura.log"
         $culture = [System.Globalization.CultureInfo]::InvariantCulture
-        $line = "{0}  Build {1}  {2}  {3} s  {4}" -f (Get-Date).ToString("yyyy-MM-dd HH:mm:ss", $culture), $script:WinForgeBuild, $Kind, $Seconds.ToString("0.00", $culture), $(if (Test-WinForgeAdministrator) { "admin" } else { "user" })
+        $line = "{0}  Build {1}  {2}  {3} s  {4}" -f (Get-Date).ToString("yyyy-MM-dd HH:mm:ss", $culture), $script:TFToolkitBuild, $Kind, $Seconds.ToString("0.00", $culture), $(if (Test-TFToolkitAdministrator) { "admin" } else { "user" })
         $lines = @()
 
         if (Test-Path -LiteralPath $path -PathType Leaf) { $lines = @([System.IO.File]::ReadAllLines($path) | Select-Object -Last 99) }
@@ -1578,7 +1578,7 @@ function Add-WinForgeOpenTime {
 }
 
 
-function Add-WinForgeWindowProblem {
+function Add-TFToolkitWindowProblem {
     <#
     Anota em logs\janela.log uma parte da janela que não pôde ser mostrada: a data, a versão, a parte (Part) e o motivo
     (Reason, os erros do momento, um por linha). A janela roda sem console, e sem isto a falha some sem deixar rastro; o
@@ -1590,12 +1590,12 @@ function Add-WinForgeWindowProblem {
     )
 
     try {
-        $folder = Join-Path (Get-WinForgeDataPath) "logs"
+        $folder = Join-Path (Get-TFToolkitDataPath) "logs"
         if (-not (Test-Path -LiteralPath $folder)) { [void](New-Item -ItemType Directory -Path $folder -Force) }
 
         $path = Join-Path $folder "janela.log"
         $stamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss", [System.Globalization.CultureInfo]::InvariantCulture)
-        $new = @("$stamp  Build $($script:WinForgeBuild)  $Part")
+        $new = @("$stamp  Build $($script:TFToolkitBuild)  $Part")
 
         # Cada motivo numa linha só (um erro do .NET pode trazer quebras de linha), com um limite por linha.
         foreach ($text in @($Reason | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 10)) {
@@ -1618,17 +1618,17 @@ function Add-WinForgeWindowProblem {
 }
 
 
-function Get-WinForgeLatestLogFile {
+function Get-TFToolkitLatestLogFile {
     # O log mais recente da pasta de logs (a janela e as ações gravam logs em sessões separadas, então o caminho em
     # memória não serve para a janela). $null quando ainda não há nenhum.
     try {
-        $directory = Join-Path (Get-WinForgeDataPath) "logs"
+        $directory = Join-Path (Get-TFToolkitDataPath) "logs"
 
         if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
             return $null
         }
 
-        $latest = Get-ChildItem -LiteralPath $directory -Filter "winforge-*.log" -File -ErrorAction Stop |
+        $latest = Get-ChildItem -LiteralPath $directory -Filter "tf-toolkit-*.log" -File -ErrorAction Stop |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
 
@@ -1646,7 +1646,7 @@ function Get-WinForgeLatestLogFile {
 # Registro
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeRegistryValueOrNull {
+function Get-TFToolkitRegistryValueOrNull {
     param (
         [string]$Path,
         [string]$Name
@@ -1662,7 +1662,7 @@ function Get-WinForgeRegistryValueOrNull {
 }
 
 
-function ConvertTo-WinForgeRegistryDWord {
+function ConvertTo-TFToolkitRegistryDWord {
     <#
     O número de um REG_DWORD como o PowerShell 5.1 grava: um Int32. O REG_DWORD são 32 bits sem sinal, e o provedor do
     registro devolve acima de 2.147.483.647 um UInt32 (as cores do Windows, com o alfa em FF, passam disso): o mesmo
@@ -1674,7 +1674,7 @@ function ConvertTo-WinForgeRegistryDWord {
     $number = [long]$Value
 
     if ($number -lt [int]::MinValue -or $number -gt [long][uint32]::MaxValue) {
-        throw (Get-WinForgeText 'o valor {0} não cabe num DWORD do registro' "$Value")
+        throw (Get-TFToolkitText 'o valor {0} não cabe num DWORD do registro' "$Value")
     }
 
     if ($number -gt [int]::MaxValue) { return [int]($number - 4294967296) }
@@ -1683,7 +1683,7 @@ function ConvertTo-WinForgeRegistryDWord {
 }
 
 
-function ConvertTo-WinForgeRegistryQWord {
+function ConvertTo-TFToolkitRegistryQWord {
     # O número de um REG_QWORD como o PowerShell grava (Int64): acima de 9.223.372.036.854.775.807, o UInt64 que o provedor
     # do registro devolve vira o Int64 com os mesmos 8 bytes.
     param ([Parameter(Mandatory)]$Value)
@@ -1696,8 +1696,8 @@ function ConvertTo-WinForgeRegistryQWord {
 }
 
 
-function Set-WinForgeRegistryDWord {
-    # Value: de -2.147.483.648 a 4.294.967.295, o jeito que o provedor do registro lê (ConvertTo-WinForgeRegistryDWord).
+function Set-TFToolkitRegistryDWord {
+    # Value: de -2.147.483.648 a 4.294.967.295, o jeito que o provedor do registro lê (ConvertTo-TFToolkitRegistryDWord).
     param (
         [Parameter(Mandatory)]
         [string]$Path,
@@ -1709,7 +1709,7 @@ function Set-WinForgeRegistryDWord {
         $Value
     )
 
-    $data = ConvertTo-WinForgeRegistryDWord -Value $Value
+    $data = ConvertTo-TFToolkitRegistryDWord -Value $Value
 
     # -ErrorAction Stop: com a preferência padrão (Continue), um "acesso negado" só escreveria um erro e quem chamou
     # seguiria como se o valor tivesse sido gravado (anotando no Histórico e guardando backup de algo que não mudou).
@@ -1721,7 +1721,7 @@ function Set-WinForgeRegistryDWord {
 }
 
 
-function Set-WinForgeRegistryBinary {
+function Set-TFToolkitRegistryBinary {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
@@ -1741,7 +1741,7 @@ function Set-WinForgeRegistryBinary {
 }
 
 
-function Get-WinForgeRegistryValueKind {
+function Get-TFToolkitRegistryValueKind {
     # O tipo de um valor de registro, como o Windows o guarda (DWord, QWord, String, ExpandString, MultiString, Binary...),
     # ou "" quando o valor não existe ou não pôde ser lido.
     param (
@@ -1764,8 +1764,8 @@ function Get-WinForgeRegistryValueKind {
 }
 
 
-function Set-WinForgeRegistryValue {
-    # Grava um valor com o tipo dado (o de Get-WinForgeRegistryValueKind), para devolver um valor ao que era: um texto
+function Set-TFToolkitRegistryValue {
+    # Grava um valor com o tipo dado (o de Get-TFToolkitRegistryValueKind), para devolver um valor ao que era: um texto
     # volta como texto, não como número. Tipos que o PowerShell não grava (None, Unknown) voltam como binário.
     param (
         [Parameter(Mandatory)]
@@ -1782,10 +1782,10 @@ function Set-WinForgeRegistryValue {
     )
 
     if ($Kind -eq "DWord") {
-        $data = ConvertTo-WinForgeRegistryDWord -Value $Value
+        $data = ConvertTo-TFToolkitRegistryDWord -Value $Value
     }
     elseif ($Kind -eq "QWord") {
-        $data = ConvertTo-WinForgeRegistryQWord -Value $Value
+        $data = ConvertTo-TFToolkitRegistryQWord -Value $Value
     }
     elseif ($Kind -eq "MultiString") {
         $data = [string[]]@($Value | Where-Object { $null -ne $_ })
@@ -1806,7 +1806,7 @@ function Set-WinForgeRegistryValue {
 }
 
 
-function Get-WinForgeRegistryValues {
+function Get-TFToolkitRegistryValues {
     # Todos os valores nomeados de uma chave (nome -> valor), na ordem do registro. Chave ausente ou sem acesso = vazio.
     param (
         [Parameter(Mandatory)]
@@ -1832,7 +1832,7 @@ function Get-WinForgeRegistryValues {
 }
 
 
-function Remove-WinForgeRegistryValue {
+function Remove-TFToolkitRegistryValue {
     # Remove um valor de registro. Só "a chave ou o valor já não existem" não é erro: sem permissão, o valor continua lá e
     # quem chamou precisa saber (desfazer um ajuste não pode dizer que voltou ao original sem ter voltado).
     param (
@@ -1857,7 +1857,7 @@ function Remove-WinForgeRegistryValue {
 }
 
 
-function Test-WinForgeRegistryKey {
+function Test-TFToolkitRegistryKey {
     param (
         [Parameter(Mandatory)]
         [string]$Path
@@ -1867,7 +1867,7 @@ function Test-WinForgeRegistryKey {
 }
 
 
-function Set-WinForgeRegistryKeyDefault {
+function Set-TFToolkitRegistryKeyDefault {
     # Cria a chave (e as de cima) e define o valor padrão dela como texto.
     param (
         [Parameter(Mandatory)]
@@ -1884,7 +1884,7 @@ function Set-WinForgeRegistryKeyDefault {
 }
 
 
-function Remove-WinForgeRegistryKey {
+function Remove-TFToolkitRegistryKey {
     # Remove a chave com tudo o que há dentro; com -OnlyIfEmpty, só se não tiver subchaves nem valores. Chave ausente não é erro.
     param (
         [Parameter(Mandatory)]
@@ -1914,19 +1914,19 @@ function Remove-WinForgeRegistryKey {
 # Formatação
 # ---------------------------------------------------------------------------
 
-# Os números do WinForge saem como no português do Brasil (vírgula decimal), qualquer que seja o idioma do Windows: o
+# Os números do TF-Toolkit saem como no português do Brasil (vírgula decimal), qualquer que seja o idioma do Windows: o
 # texto em volta é sempre em português. Sem isto, o PowerShell escreve "8.23 GB" ao montar um texto com "$(...)".
-# Montado na primeira vez que é usado (Get-WinForgeNumberFormat).
-$script:WinForgeNumberFormat = $null
+# Montado na primeira vez que é usado (Get-TFToolkitNumberFormat).
+$script:TFToolkitNumberFormat = $null
 
 
-function Get-WinForgeNumberFormat {
-    # Os separadores do idioma do WinForge: vírgula decimal e ponto de milhar em português e espanhol ("4,5", "12.345");
+function Get-TFToolkitNumberFormat {
+    # Os separadores do idioma do TF-Toolkit: vírgula decimal e ponto de milhar em português e espanhol ("4,5", "12.345");
     # ponto decimal e vírgula de milhar em inglês ("4.5", "12,345").
-    if ($null -eq $script:WinForgeNumberFormat) {
+    if ($null -eq $script:TFToolkitNumberFormat) {
         $format = [System.Globalization.NumberFormatInfo]::InvariantInfo.Clone()
 
-        if ((Get-WinForgeLanguage) -eq "en") {
+        if ((Get-TFToolkitLanguage) -eq "en") {
             $format.NumberDecimalSeparator = "."
             $format.NumberGroupSeparator = ","
         }
@@ -1935,14 +1935,14 @@ function Get-WinForgeNumberFormat {
             $format.NumberGroupSeparator = "."
         }
 
-        $script:WinForgeNumberFormat = $format
+        $script:TFToolkitNumberFormat = $format
     }
 
-    return $script:WinForgeNumberFormat
+    return $script:TFToolkitNumberFormat
 }
 
 
-function Format-WinForgeBytes {
+function Format-TFToolkitBytes {
     <#
     Texto legível para tamanhos, como o Explorador mostra: três algarismos significativos e vírgula decimal ("8,23 GB",
     "47,6 GB", "476 GB", "1,5 GB"). Valores nulos, inválidos ou <= 0 viram $ZeroText.
@@ -1993,11 +1993,11 @@ function Format-WinForgeBytes {
 
     $pattern = $(if ($digits -gt 0) { "0." + ("#" * $digits) } else { "0" })
 
-    return "$($rounded.ToString($pattern, (Get-WinForgeNumberFormat))) $($units[$index])"
+    return "$($rounded.ToString($pattern, (Get-TFToolkitNumberFormat))) $($units[$index])"
 }
 
 
-function Format-WinForgeNumber {
+function Format-TFToolkitNumber {
     # "12.345", "4,5", "3,69": um número com os separadores do português do Brasil, até $Decimals casas (zeros à direita
     # somem). Montar o texto com "$(...)" escreveria "4.5" e "12345".
     param (
@@ -2007,13 +2007,13 @@ function Format-WinForgeNumber {
 
     $pattern = "#,##0" + $(if ($Decimals -gt 0) { "." + ("#" * $Decimals) } else { "" })
 
-    return $Value.ToString($pattern, (Get-WinForgeNumberFormat))
+    return $Value.ToString($pattern, (Get-TFToolkitNumberFormat))
 }
 
 
-function Format-WinForgeDateTime {
+function Format-TFToolkitDateTime {
     # "21/10/2026 21:40" (ou outro padrão, como "dd/MM"), sempre com barras e dois pontos: num padrão de data, "/" e ":"
-    # viram os separadores do idioma do Windows (pontos no alemão, por exemplo), e o texto em volta é o do WinForge. O
+    # viram os separadores do idioma do Windows (pontos no alemão, por exemplo), e o texto em volta é o do TF-Toolkit. O
     # padrão é traduzido como um texto da interface ("dd/MM/yyyy" vira "MM/dd/yyyy" em inglês), e os nomes (AM/PM) são
     # os da cultura invariante.
     param (
@@ -2021,11 +2021,11 @@ function Format-WinForgeDateTime {
         [string]$Pattern = "dd/MM/yyyy HH:mm"
     )
 
-    return $When.ToString((Get-WinForgeText $Pattern), [System.Globalization.CultureInfo]::InvariantCulture)
+    return $When.ToString((Get-TFToolkitText $Pattern), [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
 
-function Format-WinForgeCount {
+function Format-TFToolkitCount {
     # "1 etapa", "3 etapas", "0 etapas", "12.345 itens": a quantidade (com o separador de milhar do português) e a palavra
     # no singular ou no plural certo, em vez de "etapa(s)".
     param (
@@ -2034,12 +2034,12 @@ function Format-WinForgeCount {
         [Parameter(Mandatory)][string]$Many
     )
 
-    return "$(Format-WinForgeNumber -Value $Count) $(if ($Count -eq 1) { $One } else { $Many })"
+    return "$(Format-TFToolkitNumber -Value $Count) $(if ($Count -eq 1) { $One } else { $Many })"
 }
 
 
-function Join-WinForgeList {
-    # "C:", "C: e D:", "C:, D: e E:": uma enumeração como se escreve no idioma do WinForge ("C: and D:", "C: y D:"). Em
+function Join-TFToolkitList {
+    # "C:", "C: e D:", "C:, D: e E:": uma enumeração como se escreve no idioma do TF-Toolkit ("C: and D:", "C: y D:"). Em
     # espanhol, o "y" vira "e" antes de palavra com som de i ("Chrome e Internet Explorer").
     param (
         [AllowEmptyCollection()][string[]]$Items = @()
@@ -2052,14 +2052,14 @@ function Join-WinForgeList {
     $head = $list[0..($list.Count - 2)] -join ", "
     $last = $list[$list.Count - 1]
 
-    if ((Get-WinForgeLanguage) -eq "es" -and $last -match '^(?i)h?[ií](?![aeoáéó])') { return "$head e $last" }
+    if ((Get-TFToolkitLanguage) -eq "es" -and $last -match '^(?i)h?[ií](?![aeoáéó])') { return "$head e $last" }
 
-    return (Get-WinForgeText '{0} e {1}' "$head" "$last")
+    return (Get-TFToolkitText '{0} e {1}' "$head" "$last")
 }
 
 
-function Join-WinForgeShortList {
-    # Como Join-WinForgeList, mas curta para caber na faixa de resultado: até Limit nomes, todos; com mais, os três
+function Join-TFToolkitShortList {
+    # Como Join-TFToolkitList, mas curta para caber na faixa de resultado: até Limit nomes, todos; com mais, os três
     # primeiros e quantos faltam ("Git, VLC, Zoom e mais 4").
     param (
         [AllowEmptyCollection()][string[]]$Items = @(),
@@ -2068,13 +2068,13 @@ function Join-WinForgeShortList {
 
     $list = @($Items | Where-Object { -not [string]::IsNullOrEmpty($_) })
 
-    if ($list.Count -le $Limit) { return (Join-WinForgeList -Items $list) }
+    if ($list.Count -le $Limit) { return (Join-TFToolkitList -Items $list) }
 
-    return (Get-WinForgeText '{0} e mais {1}' "$($list[0..2] -join ', ')" "$(Format-WinForgeNumber -Value ($list.Count - 3))")
+    return (Get-TFToolkitText '{0} e mais {1}' "$($list[0..2] -join ', ')" "$(Format-TFToolkitNumber -Value ($list.Count - 3))")
 }
 
 
-function Get-WinForgeSelectionQuestion {
+function Get-TFToolkitSelectionQuestion {
     # A confirmação de uma lista marcada: "Remover Clipchamp?", "Remover Clipchamp e Mapas?" (até três nomes, que a janela
     # mostra na própria pergunta) ou "Remover os 5 aplicativos marcados?". Many é a palavra no plural, masculina.
     param (
@@ -2085,14 +2085,14 @@ function Get-WinForgeSelectionQuestion {
     )
 
     if ($Names.Count -le $Limit) {
-        return (Get-WinForgeText '{0} {1}?' "$Verb" "$(Join-WinForgeList -Items $Names)")
+        return (Get-TFToolkitText '{0} {1}?' "$Verb" "$(Join-TFToolkitList -Items $Names)")
     }
 
-    return (Get-WinForgeText '{0} os {1} {2} marcados?' "$Verb" "$($Names.Count)" "$Many")
+    return (Get-TFToolkitText '{0} os {1} {2} marcados?' "$Verb" "$($Names.Count)" "$Many")
 }
 
 
-function Get-WinForgeErrorCode {
+function Get-TFToolkitErrorCode {
     <#
     O código de um erro do Windows, como "0x80073CFA": o primeiro que aparece na mensagem ou, na falta dele, o HResult da
     exceção. Os HResult genéricos do .NET e do PowerShell (0x80131500, 0x80131501, 0x80131509, 0x80131600) não dizem nada
@@ -2117,7 +2117,7 @@ function Get-WinForgeErrorCode {
 }
 
 
-function Format-WinForgeRelativeTime {
+function Format-TFToolkitRelativeTime {
     # "há 3 dias", "há 2 horas", "agora há pouco": mostra quando algo aconteceu sem obrigar a pessoa a fazer a conta.
     # Um horário até um dia no futuro (fuso, relógio um pouco adiantado) conta como "agora há pouco"; mais que isso, a data
     # foi gravada com o relógio errado, e o texto diz "com data no futuro" em vez de fingir que foi agora.
@@ -2130,38 +2130,38 @@ function Format-WinForgeRelativeTime {
 
     $span = $Now - $When
 
-    if ($span.TotalDays -le -1) { return (Get-WinForgeText 'com data no futuro') }
+    if ($span.TotalDays -le -1) { return (Get-TFToolkitText 'com data no futuro') }
 
-    if ($span.TotalMinutes -lt 1) { return (Get-WinForgeText 'agora há pouco') }
+    if ($span.TotalMinutes -lt 1) { return (Get-TFToolkitText 'agora há pouco') }
 
     if ($span.TotalHours -lt 1) {
         $amount = [int][Math]::Floor($span.TotalMinutes)
-        $unit = @((Get-WinForgeText 'minuto'), (Get-WinForgeText 'minutos'))
+        $unit = @((Get-TFToolkitText 'minuto'), (Get-TFToolkitText 'minutos'))
     }
     elseif ($span.TotalDays -lt 1) {
         $amount = [int][Math]::Floor($span.TotalHours)
-        $unit = @((Get-WinForgeText 'hora'), (Get-WinForgeText 'horas'))
+        $unit = @((Get-TFToolkitText 'hora'), (Get-TFToolkitText 'horas'))
     }
     elseif ($span.TotalDays -lt 30) {
         $amount = [int][Math]::Floor($span.TotalDays)
-        $unit = @((Get-WinForgeText 'dia'), (Get-WinForgeText 'dias'))
+        $unit = @((Get-TFToolkitText 'dia'), (Get-TFToolkitText 'dias'))
     }
     elseif ($span.TotalDays -lt 365) {
         $amount = [int][Math]::Floor($span.TotalDays / 30)
-        $unit = @((Get-WinForgeText 'mês'), (Get-WinForgeText 'meses'))
+        $unit = @((Get-TFToolkitText 'mês'), (Get-TFToolkitText 'meses'))
     }
     else {
         $amount = [int][Math]::Floor($span.TotalDays / 365)
-        $unit = @((Get-WinForgeText 'ano'), (Get-WinForgeText 'anos'))
+        $unit = @((Get-TFToolkitText 'ano'), (Get-TFToolkitText 'anos'))
     }
 
     $word = if ($amount -eq 1) { $unit[0] } else { $unit[1] }
 
-    return (Get-WinForgeText 'há {0} {1}' "$amount" "$word")
+    return (Get-TFToolkitText 'há {0} {1}' "$amount" "$word")
 }
 
 
-function Format-WinForgeDuration {
+function Format-TFToolkitDuration {
     param (
         [TimeSpan]$Span
     )
@@ -2182,7 +2182,7 @@ function Format-WinForgeDuration {
 # Seleção por números ("1,3,5-7")
 # ---------------------------------------------------------------------------
 
-function ConvertTo-WinForgeSelectionIndexes {
+function ConvertTo-TFToolkitSelectionIndexes {
     # Aceita "1,3,5", "1 3 5", "2-4" e combinações ("1, 3-5"). Vírgula, ponto e vírgula e espaço separam itens.
     # Lança erro com mensagem clara se algo for inválido. Os limites são validados antes de expandir intervalos,
     # para que "1-999999999" não consuma memória. Só dígitos 0-9: [int] não converte dígitos de outros alfabetos.
@@ -2196,7 +2196,7 @@ function ConvertTo-WinForgeSelectionIndexes {
     }
 
     if ($Maximum -lt 1) {
-        throw (Get-WinForgeText 'Não há itens para escolher.')
+        throw (Get-TFToolkitText 'Não há itens para escolher.')
     }
 
     # "3 - 5" vira "3-5" antes de separar por espaços.
@@ -2215,7 +2215,7 @@ function ConvertTo-WinForgeSelectionIndexes {
             $last = [int]$Matches[2]
 
             if ($first -gt $last) {
-                throw (Get-WinForgeText 'O intervalo ''{0}'' está invertido.' "$part")
+                throw (Get-TFToolkitText 'O intervalo ''{0}'' está invertido.' "$part")
             }
 
             $values = @($first, $last)
@@ -2226,12 +2226,12 @@ function ConvertTo-WinForgeSelectionIndexes {
             $expand = $false
         }
         else {
-            throw (Get-WinForgeText '''{0}'' não é um número nem um intervalo válido.' "$part")
+            throw (Get-TFToolkitText '''{0}'' não é um número nem um intervalo válido.' "$part")
         }
 
         foreach ($value in $values) {
             if ($value -lt 1 -or $value -gt $Maximum) {
-                throw (Get-WinForgeText 'O número {0} está fora da lista (1 a {1}).' "$value" "$Maximum")
+                throw (Get-TFToolkitText 'O número {0} está fora da lista (1 a {1}).' "$value" "$Maximum")
             }
         }
 
@@ -2254,7 +2254,7 @@ function ConvertTo-WinForgeSelectionIndexes {
 # Programas nativos
 # ---------------------------------------------------------------------------
 
-function Invoke-WinForgeNative {
+function Invoke-TFToolkitNative {
     <#
     Executa um programa nativo mostrando a saída na tela e sem devolver linhas ao pipeline.
     Na interface gráfica não há console visível: stdout e stderr são capturados e escritos linha a linha,
@@ -2275,20 +2275,20 @@ function Invoke-WinForgeNative {
     # Um programa que não existe não pode parecer um sucesso: com $ErrorActionPreference = Continue (o padrão da janela
     # e do console), o "não reconhecido" do PowerShell não interrompe a função e o código de saída ficaria 0.
     if ($null -eq (Get-Command -Name $FilePath -ErrorAction SilentlyContinue)) {
-        throw (Get-WinForgeText 'O programa ''{0}'' não foi encontrado neste PC.' "$FilePath")
+        throw (Get-TFToolkitText 'O programa ''{0}'' não foi encontrado neste PC.' "$FilePath")
     }
 
     # Sem isto, o código de uma chamada anterior pareceria ser o deste programa se ele nem chegasse a definir um.
     $global:LASTEXITCODE = 0
 
-    if (Test-WinForgeGuiMode) {
+    if (Test-TFToolkitGuiMode) {
         # Ferramentas que gravam em UTF-16 (SFC) deixam caracteres nulos entre as letras; eles são removidos.
         $progress = @{ Last = -1.0 }
 
         & $FilePath @Arguments 2>&1 | ForEach-Object {
             $line = ([string]$_) -replace "`0", ""
 
-            if (Test-WinForgeEchoLine -Line $line -State $progress) { Write-Host $line }
+            if (Test-TFToolkitEchoLine -Line $line -State $progress) { Write-Host $line }
         }
     }
     else {
@@ -2298,7 +2298,7 @@ function Invoke-WinForgeNative {
     $exitCode = $LASTEXITCODE
 
     if (-not $IgnoreExitCode -and $null -ne $exitCode -and $exitCode -ne 0) {
-        throw (Get-WinForgeText 'Comando ''{0} {1}'' finalizou com código {2}.' "$FilePath" "$($Arguments -join ' ')" "$exitCode")
+        throw (Get-TFToolkitText 'Comando ''{0} {1}'' finalizou com código {2}.' "$FilePath" "$($Arguments -join ' ')" "$exitCode")
     }
 
     if ($PassThru) {
@@ -2307,7 +2307,7 @@ function Invoke-WinForgeNative {
 }
 
 
-function Get-WinForgeProgressPercent {
+function Get-TFToolkitProgressPercent {
     <#
     O percentual de uma linha de progresso do DISM ("[====    25.0%    ====]"), do SFC ("Verification 25% complete."
     / "Verificação 25% concluída." / "Se completó la comprobación de 25%.") ou do winget ("  ████▒▒▒▒  40%" e "  ████▒▒▒▒  512 KB / 1.50 MB"), ou $null quando a
@@ -2354,7 +2354,7 @@ function Get-WinForgeProgressPercent {
 }
 
 
-function Test-WinForgeProgressStepShown {
+function Test-TFToolkitProgressStepShown {
     # Barras de progresso chegam uma linha por atualização (dezenas por etapa). Na tela basta uma a cada 10 pontos:
     # a primeira, o 100% e a de uma nova etapa (quando o percentual volta a baixar). Last guarda a última exibida.
     param (
@@ -2375,10 +2375,10 @@ function Test-WinForgeProgressStepShown {
 }
 
 
-function Test-WinForgeEchoLine {
+function Test-TFToolkitEchoLine {
     <#
     Se uma linha da saída de um programa aparece na tela. Os quadros do indicador de espera do winget ("-", "\", "|", "/")
-    nunca aparecem; barras de progresso aparecem uma a cada 10 pontos (Test-WinForgeProgressStepShown); o resto sempre.
+    nunca aparecem; barras de progresso aparecem uma a cada 10 pontos (Test-TFToolkitProgressStepShown); o resto sempre.
     State é o mesmo @{ Last = -1.0 } durante toda a execução do programa.
     #>
     param (
@@ -2394,20 +2394,20 @@ function Test-WinForgeEchoLine {
     $percent = $null
 
     # A maioria das linhas não tem "%" nem " / ": nem chama o reconhecedor.
-    if ($Line.Contains("%") -or $Line.Contains(" / ")) { $percent = Get-WinForgeProgressPercent -Line $Line }
+    if ($Line.Contains("%") -or $Line.Contains(" / ")) { $percent = Get-TFToolkitProgressPercent -Line $Line }
 
     if ($null -eq $percent) { return $true }
 
-    return (Test-WinForgeProgressStepShown -Percent $percent -State $State)
+    return (Test-TFToolkitProgressStepShown -Percent $percent -State $State)
 }
 
 
-function Invoke-WinForgeCapture {
+function Invoke-TFToolkitCapture {
     <#
     Executa um programa nativo e devolve ExitCode, Lines e Text. Com -Echo as linhas também aparecem na tela
     enquanto chegam, o que evita uma janela parada durante comandos demorados (CHKDSK, DISM). Linhas e Text trazem
-    tudo; só a tela resume as barras de progresso (Test-WinForgeProgressStepShown).
-    Com -ProgressActivity, o percentual das linhas de progresso (DISM, SFC: Get-WinForgeProgressPercent) vai também para
+    tudo; só a tela resume as barras de progresso (Test-TFToolkitProgressStepShown).
+    Com -ProgressActivity, o percentual das linhas de progresso (DISM, SFC: Get-TFToolkitProgressPercent) vai também para
     a barra de progresso (na janela, a barra enche e o texto ao lado diz "62% · ..."), a cada ponto inteiro.
     #>
     param (
@@ -2421,7 +2421,7 @@ function Invoke-WinForgeCapture {
         [string]$ProgressActivity = "",
 
         # O que vem depois do percentual no texto da barra.
-        [string]$ProgressStatus = (Get-WinForgeText 'não feche o WinForge até terminar')
+        [string]$ProgressStatus = (Get-TFToolkitText 'não feche o TF-Toolkit até terminar')
     )
 
     $lines = New-Object System.Collections.Generic.List[string]
@@ -2430,7 +2430,7 @@ function Invoke-WinForgeCapture {
     # Um programa que não existe não pode parecer um sucesso: com $ErrorActionPreference = Continue (o padrão da janela
     # e do console), o "não reconhecido" do PowerShell não interrompe a função e o código de saída ficaria 0.
     if ($null -eq (Get-Command -Name $FilePath -ErrorAction SilentlyContinue)) {
-        throw (Get-WinForgeText 'O programa ''{0}'' não foi encontrado neste PC.' "$FilePath")
+        throw (Get-TFToolkitText 'O programa ''{0}'' não foi encontrado neste PC.' "$FilePath")
     }
 
     $global:LASTEXITCODE = 0
@@ -2439,12 +2439,12 @@ function Invoke-WinForgeCapture {
         $line = ([string]$_) -replace "`0", ""
         $lines.Add($line)
 
-        if ($Echo -and (Test-WinForgeEchoLine -Line $line -State $progress)) {
+        if ($Echo -and (Test-TFToolkitEchoLine -Line $line -State $progress)) {
             Write-Host $line
         }
 
         if ($ProgressActivity -and ($line.Contains("%") -or $line.Contains(" / "))) {
-            $percent = Get-WinForgeProgressPercent -Line $line
+            $percent = Get-TFToolkitProgressPercent -Line $line
 
             if ($null -ne $percent -and [int][Math]::Floor($percent) -ne [int]$progress.Bar) {
                 $progress.Bar = [int][Math]::Floor($percent)
@@ -2465,7 +2465,7 @@ function Invoke-WinForgeCapture {
 # Exclusão segura
 # ---------------------------------------------------------------------------
 
-function Remove-WinForgeItem {
+function Remove-TFToolkitItem {
     <#
     Remove um arquivo ou pasta. Atalhos de pasta (junção/link simbólico) são removidos como atalho, sem tocar no
     conteúdo de destino: o Windows PowerShell 5.1 pode seguir o link em Remove-Item -Recurse e apagar o que está fora
@@ -2496,7 +2496,7 @@ function Remove-WinForgeItem {
 
     foreach ($child in @($item.EnumerateFileSystemInfos())) {
         try {
-            Remove-WinForgeItem -Path $child.FullName
+            Remove-TFToolkitItem -Path $child.FullName
         }
         catch {
             $failed = $true
@@ -2504,7 +2504,7 @@ function Remove-WinForgeItem {
     }
 
     if ($failed) {
-        throw (Get-WinForgeText 'Há itens em uso em ''{0}''.' "$($item.Name)")
+        throw (Get-TFToolkitText 'Há itens em uso em ''{0}''.' "$($item.Name)")
     }
 
     if (($item.Attributes -band [System.IO.FileAttributes]::ReadOnly) -ne 0) {
@@ -2515,11 +2515,11 @@ function Remove-WinForgeItem {
 }
 
 
-function Remove-WinForgeFolder {
+function Remove-TFToolkitFolder {
     <#
-    Apaga uma pasta do próprio WinForge (temporária, de dados, da atualização) com Remove-WinForgeItem: um atalho de pasta
+    Apaga uma pasta do próprio TF-Toolkit (temporária, de dados, da atualização) com Remove-TFToolkitItem: um atalho de pasta
     lá dentro sai como atalho, sem levar o que está do outro lado. O Remove-Item -Recurse do Windows PowerShell 5.1 segue
-    junções e apagaria o conteúdo de destino, o que, com o WinForge elevado, alcançaria pastas do sistema. Pasta ausente
+    junções e apagaria o conteúdo de destino, o que, com o TF-Toolkit elevado, alcançaria pastas do sistema. Pasta ausente
     não é erro. Com -Quiet, o que não pôde ser apagado fica para trás sem erro (para limpezas de fim de ação).
     #>
     param (
@@ -2530,7 +2530,7 @@ function Remove-WinForgeFolder {
     if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path)) { return }
 
     try {
-        Remove-WinForgeItem -Path $Path
+        Remove-TFToolkitItem -Path $Path
     }
     catch {
         if (-not $Quiet) { throw }
@@ -2539,7 +2539,7 @@ function Remove-WinForgeFolder {
 }
 
 
-function Get-WinForgePathStats {
+function Get-TFToolkitPathStats {
     <#
     Percorre um arquivo ou pasta sem seguir atalhos de pasta (junções e links simbólicos), que poderiam levar a
     outras pastas, a ciclos ou a contar duas vezes o mesmo conteúdo. Devolve Size (bytes), Files e Newest (data
@@ -2618,14 +2618,14 @@ function Get-WinForgePathStats {
 }
 
 
-# Quanto um comando do Windows feito sobre o WMI pode esperar a resposta (Invoke-WinForgeCimCommand). Mais que os 15
+# Quanto um comando do Windows feito sobre o WMI pode esperar a resposta (Invoke-TFToolkitCimCommand). Mais que os 15
 # segundos das consultas diretas ao WMI: a primeira leitura dos discos pode precisar ligar o serviço de armazenamento, o
 # que num HD lento demora, e um prazo curto demais diria "não foi possível ler" num PC só lento. A leitura dos discos
 # físicos pelo WMI (Diagnostics.psm1) usa o mesmo número, escrito na chamada.
-$script:WinForgeCimTimeoutSec = 60
+$script:TFToolkitCimTimeoutSec = 60
 
 
-function Invoke-WinForgeCimCommand {
+function Invoke-TFToolkitCimCommand {
     <#
     Um comando do Windows feito sobre o WMI (os dos módulos Defender, NetSecurity, Storage e PnpDevice: Get-MpComputerStatus,
     Get-NetFirewallProfile, Get-Partition, Get-PnpDevice...) com prazo. Esses comandos não têm o -OperationTimeoutSec das
@@ -2633,7 +2633,7 @@ function Invoke-WinForgeCimCommand {
     sem fim. A consulta roda como um trabalho do próprio processo (-AsJob, que esses comandos têm); passado o prazo, ela é
     largada com um erro, como uma consulta ao WMI sem resposta, e o Parar também a interrompe. Um comando sem -AsJob roda
     direto.
-    O Invoke-WinForgeInBackground não serve aqui: num runspace novo, o módulo do comando seria carregado de novo a cada
+    O Invoke-TFToolkitInBackground não serve aqui: num runspace novo, o módulo do comando seria carregado de novo a cada
     consulta, e o resultado voltaria com os tipos daquele runspace, e não com os deste.
     #>
     param (
@@ -2650,12 +2650,12 @@ function Invoke-WinForgeCimCommand {
 
     $job = & $command @Parameters -AsJob -ErrorAction Stop
 
-    if (-not (Wait-Job -Job $job -Timeout $script:WinForgeCimTimeoutSec)) {
+    if (-not (Wait-Job -Job $job -Timeout $script:TFToolkitCimTimeoutSec)) {
         # Parar o trabalho esperando por ele travaria do mesmo jeito: o pedido de parada vai sem espera, e o trabalho
-        # termina sozinho (ou junto com o WinForge).
+        # termina sozinho (ou junto com o TF-Toolkit).
         # O erro é de tempo esgotado (TimeoutException): quem chama pode não tentar de novo outra consulta que travaria igual.
         try { [void]$job.StopJobAsync() } catch { Write-Verbose "A consulta $Name não aceitou o pedido de parada." }
-        throw (New-Object System.TimeoutException (Get-WinForgeText 'o Windows não respondeu em {0} segundos' "$script:WinForgeCimTimeoutSec"))
+        throw (New-Object System.TimeoutException (Get-TFToolkitText 'o Windows não respondeu em {0} segundos' "$script:TFToolkitCimTimeoutSec"))
     }
 
     try {
@@ -2667,15 +2667,15 @@ function Invoke-WinForgeCimCommand {
 }
 
 
-function Invoke-WinForgeInBackground {
+function Invoke-TFToolkitInBackground {
     <#
     Roda um bloco em outro runspace e espera por ele em fatias curtas, até $TimeoutSeconds. É para chamadas que podem
     demorar e que o botão Parar não consegue interromper por dentro (por exemplo, a consulta COM do Windows Update): a
     espera aqui continua interrompível, e um bloco que não termina a tempo é abandonado.
-    O bloco roda num runspace novo e não enxerga as funções do WinForge; os valores entram por -ArgumentList (param).
+    O bloco roda num runspace novo e não enxerga as funções do TF-Toolkit; os valores entram por -ArgumentList (param).
     Devolve Completed, TimedOut, Output (o que o bloco escreveu) e Error (texto do primeiro erro, ou vazio).
-    Quem tem outro trabalho a fazer enquanto o bloco roda usa as duas metades: Start-WinForgeInBackground e
-    Receive-WinForgeInBackground.
+    Quem tem outro trabalho a fazer enquanto o bloco roda usa as duas metades: Start-TFToolkitInBackground e
+    Receive-TFToolkitInBackground.
     #>
     param (
         [Parameter(Mandatory)]
@@ -2687,18 +2687,18 @@ function Invoke-WinForgeInBackground {
         [int]$TimeoutSeconds = 60
     )
 
-    $task = Start-WinForgeInBackground -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
+    $task = Start-TFToolkitInBackground -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
 
-    return (Receive-WinForgeInBackground -Task $task -TimeoutSeconds $TimeoutSeconds)
+    return (Receive-TFToolkitInBackground -Task $task -TimeoutSeconds $TimeoutSeconds)
 }
 
 
-function Start-WinForgeInBackground {
+function Start-TFToolkitInBackground {
     <#
     Começa um bloco em outro runspace e devolve a tarefa sem esperar por ela: quem chama faz outra coisa enquanto isso
     (o Estado da proteção e a auditoria leem o antivírus e o firewall enquanto o Windows Update responde) e depois a recebe
-    com Receive-WinForgeInBackground. Uma tarefa que não vai ser recebida (quem a começou parou antes) é largada com
-    Stop-WinForgeInBackground, num finally.
+    com Receive-TFToolkitInBackground. Uma tarefa que não vai ser recebida (quem a começou parou antes) é largada com
+    Stop-TFToolkitInBackground, num finally.
     #>
     param (
         [Parameter(Mandatory)]
@@ -2728,10 +2728,10 @@ function Start-WinForgeInBackground {
 }
 
 
-function Receive-WinForgeInBackground {
+function Receive-TFToolkitInBackground {
     <#
-    Espera, em fatias curtas, por uma tarefa de Start-WinForgeInBackground, até $TimeoutSeconds desde o começo dela, e
-    devolve Completed, TimedOut, Output e Error, como Invoke-WinForgeInBackground. A espera continua interrompível pelo
+    Espera, em fatias curtas, por uma tarefa de Start-TFToolkitInBackground, até $TimeoutSeconds desde o começo dela, e
+    devolve Completed, TimedOut, Output e Error, como Invoke-TFToolkitInBackground. A espera continua interrompível pelo
     Parar; uma tarefa que não termina a tempo é abandonada.
     #>
     param (
@@ -2783,8 +2783,8 @@ function Receive-WinForgeInBackground {
 }
 
 
-function Stop-WinForgeInBackground {
-    # Larga uma tarefa de Start-WinForgeInBackground que não vai ser recebida: pede para parar sem esperar. Uma tarefa já
+function Stop-TFToolkitInBackground {
+    # Larga uma tarefa de Start-TFToolkitInBackground que não vai ser recebida: pede para parar sem esperar. Uma tarefa já
     # recebida (ou nenhuma) fica como está.
     param ($Task)
 
@@ -2803,12 +2803,12 @@ function Stop-WinForgeInBackground {
 }
 
 
-# Quantos pedidos de "não suspender" estão abertos e em qual thread (Set-WinForgeKeepAwake).
-$script:WinForgeKeepAwakeDepth = 0
-$script:WinForgeKeepAwakeThread = -1
+# Quantos pedidos de "não suspender" estão abertos e em qual thread (Set-TFToolkitKeepAwake).
+$script:TFToolkitKeepAwakeDepth = 0
+$script:TFToolkitKeepAwakeThread = -1
 
 
-function Set-WinForgeThreadExecutionState {
+function Set-TFToolkitThreadExecutionState {
     # Chama o SetThreadExecutionState do Windows. Devolve $false quando a API não está disponível ou recusou o pedido.
     param (
         [Parameter(Mandatory)]
@@ -2816,8 +2816,8 @@ function Set-WinForgeThreadExecutionState {
     )
 
     try {
-        if (-not ("WinForge.PowerNative" -as [type])) {
-            Add-Type -Namespace WinForge -Name PowerNative -MemberDefinition @'
+        if (-not ("TFToolkit.PowerNative" -as [type])) {
+            Add-Type -namespace TFToolkit -Name PowerNative -MemberDefinition @'
 [System.Runtime.InteropServices.DllImport("kernel32.dll")]
 public static extern uint SetThreadExecutionState(uint flags);
 '@ -ErrorAction Stop
@@ -2833,7 +2833,7 @@ public static extern uint SetThreadExecutionState(uint flags);
             $flags = $continuous
         }
 
-        return ([WinForge.PowerNative]::SetThreadExecutionState($flags) -ne 0)
+        return ([TFToolkit.PowerNative]::SetThreadExecutionState($flags) -ne 0)
     }
     catch {
         return $false
@@ -2841,7 +2841,7 @@ public static extern uint SetThreadExecutionState(uint flags);
 }
 
 
-function Set-WinForgeKeepAwake {
+function Set-TFToolkitKeepAwake {
     <#
     Impede que o Windows suspenda o PC enquanto uma manutenção longa roda (SetThreadExecutionState).
     O pedido vale para a thread atual: chame com -Enabled $false (em um finally) ao terminar.
@@ -2860,39 +2860,39 @@ function Set-WinForgeKeepAwake {
     # do zero, mesmo que a anterior tenha sido interrompida sem fechar o seu pedido.
     $thread = [System.Threading.Thread]::CurrentThread.ManagedThreadId
 
-    if ($script:WinForgeKeepAwakeThread -ne $thread) {
-        $script:WinForgeKeepAwakeThread = $thread
-        $script:WinForgeKeepAwakeDepth = 0
+    if ($script:TFToolkitKeepAwakeThread -ne $thread) {
+        $script:TFToolkitKeepAwakeThread = $thread
+        $script:TFToolkitKeepAwakeDepth = 0
     }
 
     if ($Enabled) {
-        if ($script:WinForgeKeepAwakeDepth -gt 0) {
+        if ($script:TFToolkitKeepAwakeDepth -gt 0) {
             # Já pedido por uma ação de fora, que continua valendo.
-            $script:WinForgeKeepAwakeDepth++
+            $script:TFToolkitKeepAwakeDepth++
             return $true
         }
 
-        if (-not (Set-WinForgeThreadExecutionState -KeepAwake $true)) {
+        if (-not (Set-TFToolkitThreadExecutionState -KeepAwake $true)) {
             return $false
         }
 
-        $script:WinForgeKeepAwakeDepth = 1
+        $script:TFToolkitKeepAwakeDepth = 1
         return $true
     }
 
-    if ($script:WinForgeKeepAwakeDepth -gt 1) {
+    if ($script:TFToolkitKeepAwakeDepth -gt 1) {
         # Uma ação de fora ainda precisa do PC acordado.
-        $script:WinForgeKeepAwakeDepth--
+        $script:TFToolkitKeepAwakeDepth--
         return $true
     }
 
-    $script:WinForgeKeepAwakeDepth = 0
+    $script:TFToolkitKeepAwakeDepth = 0
 
-    return (Set-WinForgeThreadExecutionState -KeepAwake $false)
+    return (Set-TFToolkitThreadExecutionState -KeepAwake $false)
 }
 
 
-function Restart-WinForgeExplorerShell {
+function Restart-TFToolkitExplorerShell {
     # Configurações do Explorador e da barra de tarefas são recarregadas pelo shell.
     # O Windows relança o shell sozinho (no contexto do usuário). Só abrimos o explorer.exe
     # manualmente se isso não acontecer, porque um explorer iniciado por um processo elevado
@@ -2928,7 +2928,7 @@ function Restart-WinForgeExplorerShell {
     } while ([DateTime]::UtcNow -lt $exitDeadline)
 
     if ($stillRunning) {
-        throw (Get-WinForgeText 'O Explorer do Windows não pôde ser encerrado.')
+        throw (Get-TFToolkitText 'O Explorer do Windows não pôde ser encerrado.')
     }
 
     # 2) Dá tempo ao Windows para relançar o shell automaticamente.
@@ -2955,17 +2955,17 @@ function Restart-WinForgeExplorerShell {
         Start-Sleep -Milliseconds 200
     } while ([DateTime]::UtcNow -lt $startupDeadline)
 
-    throw (Get-WinForgeText 'O Explorer do Windows não reiniciou no tempo esperado.')
+    throw (Get-TFToolkitText 'O Explorer do Windows não reiniciou no tempo esperado.')
 }
 
 
-function Set-WinForgeHighPerformancePowerPlan {
+function Set-TFToolkitHighPerformancePowerPlan {
     # Ativa o plano Alto desempenho. Devolve $true/$false; com -PassThru, Guid (o plano ativado; vazio no SCHEME_MIN) e
     # Created (se uma cópia nova do plano foi criada agora), ou $null quando nada funcionou.
     param (
         [switch]$ThrowOnFailure,
 
-        # Uma cópia do plano que o WinForge já criou antes: se ela ainda existe, é ativada em vez de criar outra (sem
+        # Uma cópia do plano que o TF-Toolkit já criou antes: se ela ainda existe, é ativada em vez de criar outra (sem
         # isso, cada aplicação deixava mais um "Alto desempenho" na lista de planos).
         [string]$PreferredGuid = "",
 
@@ -2976,7 +2976,7 @@ function Set-WinForgeHighPerformancePowerPlan {
 
     if (-not (Get-Command "powercfg.exe" -ErrorAction SilentlyContinue)) {
         if ($ThrowOnFailure) {
-            throw (Get-WinForgeText 'powercfg.exe não foi encontrado.')
+            throw (Get-TFToolkitText 'powercfg.exe não foi encontrado.')
         }
 
         if ($PassThru) { return $null }
@@ -2989,7 +2989,7 @@ function Set-WinForgeHighPerformancePowerPlan {
 
     $activate = {
         param ([string]$Scheme)
-        return ((Invoke-WinForgeCapture -FilePath "powercfg.exe" -Arguments @("/setactive", $Scheme)).ExitCode -eq 0)
+        return ((Invoke-TFToolkitCapture -FilePath "powercfg.exe" -Arguments @("/setactive", $Scheme)).ExitCode -eq 0)
     }
 
     if ($PreferredGuid -match "^$guidPattern$" -and (& $activate $PreferredGuid)) {
@@ -3000,7 +3000,7 @@ function Set-WinForgeHighPerformancePowerPlan {
     }
     else {
         # Em algumas instalações o plano pode não estar disponível. Nesse caso, recria a partir do template oficial.
-        $duplicate = Invoke-WinForgeCapture -FilePath "powercfg.exe" -Arguments @("/duplicatescheme", $highPerformanceGuid)
+        $duplicate = Invoke-TFToolkitCapture -FilePath "powercfg.exe" -Arguments @("/duplicatescheme", $highPerformanceGuid)
 
         if ($duplicate.ExitCode -eq 0) {
             $newGuid = [regex]::Match($duplicate.Text, $guidPattern).Value
@@ -3011,7 +3011,7 @@ function Set-WinForgeHighPerformancePowerPlan {
                 }
                 else {
                     # Uma cópia que não pôde ser ativada só ocuparia a lista de planos.
-                    [void](Invoke-WinForgeCapture -FilePath "powercfg.exe" -Arguments @("/delete", $newGuid))
+                    [void](Invoke-TFToolkitCapture -FilePath "powercfg.exe" -Arguments @("/delete", $newGuid))
                 }
             }
         }
@@ -3023,7 +3023,7 @@ function Set-WinForgeHighPerformancePowerPlan {
     }
 
     if ($null -eq $outcome -and $ThrowOnFailure) {
-        throw (Get-WinForgeText 'Não foi possível definir o plano de energia como Alto desempenho.')
+        throw (Get-TFToolkitText 'Não foi possível definir o plano de energia como Alto desempenho.')
     }
 
     if ($PassThru) { return $outcome }
@@ -3036,12 +3036,12 @@ function Set-WinForgeHighPerformancePowerPlan {
 # Última manutenção (usada pelo relatório e pela tela inicial)
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeLastMaintenancePath {
-    return (Join-Path (Get-WinForgeDataPath) "last-maintenance.json")
+function Get-TFToolkitLastMaintenancePath {
+    return (Join-Path (Get-TFToolkitDataPath) "last-maintenance.json")
 }
 
 
-function ConvertTo-WinForgeSnapshotDocument {
+function ConvertTo-TFToolkitSnapshotDocument {
     # Uma foto do PC (At, FreeBytes, StartupItems) como dicionário para o JSON; sem foto, $null.
     param ($Snapshot)
 
@@ -3057,8 +3057,8 @@ function ConvertTo-WinForgeSnapshotDocument {
 }
 
 
-function ConvertFrom-WinForgeSnapshotDocument {
-    # O inverso de ConvertTo-WinForgeSnapshotDocument. Foto ausente ou ilegível = $null (arquivos de versões antigas).
+function ConvertFrom-TFToolkitSnapshotDocument {
+    # O inverso de ConvertTo-TFToolkitSnapshotDocument. Foto ausente ou ilegível = $null (arquivos de versões antigas).
     param ($Document)
 
     if ($null -eq $Document) {
@@ -3082,9 +3082,9 @@ function ConvertFrom-WinForgeSnapshotDocument {
 }
 
 
-function Set-WinForgeLastMaintenance {
+function Set-TFToolkitLastMaintenance {
     # Guarda em memória e em disco: a janela e as ações rodam em sessões separadas, e o relatório
-    # precisa enxergar uma manutenção feita antes de o WinForge ser reaberto.
+    # precisa enxergar uma manutenção feita antes de o TF-Toolkit ser reaberto.
     # Before e After são as fotos do PC no começo e no fim (espaço livre e itens na inicialização); podem faltar.
     param (
         [object[]]$Results,
@@ -3099,7 +3099,7 @@ function Set-WinForgeLastMaintenance {
         [string]$RunId = ""
     )
 
-    $script:WinForgeLastMaintenance = [PSCustomObject]@{
+    $script:TFToolkitLastMaintenance = [PSCustomObject]@{
         StartedAt = $StartedAt
         Results   = @($Results)
         Before    = $Before
@@ -3109,8 +3109,8 @@ function Set-WinForgeLastMaintenance {
     try {
         $document = [ordered]@{
             StartedAt = $StartedAt.ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)
-            Before    = (ConvertTo-WinForgeSnapshotDocument -Snapshot $Before)
-            After     = (ConvertTo-WinForgeSnapshotDocument -Snapshot $After)
+            Before    = (ConvertTo-TFToolkitSnapshotDocument -Snapshot $Before)
+            After     = (ConvertTo-TFToolkitSnapshotDocument -Snapshot $After)
             Results   = @(
                 foreach ($result in @($Results)) {
                     [ordered]@{
@@ -3123,16 +3123,16 @@ function Set-WinForgeLastMaintenance {
             )
         }
 
-        Write-WinForgeStateJson -Path (Get-WinForgeLastMaintenancePath) -InputObject $document -Depth 4
+        Write-TFToolkitStateJson -Path (Get-TFToolkitLastMaintenancePath) -InputObject $document -Depth 4
     }
     catch {
         # O histórico em disco é um complemento; a memória já tem o resultado.
     }
 
     try {
-        $entry = New-WinForgeMaintenanceHistoryEntry -Results $Results -StartedAt $StartedAt -Before $Before -After $After -ProfileId $ProfileId -RunId $RunId
+        $entry = New-TFToolkitMaintenanceHistoryEntry -Results $Results -StartedAt $StartedAt -Before $Before -After $After -ProfileId $ProfileId -RunId $RunId
         # O "gravou?" não sai daqui: no fim do resumo da manutenção ele aparecia na tela como uma linha "True".
-        [void](Add-WinForgeMaintenanceHistory -Entry $entry)
+        [void](Add-TFToolkitMaintenanceHistory -Entry $entry)
     }
     catch {
         # Idem: o histórico é só um complemento.
@@ -3140,19 +3140,19 @@ function Set-WinForgeLastMaintenance {
 }
 
 
-function Get-WinForgeLastMaintenance {
+function Get-TFToolkitLastMaintenance {
     # O registro da última manutenção, ou $null quando não há (ou ele é de outra versão). -Strict: um registro que existe,
     # mas não pôde ser lido (preso por outro programa, sem permissão), lança erro em vez de passar por "nunca rodou".
     param ([switch]$Strict)
 
-    if ($null -ne $script:WinForgeLastMaintenance) {
-        return $script:WinForgeLastMaintenance
+    if ($null -ne $script:TFToolkitLastMaintenance) {
+        return $script:TFToolkitLastMaintenance
     }
 
-    $state = Read-WinForgeStateFile -Path (Get-WinForgeLastMaintenancePath)
+    $state = Read-TFToolkitStateFile -Path (Get-TFToolkitLastMaintenancePath)
 
     if ($Strict -and [string]$state.Status -eq "Unreadable") {
-        throw (Get-WinForgeText 'Não foi possível ler o registro da última manutenção.')
+        throw (Get-TFToolkitText 'Não foi possível ler o registro da última manutenção.')
     }
 
     try {
@@ -3171,8 +3171,8 @@ function Get-WinForgeLastMaintenance {
         return [PSCustomObject]@{
             StartedAt = $startedAt
             Results   = @($document.Results)
-            Before    = $(if ($null -ne $before) { ConvertFrom-WinForgeSnapshotDocument -Document $before.Value } else { $null })
-            After     = $(if ($null -ne $after) { ConvertFrom-WinForgeSnapshotDocument -Document $after.Value } else { $null })
+            Before    = $(if ($null -ne $before) { ConvertFrom-TFToolkitSnapshotDocument -Document $before.Value } else { $null })
+            After     = $(if ($null -ne $after) { ConvertFrom-TFToolkitSnapshotDocument -Document $after.Value } else { $null })
         }
     }
     catch {
@@ -3186,15 +3186,15 @@ function Get-WinForgeLastMaintenance {
 # Histórico de manutenções (as últimas, para ver tendências)
 # ---------------------------------------------------------------------------
 
-$script:WinForgeMaintenanceHistoryLimit = 20
+$script:TFToolkitMaintenanceHistoryLimit = 20
 
 
-function Get-WinForgeMaintenanceHistoryLimit {
-    return [int]$script:WinForgeMaintenanceHistoryLimit
+function Get-TFToolkitMaintenanceHistoryLimit {
+    return [int]$script:TFToolkitMaintenanceHistoryLimit
 }
 
 
-function Get-WinForgeJsonValue {
+function Get-TFToolkitJsonValue {
     # Lê uma propriedade de um objeto vindo do JSON sem falhar quando ela não existe (modo estrito) ou é nula.
     param (
         $Object,
@@ -3216,12 +3216,12 @@ function Get-WinForgeJsonValue {
 }
 
 
-function Get-WinForgeMaintenanceHistoryPath {
-    return (Join-Path (Get-WinForgeDataPath) "maintenance-history.json")
+function Get-TFToolkitMaintenanceHistoryPath {
+    return (Join-Path (Get-TFToolkitDataPath) "maintenance-history.json")
 }
 
 
-function New-WinForgeMaintenanceHistoryEntry {
+function New-TFToolkitMaintenanceHistoryEntry {
     # Uma linha do histórico: quando, quanto durou, o perfil, quantas etapas deram certo/ressalva/falha e as fotos do PC.
     param (
         [object[]]$Results,
@@ -3250,7 +3250,7 @@ function New-WinForgeMaintenanceHistoryEntry {
     $freed = $null
 
     foreach ($row in $rows) {
-        $data = Get-WinForgeJsonValue -Object $row -Name "Data"
+        $data = Get-TFToolkitJsonValue -Object $row -Name "Data"
         if (-not ($data -is [System.Collections.IDictionary]) -or -not $data.Contains("FreedBytes") -or $null -eq $data["FreedBytes"]) { continue }
 
         try {
@@ -3274,16 +3274,16 @@ function New-WinForgeMaintenanceHistoryEntry {
         Warning         = [int](& $count "Warning")
         Failed          = [int](& $count "Failed")
         Skipped         = [int](& $count "Skipped")
-        FreeBefore      = $(if ($null -ne $Before) { Get-WinForgeJsonValue -Object $Before -Name "FreeBytes" } else { $null })
-        FreeAfter       = $(if ($null -ne $After) { Get-WinForgeJsonValue -Object $After -Name "FreeBytes" } else { $null })
-        StartupBefore   = $(if ($null -ne $Before) { Get-WinForgeJsonValue -Object $Before -Name "StartupItems" } else { $null })
-        StartupAfter    = $(if ($null -ne $After) { Get-WinForgeJsonValue -Object $After -Name "StartupItems" } else { $null })
+        FreeBefore      = $(if ($null -ne $Before) { Get-TFToolkitJsonValue -Object $Before -Name "FreeBytes" } else { $null })
+        FreeAfter       = $(if ($null -ne $After) { Get-TFToolkitJsonValue -Object $After -Name "FreeBytes" } else { $null })
+        StartupBefore   = $(if ($null -ne $Before) { Get-TFToolkitJsonValue -Object $Before -Name "StartupItems" } else { $null })
+        StartupAfter    = $(if ($null -ne $After) { Get-TFToolkitJsonValue -Object $After -Name "StartupItems" } else { $null })
         Steps           = @(
             foreach ($row in $rows) {
                 [PSCustomObject]@{
-                    Etapa   = [string](Get-WinForgeJsonValue -Object $row -Name "Etapa" -Default "")
-                    Kind    = [string](Get-WinForgeJsonValue -Object $row -Name "Kind" -Default "")
-                    Duracao = [string](Get-WinForgeJsonValue -Object $row -Name "Duracao" -Default "")
+                    Etapa   = [string](Get-TFToolkitJsonValue -Object $row -Name "Etapa" -Default "")
+                    Kind    = [string](Get-TFToolkitJsonValue -Object $row -Name "Kind" -Default "")
+                    Duracao = [string](Get-TFToolkitJsonValue -Object $row -Name "Duracao" -Default "")
                 }
             }
         )
@@ -3291,7 +3291,7 @@ function New-WinForgeMaintenanceHistoryEntry {
 }
 
 
-function ConvertFrom-WinForgeMaintenanceHistoryDocument {
+function ConvertFrom-TFToolkitMaintenanceHistoryDocument {
     # Uma linha do JSON como entrada do histórico. Linha ilegível = $null; campos que faltam ficam nulos ou zerados.
     param ($Document)
 
@@ -3300,35 +3300,35 @@ function ConvertFrom-WinForgeMaintenanceHistoryDocument {
     }
 
     try {
-        $startedAt = [datetime]::Parse([string](Get-WinForgeJsonValue -Object $Document -Name "StartedAt"), [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind)
+        $startedAt = [datetime]::Parse([string](Get-TFToolkitJsonValue -Object $Document -Name "StartedAt"), [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind)
 
         $number = {
             param ([string]$Name)
-            $value = Get-WinForgeJsonValue -Object $Document -Name $Name
+            $value = Get-TFToolkitJsonValue -Object $Document -Name $Name
             if ($null -eq $value) { return $null }
             return [int64]$value
         }
 
         return [PSCustomObject]@{
             StartedAt       = $startedAt
-            DurationSeconds = [int](Get-WinForgeJsonValue -Object $Document -Name "DurationSeconds" -Default 0)
-            ProfileId       = [string](Get-WinForgeJsonValue -Object $Document -Name "ProfileId" -Default "")
-            RunId           = [string](Get-WinForgeJsonValue -Object $Document -Name "RunId" -Default "")
+            DurationSeconds = [int](Get-TFToolkitJsonValue -Object $Document -Name "DurationSeconds" -Default 0)
+            ProfileId       = [string](Get-TFToolkitJsonValue -Object $Document -Name "ProfileId" -Default "")
+            RunId           = [string](Get-TFToolkitJsonValue -Object $Document -Name "RunId" -Default "")
             Freed           = (& $number "Freed")
-            Ok              = [int](Get-WinForgeJsonValue -Object $Document -Name "Ok" -Default 0)
-            Warning         = [int](Get-WinForgeJsonValue -Object $Document -Name "Warning" -Default 0)
-            Failed          = [int](Get-WinForgeJsonValue -Object $Document -Name "Failed" -Default 0)
-            Skipped         = [int](Get-WinForgeJsonValue -Object $Document -Name "Skipped" -Default 0)
+            Ok              = [int](Get-TFToolkitJsonValue -Object $Document -Name "Ok" -Default 0)
+            Warning         = [int](Get-TFToolkitJsonValue -Object $Document -Name "Warning" -Default 0)
+            Failed          = [int](Get-TFToolkitJsonValue -Object $Document -Name "Failed" -Default 0)
+            Skipped         = [int](Get-TFToolkitJsonValue -Object $Document -Name "Skipped" -Default 0)
             FreeBefore      = (& $number "FreeBefore")
             FreeAfter       = (& $number "FreeAfter")
             StartupBefore   = (& $number "StartupBefore")
             StartupAfter    = (& $number "StartupAfter")
             Steps           = @(
-                foreach ($step in @(Get-WinForgeJsonValue -Object $Document -Name "Steps" -Default @())) {
+                foreach ($step in @(Get-TFToolkitJsonValue -Object $Document -Name "Steps" -Default @())) {
                     [PSCustomObject]@{
-                        Etapa   = [string](Get-WinForgeJsonValue -Object $step -Name "Etapa" -Default "")
-                        Kind    = [string](Get-WinForgeJsonValue -Object $step -Name "Kind" -Default "")
-                        Duracao = [string](Get-WinForgeJsonValue -Object $step -Name "Duracao" -Default "")
+                        Etapa   = [string](Get-TFToolkitJsonValue -Object $step -Name "Etapa" -Default "")
+                        Kind    = [string](Get-TFToolkitJsonValue -Object $step -Name "Kind" -Default "")
+                        Duracao = [string](Get-TFToolkitJsonValue -Object $step -Name "Duracao" -Default "")
                     }
                 }
             )
@@ -3340,7 +3340,7 @@ function ConvertFrom-WinForgeMaintenanceHistoryDocument {
 }
 
 
-function Get-WinForgeMaintenanceHistory {
+function Get-TFToolkitMaintenanceHistory {
     # As manutenções registradas, da mais recente para a mais antiga (a ordem em que foram gravadas, e não a das datas: com
     # o relógio atrasado, uma manutenção nova teria data "antiga"). Arquivo ausente ou ilegível = lista vazia (um arquivo
     # estragado volta da cópia anterior). -Status devolve também o estado da leitura, para quem vai gravar.
@@ -3349,7 +3349,7 @@ function Get-WinForgeMaintenanceHistory {
     $read = [PSCustomObject]@{ Status = "Unreadable"; Document = $null }
 
     try {
-        $read = Read-WinForgeStateFile -Path (Get-WinForgeMaintenanceHistoryPath)
+        $read = Read-TFToolkitStateFile -Path (Get-TFToolkitMaintenanceHistoryPath)
 
         if ($null -eq $read.Document) {
             if ($Status) { return [PSCustomObject]@{ Status = $read.Status; Entries = @() } }
@@ -3360,7 +3360,7 @@ function Get-WinForgeMaintenanceHistory {
 
         $entries = @(
             foreach ($row in @($document)) {
-                $entry = ConvertFrom-WinForgeMaintenanceHistoryDocument -Document $row
+                $entry = ConvertFrom-TFToolkitMaintenanceHistoryDocument -Document $row
                 if ($null -ne $entry) { $entry }
             }
         )
@@ -3375,7 +3375,7 @@ function Get-WinForgeMaintenanceHistory {
 }
 
 
-function Add-WinForgeMaintenanceHistory {
+function Add-TFToolkitMaintenanceHistory {
     # Acrescenta uma entrada e mantém só as últimas. Devolve $true se gravou.
     param (
         [Parameter(Mandatory)]
@@ -3383,7 +3383,7 @@ function Add-WinForgeMaintenanceHistory {
     )
 
     try {
-        return [bool](Invoke-WinForgeStateLock -ScriptBlock { Save-WinForgeMaintenanceHistoryEntry -Entry $Entry })
+        return [bool](Invoke-TFToolkitStateLock -ScriptBlock { Save-TFToolkitMaintenanceHistoryEntry -Entry $Entry })
     }
     catch {
         return $false
@@ -3391,15 +3391,15 @@ function Add-WinForgeMaintenanceHistory {
 }
 
 
-function Save-WinForgeMaintenanceHistoryEntry {
-    # O ler-acrescentar-gravar de Add-WinForgeMaintenanceHistory (que o faz dentro da trava).
+function Save-TFToolkitMaintenanceHistoryEntry {
+    # O ler-acrescentar-gravar de Add-TFToolkitMaintenanceHistory (que o faz dentro da trava).
     param (
         [Parameter(Mandatory)]
         $Entry
     )
 
     try {
-        $current = Get-WinForgeMaintenanceHistory -Status
+        $current = Get-TFToolkitMaintenanceHistory -Status
 
         # Sem conseguir ler o histórico gravado, gravar agora deixaria só esta entrada.
         if ($current.Status -eq "Unreadable") { return $false }
@@ -3407,13 +3407,13 @@ function Save-WinForgeMaintenanceHistoryEntry {
         # A mesma execução gravada de novo (o Otimizar grava ao fim da parte automática e outra vez no fim) substitui a
         # entrada dela, reconhecida pelo RunId: o histórico não fica com a mesma manutenção duas vezes. Sem RunId (as
         # gravadas por versões anteriores), nada é substituído.
-        $runId = [string](Get-WinForgeJsonValue -Object $Entry -Name "RunId" -Default "")
+        $runId = [string](Get-TFToolkitJsonValue -Object $Entry -Name "RunId" -Default "")
         $existing = @($current.Entries | Where-Object {
-            $null -ne $_ -and ([string]::IsNullOrEmpty($runId) -or [string](Get-WinForgeJsonValue -Object $_ -Name "RunId" -Default "") -ne $runId)
+            $null -ne $_ -and ([string]::IsNullOrEmpty($runId) -or [string](Get-TFToolkitJsonValue -Object $_ -Name "RunId" -Default "") -ne $runId)
         })
         # A nova entra na frente e a mais antiga gravada sai: ordenar pela data descartaria a nova se o relógio estivesse
         # atrasado (bateria da placa-mãe fraca, por exemplo), com a gravação dizendo que deu certo.
-        $all = @(@($Entry) + $existing | Select-Object -First (Get-WinForgeMaintenanceHistoryLimit))
+        $all = @(@($Entry) + $existing | Select-Object -First (Get-TFToolkitMaintenanceHistoryLimit))
 
         $documents = @(
             foreach ($item in $all) {
@@ -3421,8 +3421,8 @@ function Save-WinForgeMaintenanceHistoryEntry {
                     StartedAt       = ([datetime]$item.StartedAt).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)
                     DurationSeconds = $item.DurationSeconds
                     ProfileId       = $item.ProfileId
-                    RunId           = [string](Get-WinForgeJsonValue -Object $item -Name "RunId" -Default "")
-                    Freed           = (Get-WinForgeJsonValue -Object $item -Name "Freed")
+                    RunId           = [string](Get-TFToolkitJsonValue -Object $item -Name "RunId" -Default "")
+                    Freed           = (Get-TFToolkitJsonValue -Object $item -Name "Freed")
                     Ok              = $item.Ok
                     Warning         = $item.Warning
                     Failed          = $item.Failed
@@ -3441,7 +3441,7 @@ function Save-WinForgeMaintenanceHistoryEntry {
         )
 
         # Um único item continua lista no JSON.
-        Write-WinForgeStateJson -Path (Get-WinForgeMaintenanceHistoryPath) -InputObject $documents -Depth 5 -AsList
+        Write-TFToolkitStateJson -Path (Get-TFToolkitMaintenanceHistoryPath) -InputObject $documents -Depth 5 -AsList
 
         return $true
     }
@@ -3455,23 +3455,23 @@ function Save-WinForgeMaintenanceHistoryEntry {
 # Histórico de mudanças (o diário; o desfazer e a tela ficam em Journal.psm1)
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeChangeJournalPath {
-    return (Join-Path (Get-WinForgeDataPath) "changes.json")
+function Get-TFToolkitChangeJournalPath {
+    return (Join-Path (Get-TFToolkitDataPath) "changes.json")
 }
 
 
-function Get-WinForgeChangeJournalLimit {
+function Get-TFToolkitChangeJournalLimit {
     return 200
 }
 
 
-function Get-WinForgeChanges {
+function Get-TFToolkitChanges {
     # As mudanças anotadas, da mais recente para a mais antiga. Arquivo ausente ou ilegível = nenhuma (um arquivo estragado
     # volta da cópia anterior). -Status devolve também o estado da leitura, para quem vai gravar.
     param ([switch]$Status)
 
     $read = [PSCustomObject]@{ Status = "Unreadable"; Document = $null }
-    try { $read = Read-WinForgeStateFile -Path (Get-WinForgeChangeJournalPath) } catch { $read = [PSCustomObject]@{ Status = "Unreadable"; Document = $null } }
+    try { $read = Read-TFToolkitStateFile -Path (Get-TFToolkitChangeJournalPath) } catch { $read = [PSCustomObject]@{ Status = "Unreadable"; Document = $null } }
 
     $document = $read.Document
 
@@ -3481,19 +3481,19 @@ function Get-WinForgeChanges {
     }
 
     $entries = @(
-        foreach ($item in @(Get-WinForgeJsonValue -Object $document -Name "Changes" -Default @())) {
+        foreach ($item in @(Get-TFToolkitJsonValue -Object $document -Name "Changes" -Default @())) {
             $at = [datetime]::MinValue
-            $atText = [string](Get-WinForgeJsonValue -Object $item -Name "At" -Default "")
+            $atText = [string](Get-TFToolkitJsonValue -Object $item -Name "At" -Default "")
 
             if (-not [datetime]::TryParse($atText, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind, [ref]$at)) { continue }
 
             [PSCustomObject]@{
-                Id     = [string](Get-WinForgeJsonValue -Object $item -Name "Id" -Default "")
+                Id     = [string](Get-TFToolkitJsonValue -Object $item -Name "Id" -Default "")
                 At     = $at
-                Action = [string](Get-WinForgeJsonValue -Object $item -Name "Action" -Default "")
-                Text   = [string](Get-WinForgeJsonValue -Object $item -Name "Text" -Default "")
-                Undo   = (Get-WinForgeJsonValue -Object $item -Name "Undo" -Default $null)
-                Undone = [bool](Get-WinForgeJsonValue -Object $item -Name "Undone" -Default $false)
+                Action = [string](Get-TFToolkitJsonValue -Object $item -Name "Action" -Default "")
+                Text   = [string](Get-TFToolkitJsonValue -Object $item -Name "Text" -Default "")
+                Undo   = (Get-TFToolkitJsonValue -Object $item -Name "Undo" -Default $null)
+                Undone = [bool](Get-TFToolkitJsonValue -Object $item -Name "Undone" -Default $false)
             }
         }
     )
@@ -3505,16 +3505,16 @@ function Get-WinForgeChanges {
 }
 
 
-function Save-WinForgeChanges {
+function Save-TFToolkitChanges {
     # Grava a lista inteira (as mais recentes até o limite). Falha em silêncio: o diário nunca interrompe uma ação.
     param (
         [AllowEmptyCollection()][object[]]$Changes = @()
     )
 
     try {
-        $kept = @($Changes | Sort-Object -Property At -Descending | Select-Object -First (Get-WinForgeChangeJournalLimit))
+        $kept = @($Changes | Sort-Object -Property At -Descending | Select-Object -First (Get-TFToolkitChangeJournalLimit))
         $document = [ordered]@{
-            Format  = "WinForge.Changes"
+            Format  = "TFToolkit.Changes"
             Version = 1
             Changes = @($kept | ForEach-Object {
                     [ordered]@{
@@ -3528,7 +3528,7 @@ function Save-WinForgeChanges {
                 })
         }
 
-        Write-WinForgeStateJson -Path (Get-WinForgeChangeJournalPath) -InputObject $document -Depth 8
+        Write-TFToolkitStateJson -Path (Get-TFToolkitChangeJournalPath) -InputObject $document -Depth 8
 
         return $true
     }
@@ -3538,10 +3538,10 @@ function Save-WinForgeChanges {
 }
 
 
-function Add-WinForgeChange {
+function Add-TFToolkitChange {
     <#
     Anota uma mudança. Action é o nome curto ("Limpeza do registro"); Text, o que mudou ("12 entradas removidas"). Undo
-    é $null (não dá para desfazer) ou uma hashtable com Kind e os dados de Undo-WinForgeChange: registry (File),
+    é $null (não dá para desfazer) ou uma hashtable com Kind e os dados de Undo-TFToolkitChange: registry (File),
     startup (Items), tweak (Id), dns, feature (Name, Action), winget-pin (Items) ou keyboard-hotkeys (Before e After). Devolve o Id da mudança ("" se não foi possível anotar).
     #>
     param (
@@ -3555,14 +3555,14 @@ function Add-WinForgeChange {
     try {
         $id = [guid]::NewGuid().ToString("N").Substring(0, 12)
 
-        $saved = Invoke-WinForgeStateLock -ScriptBlock {
-            $current = Get-WinForgeChanges -Status
+        $saved = Invoke-TFToolkitStateLock -ScriptBlock {
+            $current = Get-TFToolkitChanges -Status
 
             # Sem conseguir ler o diário gravado, gravar agora deixaria só esta mudança: as outras perderiam o desfazer.
             if ($current.Status -eq "Unreadable") { return $false }
 
             $changes = @($current.Changes) + @([PSCustomObject]@{ Id = $id; At = $At; Action = $Action; Text = $Text; Undo = $Undo; Undone = $false })
-            return (Save-WinForgeChanges -Changes $changes)
+            return (Save-TFToolkitChanges -Changes $changes)
         }
 
         if ($saved) { return $id }
@@ -3575,13 +3575,13 @@ function Add-WinForgeChange {
 }
 
 
-function Set-WinForgeChangeUndone {
+function Set-TFToolkitChangeUndone {
     param (
         [Parameter(Mandatory)][string]$Id
     )
 
-    [void](Invoke-WinForgeStateLock -ScriptBlock {
-            $current = Get-WinForgeChanges -Status
+    [void](Invoke-TFToolkitStateLock -ScriptBlock {
+            $current = Get-TFToolkitChanges -Status
             if ($current.Status -eq "Unreadable") { return }
 
             $changes = @($current.Changes)
@@ -3590,12 +3590,12 @@ function Set-WinForgeChangeUndone {
                 if ($change.Id -eq $Id) { $change.Undone = $true }
             }
 
-            [void](Save-WinForgeChanges -Changes $changes)
+            [void](Save-TFToolkitChanges -Changes $changes)
         })
 }
 
 
-function Set-WinForgeChangesUndone {
+function Set-TFToolkitChangesUndone {
     # Marca como desfeitas as mudanças ainda ativas de um tipo com um dado valor (por exemplo, o ajuste "explorer.ext"
     # desfeito pela página Ajustes do Windows): elas não aparecem mais para desfazer. Falha em silêncio.
     param (
@@ -3605,8 +3605,8 @@ function Set-WinForgeChangesUndone {
     )
 
     try {
-        [void](Invoke-WinForgeStateLock -ScriptBlock {
-                $current = Get-WinForgeChanges -Status
+        [void](Invoke-TFToolkitStateLock -ScriptBlock {
+                $current = Get-TFToolkitChanges -Status
                 if ($current.Status -eq "Unreadable") { return }
 
                 $changes = @($current.Changes)
@@ -3614,14 +3614,14 @@ function Set-WinForgeChangesUndone {
 
                 foreach ($change in $changes) {
                     if ($change.Undone -or $null -eq $change.Undo) { continue }
-                    if ([string](Get-WinForgeJsonValue -Object $change.Undo -Name "Kind" -Default "") -ne $Kind) { continue }
-                    if ([string](Get-WinForgeJsonValue -Object $change.Undo -Name $Key -Default "") -ne $Value) { continue }
+                    if ([string](Get-TFToolkitJsonValue -Object $change.Undo -Name "Kind" -Default "") -ne $Kind) { continue }
+                    if ([string](Get-TFToolkitJsonValue -Object $change.Undo -Name $Key -Default "") -ne $Value) { continue }
 
                     $change.Undone = $true
                     $marked++
                 }
 
-                if ($marked -gt 0) { [void](Save-WinForgeChanges -Changes $changes) }
+                if ($marked -gt 0) { [void](Save-TFToolkitChanges -Changes $changes) }
             })
     }
     catch {
@@ -3630,12 +3630,12 @@ function Set-WinForgeChangesUndone {
 }
 
 
-# Os tipos de desfazer que o Undo-WinForgeChange (Journal) sabe fazer, um para cada caso do switch dele. Uma anotação de
+# Os tipos de desfazer que o Undo-TFToolkitChange (Journal) sabe fazer, um para cada caso do switch dele. Uma anotação de
 # outro tipo (a cor de destaque das versões de teste da 4.0, ou uma de versão mais nova) fica no histórico sem o desfazer:
 # o botão só apareceria para falhar.
-$script:WinForgeUndoKinds = @("registry", "startup", "tweak", "dns", "feature", "keyboard-hotkeys", "winget-pin")
+$script:TFToolkitUndoKinds = @("registry", "startup", "tweak", "dns", "feature", "keyboard-hotkeys", "winget-pin")
 
-function Test-WinForgeChangeUndoable {
+function Test-TFToolkitChangeUndoable {
     # Se a mudança tem como ser desfeita agora (tem um modo de desfazer que esta versão conhece e ainda não foi desfeita).
     param (
         [Parameter(Mandatory)]$Change
@@ -3643,22 +3643,22 @@ function Test-WinForgeChangeUndoable {
 
     if ($Change.Undone -or $null -eq $Change.Undo) { return $false }
 
-    return ([string](Get-WinForgeJsonValue -Object $Change.Undo -Name "Kind" -Default "") -in $script:WinForgeUndoKinds)
+    return ([string](Get-TFToolkitJsonValue -Object $Change.Undo -Name "Kind" -Default "") -in $script:TFToolkitUndoKinds)
 }
 
 
-function Add-WinForgeUninstalledProgram {
-    # Guarda o nome e o ID de um programa desinstalado pelo WinForge, para a busca de restos (os 50 mais recentes).
+function Add-TFToolkitUninstalledProgram {
+    # Guarda o nome e o ID de um programa desinstalado pelo TF-Toolkit, para a busca de restos (os 50 mais recentes).
     param (
         [Parameter(Mandatory)][string]$Name,
         [string]$Id = ""
     )
 
     try {
-        [void](Invoke-WinForgeStateLock -ScriptBlock {
-                $list = @(Get-WinForgeSetting -Name "UninstalledPrograms" -Default @()) | Where-Object { $null -ne $_ -and [string](Get-WinForgeJsonValue -Object $_ -Name "Name" -Default "") -ne $Name }
+        [void](Invoke-TFToolkitStateLock -ScriptBlock {
+                $list = @(Get-TFToolkitSetting -Name "UninstalledPrograms" -Default @()) | Where-Object { $null -ne $_ -and [string](Get-TFToolkitJsonValue -Object $_ -Name "Name" -Default "") -ne $Name }
                 $list = @([PSCustomObject]@{ Name = $Name; Id = $Id; At = (Get-Date).ToString("yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture) }) + @($list) | Select-Object -First 50
-                [void](Set-WinForgeSetting -Name "UninstalledPrograms" -Value @($list))
+                [void](Set-TFToolkitSetting -Name "UninstalledPrograms" -Value @($list))
             })
     }
     catch {

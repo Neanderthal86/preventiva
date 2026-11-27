@@ -1,16 +1,16 @@
 ﻿#requires -Version 5.1
 <#
 .SYNOPSIS
-    Roda um programa com a conta de quem usa o PC, sem Administrador, para o WinForge aberto como Administrador.
+    Roda um programa com a conta de quem usa o PC, sem Administrador, para o TF-Toolkit aberto como Administrador.
 
 .DESCRIPTION
-    Não é para abrir à mão. O WinForge elevado cria uma tarefa de uma vez só no Agendador de Tarefas, com a conta de quem
-    usa o PC e sem elevação, que roda este script (Invoke-WinForgeLimited, no Schedule.psm1). É o caminho para o que o
+    Não é para abrir à mão. O TF-Toolkit elevado cria uma tarefa de uma vez só no Agendador de Tarefas, com a conta de quem
+    usa o PC e sem elevação, que roda este script (Invoke-TFToolkitLimited, no Schedule.psm1). É o caminho para o que o
     Windows só deixa fazer sem Administrador: o winget recusa, de um processo elevado, desinstalar e atualizar programas
     instalados só para a conta da pessoa (erro 0x8A15007D).
 
     O pedido (a pasta da execução, o programa e os argumentos) chega em -Request. O script cria a pasta e grava nela:
-    - pid.txt: o número deste processo, para o WinForge saber que ele começou e poder pará-lo;
+    - pid.txt: o número deste processo, para o TF-Toolkit saber que ele começou e poder pará-lo;
     - output.txt: a saída do programa, linha a linha, enquanto ela chega;
     - exitcode.txt: por último, o código de saída do programa, ou "!" e o motivo, quando ele nem abriu.
     Nada aqui pede Administrador: o script e o programa têm os direitos de qualquer programa que a pessoa abre.
@@ -42,7 +42,7 @@ $writer.AutoFlush = $true
 $result = "!"
 
 try {
-    # A saída dos programas chega em UTF-8, como na janela do WinForge (Set-WinForgeConsoleEncoding).
+    # A saída dos programas chega em UTF-8, como na janela do TF-Toolkit (Set-TFToolkitConsoleEncoding).
     try {
         [Console]::OutputEncoding = $utf8
     }
@@ -66,7 +66,7 @@ finally {
     $writer.Dispose()
 }
 
-# Por último: é este arquivo que diz ao WinForge que terminou.
+# Por último: é este arquivo que diz ao TF-Toolkit que terminou.
 [System.IO.File]::WriteAllText((Join-Path $folder "exitcode.txt"), $result, $utf8)
 
 if ($result -match '^-?\d+$') { exit ([int]$result) }

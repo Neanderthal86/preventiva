@@ -4,26 +4,26 @@
 # Respostas inválidas seguidas que uma pergunta do console aceita antes de desistir. Com a entrada redirecionada (um
 # script, uma tarefa) o limite é curto: a entrada pode ter acabado. Com alguém digitando, errar não fecha nada; o teto
 # alto só impede um laço sem fim.
-$script:WinForgeMaxInvalidAnswers = 10
-$script:WinForgeMaxTypedAnswers = 1000
+$script:TFToolkitMaxInvalidAnswers = 10
+$script:TFToolkitMaxTypedAnswers = 1000
 
-# Resultado da ação em andamento: o que as ações registraram de forma explícita (Set-WinForgeOutcome) e a contagem das
-# mensagens de estado (Write-WinForgeStatus). A janela e o modo de linha de comando leem isto quando a ação termina.
-$script:WinForgeOutcomeState = $null
+# Resultado da ação em andamento: o que as ações registraram de forma explícita (Set-TFToolkitOutcome) e a contagem das
+# mensagens de estado (Write-TFToolkitStatus). A janela e o modo de linha de comando leem isto quando a ação termina.
+$script:TFToolkitOutcomeState = $null
 
-# Ações inteiras que rodam dentro de um fluxo (Invoke-WinForgeNestedAction), como as etapas com você do Otimizar:
+# Ações inteiras que rodam dentro de um fluxo (Invoke-TFToolkitNestedAction), como as etapas com você do Otimizar:
 # quantas estão abertas agora e o resultado com que a mais recente terminou.
-$script:WinForgeNestedDepth = 0
-$script:WinForgeNestedResult = $null
+$script:TFToolkitNestedDepth = 0
+$script:TFToolkitNestedResult = $null
 
 
 # ---------------------------------------------------------------------------
 # Aparência do console
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeConsoleWidth {
+function Get-TFToolkitConsoleWidth {
     try {
-        if (Test-WinForgeGuiMode) {
+        if (Test-TFToolkitGuiMode) {
             # Na interface gráfica a largura vem do painel de saída (o host personalizado).
             $width = $Host.UI.RawUI.WindowSize.Width - 1
         }
@@ -39,11 +39,11 @@ function Get-WinForgeConsoleWidth {
 }
 
 
-function Get-WinForgeWrapWidth {
+function Get-TFToolkitWrapWidth {
     # Até que coluna uma linha do console pode ir antes de continuar embaixo, com recuo (o Windows continuaria na coluna 0,
     # embaixo dos números do menu). 0 = não quebrar: na janela (o resumo quebra sozinho), com a saída indo para um arquivo
     # ou quando a largura não pode ser lida.
-    if (Test-WinForgeGuiMode) {
+    if (Test-TFToolkitGuiMode) {
         return 0
     }
 
@@ -72,7 +72,7 @@ function Get-WinForgeWrapWidth {
 }
 
 
-function Split-WinForgeWrappedText {
+function Split-TFToolkitWrappedText {
     # Quebra um texto em linhas de no máximo -Width caracteres, nos espaços (uma palavra maior que a linha é cortada).
     param (
         [AllowEmptyString()]
@@ -117,7 +117,7 @@ function Split-WinForgeWrappedText {
 }
 
 
-function Write-WinForgeWrappedLine {
+function Write-TFToolkitWrappedLine {
     <#
     Uma linha de texto com recuo. No console, o que passa da largura da janela continua na linha de baixo com o mesmo
     recuo (depois do -Prefix, como "[OK] "), em vez de voltar para a coluna 0. Na janela, sai igual, numa linha só.
@@ -137,11 +137,11 @@ function Write-WinForgeWrappedLine {
 
     $lead = " " * $Indent
     $hang = " " * ($Indent + $Prefix.Length)
-    $width = Get-WinForgeWrapWidth
+    $width = Get-TFToolkitWrapWidth
     $lines = @($Text)
 
     if ($width -gt 0 -and ($hang.Length + $Text.Length) -gt $width) {
-        $lines = @(Split-WinForgeWrappedText -Text $Text -Width ([Math]::Max(20, $width - $hang.Length)))
+        $lines = @(Split-TFToolkitWrappedText -Text $Text -Width ([Math]::Max(20, $width - $hang.Length)))
     }
 
     if ($Prefix.Length -gt 0) {
@@ -158,13 +158,13 @@ function Write-WinForgeWrappedLine {
 }
 
 
-function Test-WinForgeUnicodeConsole {
+function Test-TFToolkitUnicodeConsole {
     # Defina WINFORGE_ASCII=1 para forçar o modo ASCII em fontes/consoles sem caracteres de moldura.
     if ($env:WINFORGE_ASCII -eq "1") {
         return $false
     }
 
-    if (Test-WinForgeGuiMode) {
+    if (Test-TFToolkitGuiMode) {
         return $true
     }
 
@@ -177,8 +177,8 @@ function Test-WinForgeUnicodeConsole {
 }
 
 
-function Get-WinForgeGlyphs {
-    if (Test-WinForgeUnicodeConsole) {
+function Get-TFToolkitGlyphs {
+    if (Test-TFToolkitUnicodeConsole) {
         return @{
             TL = [string][char]0x250C; TR = [string][char]0x2510
             BL = [string][char]0x2514; BR = [string][char]0x2518
@@ -196,20 +196,20 @@ function Get-WinForgeGlyphs {
 }
 
 
-function Show-WinForgeHeader {
+function Show-TFToolkitHeader {
     param (
         [string]$Title
     )
 
-    $glyphs = Get-WinForgeGlyphs
-    $width = Get-WinForgeConsoleWidth
+    $glyphs = Get-TFToolkitGlyphs
+    $width = Get-TFToolkitConsoleWidth
     # Cada linha ocupa $width colunas: o traço tem 2 de recuo; a caixa, 2 de recuo e as 2 bordas.
     $rule = $width - 2
     $inner = $width - 4
 
-    if (Test-WinForgeGuiMode) {
+    if (Test-TFToolkitGuiMode) {
         # A janela já mostra o título da ação; aqui entra apenas um separador discreto, sem limpar a saída.
-        if ($Title -ne "WinForge") {
+        if ($Title -ne "TF-Toolkit") {
             Write-Host ""
             Write-Host "  $Title" -ForegroundColor Cyan
             Write-Host ("  " + ($glyphs.H * $rule)) -ForegroundColor DarkCyan
@@ -222,9 +222,9 @@ function Show-WinForgeHeader {
     Clear-Host
     Write-Host ""
 
-    if ($Title -eq "WinForge") {
-        $titleText = (Get-WinForgeText 'WinForge  {0}  versão {1}' "$($glyphs.Dot)" "$(Get-WinForgeBuild)")
-        $subtitleText = (Get-WinForgeText 'Manutenção, diagnóstico e ajustes do Windows')
+    if ($Title -eq "TF-Toolkit") {
+        $titleText = (Get-TFToolkitText 'TF-Toolkit  {0}  versão {1}' "$($glyphs.Dot)" "$(Get-TFToolkitBuild)")
+        $subtitleText = (Get-TFToolkitText 'Manutenção, diagnóstico e ajustes do Windows')
 
         Write-Host ("  " + $glyphs.TL + ($glyphs.H * $inner) + $glyphs.TR) -ForegroundColor DarkCyan
         Write-Host ("  " + $glyphs.V) -ForegroundColor DarkCyan -NoNewline
@@ -235,10 +235,10 @@ function Show-WinForgeHeader {
         Write-Host $glyphs.V -ForegroundColor DarkCyan
         Write-Host ("  " + $glyphs.BL + ($glyphs.H * $inner) + $glyphs.BR) -ForegroundColor DarkCyan
 
-        Write-WinForgeStatusBar
+        Write-TFToolkitStatusBar
     }
     else {
-        Write-Host "  WinForge " -ForegroundColor DarkGray -NoNewline
+        Write-Host "  TF-Toolkit " -ForegroundColor DarkGray -NoNewline
         Write-Host "$($glyphs.Sep) " -ForegroundColor DarkCyan -NoNewline
         Write-Host $Title -ForegroundColor Cyan
         Write-Host ("  " + ($glyphs.H * $rule)) -ForegroundColor DarkCyan
@@ -248,9 +248,9 @@ function Show-WinForgeHeader {
 }
 
 
-function Write-WinForgeStatusBar {
-    $glyphs = Get-WinForgeGlyphs
-    $session = Get-WinForgeSessionInfo
+function Write-TFToolkitStatusBar {
+    $glyphs = Get-TFToolkitGlyphs
+    $session = Get-TFToolkitSessionInfo
 
     # O menu de texto só abre como Administrador: a marca aparece quando falta, e não o tempo todo.
     # O usuário e o Windows saem como no cartão do Início ("ana", "Windows 11 Home 24H2").
@@ -258,28 +258,28 @@ function Write-WinForgeStatusBar {
     $computer = $env:COMPUTERNAME
     if ([string]::IsNullOrWhiteSpace($computer)) { $computer = [Environment]::MachineName }
 
-    if (Get-Command Get-WinForgeUserDisplayName -ErrorAction SilentlyContinue) {
-        $user = Get-WinForgeUserDisplayName -Name $user -Computer $computer
+    if (Get-Command Get-TFToolkitUserDisplayName -ErrorAction SilentlyContinue) {
+        $user = Get-TFToolkitUserDisplayName -Name $user -Computer $computer
     }
 
-    $windows = [string](Get-WinForgeJsonValue -Object $session -Name "WindowsName" -Default "")
+    $windows = [string](Get-TFToolkitJsonValue -Object $session -Name "WindowsName" -Default "")
     if ([string]::IsNullOrWhiteSpace($windows)) { $windows = [string]$session.WindowsLabel }
 
-    $version = [string](Get-WinForgeJsonValue -Object $session -Name "WindowsVersion" -Default "")
+    $version = [string](Get-TFToolkitJsonValue -Object $session -Name "WindowsVersion" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($version)) { $windows += " $version" }
 
     $items = @()
 
     if (-not $session.IsAdmin) {
-        $items += [PSCustomObject]@{ Text = (Get-WinForgeText 'Sem Administrador'); Color = "Yellow" }
+        $items += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Sem Administrador'); Color = "Yellow" }
     }
 
     $items += [PSCustomObject]@{ Text = $user; Color = $(if ($session.UserMismatch) { "Yellow" } else { "Gray" }) }
-    $items += [PSCustomObject]@{ Text = $(if ($session.IsLaptop) { (Get-WinForgeText 'Notebook') } else { "Desktop" }); Color = "Gray" }
+    $items += [PSCustomObject]@{ Text = $(if ($session.IsLaptop) { (Get-TFToolkitText 'Notebook') } else { "Desktop" }); Color = "Gray" }
     $items += [PSCustomObject]@{ Text = $windows; Color = "Gray" }
 
-    if ((Get-Command Test-WinForgePendingReboot -ErrorAction SilentlyContinue) -and (Test-WinForgePendingReboot)) {
-        $items += [PSCustomObject]@{ Text = (Get-WinForgeText 'Reinício pendente'); Color = "Yellow" }
+    if ((Get-Command Test-TFToolkitPendingReboot -ErrorAction SilentlyContinue) -and (Test-TFToolkitPendingReboot)) {
+        $items += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Reinício pendente'); Color = "Yellow" }
     }
 
     Write-Host "  " -NoNewline
@@ -293,7 +293,7 @@ function Write-WinForgeStatusBar {
     Write-Host ""
 
     if ($session.UserMismatch) {
-        Write-Host (Get-WinForgeText '  [!] Elevado com outra conta: ajustes de usuário e Downloads afetam este perfil, não o usuário logado.') -ForegroundColor Yellow
+        Write-Host (Get-TFToolkitText '  [!] Elevado com outra conta: ajustes de usuário e Downloads afetam este perfil, não o usuário logado.') -ForegroundColor Yellow
     }
 }
 
@@ -302,7 +302,7 @@ function Write-WinForgeStatusBar {
 # Mensagens
 # ---------------------------------------------------------------------------
 
-function Write-WinForgeMenuItem {
+function Write-TFToolkitMenuItem {
     # -Recommended: escreve "(recomendado)" depois do nome, como a marca "Recomendado" do cartão na janela (a cor sozinha
     # não diz nada a quem não a distingue). Uma descrição que não cabe na linha vai para baixo do nome, com o mesmo recuo.
     param (
@@ -327,7 +327,7 @@ function Write-WinForgeMenuItem {
     }
 
     $keyText = $Key.PadLeft(2)
-    $tag = $(if ($Recommended -and $Label -notmatch '(?i)recomendad') { (Get-WinForgeText ' (recomendado)') } else { "" })
+    $tag = $(if ($Recommended -and $Label -notmatch '(?i)recomendad') { (Get-TFToolkitText ' (recomendado)') } else { "" })
 
     Write-Host "  [" -ForegroundColor DarkGray -NoNewline
     Write-Host $keyText -ForegroundColor $keyColor -NoNewline
@@ -340,12 +340,12 @@ function Write-WinForgeMenuItem {
 
     if (-not [string]::IsNullOrWhiteSpace($Description)) {
         $indent = 4 + $keyText.Length + 1
-        $width = Get-WinForgeWrapWidth
+        $width = Get-TFToolkitWrapWidth
 
         if ($width -gt 0 -and ($indent + $Label.Length + $tag.Length + 2 + $Description.Length) -gt $width) {
             Write-Host ""
 
-            foreach ($line in @(Split-WinForgeWrappedText -Text $Description -Width ([Math]::Max(20, $width - $indent)))) {
+            foreach ($line in @(Split-TFToolkitWrappedText -Text $Description -Width ([Math]::Max(20, $width - $indent)))) {
                 Write-Host ((" " * $indent) + $line) -ForegroundColor DarkGray
             }
 
@@ -359,13 +359,13 @@ function Write-WinForgeMenuItem {
 }
 
 
-function Write-WinForgeSection {
+function Write-TFToolkitSection {
     param (
         [string]$Title
     )
 
-    $glyphs = Get-WinForgeGlyphs
-    $ruleLength = [Math]::Min((Get-WinForgeConsoleWidth) - 4, [Math]::Max(12, $Title.Length + 4))
+    $glyphs = Get-TFToolkitGlyphs
+    $ruleLength = [Math]::Min((Get-TFToolkitConsoleWidth) - 4, [Math]::Max(12, $Title.Length + 4))
 
     Write-Host ""
     Write-Host "  $Title" -ForegroundColor Cyan
@@ -373,7 +373,7 @@ function Write-WinForgeSection {
 }
 
 
-function Write-WinForgeKeyValue {
+function Write-TFToolkitKeyValue {
     # Level pinta o valor: Ok verde, Warn amarelo, Bad vermelho. O resumo da janela lê a cor e pinta o valor também, para
     # o que pede atenção saltar aos olhos numa lista de dados.
     param (
@@ -384,13 +384,13 @@ function Write-WinForgeKeyValue {
     )
 
     $valueText = if ($null -eq $Value) {
-        (Get-WinForgeText 'Não disponível')
+        (Get-TFToolkitText 'Não disponível')
     }
     elseif ($Value -is [System.Array]) {
         ($Value | ForEach-Object { $_.ToString() }) -join ", "
     }
     elseif ([string]::IsNullOrWhiteSpace($Value.ToString())) {
-        (Get-WinForgeText 'Não disponível')
+        (Get-TFToolkitText 'Não disponível')
     }
     else {
         $Value.ToString()
@@ -403,7 +403,7 @@ function Write-WinForgeKeyValue {
 }
 
 
-function ConvertTo-WinForgeReadableError {
+function ConvertTo-TFToolkitReadableError {
     <#
     Um texto de erro do jeito que a pessoa deve ler, numa linha: sem o embrulho do PowerShell em volta da mensagem do
     Windows ('Exception calling "Search" with "1" argument(s): "..."', ou 'Exceção ao chamar ... com ... argumento(s)'),
@@ -425,17 +425,17 @@ function ConvertTo-WinForgeReadableError {
     $missing = "(?s)(The term|O termo|El t.rmino) '(?<name>[^']+)' (is not recognized as|não é reconhecido como|no se reconoce como).*\z"
 
     if ($result -match $missing) {
-        $result = $result.Substring(0, $result.Length - $Matches[0].Length) + (Get-WinForgeText 'o comando ''{0}'' não está disponível neste Windows' "$($Matches['name'])")
+        $result = $result.Substring(0, $result.Length - $Matches[0].Length) + (Get-TFToolkitText 'o comando ''{0}'' não está disponível neste Windows' "$($Matches['name'])")
     }
 
     # As recusas de acesso do .NET chegam em inglês na maioria dos Windows em português (sem o pacote de idioma do .NET).
     $denied = @{
-        "Attempted to perform an unauthorized operation."   = (Get-WinForgeText 'o Windows negou a alteração (acesso negado)')
-        "Tentativa de executar uma operação não autorizada." = (Get-WinForgeText 'o Windows negou a alteração (acesso negado)')
-        "Requested registry access is not allowed."          = (Get-WinForgeText 'o Windows negou o acesso ao registro')
-        "O acesso ao Registro solicitado não é permitido."   = (Get-WinForgeText 'o Windows negou o acesso ao registro')
-        "Intento de realizar una operación no autorizada."  = (Get-WinForgeText 'o Windows negou a alteração (acesso negado)')
-        "No se permite el acceso al Registro solicitado."    = (Get-WinForgeText 'o Windows negou o acesso ao registro')
+        "Attempted to perform an unauthorized operation."   = (Get-TFToolkitText 'o Windows negou a alteração (acesso negado)')
+        "Tentativa de executar uma operação não autorizada." = (Get-TFToolkitText 'o Windows negou a alteração (acesso negado)')
+        "Requested registry access is not allowed."          = (Get-TFToolkitText 'o Windows negou o acesso ao registro')
+        "O acesso ao Registro solicitado não é permitido."   = (Get-TFToolkitText 'o Windows negou o acesso ao registro')
+        "Intento de realizar una operación no autorizada."  = (Get-TFToolkitText 'o Windows negou a alteração (acesso negado)')
+        "No se permite el acceso al Registro solicitado."    = (Get-TFToolkitText 'o Windows negou o acesso ao registro')
     }
 
     foreach ($english in $denied.Keys) {
@@ -447,12 +447,12 @@ function ConvertTo-WinForgeReadableError {
 }
 
 
-function Format-WinForgeReasonNote {
-    # O motivo de uma falha como a frase embaixo do título da faixa de resultado: legível (ConvertTo-WinForgeReadableError),
+function Format-TFToolkitReasonNote {
+    # O motivo de uma falha como a frase embaixo do título da faixa de resultado: legível (ConvertTo-TFToolkitReadableError),
     # com a primeira letra maiúscula e o ponto final. Vazio volta vazio.
     param ([AllowEmptyString()][AllowNull()][string]$Text)
 
-    $why = ([string](ConvertTo-WinForgeReadableError -Text $Text)).Trim()
+    $why = ([string](ConvertTo-TFToolkitReadableError -Text $Text)).Trim()
 
     if (-not $why) { return "" }
 
@@ -463,7 +463,7 @@ function Format-WinForgeReasonNote {
 }
 
 
-function Write-WinForgeStatus {
+function Write-TFToolkitStatus {
     param (
         [ValidateSet("Success", "Warning", "Error", "Info", "Running")]
         [string]$Type,
@@ -474,10 +474,10 @@ function Write-WinForgeStatus {
         [switch]$Notice
     )
 
-    $Message = ConvertTo-WinForgeReadableError -Text $Message
+    $Message = ConvertTo-TFToolkitReadableError -Text $Message
 
     if (-not $Notice) {
-        Add-WinForgeOutcomeMessage -Type $Type -Message $Message
+        Add-TFToolkitOutcomeMessage -Type $Type -Message $Message
     }
 
     $badge = switch ($Type) {
@@ -497,11 +497,11 @@ function Write-WinForgeStatus {
     }
 
     # Uma mensagem longa continua embaixo do texto, depois do "[OK] ", e não embaixo do ícone.
-    Write-WinForgeWrappedLine -Prefix "$badge " -PrefixColor $color -Text $Message -Color Gray
+    Write-TFToolkitWrappedLine -Prefix "$badge " -PrefixColor $color -Text $Message -Color Gray
 }
 
 
-function Write-WinForgeCommand {
+function Write-TFToolkitCommand {
     param (
         [string]$Command
     )
@@ -511,7 +511,7 @@ function Write-WinForgeCommand {
 }
 
 
-function Write-WinForgePhase {
+function Write-TFToolkitPhase {
     # Uma parte de um fluxo em etapas numeradas que não é uma das etapas (no Otimizar, as perguntas antes da parte
     # automática e o fim). Na janela, ela toma o lugar da etapa em destaque, sem mudar a conta das etapas: as perguntas
     # não aparecem embaixo do nome da etapa que já terminou.
@@ -523,7 +523,7 @@ function Write-WinForgePhase {
 }
 
 
-function Write-WinForgeSubStep {
+function Write-TFToolkitSubStep {
     param (
         [string]$Title,
         [string]$Message = ""
@@ -539,7 +539,7 @@ function Write-WinForgeSubStep {
 }
 
 
-function Write-WinForgeProgress {
+function Write-TFToolkitProgress {
     param (
         [int]$Current,
         [int]$Total,
@@ -547,7 +547,7 @@ function Write-WinForgeProgress {
         [int]$BarWidth = 24
     )
 
-    $glyphs = Get-WinForgeGlyphs
+    $glyphs = Get-TFToolkitGlyphs
 
     if ($Total -le 0) { $Total = 1 }
 
@@ -563,7 +563,7 @@ function Write-WinForgeProgress {
 }
 
 
-function Write-WinForgeResultTable {
+function Write-TFToolkitResultTable {
     # Resumo de etapas: objetos com Etapa, Status, Duracao e (opcional) Kind = Ok | Skipped | Warning | Failed.
     param (
         [Parameter(Mandatory)]
@@ -572,7 +572,7 @@ function Write-WinForgeResultTable {
     )
 
     if (@($Results).Count -eq 0) {
-        Write-Host (Get-WinForgeText '  Nenhuma etapa foi executada.') -ForegroundColor DarkGray
+        Write-Host (Get-TFToolkitText '  Nenhuma etapa foi executada.') -ForegroundColor DarkGray
         return
     }
 
@@ -591,8 +591,8 @@ function Write-WinForgeResultTable {
             $statusText = [string]$result.Status
             $kind = $(
                 if ($statusText -like "OK*") { "Ok" }
-                elseif ($statusText -like "Falhou*" -or $statusText -like "$(Get-WinForgeText 'Falhou')*") { "Failed" }
-                elseif ($statusText -like "Ignorad*" -or $statusText -like "$(Get-WinForgeText 'Ignorado')*") { "Skipped" }
+                elseif ($statusText -like "Falhou*" -or $statusText -like "$(Get-TFToolkitText 'Falhou')*") { "Failed" }
+                elseif ($statusText -like "Ignorad*" -or $statusText -like "$(Get-TFToolkitText 'Ignorado')*") { "Skipped" }
                 else { "Warning" }
             )
         }
@@ -604,7 +604,7 @@ function Write-WinForgeResultTable {
             default   { $badge = "[!] "; $color = "Yellow" }
         }
 
-        if (Test-WinForgeGuiMode) {
+        if (Test-TFToolkitGuiMode) {
             # Na janela, cada linha vira uma linha do resumo da execução (com o ícone do desfecho): sem as colunas
             # alinhadas, que lá só deixariam espaços no meio do texto, e sem repetir "OK" ao lado do ícone verde.
             $parts = @([string]$result.Etapa)
@@ -633,7 +633,7 @@ function Write-WinForgeResultTable {
 # Moldura padrão das ações e resultado de etapa
 # ---------------------------------------------------------------------------
 
-function Enter-WinForgeAction {
+function Enter-TFToolkitAction {
     # Abertura de uma ação: cabeçalho completo quando ela é chamada sozinha, apenas uma seção quando faz parte de um fluxo.
     # Na janela gráfica o título da ação já aparece acima da saída (é o nome do botão clicado, igual a este), então
     # repeti-lo na saída só gastaria espaço.
@@ -644,21 +644,21 @@ function Enter-WinForgeAction {
         [switch]$Embedded
     )
 
-    if ($Embedded -or $script:WinForgeNestedDepth -gt 0) {
-        Write-WinForgeSection -Title $Title
+    if ($Embedded -or $script:TFToolkitNestedDepth -gt 0) {
+        Write-TFToolkitSection -Title $Title
     }
-    elseif (-not (Test-WinForgeGuiMode)) {
-        # No console, a ação que começa sozinha começa um desfecho novo (a linha final de Exit-WinForgeAction). Na janela
+    elseif (-not (Test-TFToolkitGuiMode)) {
+        # No console, a ação que começa sozinha começa um desfecho novo (a linha final de Exit-TFToolkitAction). Na janela
         # quem zera é o executor, antes de a ação começar.
-        Reset-WinForgeOutcome
-        Show-WinForgeHeader $Title
+        Reset-TFToolkitOutcome
+        Show-TFToolkitHeader $Title
     }
 }
 
 
-function Exit-WinForgeAction {
+function Exit-TFToolkitAction {
     # Encerramento de uma ação chamada sozinha. Na interface gráfica o botão Voltar já faz esse papel.
-    # -Result: o WinForge.Result da ação; quando ela roda sozinha (sem -Embedded) o resultado vira o desfecho que a janela
+    # -Result: o TFToolkit.Result da ação; quando ela roda sozinha (sem -Embedded) o resultado vira o desfecho que a janela
     # mostra. Dentro de um fluxo (Manutenção) quem decide o desfecho é o fluxo.
     param (
         [switch]$Embedded,
@@ -666,11 +666,11 @@ function Exit-WinForgeAction {
         $Result = $null
     )
 
-    if (-not $Embedded -and $script:WinForgeNestedDepth -gt 0) {
-        # Uma ação que roda dentro de um fluxo (Invoke-WinForgeNestedAction): o resultado dela vai para o fluxo, sem mudar
+    if (-not $Embedded -and $script:TFToolkitNestedDepth -gt 0) {
+        # Uma ação que roda dentro de um fluxo (Invoke-TFToolkitNestedAction): o resultado dela vai para o fluxo, sem mudar
         # o desfecho dele e sem a pausa do fim.
         if ($null -ne $Result -and -not ($Result -is [System.Array])) {
-            $script:WinForgeNestedResult = $Result
+            $script:TFToolkitNestedResult = $Result
         }
 
         return
@@ -678,36 +678,36 @@ function Exit-WinForgeAction {
 
     if (-not $Embedded) {
         if ($null -ne $Result -and -not ($Result -is [System.Array])) {
-            Set-WinForgeOutcome -Result $Result
+            Set-TFToolkitOutcome -Result $Result
         }
 
         # No console, a última linha diz como a ação terminou, como a faixa de resultado da janela. Depois de Voltar ou
         # Cancelar não há o que ler: o menu volta sem pedir mais uma tecla.
-        if (-not (Test-WinForgeGuiMode)) {
-            $outcome = Get-WinForgeOutcome
+        if (-not (Test-TFToolkitGuiMode)) {
+            $outcome = Get-TFToolkitOutcome
 
-            if ($outcome.Kind -eq "Skipped" -and (Test-WinForgeCanceledText -Text ([string]$outcome.Detail))) {
+            if ($outcome.Kind -eq "Skipped" -and (Test-TFToolkitCanceledText -Text ([string]$outcome.Detail))) {
                 return
             }
 
-            Write-WinForgeOutcomeLine -Outcome $outcome
+            Write-TFToolkitOutcomeLine -Outcome $outcome
         }
 
-        # O WinForge vai fechar para a atualização: o instalador espera este menu fechar, e uma tecla pedida aqui o
+        # O TF-Toolkit vai fechar para a atualização: o instalador espera este menu fechar, e uma tecla pedida aqui o
         # deixaria esperando até desistir.
-        if (Get-WinForgeAppExitRequest) { return }
+        if (Get-TFToolkitAppExitRequest) { return }
 
         Write-Host ""
-        Wait-WinForgeKey
+        Wait-TFToolkitKey
     }
 }
 
 
-function Invoke-WinForgeNestedAction {
+function Invoke-TFToolkitNestedAction {
     <#
     Roda uma ação inteira, com as perguntas dela, dentro de um fluxo (as etapas com você do Otimizar): o título vira uma
-    seção, sem o cabeçalho e sem a pausa do fim, e o desfecho do fluxo não muda. Devolve o WinForge.Result com que a
-    ação terminou (o de Exit-WinForgeAction ou o último que ela devolveu), ou um Ok sem detalhe se ela não disse nada.
+    seção, sem o cabeçalho e sem a pausa do fim, e o desfecho do fluxo não muda. Devolve o TFToolkit.Result com que a
+    ação terminou (o de Exit-TFToolkitAction ou o último que ela devolveu), ou um Ok sem detalhe se ela não disse nada.
     -Arguments: os parâmetros da ação, por nome.
     #>
     param (
@@ -717,22 +717,22 @@ function Invoke-WinForgeNestedAction {
         [hashtable]$Arguments = @{}
     )
 
-    $previous = $script:WinForgeNestedResult
-    $script:WinForgeNestedResult = $null
-    $script:WinForgeNestedDepth++
+    $previous = $script:TFToolkitNestedResult
+    $script:TFToolkitNestedResult = $null
+    $script:TFToolkitNestedDepth++
     $result = $null
 
     try {
         $output = @(& $Command @Arguments)
-        $result = $script:WinForgeNestedResult
+        $result = $script:TFToolkitNestedResult
     }
     finally {
-        $script:WinForgeNestedDepth--
-        $script:WinForgeNestedResult = $previous
+        $script:TFToolkitNestedDepth--
+        $script:TFToolkitNestedResult = $previous
     }
 
-    $returned = @($output | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "WinForge.Result" })
-    $others = @($output | Where-Object { $null -ne $_ -and -not ($_.PSObject.TypeNames -contains "WinForge.Result") })
+    $returned = @($output | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "TFToolkit.Result" })
+    $others = @($output | Where-Object { $null -ne $_ -and -not ($_.PSObject.TypeNames -contains "TFToolkit.Result") })
 
     # Texto ou objetos soltos da ação aparecem na tela, mas não viram o resultado.
     if ($others.Count -gt 0) {
@@ -744,21 +744,21 @@ function Invoke-WinForgeNestedAction {
     }
 
     if ($null -eq $result) {
-        $result = New-WinForgeResult -Kind Ok
+        $result = New-TFToolkitResult -Kind Ok
     }
 
     return $result
 }
 
 
-function Test-WinForgeNestedAction {
-    # Se a ação roda dentro de um fluxo (Invoke-WinForgeNestedAction, as etapas com você do Otimizar): ali, quem oferece
+function Test-TFToolkitNestedAction {
+    # Se a ação roda dentro de um fluxo (Invoke-TFToolkitNestedAction, as etapas com você do Otimizar): ali, quem oferece
     # reiniciar no fim é o fluxo, e não cada ação.
-    return ($script:WinForgeNestedDepth -gt 0)
+    return ($script:TFToolkitNestedDepth -gt 0)
 }
 
 
-function Get-WinForgeRebootSentence {
+function Get-TFToolkitRebootSentence {
     <#
     O que dizer do reinício no fim do resultado: "Reinicie o PC para concluir." quando a ação terminou e falta reiniciar;
     "Reinicie o PC e tente de novo." quando ela não foi concluída por causa de um reinício pendente (nada termina sozinho
@@ -775,13 +775,13 @@ function Get-WinForgeRebootSentence {
     if ($Detail -match '(?i)\breinicie\b|(depois|antes|ao) de reiniciar|\bao reiniciar') { return "" }
     if ($Detail -match '(?i)\brestart (the|your) PC\b|\b(after|before|when) restarting\b') { return "" }
     if ($Detail -match '(?i)(después|antes) de reiniciar|\bal reiniciar') { return "" }
-    if ($Kind -eq "Failed") { return (Get-WinForgeText ' Reinicie o PC e tente de novo.') }
+    if ($Kind -eq "Failed") { return (Get-TFToolkitText ' Reinicie o PC e tente de novo.') }
 
-    return (Get-WinForgeText ' Reinicie o PC para concluir.')
+    return (Get-TFToolkitText ' Reinicie o PC para concluir.')
 }
 
 
-function Write-WinForgeOutcomeLine {
+function Write-TFToolkitOutcomeLine {
     # A linha final de uma ação no console: "[OK] Concluído: ...", "[!] Concluído com ressalvas: ..." e, se o Windows
     # precisa reiniciar, o lembrete. Uma tela que só mostrou informações (Done) não ganha linha.
     param (
@@ -801,17 +801,17 @@ function Write-WinForgeOutcomeLine {
     }
 
     Write-Host ""
-    Write-WinForgeWrappedLine -Prefix "$badge " -PrefixColor $color -Text ([string]$Outcome.Summary) -Color $color
+    Write-TFToolkitWrappedLine -Prefix "$badge " -PrefixColor $color -Text ([string]$Outcome.Summary) -Color $color
 
-    # O mesmo pedido de reinício da janela (Get-WinForgeRebootSentence): nada quando o detalhe já manda reiniciar.
+    # O mesmo pedido de reinício da janela (Get-TFToolkitRebootSentence): nada quando o detalhe já manda reiniciar.
     if ($Outcome.RebootRequired) {
-        $reboot = (Get-WinForgeRebootSentence -Kind ([string]$Outcome.Kind) -Detail ([string]$Outcome.Summary)).Trim()
+        $reboot = (Get-TFToolkitRebootSentence -Kind ([string]$Outcome.Kind) -Detail ([string]$Outcome.Summary)).Trim()
         if ($reboot) { Write-Host "  $reboot" -ForegroundColor Yellow }
     }
 }
 
 
-function New-WinForgeResult {
+function New-TFToolkitResult {
     <#
     Resultado de uma etapa de fluxo (Otimizar). Só aparece no pipeline quando a ação recebe -PassThru.
     Status é o texto para a pessoa ("OK", "Atenção (...)"). Quem toma decisões (pedir reinício, oferecer uma nova
@@ -828,13 +828,13 @@ function New-WinForgeResult {
         [hashtable]$Data = @{}
     )
 
-    $Detail = ConvertTo-WinForgeReadableError -Text $Detail
+    $Detail = ConvertTo-TFToolkitReadableError -Text $Detail
 
     $status = switch ($Kind) {
         "Ok"      { "OK" }
-        "Skipped" { (Get-WinForgeText 'Ignorado') }
-        "Warning" { (Get-WinForgeText 'Atenção') }
-        "Failed"  { (Get-WinForgeText 'Falhou') }
+        "Skipped" { (Get-TFToolkitText 'Ignorado') }
+        "Warning" { (Get-TFToolkitText 'Atenção') }
+        "Failed"  { (Get-TFToolkitText 'Falhou') }
     }
 
     if (-not [string]::IsNullOrWhiteSpace($Detail)) {
@@ -842,7 +842,7 @@ function New-WinForgeResult {
     }
 
     return [PSCustomObject]@{
-        PSTypeName = "WinForge.Result"
+        PSTypeName = "TFToolkit.Result"
         Kind       = $Kind
         Etapa      = $Title
         Status     = $status
@@ -853,7 +853,7 @@ function New-WinForgeResult {
 }
 
 
-function Get-WinForgeResultData {
+function Get-TFToolkitResultData {
     # Lê um fato de Data (por exemplo FreedBytes) sem depender de a chave, ou do próprio Data, existir. Falta = $null.
     param (
         $Result,
@@ -876,7 +876,7 @@ function Get-WinForgeResultData {
 }
 
 
-function Test-WinForgeResultFlag {
+function Test-TFToolkitResultFlag {
     # Fato booleano de Data (por exemplo RebootRequired); ausente conta como falso.
     param (
         $Result,
@@ -885,7 +885,7 @@ function Test-WinForgeResultFlag {
         [string]$Name
     )
 
-    return [bool](Get-WinForgeResultData -Result $Result -Name $Name)
+    return [bool](Get-TFToolkitResultData -Result $Result -Name $Name)
 }
 
 
@@ -893,8 +893,8 @@ function Test-WinForgeResultFlag {
 # Desfecho da ação (o que a janela mostra na faixa de resultado)
 # ---------------------------------------------------------------------------
 
-function Reset-WinForgeOutcome {
-    $script:WinForgeOutcomeState = [ordered]@{
+function Reset-TFToolkitOutcome {
+    $script:TFToolkitOutcomeState = [ordered]@{
         Explicit    = $null
         Success     = 0
         Warning     = 0
@@ -905,18 +905,18 @@ function Reset-WinForgeOutcome {
 }
 
 
-function Add-WinForgeOutcomeMessage {
-    # Chamado por Write-WinForgeStatus: conta as mensagens de sucesso, aviso e erro da ação em andamento.
+function Add-TFToolkitOutcomeMessage {
+    # Chamado por Write-TFToolkitStatus: conta as mensagens de sucesso, aviso e erro da ação em andamento.
     param (
         [string]$Type,
         [string]$Message
     )
 
-    if ($null -eq $script:WinForgeOutcomeState) {
-        Reset-WinForgeOutcome
+    if ($null -eq $script:TFToolkitOutcomeState) {
+        Reset-TFToolkitOutcome
     }
 
-    $state = $script:WinForgeOutcomeState
+    $state = $script:TFToolkitOutcomeState
 
     switch ($Type) {
         "Success" { $state.Success++ }
@@ -926,9 +926,9 @@ function Add-WinForgeOutcomeMessage {
 }
 
 
-function Set-WinForgeOutcome {
+function Set-TFToolkitOutcome {
     <#
-    Registra o resultado explícito da ação (um WinForge.Result, ou Kind e Detail soltos). Vale mais do que a contagem
+    Registra o resultado explícito da ação (um TFToolkit.Result, ou Kind e Detail soltos). Vale mais do que a contagem
     de mensagens; o último registro vence.
     #>
     param (
@@ -940,8 +940,8 @@ function Set-WinForgeOutcome {
         [string]$Detail = ""
     )
 
-    if ($null -eq $script:WinForgeOutcomeState) {
-        Reset-WinForgeOutcome
+    if ($null -eq $script:TFToolkitOutcomeState) {
+        Reset-TFToolkitOutcome
     }
 
     $reboot = $false
@@ -950,22 +950,22 @@ function Set-WinForgeOutcome {
     if ($null -ne $Result) {
         $Kind = [string]$Result.Kind
         $Detail = [string]$Result.Detail
-        $reboot = Test-WinForgeResultFlag -Result $Result -Name "RebootRequired"
+        $reboot = Test-TFToolkitResultFlag -Result $Result -Name "RebootRequired"
 
-        # Como a janela apresenta este resultado, se a ação disse (Set-WinForgeResultView).
+        # Como a janela apresenta este resultado, se a ação disse (Set-TFToolkitResultView).
         foreach ($name in @("Headline", "Note", "Tone", "Next", "NextLabel")) {
-            $view[$name] = [string](Get-WinForgeResultData -Result $Result -Name $name)
+            $view[$name] = [string](Get-TFToolkitResultData -Result $Result -Name $name)
         }
 
-        $view.HideSummary = Test-WinForgeResultFlag -Result $Result -Name "HideSummary"
-        $view.Quiet = Test-WinForgeResultFlag -Result $Result -Name "Quiet"
+        $view.HideSummary = Test-TFToolkitResultFlag -Result $Result -Name "HideSummary"
+        $view.Quiet = Test-TFToolkitResultFlag -Result $Result -Name "Quiet"
     }
 
     if ([string]::IsNullOrEmpty($Kind)) {
         return
     }
 
-    $script:WinForgeOutcomeState.Explicit = [PSCustomObject]@{
+    $script:TFToolkitOutcomeState.Explicit = [PSCustomObject]@{
         Kind = $Kind; Detail = $Detail; RebootRequired = $reboot
         Headline = $view.Headline; Note = $view.Note; Tone = $view.Tone; Next = $view.Next; NextLabel = $view.NextLabel; HideSummary = $view.HideSummary
         Quiet = $view.Quiet
@@ -973,7 +973,7 @@ function Set-WinForgeOutcome {
 }
 
 
-function Set-WinForgeResultView {
+function Set-TFToolkitResultView {
     <#
     Como a janela apresenta um resultado quando o genérico ("Concluído com ressalvas: 4 ameaças encontradas; 3 ainda
     pedem ação") não basta. Headline é o título da faixa ("3 ameaças pedem ação"); Note, a frase embaixo dele; Tone, a
@@ -1013,7 +1013,7 @@ function Set-WinForgeResultView {
 }
 
 
-function Format-WinForgeOutcomeSummary {
+function Format-TFToolkitOutcomeSummary {
     # Uma linha para a faixa de resultado: o que aconteceu, sem repetir o nome da ação.
     param (
         [ValidateSet("Ok", "Skipped", "Warning", "Failed", "Done")]
@@ -1029,30 +1029,30 @@ function Format-WinForgeOutcomeSummary {
     }
 
     switch ($Kind) {
-        "Ok"      { if ($detail) { return (Get-WinForgeText 'Concluído: {0}.' "$detail") } else { return (Get-WinForgeText 'Concluído com sucesso.') } }
-        "Warning" { if ($detail) { return (Get-WinForgeText 'Concluído com ressalvas: {0}.' "$detail") } else { return (Get-WinForgeText 'Concluído com ressalvas; revise a saída.') } }
-        "Failed"  { if ($detail) { return (Get-WinForgeText 'Não foi concluído: {0}.' "$detail") } else { return (Get-WinForgeText 'Não foi concluído; revise a saída.') } }
+        "Ok"      { if ($detail) { return (Get-TFToolkitText 'Concluído: {0}.' "$detail") } else { return (Get-TFToolkitText 'Concluído com sucesso.') } }
+        "Warning" { if ($detail) { return (Get-TFToolkitText 'Concluído com ressalvas: {0}.' "$detail") } else { return (Get-TFToolkitText 'Concluído com ressalvas; revise a saída.') } }
+        "Failed"  { if ($detail) { return (Get-TFToolkitText 'Não foi concluído: {0}.' "$detail") } else { return (Get-TFToolkitText 'Não foi concluído; revise a saída.') } }
         "Skipped" {
             # "cancelado pelo usuário" e "operação cancelada" são o mesmo fato; a faixa diz sempre a mesma frase.
-            if (Test-WinForgeCanceledText -Text $detail) { return (Get-WinForgeText 'Operação cancelada.') }
-            if ($detail) { return (Get-WinForgeText 'Nada foi feito: {0}.' "$detail") } else { return (Get-WinForgeText 'Nada a fazer.') }
+            if (Test-TFToolkitCanceledText -Text $detail) { return (Get-TFToolkitText 'Operação cancelada.') }
+            if ($detail) { return (Get-TFToolkitText 'Nada foi feito: {0}.' "$detail") } else { return (Get-TFToolkitText 'Nada a fazer.') }
         }
-        default   { return (Get-WinForgeText 'Concluído.') }
+        default   { return (Get-TFToolkitText 'Concluído.') }
     }
 }
 
 
-function Get-WinForgeOutcome {
+function Get-TFToolkitOutcome {
     <#
     O desfecho da ação que acabou de rodar. Kind = Ok | Warning | Failed | Skipped | Done (Done: a ação só mostrou
     informações e não registrou nada). Usa o resultado explícito, se houver; senão, deduz das mensagens de estado:
     erro sem nenhum sucesso é falha, erro com sucesso e aviso são ressalvas, aviso de cancelamento é "nada feito".
     #>
-    if ($null -eq $script:WinForgeOutcomeState) {
-        Reset-WinForgeOutcome
+    if ($null -eq $script:TFToolkitOutcomeState) {
+        Reset-TFToolkitOutcome
     }
 
-    $state = $script:WinForgeOutcomeState
+    $state = $script:TFToolkitOutcomeState
     $kind = "Done"
     $detail = ""
     $reboot = $false
@@ -1064,11 +1064,11 @@ function Get-WinForgeOutcome {
         $reboot = [bool]$state.Explicit.RebootRequired
 
         foreach ($name in @("Headline", "Note", "Tone", "Next", "NextLabel")) {
-            $view[$name] = [string](Get-WinForgeJsonValue -Object $state.Explicit -Name $name -Default "")
+            $view[$name] = [string](Get-TFToolkitJsonValue -Object $state.Explicit -Name $name -Default "")
         }
 
-        $view.HideSummary = [bool](Get-WinForgeJsonValue -Object $state.Explicit -Name "HideSummary" -Default $false)
-        $view.Quiet = [bool](Get-WinForgeJsonValue -Object $state.Explicit -Name "Quiet" -Default $false)
+        $view.HideSummary = [bool](Get-TFToolkitJsonValue -Object $state.Explicit -Name "HideSummary" -Default $false)
+        $view.Quiet = [bool](Get-TFToolkitJsonValue -Object $state.Explicit -Name "Quiet" -Default $false)
     }
     elseif ($state.Error -gt 0) {
         $detail = [string]$state.LastError
@@ -1078,9 +1078,9 @@ function Get-WinForgeOutcome {
     elseif ($state.Warning -gt 0) {
         $detail = [string]$state.LastWarning
 
-        if ($state.Success -eq 0 -and (Test-WinForgeCanceledText -Text $detail)) {
+        if ($state.Success -eq 0 -and (Test-TFToolkitCanceledText -Text $detail)) {
             $kind = "Skipped"
-            $detail = (Get-WinForgeText 'operação cancelada')
+            $detail = (Get-TFToolkitText 'operação cancelada')
         }
         else {
             $kind = "Warning"
@@ -1091,22 +1091,22 @@ function Get-WinForgeOutcome {
     }
 
     $title = switch ($kind) {
-        "Ok"      { (Get-WinForgeText 'Concluído') }
-        "Warning" { (Get-WinForgeText 'Concluído com ressalvas') }
-        "Failed"  { (Get-WinForgeText 'Não foi concluído') }
+        "Ok"      { (Get-TFToolkitText 'Concluído') }
+        "Warning" { (Get-TFToolkitText 'Concluído com ressalvas') }
+        "Failed"  { (Get-TFToolkitText 'Não foi concluído') }
         # O PC reiniciando a pedido da pessoa (o Otimizar com um reinício pendente) não é "Nada a fazer".
-        "Skipped" { $(if (Test-WinForgeCanceledText -Text $detail) { (Get-WinForgeText 'Cancelado') } elseif (Test-WinForgeRestartingText -Text $detail) { (Get-WinForgeText 'Reiniciando') } else { (Get-WinForgeText 'Nada a fazer') }) }
-        default   { (Get-WinForgeText 'Concluído') }
+        "Skipped" { $(if (Test-TFToolkitCanceledText -Text $detail) { (Get-TFToolkitText 'Cancelado') } elseif (Test-TFToolkitRestartingText -Text $detail) { (Get-TFToolkitText 'Reiniciando') } else { (Get-TFToolkitText 'Nada a fazer') }) }
+        default   { (Get-TFToolkitText 'Concluído') }
     }
 
     # O título que a própria ação deu ao resultado ("Nenhum vírus encontrado") vale mais que o genérico.
     if (-not [string]::IsNullOrWhiteSpace($view.Headline)) { $title = $view.Headline }
 
     return [PSCustomObject]@{
-        PSTypeName     = "WinForge.Outcome"
+        PSTypeName     = "TFToolkit.Outcome"
         Kind           = $kind
         Title          = $title
-        Summary        = (Format-WinForgeOutcomeSummary -Kind $kind -Detail $detail)
+        Summary        = (Format-TFToolkitOutcomeSummary -Kind $kind -Detail $detail)
         Detail         = $detail
         RebootRequired = $reboot
         Headline       = $view.Headline
@@ -1120,18 +1120,18 @@ function Get-WinForgeOutcome {
 }
 
 
-function Test-WinForgeElevation {
+function Test-TFToolkitElevation {
     # Verdadeiro quando o processo é Administrador; caso contrário mostra o motivo e devolve falso.
     param (
-        [string]$Reason = (Get-WinForgeText 'Esta ação exige privilégios de Administrador.')
+        [string]$Reason = (Get-TFToolkitText 'Esta ação exige privilégios de Administrador.')
     )
 
-    if (Test-WinForgeAdministrator) {
+    if (Test-TFToolkitAdministrator) {
         return $true
     }
 
-    Write-WinForgeStatus -Type Error -Message $Reason
-    Write-Host (Get-WinForgeText '      Feche o WinForge e abra-o novamente como Administrador.') -ForegroundColor DarkGray
+    Write-TFToolkitStatus -Type Error -Message $Reason
+    Write-Host (Get-TFToolkitText '      Feche o TF-Toolkit e abra-o novamente como Administrador.') -ForegroundColor DarkGray
     return $false
 }
 
@@ -1140,21 +1140,21 @@ function Test-WinForgeElevation {
 # Perguntas
 # ---------------------------------------------------------------------------
 
-function Test-WinForgeGuiPrompts {
+function Test-TFToolkitGuiPrompts {
     # Verdadeiro quando a interface gráfica fornece botões e listas de marcação para as perguntas.
-    $guiHost = Get-Variable -Name WinForgeGuiHost -Scope Global -ErrorAction SilentlyContinue
+    $guiHost = Get-Variable -Name TFToolkitGuiHost -Scope Global -ErrorAction SilentlyContinue
 
-    return ((Test-WinForgeGuiMode) -and $null -ne $guiHost -and $null -ne $guiHost.Value)
+    return ((Test-TFToolkitGuiMode) -and $null -ne $guiHost -and $null -ne $guiHost.Value)
 }
 
 
-function Wait-WinForgeKey {
+function Wait-TFToolkitKey {
     # "Pressione qualquer tecla" do console. Na interface gráfica não há o que esperar: o botão Voltar faz esse papel.
     param (
-        [string]$Message = (Get-WinForgeText 'Pressione qualquer tecla para continuar...')
+        [string]$Message = (Get-TFToolkitText 'Pressione qualquer tecla para continuar...')
     )
 
-    if (Test-WinForgeGuiMode) {
+    if (Test-TFToolkitGuiMode) {
         return
     }
 
@@ -1170,7 +1170,7 @@ function Wait-WinForgeKey {
 }
 
 
-function Test-WinForgeInputRedirected {
+function Test-TFToolkitInputRedirected {
     # Se as respostas do console vêm de um arquivo ou de outro programa (e não de alguém digitando).
     try {
         return [bool][Console]::IsInputRedirected
@@ -1181,17 +1181,17 @@ function Test-WinForgeInputRedirected {
 }
 
 
-function Get-WinForgeAnswerLimit {
-    # Quantas respostas inválidas seguidas uma pergunta do console aceita (veja $script:WinForgeMaxInvalidAnswers).
-    if ((Test-WinForgeGuiMode) -or (Test-WinForgeInputRedirected)) {
-        return $script:WinForgeMaxInvalidAnswers
+function Get-TFToolkitAnswerLimit {
+    # Quantas respostas inválidas seguidas uma pergunta do console aceita (veja $script:TFToolkitMaxInvalidAnswers).
+    if ((Test-TFToolkitGuiMode) -or (Test-TFToolkitInputRedirected)) {
+        return $script:TFToolkitMaxInvalidAnswers
     }
 
-    return $script:WinForgeMaxTypedAnswers
+    return $script:TFToolkitMaxTypedAnswers
 }
 
 
-function Format-WinForgeKeyHint {
+function Format-TFToolkitKeyHint {
     # O que pode ser digitado, para a mensagem de opção inválida: "um número de 0 a 11", "L, D ou 0",
     # "um número de 0 a 28, A, P ou R".
     param (
@@ -1203,7 +1203,7 @@ function Format-WinForgeKeyHint {
     $parts = @()
 
     if ($numbers.Count -ge 3 -and ($numbers[-1] - $numbers[0] + 1) -eq $numbers.Count) {
-        $parts += (Get-WinForgeText 'um número de {0} a {1}' "$($numbers[0])" "$($numbers[-1])")
+        $parts += (Get-TFToolkitText 'um número de {0} a {1}' "$($numbers[0])" "$($numbers[-1])")
     }
     else {
         $parts += @($numbers | ForEach-Object { [string]$_ })
@@ -1220,25 +1220,25 @@ function Format-WinForgeKeyHint {
         return ($parts -join "")
     }
 
-    return (Get-WinForgeText '{0} ou {1}' "$($parts[0..($parts.Count - 2)] -join ', ')" "$($parts[-1])")
+    return (Get-TFToolkitText '{0} ou {1}' "$($parts[0..($parts.Count - 2)] -join ', ')" "$($parts[-1])")
 }
 
 
-function Get-WinForgeUnelevatedHint {
-    # Como abrir o WinForge sem Administrador, com a conta de quem usa o PC (quando ele está aberto com a conta de outro
+function Get-TFToolkitUnelevatedHint {
+    # Como abrir o TF-Toolkit sem Administrador, com a conta de quem usa o PC (quando ele está aberto com a conta de outro
     # Administrador). Na janela, recusar o aviso do Windows abre a janela assim mesmo; no menu de texto, recusar fecha.
-    if (Test-WinForgeGuiMode) {
-        return (Get-WinForgeText 'feche o WinForge, abra de novo e responda Não ao aviso do Windows: a janela abre sem Administrador')
+    if (Test-TFToolkitGuiMode) {
+        return (Get-TFToolkitText 'feche o TF-Toolkit, abra de novo e responda Não ao aviso do Windows: a janela abre sem Administrador')
     }
 
-    return (Get-WinForgeText 'abra a janela do WinForge (pelo atalho ou pelo WinForge.cmd) e responda Não ao aviso do Windows: ela abre sem Administrador')
+    return (Get-TFToolkitText 'abra a janela do TF-Toolkit (pelo atalho ou pelo TF-Toolkit.cmd) e responda Não ao aviso do Windows: ela abre sem Administrador')
 }
 
 
-function Confirm-WinForgeAction {
+function Confirm-TFToolkitAction {
     # Pergunta Sim/Não. DefaultKey ("S" ou "N") destaca o botão na interface gráfica e vale para ENTER no console.
     param (
-        [string]$Message = (Get-WinForgeText 'Deseja continuar?'),
+        [string]$Message = (Get-TFToolkitText 'Deseja continuar?'),
 
         [ValidateSet("", "S", "N")]
         [string]$DefaultKey = "",
@@ -1254,7 +1254,7 @@ function Confirm-WinForgeAction {
         [switch]$Danger
     )
 
-    if (Test-WinForgeGuiPrompts) {
+    if (Test-TFToolkitGuiPrompts) {
         # Sem resposta padrão, a janela põe o foco do teclado no Não (um Enter a mais não confirma nada); com ela, na padrão.
         $verbs = (-not [string]::IsNullOrWhiteSpace($YesLabel) -and -not [string]::IsNullOrWhiteSpace($NoLabel))
 
@@ -1266,27 +1266,27 @@ function Confirm-WinForgeAction {
         }
         else {
             $options = @(
-                @{ Key = "S"; Label = (Get-WinForgeText 'Sim'); Accent = ($DefaultKey -ne "N"); Danger = [bool]$Danger },
-                @{ Key = "N"; Label = (Get-WinForgeText 'Não'); Accent = ($DefaultKey -eq "N") }
+                @{ Key = "S"; Label = (Get-TFToolkitText 'Sim'); Accent = ($DefaultKey -ne "N"); Danger = [bool]$Danger },
+                @{ Key = "N"; Label = (Get-TFToolkitText 'Não'); Accent = ($DefaultKey -eq "N") }
             )
         }
 
-        $answer = Read-WinForgeChoice -Message $Message -DefaultKey $DefaultKey -Options $options
+        $answer = Read-TFToolkitChoice -Message $Message -DefaultKey $DefaultKey -Options $options
 
         return ($answer -eq "S")
     }
 
     # As teclas do idioma (Y/N em inglês); a resposta aceita as dos três, e DefaultKey continua S ou N.
     $hint = switch ($DefaultKey) {
-        "S"     { (Get-WinForgeText 'S/n') }
-        "N"     { (Get-WinForgeText 's/N') }
-        default { (Get-WinForgeText 'S/N') }
+        "S"     { (Get-TFToolkitText 'S/n') }
+        "N"     { (Get-TFToolkitText 's/N') }
+        default { (Get-TFToolkitText 'S/N') }
     }
 
-    $limit = Get-WinForgeAnswerLimit
+    $limit = Get-TFToolkitAnswerLimit
     $ended = 0
 
-    for ($attempt = 0; $attempt -lt $limit -and $ended -lt $script:WinForgeMaxInvalidAnswers; $attempt++) {
+    for ($attempt = 0; $attempt -lt $limit -and $ended -lt $script:TFToolkitMaxInvalidAnswers; $attempt++) {
         Write-Host "  " -NoNewline
         $raw = Read-Host "$Message ($hint)"
 
@@ -1303,19 +1303,19 @@ function Confirm-WinForgeAction {
             { $_ -in @("S", "SIM", "SI", "SÍ", "Y", "YES") } { return $true }
             { $_ -in @("N", "NAO", "NÃO", "NO") } { return $false }
             "" {
-                Write-Host (Get-WinForgeText '  Digite S ou N e tecle Enter.') -ForegroundColor DarkGray
+                Write-Host (Get-TFToolkitText '  Digite S ou N e tecle Enter.') -ForegroundColor DarkGray
             }
             default {
-                Write-Host (Get-WinForgeText '  Opção inválida. Digite S ou N e tecle Enter.') -ForegroundColor Red
+                Write-Host (Get-TFToolkitText '  Opção inválida. Digite S ou N e tecle Enter.') -ForegroundColor Red
             }
         }
     }
 
-    throw (Get-WinForgeText 'Nenhuma resposta válida foi informada.')
+    throw (Get-TFToolkitText 'Nenhuma resposta válida foi informada.')
 }
 
 
-function Get-WinForgeOptionField {
+function Get-TFToolkitOptionField {
     # Lê um campo opcional de uma opção de pergunta (hashtable ou objeto). Campo ausente devolve $Default;
     # funciona também sob Set-StrictMode, que recusa "$hashtable.ChaveQueNaoExiste".
     param (
@@ -1341,34 +1341,34 @@ function Get-WinForgeOptionField {
 }
 
 
-function ConvertTo-WinForgeOptionList {
-    # Normaliza as opções de Read-WinForgeChoice/Read-WinForgeMultiSelect: todos os campos existem, com o tipo certo.
+function ConvertTo-TFToolkitOptionList {
+    # Normaliza as opções de Read-TFToolkitChoice/Read-TFToolkitMultiSelect: todos os campos existem, com o tipo certo.
     param (
         [object[]]$Options
     )
 
     foreach ($option in @($Options)) {
         [PSCustomObject]@{
-            Key         = [string](Get-WinForgeOptionField $option "Key" "")
-            Label       = [string](Get-WinForgeOptionField $option "Label" "")
-            Description = [string](Get-WinForgeOptionField $option "Description" "")
-            Accent      = [bool](Get-WinForgeOptionField $option "Accent" $false)
-            Exit        = [bool](Get-WinForgeOptionField $option "Exit" $false)
-            Selected    = [bool](Get-WinForgeOptionField $option "Selected" $false)
-            Danger      = [bool](Get-WinForgeOptionField $option "Danger" $false)
+            Key         = [string](Get-TFToolkitOptionField $option "Key" "")
+            Label       = [string](Get-TFToolkitOptionField $option "Label" "")
+            Description = [string](Get-TFToolkitOptionField $option "Description" "")
+            Accent      = [bool](Get-TFToolkitOptionField $option "Accent" $false)
+            Exit        = [bool](Get-TFToolkitOptionField $option "Exit" $false)
+            Selected    = [bool](Get-TFToolkitOptionField $option "Selected" $false)
+            Danger      = [bool](Get-TFToolkitOptionField $option "Danger" $false)
         }
     }
 }
 
 
-function Read-WinForgeChoice {
+function Read-TFToolkitChoice {
     <#
     Pergunta de escolha única. Na interface gráfica vira botões; no console, o menu de sempre.
     Options: hashtables/objetos com Key, Label e, opcionalmente, Description, Accent, Exit (opção de sair/cancelar) e
     Danger (a opção apaga algo sem volta: na janela, ela vem na cor de perigo). Retorna a Key escolhida.
     #>
     param (
-        [string]$Message = (Get-WinForgeText 'Selecione uma opção'),
+        [string]$Message = (Get-TFToolkitText 'Selecione uma opção'),
         [Parameter(Mandatory)]
         [object[]]$Options,
         [string]$DefaultKey = "",
@@ -1376,12 +1376,12 @@ function Read-WinForgeChoice {
         [switch]$ShowMenu
     )
 
-    $items = @(ConvertTo-WinForgeOptionList -Options $Options)
+    $items = @(ConvertTo-TFToolkitOptionList -Options $Options)
 
-    if (Test-WinForgeGuiPrompts) {
+    if (Test-TFToolkitGuiPrompts) {
         $converted = @(
             foreach ($option in $items) {
-                $guiOption = New-Object WinForge.GuiOption
+                $guiOption = New-Object TFToolkit.GuiOption
                 $guiOption.Key = $option.Key
                 $guiOption.Label = $option.Label
                 $guiOption.Description = $option.Description
@@ -1392,7 +1392,7 @@ function Read-WinForgeChoice {
             }
         )
 
-        return [string]$global:WinForgeGuiHost.GuiUI.AskChoice("", $Message, $converted, $DefaultKey)
+        return [string]$global:TFToolkitGuiHost.GuiUI.AskChoice("", $Message, $converted, $DefaultKey)
     }
 
     # 0 sempre volta ou cancela: a opção de saída (Exit) aceita também o 0 quando nenhuma outra usa o 0. Ela aparece como
@@ -1410,7 +1410,7 @@ function Read-WinForgeChoice {
     if ($ShowMenu) {
         for ($i = 0; $i -lt $items.Count; $i++) {
             $option = $items[$i]
-            Write-WinForgeMenuItem -Key $shownKeys[$i] -Label $option.Label -Description $option.Description -Accent:$option.Accent -Exit:$option.Exit
+            Write-TFToolkitMenuItem -Key $shownKeys[$i] -Label $option.Label -Description $option.Description -Accent:$option.Accent -Exit:$option.Exit
         }
 
         Write-Host ""
@@ -1422,15 +1422,15 @@ function Read-WinForgeChoice {
         $prompt = $TextPrompt
     }
     else {
-        Write-WinForgeWrappedLine -Text $Message -Color Gray
-        $prompt = (Get-WinForgeText 'Opção')
+        Write-TFToolkitWrappedLine -Text $Message -Color Gray
+        $prompt = (Get-TFToolkitText 'Opção')
     }
 
-    $keyHint = Format-WinForgeKeyHint -Keys $shownKeys
-    $limit = Get-WinForgeAnswerLimit
+    $keyHint = Format-TFToolkitKeyHint -Keys $shownKeys
+    $limit = Get-TFToolkitAnswerLimit
     $ended = 0
 
-    for ($attempt = 0; $attempt -lt $limit -and $ended -lt $script:WinForgeMaxInvalidAnswers; $attempt++) {
+    for ($attempt = 0; $attempt -lt $limit -and $ended -lt $script:TFToolkitMaxInvalidAnswers; $attempt++) {
         Write-Host "  " -NoNewline
         $raw = Read-Host $prompt
 
@@ -1454,18 +1454,18 @@ function Read-WinForgeChoice {
         }
 
         if ([string]::IsNullOrEmpty($answer)) {
-            Write-Host (Get-WinForgeText '  Digite {0} e tecle Enter.' "$keyHint") -ForegroundColor DarkGray
+            Write-Host (Get-TFToolkitText '  Digite {0} e tecle Enter.' "$keyHint") -ForegroundColor DarkGray
         }
         else {
-            Write-Host (Get-WinForgeText '  Opção inválida. Digite {0} e tecle Enter.' "$keyHint") -ForegroundColor Red
+            Write-Host (Get-TFToolkitText '  Opção inválida. Digite {0} e tecle Enter.' "$keyHint") -ForegroundColor Red
         }
     }
 
-    throw (Get-WinForgeText 'Nenhuma resposta válida foi informada.')
+    throw (Get-TFToolkitText 'Nenhuma resposta válida foi informada.')
 }
 
 
-function Read-WinForgeMultiSelect {
+function Read-TFToolkitMultiSelect {
     <#
     Seleção múltipla. Na interface gráfica vira uma lista de marcação; no console, uma lista numerada
     ("1,3,5-7", T = todos, ENTER = cancelar). Options: Key, Label, Description e, opcionalmente, Selected.
@@ -1479,7 +1479,7 @@ function Read-WinForgeMultiSelect {
     Otimizar), desistir da lista é pular a etapa, e o botão diz "Pular".
     #>
     param (
-        [string]$Message = (Get-WinForgeText 'Selecione os itens'),
+        [string]$Message = (Get-TFToolkitText 'Selecione os itens'),
         [Parameter(Mandatory)]
         [AllowEmptyCollection()]
         [object[]]$Options,
@@ -1489,16 +1489,16 @@ function Read-WinForgeMultiSelect {
         [string]$CancelLabel = ""
     )
 
-    $items = @(ConvertTo-WinForgeOptionList -Options $Options)
+    $items = @(ConvertTo-TFToolkitOptionList -Options $Options)
 
     if ($items.Count -eq 0) {
         return $null
     }
 
-    if (Test-WinForgeGuiPrompts) {
+    if (Test-TFToolkitGuiPrompts) {
         $converted = @(
             foreach ($option in $items) {
-                $guiOption = New-Object WinForge.GuiOption
+                $guiOption = New-Object TFToolkit.GuiOption
                 $guiOption.Key = $option.Key
                 $guiOption.Label = $option.Label
                 $guiOption.Description = $option.Description
@@ -1507,10 +1507,10 @@ function Read-WinForgeMultiSelect {
             }
         )
 
-        if ([string]::IsNullOrWhiteSpace($CancelLabel) -and $script:WinForgeNestedDepth -gt 0) { $CancelLabel = (Get-WinForgeText 'Pular') }
+        if ([string]::IsNullOrWhiteSpace($CancelLabel) -and $script:TFToolkitNestedDepth -gt 0) { $CancelLabel = (Get-TFToolkitText 'Pular') }
 
         # Na janela, -NoSelectAll tira o "Marcar todos" da lista.
-        $keys = $global:WinForgeGuiHost.GuiUI.AskMulti("", $Message, $converted, [bool]$NoSelectAll, $ConfirmLabel, $CancelLabel, [bool]$AllowNone)
+        $keys = $global:TFToolkitGuiHost.GuiUI.AskMulti("", $Message, $converted, [bool]$NoSelectAll, $ConfirmLabel, $CancelLabel, [bool]$AllowNone)
 
         if ($null -eq $keys) {
             return $null
@@ -1534,17 +1534,17 @@ function Read-WinForgeMultiSelect {
     $preselected = @($items | Where-Object { $_.Selected })
 
     Write-Host ""
-    $allHint = $(if ($NoSelectAll) { "" } else { (Get-WinForgeText ' T = todos.') })
-    $noneHint = $(if ($AllowNone) { (Get-WinForgeText ' 0 = nenhum.') } else { "" })
-    Write-Host (Get-WinForgeText '  Informe números separados por vírgula ou intervalos (ex.: 1,3,5-7).{0}{1} ENTER = cancelar.' "$allHint" "$noneHint") -ForegroundColor DarkCyan
+    $allHint = $(if ($NoSelectAll) { "" } else { (Get-TFToolkitText ' T = todos.') })
+    $noneHint = $(if ($AllowNone) { (Get-TFToolkitText ' 0 = nenhum.') } else { "" })
+    Write-Host (Get-TFToolkitText '  Informe números separados por vírgula ou intervalos (ex.: 1,3,5-7).{0}{1} ENTER = cancelar.' "$allHint" "$noneHint") -ForegroundColor DarkCyan
 
     if ($preselected.Count -gt 0) {
-        Write-Host (Get-WinForgeText '  P = usar os já marcados com * ({0}).' "$($preselected.Count)") -ForegroundColor DarkCyan
+        Write-Host (Get-TFToolkitText '  P = usar os já marcados com * ({0}).' "$($preselected.Count)") -ForegroundColor DarkCyan
     }
 
     Write-Host ""
 
-    $limit = Get-WinForgeAnswerLimit
+    $limit = Get-TFToolkitAnswerLimit
 
     for ($attempt = 0; $attempt -lt $limit; $attempt++) {
         Write-Host "  " -NoNewline
@@ -1567,20 +1567,20 @@ function Read-WinForgeMultiSelect {
         }
 
         try {
-            $indexes = @(ConvertTo-WinForgeSelectionIndexes -InputText $inputText -Maximum $items.Count)
+            $indexes = @(ConvertTo-TFToolkitSelectionIndexes -InputText $inputText -Maximum $items.Count)
             return @($indexes | ForEach-Object { $items[$_ - 1].Key })
         }
         catch {
             # Um número digitado errado não é um erro da ação (não entra no desfecho).
-            Write-WinForgeStatus -Type Error -Notice -Message $_.Exception.Message
+            Write-TFToolkitStatus -Type Error -Notice -Message $_.Exception.Message
         }
     }
 
-    throw (Get-WinForgeText 'Nenhuma resposta válida foi informada.')
+    throw (Get-TFToolkitText 'Nenhuma resposta válida foi informada.')
 }
 
 
-function Read-WinForgeText {
+function Read-TFToolkitText {
     # Texto livre (termo de busca, ID de pacote). Na interface gráfica usa a caixa de texto da barra de perguntas.
     # Retorna o texto sem espaços nas pontas; vazio significa que o usuário desistiu.
     param (

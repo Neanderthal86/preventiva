@@ -8,10 +8,10 @@ body:
         Obrigado por relatar! Antes de anexar logs ou o Pacote de suporte, confira o conteúdo e remova informações pessoais.
         Thanks for reporting! Before attaching logs or the Support package, review them and remove personal information.
   - type: input
-    id: versao-winforge
+    id: versao-tf-toolkit
     attributes:
-      label: Versão do WinForge / WinForge version
-      description: Em Sobre o WinForge. / In About WinForge.
+      label: Versão do TF-Toolkit / TF-Toolkit version
+      description: Em Sobre o TF-Toolkit. / In About TF-Toolkit.
       placeholder: "4.0"
     validations:
       required: true

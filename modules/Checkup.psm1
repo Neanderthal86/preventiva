@@ -5,12 +5,12 @@
 # mais demorada (depende da rede), começa antes de todas e corre junto com as outras etapas, com prazo. Depois, uma lista
 # de marcar traz o que dá para corrigir aqui mesmo, com o que é seguro já marcado: temporários e relatórios de erro (o Windows recria), atalhos
 # quebrados (para a Lixeira) e assinaturas do antivírus. As referências quebradas do registro ficam na lista, desmarcadas
-# (a Microsoft não recomenda limpar o registro; o WinForge guarda backup e desfaz, mas o ganho é pequeno). O resto vira
+# (a Microsoft não recomenda limpar o registro; o TF-Toolkit guarda backup e desfaz, mas o ganho é pequeno). O resto vira
 # um atalho para a tela certa: liberar espaço, fechar o que pesa na memória, decidir o que abre com o Windows ou
 # atualizar programas pede o olhar da pessoa.
 
 
-function New-WinForgeCheckupFinding {
+function New-TFToolkitCheckupFinding {
     <#
     Um achado da verificação. Fix = nome da correção (vazio = não se corrige daqui); Selected = vem marcado; Target = item
     da navegação para ver de perto; Level = Ok | Warn | Info; Data = o que a correção precisa; Unread = a leitura não
@@ -49,46 +49,46 @@ function New-WinForgeCheckupFinding {
 }
 
 
-function Get-WinForgeCheckupSteps {
+function Get-TFToolkitCheckupSteps {
     # As etapas da verificação, na ordem, com o texto da barra de progresso.
     return @(
-        @{ Id = "disk"; Label = (Get-WinForgeText 'Espaço no disco'); Text = (Get-WinForgeText 'medindo o espaço livre e conferindo a saúde dos discos') },
-        @{ Id = "junk"; Label = (Get-WinForgeText 'Temporários'); Text = (Get-WinForgeText 'medindo temporários e caches') },
-        @{ Id = "registry"; Label = (Get-WinForgeText 'Registro'); Text = (Get-WinForgeText 'procurando referências quebradas no registro') },
-        @{ Id = "shortcuts"; Label = (Get-WinForgeText 'Atalhos'); Text = (Get-WinForgeText 'conferindo os atalhos') },
-        @{ Id = "memory"; Label = (Get-WinForgeText 'Memória'); Text = (Get-WinForgeText 'lendo o uso de memória') },
-        @{ Id = "startup"; Label = (Get-WinForgeText 'Abrem com o Windows'); Text = (Get-WinForgeText 'contando o que abre com o Windows') },
-        @{ Id = "programs"; Label = (Get-WinForgeText 'Programas desatualizados'); Text = (Get-WinForgeText 'procurando programas desatualizados (winget)') },
-        @{ Id = "windows"; Label = (Get-WinForgeText 'Suporte do Windows'); Text = (Get-WinForgeText 'conferindo o suporte e as atualizações do Windows') },
-        @{ Id = "protection"; Label = (Get-WinForgeText 'Proteção'); Text = (Get-WinForgeText 'conferindo a proteção') },
-        @{ Id = "reboot"; Label = (Get-WinForgeText 'Reinício pendente'); Text = (Get-WinForgeText 'conferindo se falta reiniciar') },
-        @{ Id = "bluescreens"; Label = (Get-WinForgeText 'Telas azuis'); Text = (Get-WinForgeText 'procurando telas azuis recentes') }
+        @{ Id = "disk"; Label = (Get-TFToolkitText 'Espaço no disco'); Text = (Get-TFToolkitText 'medindo o espaço livre e conferindo a saúde dos discos') },
+        @{ Id = "junk"; Label = (Get-TFToolkitText 'Temporários'); Text = (Get-TFToolkitText 'medindo temporários e caches') },
+        @{ Id = "registry"; Label = (Get-TFToolkitText 'Registro'); Text = (Get-TFToolkitText 'procurando referências quebradas no registro') },
+        @{ Id = "shortcuts"; Label = (Get-TFToolkitText 'Atalhos'); Text = (Get-TFToolkitText 'conferindo os atalhos') },
+        @{ Id = "memory"; Label = (Get-TFToolkitText 'Memória'); Text = (Get-TFToolkitText 'lendo o uso de memória') },
+        @{ Id = "startup"; Label = (Get-TFToolkitText 'Abrem com o Windows'); Text = (Get-TFToolkitText 'contando o que abre com o Windows') },
+        @{ Id = "programs"; Label = (Get-TFToolkitText 'Programas desatualizados'); Text = (Get-TFToolkitText 'procurando programas desatualizados (winget)') },
+        @{ Id = "windows"; Label = (Get-TFToolkitText 'Suporte do Windows'); Text = (Get-TFToolkitText 'conferindo o suporte e as atualizações do Windows') },
+        @{ Id = "protection"; Label = (Get-TFToolkitText 'Proteção'); Text = (Get-TFToolkitText 'conferindo a proteção') },
+        @{ Id = "reboot"; Label = (Get-TFToolkitText 'Reinício pendente'); Text = (Get-TFToolkitText 'conferindo se falta reiniciar') },
+        @{ Id = "bluescreens"; Label = (Get-TFToolkitText 'Telas azuis'); Text = (Get-TFToolkitText 'procurando telas azuis recentes') }
     )
 }
 
 
-function Get-WinForgeCheckupDisk {
-    # O espaço livre no disco do Windows (Get-WinForgeCheckupDiskSpace) e, quando algum disco dá sinais de que pode falhar
-    # (Test-WinForgeDiskFailing, o mesmo aviso do monitor na bandeja), um achado a mais, que leva a Diagnóstico > Saúde
+function Get-TFToolkitCheckupDisk {
+    # O espaço livre no disco do Windows (Get-TFToolkitCheckupDiskSpace) e, quando algum disco dá sinais de que pode falhar
+    # (Test-TFToolkitDiskFailing, o mesmo aviso do monitor na bandeja), um achado a mais, que leva a Diagnóstico > Saúde
     # dos discos. Com mais de um disco falhando, é um ponto só, com os nomes: dois pontos iguais ("Saúde do disco e Saúde
     # do disco") não diziam qual era qual. Uma leitura da saúde que falha não tira o espaço livre da conta.
-    $findings = @(Get-WinForgeCheckupDiskSpace)
+    $findings = @(Get-TFToolkitCheckupDiskSpace)
 
     try {
-        $failing = @(Get-WinForgeDiskHealth | Where-Object { Test-WinForgeDiskFailing -Disk $_ })
+        $failing = @(Get-TFToolkitDiskHealth | Where-Object { Test-TFToolkitDiskFailing -Disk $_ })
         $names = @(foreach ($disk in $failing) {
-                $drives = @(Get-WinForgeJsonValue -Object $disk -Name "Drives" -Default @())
-                $(if ($drives.Count -gt 0) { Get-WinForgeText '{0} ({1})' "$($disk.Name)" "$(Join-WinForgeList -Items $drives)" } else { [string]$disk.Name })
+                $drives = @(Get-TFToolkitJsonValue -Object $disk -Name "Drives" -Default @())
+                $(if ($drives.Count -gt 0) { Get-TFToolkitText '{0} ({1})' "$($disk.Name)" "$(Join-TFToolkitList -Items $drives)" } else { [string]$disk.Name })
             })
-        $advice = (Get-WinForgeText 'faça backup dos seus arquivos e veja Diagnóstico > Saúde dos discos')
+        $advice = (Get-TFToolkitText 'faça backup dos seus arquivos e veja Diagnóstico > Saúde dos discos')
 
         if ($failing.Count -eq 1) {
-            $findings += New-WinForgeCheckupFinding -Id "disk-health" -Label (Get-WinForgeText 'Saúde do disco') -Value (Get-WinForgeText '{0}: {1}' "$($names[0])" "$(Get-WinForgeDiskFailingText -Disk $failing[0])") -Level Warn `
+            $findings += New-TFToolkitCheckupFinding -Id "disk-health" -Label (Get-TFToolkitText 'Saúde do disco') -Value (Get-TFToolkitText '{0}: {1}' "$($names[0])" "$(Get-TFToolkitDiskFailingText -Disk $failing[0])") -Level Warn `
                 -Target "diagnostics.disk-health" -Advice $advice
         }
         elseif ($failing.Count -gt 1) {
             # O sinal de cada um fica na tela aonde o ponto leva: na faixa, a frase com todos passaria das 220 letras.
-            $findings += New-WinForgeCheckupFinding -Id "disk-health" -Label (Get-WinForgeText 'Saúde dos discos') -Value (Get-WinForgeText '{0} dão sinal de falha' "$(Join-WinForgeList -Items $names)") -Level Warn `
+            $findings += New-TFToolkitCheckupFinding -Id "disk-health" -Label (Get-TFToolkitText 'Saúde dos discos') -Value (Get-TFToolkitText '{0} dão sinal de falha' "$(Join-TFToolkitList -Items $names)") -Level Warn `
                 -Target "diagnostics.disk-health" -Advice $advice
         }
     }
@@ -100,34 +100,34 @@ function Get-WinForgeCheckupDisk {
 }
 
 
-function Get-WinForgeCheckupDiskSpace {
-    # O espaço livre no disco do Windows, com a regra do Início (Get-WinForgeDiskSpaceLevel): menos de 20 GB pede
+function Get-TFToolkitCheckupDiskSpace {
+    # O espaço livre no disco do Windows, com a regra do Início (Get-TFToolkitDiskSpaceLevel): menos de 20 GB pede
     # atenção, menos de 10 GB é quase cheio. Não se corrige daqui: a Limpeza personalizada mostra o tamanho de cada
     # coisa que dá para apagar (os temporários desta verificação, logo abaixo, já ajudam).
-    $space = Get-WinForgeSystemDriveSpace
-    $level = $(if ($null -eq $space) { "Unknown" } else { Get-WinForgeDiskSpaceLevel -FreeBytes $space.FreeBytes -TotalBytes $space.TotalBytes })
+    $space = Get-TFToolkitSystemDriveSpace
+    $level = $(if ($null -eq $space) { "Unknown" } else { Get-TFToolkitDiskSpaceLevel -FreeBytes $space.FreeBytes -TotalBytes $space.TotalBytes })
 
     if ($level -eq "Unknown") {
-        return (New-WinForgeCheckupFinding -Id "disk" -Label (Get-WinForgeText 'Espaço no disco') -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Unread $true)
+        return (New-TFToolkitCheckupFinding -Id "disk" -Label (Get-TFToolkitText 'Espaço no disco') -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Unread $true)
     }
 
-    $value = (Get-WinForgeText '{0} livres de {1}' "$(Format-WinForgeBytes -Bytes $space.FreeBytes)" "$(Format-WinForgeBytes -Bytes $space.TotalBytes)")
+    $value = (Get-TFToolkitText '{0} livres de {1}' "$(Format-TFToolkitBytes -Bytes $space.FreeBytes)" "$(Format-TFToolkitBytes -Bytes $space.TotalBytes)")
 
-    # Data = o nível, que decide o peso do ponto (Get-WinForgeCheckupWeight): o disco quase cheio vem antes.
+    # Data = o nível, que decide o peso do ponto (Get-TFToolkitCheckupWeight): o disco quase cheio vem antes.
     if ($level -in @("Critical", "Low")) {
-        return (New-WinForgeCheckupFinding -Id "disk" -Label (Get-WinForgeText 'Espaço no disco') -Value $(if ($level -eq 'Critical') { (Get-WinForgeText '{0} (quase cheio)' "$value") } else { (Get-WinForgeText '{0} (pouco espaço)' "$value") }) -Level Warn `
-                -Target "cleanup.custom" -Advice (Get-WinForgeText 'libere espaço em Limpeza > Limpeza personalizada') -Data $level)
+        return (New-TFToolkitCheckupFinding -Id "disk" -Label (Get-TFToolkitText 'Espaço no disco') -Value $(if ($level -eq 'Critical') { (Get-TFToolkitText '{0} (quase cheio)' "$value") } else { (Get-TFToolkitText '{0} (pouco espaço)' "$value") }) -Level Warn `
+                -Target "cleanup.custom" -Advice (Get-TFToolkitText 'libere espaço em Limpeza > Limpeza personalizada') -Data $level)
     }
 
-    return (New-WinForgeCheckupFinding -Id "disk" -Label (Get-WinForgeText 'Espaço no disco') -Value $value -Level Ok)
+    return (New-TFToolkitCheckupFinding -Id "disk" -Label (Get-TFToolkitText 'Espaço no disco') -Value $value -Level Ok)
 }
 
 
-function Get-WinForgeCheckupJunk {
-    $isAdmin = Test-WinForgeAdministrator
-    $all = @(Get-WinForgeCleanupTargets)
+function Get-TFToolkitCheckupJunk {
+    $isAdmin = Test-TFToolkitAdministrator
+    $all = @(Get-TFToolkitCleanupTargets)
     $targets = @($all | Where-Object { $_.Selected -and ($isAdmin -or -not $_.Admin) })
-    $measured = @(foreach ($target in $targets) { Measure-WinForgeCleanupTarget -Target $target })
+    $measured = @(foreach ($target in $targets) { Measure-TFToolkitCleanupTarget -Target $target })
     $size = [int64]0
     foreach ($target in $measured) { if ($null -ne $target.Size) { $size += [int64]$target.Size } }
 
@@ -136,11 +136,11 @@ function Get-WinForgeCheckupJunk {
     # Administrador e ficam de fora: só os temporários desta conta. A linha e as listas dizem só "Temporários" (um nome com
     # vírgulas se perdia no meio de "ainda pedem você: Espaço no disco, Temporários, ...").
     $ids = @($measured | ForEach-Object { [string]$_.Id })
-    $label = (Get-WinForgeText 'Temporários')
+    $label = (Get-TFToolkitText 'Temporários')
     $fixLabel = $(
-        if ($ids -contains "delivery-optimization") { (Get-WinForgeText 'Apagar temporários, relatórios de erro e cache de atualizações') }
-        elseif ($ids -contains "error-reports") { (Get-WinForgeText 'Apagar temporários e relatórios de erro') }
-        else { (Get-WinForgeText 'Apagar os temporários do usuário') }
+        if ($ids -contains "delivery-optimization") { (Get-TFToolkitText 'Apagar temporários, relatórios de erro e cache de atualizações') }
+        elseif ($ids -contains "error-reports") { (Get-TFToolkitText 'Apagar temporários e relatórios de erro') }
+        else { (Get-TFToolkitText 'Apagar os temporários do usuário') }
     )
 
     $findings = @()
@@ -148,185 +148,185 @@ function Get-WinForgeCheckupJunk {
     # Nenhuma pasta pôde ser medida (sem permissão para ler): "nada acumulado" afirmaria o que não foi visto, como a
     # Limpeza personalizada já evita.
     if ($measured.Count -gt 0 -and @($measured | Where-Object { $null -ne $_.Size }).Count -eq 0) {
-        $findings += New-WinForgeCheckupFinding -Id "junk" -Label $label -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Target "cleanup.custom" -Unread $true
+        $findings += New-TFToolkitCheckupFinding -Id "junk" -Label $label -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Target "cleanup.custom" -Unread $true
     }
     elseif ($size -ge 50MB) {
-        $findings += New-WinForgeCheckupFinding -Id "junk" -Label $label -Value (Format-WinForgeBytes -Bytes $size) -Level Warn `
+        $findings += New-TFToolkitCheckupFinding -Id "junk" -Label $label -Value (Format-TFToolkitBytes -Bytes $size) -Level Warn `
             -Fix "junk" -FixLabel $fixLabel -Selected $true -Target "cleanup.custom" -Data @($measured)
     }
     else {
-        $findings += New-WinForgeCheckupFinding -Id "junk" -Label $label -Value $(if ($size -gt 0) { (Get-WinForgeText 'pouco ({0})' "$(Format-WinForgeBytes -Bytes $size)") } else { (Get-WinForgeText 'nada acumulado') }) -Level Ok
+        $findings += New-TFToolkitCheckupFinding -Id "junk" -Label $label -Value $(if ($size -gt 0) { (Get-TFToolkitText 'pouco ({0})' "$(Format-TFToolkitBytes -Bytes $size)") } else { (Get-TFToolkitText 'nada acumulado') }) -Level Ok
     }
 
     $browser = @($all | Where-Object { $_.Id -eq "browser-cache" }) | Select-Object -First 1
 
     if ($null -ne $browser) {
-        $browser = Measure-WinForgeCleanupTarget -Target $browser
+        $browser = Measure-TFToolkitCleanupTarget -Target $browser
 
         if ($null -ne $browser.Size -and [int64]$browser.Size -ge 200MB) {
-            $findings += New-WinForgeCheckupFinding -Id "browser" -Label (Get-WinForgeText 'Cache dos navegadores') -Value (Format-WinForgeBytes -Bytes $browser.Size) -Level Info `
-                -Fix "browser" -FixLabel (Get-WinForgeText 'Limpar o cache dos navegadores') -Target "cleanup.custom" -Data @($browser) `
-                -Advice (Get-WinForgeText 'senhas, cookies e histórico ficam; as páginas abrem mais devagar na primeira vez')
+            $findings += New-TFToolkitCheckupFinding -Id "browser" -Label (Get-TFToolkitText 'Cache dos navegadores') -Value (Format-TFToolkitBytes -Bytes $browser.Size) -Level Info `
+                -Fix "browser" -FixLabel (Get-TFToolkitText 'Limpar o cache dos navegadores') -Target "cleanup.custom" -Data @($browser) `
+                -Advice (Get-TFToolkitText 'senhas, cookies e histórico ficam; as páginas abrem mais devagar na primeira vez')
         }
     }
 
     if (-not $isAdmin) {
-        $findings += New-WinForgeCheckupFinding -Id "junk-admin" -Label (Get-WinForgeText 'Temporários do Windows') -Value (Get-WinForgeText 'só com Administrador') -Level Info -Target "cleanup.quick"
+        $findings += New-TFToolkitCheckupFinding -Id "junk-admin" -Label (Get-TFToolkitText 'Temporários do Windows') -Value (Get-TFToolkitText 'só com Administrador') -Level Info -Target "cleanup.quick"
     }
 
     return @($findings)
 }
 
 
-function Get-WinForgeCheckupRegistry {
+function Get-TFToolkitCheckupRegistry {
     # As bibliotecas compartilhadas (SharedDLLs) ficam fora da correção com um clique: é uma contagem de uso que
     # instaladores consultam, e quem decide removê-la é a pessoa, olhando a lista em Limpeza > Limpar o registro. As
     # outras referências quebradas vêm na lista desmarcadas: a Microsoft não dá suporte a programas de limpeza do registro
     # (KB2563254), e o ganho de remover chaves órfãs é pequeno; o backup e o desfazer continuam valendo para quem marcar.
-    # Por isso elas são informação, e não um ponto de atenção: quase todo PC tem alguma, e um ponto que o próprio WinForge
+    # Por isso elas são informação, e não um ponto de atenção: quase todo PC tem alguma, e um ponto que o próprio TF-Toolkit
     # não recomenda corrigir deixaria toda verificação "com ressalvas" ("ainda pede atenção: Registro").
-    $all = @(Find-WinForgeRegistryIssues)
+    $all = @(Find-TFToolkitRegistryIssues)
     $issues = @($all | Where-Object { $_.Category -ne "shared-dlls" })
     $shared = $all.Count - $issues.Count
-    $advice = $(if ($shared -gt 0) { (Get-WinForgeText '{0} para você revisar em Limpeza > Limpar o registro' "$(Format-WinForgeCount -Count $shared -One (Get-WinForgeText 'biblioteca compartilhada fica') -Many (Get-WinForgeText 'bibliotecas compartilhadas ficam'))") } else { "" })
+    $advice = $(if ($shared -gt 0) { (Get-TFToolkitText '{0} para você revisar em Limpeza > Limpar o registro' "$(Format-TFToolkitCount -Count $shared -One (Get-TFToolkitText 'biblioteca compartilhada fica') -Many (Get-TFToolkitText 'bibliotecas compartilhadas ficam'))") } else { "" })
 
     if ($issues.Count -eq 0) {
         if ($shared -gt 0) {
             # Sobras comuns e inofensivas: informação, sem orientação, e não um ponto que pede decisão a cada verificação.
-            return (New-WinForgeCheckupFinding -Id "registry" -Label (Get-WinForgeText 'Registro') -Value (Format-WinForgeCount -Count $shared -One (Get-WinForgeText 'biblioteca compartilhada que não existe mais') -Many (Get-WinForgeText 'bibliotecas compartilhadas que não existem mais')) -Level Info `
+            return (New-TFToolkitCheckupFinding -Id "registry" -Label (Get-TFToolkitText 'Registro') -Value (Format-TFToolkitCount -Count $shared -One (Get-TFToolkitText 'biblioteca compartilhada que não existe mais') -Many (Get-TFToolkitText 'bibliotecas compartilhadas que não existem mais')) -Level Info `
                     -Target "cleanup.registry")
         }
 
-        return (New-WinForgeCheckupFinding -Id "registry" -Label (Get-WinForgeText 'Registro') -Value (Get-WinForgeText 'nenhuma referência quebrada') -Level Ok)
+        return (New-TFToolkitCheckupFinding -Id "registry" -Label (Get-TFToolkitText 'Registro') -Value (Get-TFToolkitText 'nenhuma referência quebrada') -Level Ok)
     }
 
-    return (New-WinForgeCheckupFinding -Id "registry" -Label (Get-WinForgeText 'Registro') -Value (Format-WinForgeCount -Count $issues.Count -One (Get-WinForgeText 'referência quebrada') -Many (Get-WinForgeText 'referências quebradas')) -Level Info `
-            -Fix "registry" -FixLabel (Get-WinForgeText 'Remover as referências quebradas do registro (com backup)') -Selected $false -Target "cleanup.registry" -Advice $advice -Data $issues)
+    return (New-TFToolkitCheckupFinding -Id "registry" -Label (Get-TFToolkitText 'Registro') -Value (Format-TFToolkitCount -Count $issues.Count -One (Get-TFToolkitText 'referência quebrada') -Many (Get-TFToolkitText 'referências quebradas')) -Level Info `
+            -Fix "registry" -FixLabel (Get-TFToolkitText 'Remover as referências quebradas do registro (com backup)') -Selected $false -Target "cleanup.registry" -Advice $advice -Data $issues)
 }
 
 
-function Get-WinForgeCheckupShortcuts {
+function Get-TFToolkitCheckupShortcuts {
     # Os atalhos do OneDrive ficam fora da correção de um clique: o programa pode estar instalado em outro PC da pessoa, e
     # o atalho apagado aqui some de lá também. Eles aparecem, desmarcados, em Limpeza > Remover atalhos quebrados, e a
     # linha diz isso, como o registro faz com as bibliotecas compartilhadas: "nenhum quebrado" com eles lá não era verdade.
-    $isAdmin = Test-WinForgeAdministrator
-    $usable = @(Find-WinForgeBrokenShortcuts | Where-Object { $isAdmin -or -not $_.Admin })
-    $broken = @($usable | Where-Object { -not [bool](Get-WinForgeJsonValue -Object $_ -Name "Synced" -Default $false) })
+    $isAdmin = Test-TFToolkitAdministrator
+    $usable = @(Find-TFToolkitBrokenShortcuts | Where-Object { $isAdmin -or -not $_.Admin })
+    $broken = @($usable | Where-Object { -not [bool](Get-TFToolkitJsonValue -Object $_ -Name "Synced" -Default $false) })
     $synced = $usable.Count - $broken.Count
 
     if ($broken.Count -eq 0) {
         if ($synced -gt 0) {
-            return (New-WinForgeCheckupFinding -Id "shortcuts" -Label (Get-WinForgeText 'Atalhos') -Value (Format-WinForgeCount -Count $synced -One (Get-WinForgeText 'atalho quebrado no OneDrive') -Many (Get-WinForgeText 'atalhos quebrados no OneDrive')) -Level Info `
-                    -Target "cleanup.shortcuts" -Advice (Get-WinForgeText 'revise em Limpeza > Remover atalhos quebrados; o programa pode estar em outro PC seu'))
+            return (New-TFToolkitCheckupFinding -Id "shortcuts" -Label (Get-TFToolkitText 'Atalhos') -Value (Format-TFToolkitCount -Count $synced -One (Get-TFToolkitText 'atalho quebrado no OneDrive') -Many (Get-TFToolkitText 'atalhos quebrados no OneDrive')) -Level Info `
+                    -Target "cleanup.shortcuts" -Advice (Get-TFToolkitText 'revise em Limpeza > Remover atalhos quebrados; o programa pode estar em outro PC seu'))
         }
 
-        return (New-WinForgeCheckupFinding -Id "shortcuts" -Label (Get-WinForgeText 'Atalhos') -Value (Get-WinForgeText 'nenhum quebrado') -Level Ok)
+        return (New-TFToolkitCheckupFinding -Id "shortcuts" -Label (Get-TFToolkitText 'Atalhos') -Value (Get-TFToolkitText 'nenhum quebrado') -Level Ok)
     }
 
-    $advice = $(if ($synced -gt 0) { (Get-WinForgeText '{0} para você revisar em Limpeza > Remover atalhos quebrados' "$(Format-WinForgeCount -Count $synced -One (Get-WinForgeText 'atalho do OneDrive fica') -Many (Get-WinForgeText 'atalhos do OneDrive ficam'))") } else { "" })
+    $advice = $(if ($synced -gt 0) { (Get-TFToolkitText '{0} para você revisar em Limpeza > Remover atalhos quebrados' "$(Format-TFToolkitCount -Count $synced -One (Get-TFToolkitText 'atalho do OneDrive fica') -Many (Get-TFToolkitText 'atalhos do OneDrive ficam'))") } else { "" })
 
-    return (New-WinForgeCheckupFinding -Id "shortcuts" -Label (Get-WinForgeText 'Atalhos') -Value (Format-WinForgeCount -Count $broken.Count -One (Get-WinForgeText 'atalho quebrado') -Many (Get-WinForgeText 'atalhos quebrados')) -Level Warn `
-            -Fix "shortcuts" -FixLabel (Get-WinForgeText 'Enviar os atalhos quebrados para a Lixeira') -Selected $true -Target "cleanup.shortcuts" -Advice $advice -Data $broken)
+    return (New-TFToolkitCheckupFinding -Id "shortcuts" -Label (Get-TFToolkitText 'Atalhos') -Value (Format-TFToolkitCount -Count $broken.Count -One (Get-TFToolkitText 'atalho quebrado') -Many (Get-TFToolkitText 'atalhos quebrados')) -Level Warn `
+            -Fix "shortcuts" -FixLabel (Get-TFToolkitText 'Enviar os atalhos quebrados para a Lixeira') -Selected $true -Target "cleanup.shortcuts" -Advice $advice -Data $broken)
 }
 
 
-function Get-WinForgeCheckupMemory {
-    $memory = Get-WinForgeMemoryUsage
+function Get-TFToolkitCheckupMemory {
+    $memory = Get-TFToolkitMemoryUsage
 
     # Sem leitura, a linha diz isso: sumir com ela pareceria que a memória nem foi olhada (ou que está tudo bem).
     if ($null -eq $memory) {
-        return (New-WinForgeCheckupFinding -Id "memory" -Label (Get-WinForgeText 'Memória') -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Unread $true)
+        return (New-TFToolkitCheckupFinding -Id "memory" -Label (Get-TFToolkitText 'Memória') -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Unread $true)
     }
 
-    $text = (Get-WinForgeText '{0}% em uso ({1} de {2})' "$($memory.Percent)" "$(Format-WinForgeBytes -Bytes $memory.Used)" "$(Format-WinForgeBytes -Bytes $memory.Total)")
+    $text = (Get-TFToolkitText '{0}% em uso ({1} de {2})' "$($memory.Percent)" "$(Format-TFToolkitBytes -Bytes $memory.Used)" "$(Format-TFToolkitBytes -Bytes $memory.Total)")
 
     # Sem correção daqui: esvaziar a memória dos programas não resolve (eles a recarregam do disco, mais devagar, e a
     # memória volta a encher). O que resolve é fechar o que pesa.
-    if (Test-WinForgeMemoryHigh -Memory $memory) {
-        return (New-WinForgeCheckupFinding -Id "memory" -Label (Get-WinForgeText 'Memória') -Value $text -Level Warn -Target "performance.processes" `
-                -Advice (Get-WinForgeText 'feche o que pesa em Desempenho > Programas pesando agora'))
+    if (Test-TFToolkitMemoryHigh -Memory $memory) {
+        return (New-TFToolkitCheckupFinding -Id "memory" -Label (Get-TFToolkitText 'Memória') -Value $text -Level Warn -Target "performance.processes" `
+                -Advice (Get-TFToolkitText 'feche o que pesa em Desempenho > Programas pesando agora'))
     }
 
-    return (New-WinForgeCheckupFinding -Id "memory" -Label (Get-WinForgeText 'Memória') -Value $text -Level Ok)
+    return (New-TFToolkitCheckupFinding -Id "memory" -Label (Get-TFToolkitText 'Memória') -Value $text -Level Ok)
 }
 
 
-function Get-WinForgeCheckupStartup {
+function Get-TFToolkitCheckupStartup {
     # Mais de 8 pede atenção, com o caminho para Desempenho > Gerenciar inicialização: a página do PC lento, a mesma aonde
     # a memória alta leva.
-    $enabled = @(Get-WinForgeStartupItems | Where-Object { $_.Enabled }).Count
+    $enabled = @(Get-TFToolkitStartupItems | Where-Object { $_.Enabled }).Count
 
     if ($enabled -gt 8) {
-        return (New-WinForgeCheckupFinding -Id "startup" -Label (Get-WinForgeText 'Abrem com o Windows') -Value (Format-WinForgeCount -Count $enabled -One (Get-WinForgeText 'programa') -Many (Get-WinForgeText 'programas')) -Level Warn `
-                -Target "performance.startup" -Advice (Get-WinForgeText 'desligue o que não precisa em Desempenho > Gerenciar inicialização'))
+        return (New-TFToolkitCheckupFinding -Id "startup" -Label (Get-TFToolkitText 'Abrem com o Windows') -Value (Format-TFToolkitCount -Count $enabled -One (Get-TFToolkitText 'programa') -Many (Get-TFToolkitText 'programas')) -Level Warn `
+                -Target "performance.startup" -Advice (Get-TFToolkitText 'desligue o que não precisa em Desempenho > Gerenciar inicialização'))
     }
 
-    return (New-WinForgeCheckupFinding -Id "startup" -Label (Get-WinForgeText 'Abrem com o Windows') -Value (Format-WinForgeCount -Count $enabled -One (Get-WinForgeText 'programa') -Many (Get-WinForgeText 'programas')) -Level Ok)
+    return (New-TFToolkitCheckupFinding -Id "startup" -Label (Get-TFToolkitText 'Abrem com o Windows') -Value (Format-TFToolkitCount -Count $enabled -One (Get-TFToolkitText 'programa') -Many (Get-TFToolkitText 'programas')) -Level Ok)
 }
 
 
-function Get-WinForgeCheckupPrograms {
+function Get-TFToolkitCheckupPrograms {
     <#
-    Os programas desatualizados. -Read: a consulta já começada (Start-WinForgeWingetUpgradeRead, a mesma do Otimizar);
-    sem ela, a consulta começa agora. A espera vai até o prazo dela (Receive-WinForgeWingetUpgradeRead, contado do começo
+    Os programas desatualizados. -Read: a consulta já começada (Start-TFToolkitWingetUpgradeRead, a mesma do Otimizar);
+    sem ela, a consulta começa agora. A espera vai até o prazo dela (Receive-TFToolkitWingetUpgradeRead, contado do começo
     da consulta) e continua interrompível pelo Parar; sem resposta, a consulta é largada e a etapa fica como não lida.
     Sem o winget, o ponto leva ao reparo, como a tela Programas: quase tudo lá depende dele, e a pessoa nem saberia dos
     programas desatualizados.
     #>
     param ($Read = $null)
 
-    $label = (Get-WinForgeText 'Programas desatualizados')
+    $label = (Get-TFToolkitText 'Programas desatualizados')
 
-    if (-not (Test-WinForgeWinget)) {
-        return (New-WinForgeCheckupFinding -Id "programs" -Label $label -Short (Get-WinForgeText 'Instalador de Aplicativo') -Value (Get-WinForgeText 'não dá para conferir sem o Instalador de Aplicativo (winget)') -Level Warn `
-                -Target "software.winget-repair" -Advice (Get-WinForgeText 'veja o que fazer em Programas > Reparar o Instalador de Aplicativo'))
+    if (-not (Test-TFToolkitWinget)) {
+        return (New-TFToolkitCheckupFinding -Id "programs" -Label $label -Short (Get-TFToolkitText 'Instalador de Aplicativo') -Value (Get-TFToolkitText 'não dá para conferir sem o Instalador de Aplicativo (winget)') -Level Warn `
+                -Target "software.winget-repair" -Advice (Get-TFToolkitText 'veja o que fazer em Programas > Reparar o Instalador de Aplicativo'))
     }
 
-    if ($null -eq $Read) { $Read = Start-WinForgeWingetUpgradeRead }
+    if ($null -eq $Read) { $Read = Start-TFToolkitWingetUpgradeRead }
 
-    $received = Receive-WinForgeWingetUpgradeRead -Task $Read
+    $received = Receive-TFToolkitWingetUpgradeRead -Task $Read
 
     if ($received.TimedOut) {
-        return (New-WinForgeCheckupFinding -Id "programs" -Label $label -Value (Get-WinForgeText 'o Instalador de Aplicativo não respondeu em {0} segundos' "$($received.TimeoutSeconds)") -Level Info -Target "updates.winget" -Unread $true)
+        return (New-TFToolkitCheckupFinding -Id "programs" -Label $label -Value (Get-TFToolkitText 'o Instalador de Aplicativo não respondeu em {0} segundos' "$($received.TimeoutSeconds)") -Level Info -Target "updates.winget" -Unread $true)
     }
 
     if ($null -eq $received.Upgrade) {
         Write-Verbose "Programas desatualizados: $($received.Error)"
-        return (New-WinForgeCheckupFinding -Id "programs" -Label $label -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Target "updates.winget" -Unread $true)
+        return (New-TFToolkitCheckupFinding -Id "programs" -Label $label -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Target "updates.winget" -Unread $true)
     }
 
-    return (ConvertTo-WinForgeCheckupProgramsFinding -Upgrade $received.Upgrade)
+    return (ConvertTo-TFToolkitCheckupProgramsFinding -Upgrade $received.Upgrade)
 }
 
 
-function ConvertTo-WinForgeCheckupProgramsFinding {
+function ConvertTo-TFToolkitCheckupProgramsFinding {
     # O ponto dos programas desatualizados a partir da resposta do "winget upgrade" (ExitCode, Lines e Text), com as
     # mesmas regras da tela Atualizar programas: nada a atualizar pelo código ou pela frase, os marcados para não atualizar
     # fora da conta, e uma resposta sem tabela que não diz "nada a atualizar" como não lida.
     param ([Parameter(Mandatory)]$Upgrade)
 
-    $label = (Get-WinForgeText 'Programas desatualizados')
+    $label = (Get-TFToolkitText 'Programas desatualizados')
 
-    if (Test-WinForgeWingetNoUpgradeOutput -OutputText ([string]$Upgrade.Text) -ExitCode ([int]$Upgrade.ExitCode)) {
-        return (New-WinForgeCheckupFinding -Id "programs" -Label $label -Value (Get-WinForgeText 'nenhum') -Level Ok)
+    if (Test-TFToolkitWingetNoUpgradeOutput -OutputText ([string]$Upgrade.Text) -ExitCode ([int]$Upgrade.ExitCode)) {
+        return (New-TFToolkitCheckupFinding -Id "programs" -Label $label -Value (Get-TFToolkitText 'nenhum') -Level Ok)
     }
 
-    $available = @(ConvertFrom-WinForgeWingetTable -Lines @($Upgrade.Lines))
+    $available = @(ConvertFrom-TFToolkitWingetTable -Lines @($Upgrade.Lines))
 
     if ($available.Count -eq 0) {
-        return (New-WinForgeCheckupFinding -Id "programs" -Label $label -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Target "updates.winget" -Unread $true)
+        return (New-TFToolkitCheckupFinding -Id "programs" -Label $label -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Target "updates.winget" -Unread $true)
     }
 
-    return (New-WinForgeCheckupFinding -Id "programs" -Label $label -Value (Format-WinForgeCount -Count $available.Count -One (Get-WinForgeText 'programa') -Many (Get-WinForgeText 'programas')) -Level Warn `
-            -Target "updates.winget" -Advice (Get-WinForgeText 'atualize em Atualizações > Atualizar programas (winget)'))
+    return (New-TFToolkitCheckupFinding -Id "programs" -Label $label -Value (Format-TFToolkitCount -Count $available.Count -One (Get-TFToolkitText 'programa') -Many (Get-TFToolkitText 'programas')) -Level Warn `
+            -Target "updates.winget" -Advice (Get-TFToolkitText 'atualize em Atualizações > Atualizar programas (winget)'))
 }
 
 
-function Get-WinForgeCheckupWindows {
+function Get-TFToolkitCheckupWindows {
     # O ESU do Windows 10 é conferido pela revisão da build instalada, sem consultar o histórico de atualizações.
-    $support = Get-WinForgeWindowsSupportStatus
+    $support = Get-TFToolkitWindowsSupportStatus
 
-    $issue = Get-WinForgeWindowsSupportIssue -Status $support
+    $issue = Get-TFToolkitWindowsSupportIssue -Status $support
     $findings = @()
 
     # Com o suporte em dia, falta saber se as atualizações chegaram (a mesma conta do Início): um Windows parado na
@@ -336,61 +336,61 @@ function Get-WinForgeCheckupWindows {
     # que resolve é retomar, e o ponto leva ao Windows Update, como a linha da página Atualizações; em dia, a pausa é uma
     # escolha da pessoa (até 35 dias) e fica como informação.
     if ([string]$support.State -in @("Supported", "EndingSoon", "Esu")) {
-        $label = (Get-WinForgeText 'Atualizações do Windows')
+        $label = (Get-TFToolkitText 'Atualizações do Windows')
         $lag = $null
-        $pause = Get-WinForgeWindowsUpdatePause
-        $paused = $(if ($null -ne $pause) { Get-WinForgeUpdatePauseText -Pause $pause -Detail } else { "" })
+        $pause = Get-TFToolkitWindowsUpdatePause
+        $paused = $(if ($null -ne $pause) { Get-TFToolkitUpdatePauseText -Pause $pause -Detail } else { "" })
 
-        try { $lag = Get-WinForgeWindowsUpdateLag -Build ([int]$support.Build) } catch { $lag = $null }
+        try { $lag = Get-TFToolkitWindowsUpdateLag -Build ([int]$support.Build) } catch { $lag = $null }
 
         if ($lag -eq $true -and $paused) {
-            $findings += New-WinForgeCheckupFinding -Id "updates" -Label $label -Value (Get-WinForgeText 'faltam atualizações de segurança; {0}' "$paused") -Level Warn `
-                -Target "updates.windows" -Advice (Get-WinForgeText 'retome as atualizações em Atualizações > Windows Update')
+            $findings += New-TFToolkitCheckupFinding -Id "updates" -Label $label -Value (Get-TFToolkitText 'faltam atualizações de segurança; {0}' "$paused") -Level Warn `
+                -Target "updates.windows" -Advice (Get-TFToolkitText 'retome as atualizações em Atualizações > Windows Update')
         }
         elseif ($lag -eq $true) {
-            $findings += New-WinForgeCheckupFinding -Id "updates" -Label $label -Value (Get-WinForgeText 'faltam atualizações de segurança') -Level Warn `
-                -Target "updates.install" -Advice (Get-WinForgeText 'instale em Atualizações > Instalar atualizações do Windows')
+            $findings += New-TFToolkitCheckupFinding -Id "updates" -Label $label -Value (Get-TFToolkitText 'faltam atualizações de segurança') -Level Warn `
+                -Target "updates.install" -Advice (Get-TFToolkitText 'instale em Atualizações > Instalar atualizações do Windows')
         }
         elseif ($lag -eq $false) {
-            $findings += $(if ($paused) { New-WinForgeCheckupFinding -Id "updates" -Label $label -Value (Get-WinForgeText 'nenhuma atualização de segurança atrasada; {0}' "$paused") -Level Info -Target "updates.windows" }
-                else { New-WinForgeCheckupFinding -Id "updates" -Label $label -Value (Get-WinForgeText 'nenhuma atualização de segurança atrasada') -Level Ok })
+            $findings += $(if ($paused) { New-TFToolkitCheckupFinding -Id "updates" -Label $label -Value (Get-TFToolkitText 'nenhuma atualização de segurança atrasada; {0}' "$paused") -Level Info -Target "updates.windows" }
+                else { New-TFToolkitCheckupFinding -Id "updates" -Label $label -Value (Get-TFToolkitText 'nenhuma atualização de segurança atrasada') -Level Ok })
         }
         elseif ($paused) {
-            $findings += New-WinForgeCheckupFinding -Id "updates" -Label $label -Value $paused -Level Info -Target "updates.windows"
+            $findings += New-TFToolkitCheckupFinding -Id "updates" -Label $label -Value $paused -Level Info -Target "updates.windows"
         }
     }
 
     if ($null -eq $issue) {
-        $value = $(if ($support.State -eq "Supported") { (Get-WinForgeText '{0}: atualizações até {1}' "$($support.Product)" "$(Format-WinForgeDateTime -When $support.EndDate -Pattern 'dd/MM/yyyy')") } else { (Get-WinForgeText '{0}: data não conhecida' "$($support.Product)") })
-        return @(@(New-WinForgeCheckupFinding -Id "windows" -Label (Get-WinForgeText 'Suporte do Windows') -Value $value -Level $(if ($support.State -eq "Supported") { "Ok" } else { "Info" })) + $findings)
+        $value = $(if ($support.State -eq "Supported") { (Get-TFToolkitText '{0}: atualizações até {1}' "$($support.Product)" "$(Format-TFToolkitDateTime -When $support.EndDate -Pattern 'dd/MM/yyyy')") } else { (Get-TFToolkitText '{0}: data não conhecida' "$($support.Product)") })
+        return @(@(New-TFToolkitCheckupFinding -Id "windows" -Label (Get-TFToolkitText 'Suporte do Windows') -Value $value -Level $(if ($support.State -eq "Supported") { "Ok" } else { "Info" })) + $findings)
     }
 
     $value = switch ([string]$support.State) {
-        "EndingSoon" { $(if ([int]$support.DaysLeft -le 0) { (Get-WinForgeText 'atualizações só até hoje') } else { (Get-WinForgeText 'atualizações só até {0}' "$(Format-WinForgeDateTime -When $support.EndDate -Pattern 'dd/MM/yyyy')") }) }
-        "Esu" { Get-WinForgeEsuText -Status $support }
+        "EndingSoon" { $(if ([int]$support.DaysLeft -le 0) { (Get-TFToolkitText 'atualizações só até hoje') } else { (Get-TFToolkitText 'atualizações só até {0}' "$(Format-TFToolkitDateTime -When $support.EndDate -Pattern 'dd/MM/yyyy')") }) }
+        "Esu" { Get-TFToolkitEsuText -Status $support }
         default {
-            if ([string]$support.State -eq "EsuAvailable" -and -not [bool](Get-WinForgeJsonValue -Object $support -Name "EsuChecked" -Default $true)) { (Get-WinForgeText 'não foi possível conferir o ESU') }
-            else { (Get-WinForgeText 'sem atualizações de segurança') }
+            if ([string]$support.State -eq "EsuAvailable" -and -not [bool](Get-TFToolkitJsonValue -Object $support -Name "EsuChecked" -Default $true)) { (Get-TFToolkitText 'não foi possível conferir o ESU') }
+            else { (Get-TFToolkitText 'sem atualizações de segurança') }
         }
     }
 
-    return @(@(New-WinForgeCheckupFinding -Id "windows" -Label (Get-WinForgeText 'Suporte do Windows') -Value "$($support.Product): $value" -Level Warn -Target "diagnostics.windows-support" -Advice (Get-WinForgeText 'veja o que fazer em Diagnóstico > Suporte do Windows')) + $findings)
+    return @(@(New-TFToolkitCheckupFinding -Id "windows" -Label (Get-TFToolkitText 'Suporte do Windows') -Value "$($support.Product): $value" -Level Warn -Target "diagnostics.windows-support" -Advice (Get-TFToolkitText 'veja o que fazer em Diagnóstico > Suporte do Windows')) + $findings)
 }
 
 
-function Get-WinForgeCheckupProtection {
-    $protection = Get-WinForgeSecurityStatus
+function Get-TFToolkitCheckupProtection {
+    $protection = Get-TFToolkitSecurityStatus
 
     if ($null -eq $protection) {
-        return (New-WinForgeCheckupFinding -Id "protection" -Label (Get-WinForgeText 'Proteção') -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Target "security.status" -Unread $true)
+        return (New-TFToolkitCheckupFinding -Id "protection" -Label (Get-TFToolkitText 'Proteção') -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Target "security.status" -Unread $true)
     }
 
     $antivirus = $protection.Antivirus
 
-    # Os mesmos pontos da tela Estado da proteção, aonde a linha leva (Get-WinForgeSecurityFindings), com o nome curto de
+    # Os mesmos pontos da tela Estado da proteção, aonde a linha leva (Get-TFToolkitSecurityFindings), com o nome curto de
     # cada um: "2 ameaças ativas", "antivírus desligado", "firewall desligado (Rede pública)". As assinaturas têm a linha
     # delas, logo abaixo, com a correção.
-    $problems = @(Get-WinForgeSecurityFindings -Antivirus $antivirus -Firewall $protection.Firewall -Threats $protection.Threats |
+    $problems = @(Get-TFToolkitSecurityFindings -Antivirus $antivirus -Firewall $protection.Firewall -Threats $protection.Threats |
             Where-Object { $_.Level -eq "Warning" -and [string]$_.Id -notlike "signatures*" -and -not [string]::IsNullOrWhiteSpace([string]$_.Short) } |
             ForEach-Object { [string]$_.Short })
 
@@ -399,104 +399,104 @@ function Get-WinForgeCheckupProtection {
     # listas da faixa ("Firewall"), como as etapas que não responderam.
     $unread = @()
     $unreadNames = @()
-    if ($null -eq $protection.Firewall) { $unread += (Get-WinForgeText 'o firewall'); $unreadNames += (Get-WinForgeText 'Firewall') }
-    if ($antivirus.Mode -eq "Active" -and $null -eq $protection.Threats) { $unread += (Get-WinForgeText 'as ameaças ativas'); $unreadNames += (Get-WinForgeText 'Ameaças ativas') }
+    if ($null -eq $protection.Firewall) { $unread += (Get-TFToolkitText 'o firewall'); $unreadNames += (Get-TFToolkitText 'Firewall') }
+    if ($antivirus.Mode -eq "Active" -and $null -eq $protection.Threats) { $unread += (Get-TFToolkitText 'as ameaças ativas'); $unreadNames += (Get-TFToolkitText 'Ameaças ativas') }
 
     $findings = @()
 
     if ($problems.Count -gt 0) {
-        $value = Join-WinForgeList -Items $problems
-        if ($unread.Count -gt 0) { $value += (Get-WinForgeText '; não foi possível ler {0}' "$(Join-WinForgeList -Items $unread)") }
+        $value = Join-TFToolkitList -Items $problems
+        if ($unread.Count -gt 0) { $value += (Get-TFToolkitText '; não foi possível ler {0}' "$(Join-TFToolkitList -Items $unread)") }
 
-        $findings += New-WinForgeCheckupFinding -Id "protection" -Label (Get-WinForgeText 'Proteção') -Value $value -Level Warn -Target "security.status" -Advice (Get-WinForgeText 'veja em Segurança > Estado da proteção')
+        $findings += New-TFToolkitCheckupFinding -Id "protection" -Label (Get-TFToolkitText 'Proteção') -Value $value -Level Warn -Target "security.status" -Advice (Get-TFToolkitText 'veja em Segurança > Estado da proteção')
     }
     elseif ($unread.Count -gt 0) {
         # Sem nada pedindo atenção no que foi lido, o que faltou vai para a faixa ("Não foi possível ler: Firewall"): sem
         # isso, ela dizia "Tudo certo" em verde.
-        $findings += New-WinForgeCheckupFinding -Id "protection" -Label (Get-WinForgeText 'Proteção') -Short (Join-WinForgeList -Items $unreadNames) -Value (Get-WinForgeText 'leitura incompleta: não foi possível ler {0}' "$(Join-WinForgeList -Items $unread)") -Level Info -Target "security.status" -Unread $true
+        $findings += New-TFToolkitCheckupFinding -Id "protection" -Label (Get-TFToolkitText 'Proteção') -Short (Join-TFToolkitList -Items $unreadNames) -Value (Get-TFToolkitText 'leitura incompleta: não foi possível ler {0}' "$(Join-TFToolkitList -Items $unread)") -Level Info -Target "security.status" -Unread $true
     }
 
-    $isAdmin = Test-WinForgeAdministrator
+    $isAdmin = Test-TFToolkitAdministrator
 
     # Os mesmos limites da tela Estado da proteção e do Início: mais de 7 dias (ou nunca atualizadas) pede atenção; de 4 a
     # 7, o Windows costuma atualizar sozinho (um notebook desligado num feriado), então é só informação, com a atualização
     # à mão e desmarcada.
-    $never = [bool](Get-WinForgeJsonValue -Object $antivirus -Name "SignaturesNeverUpdated" -Default $false)
+    $never = [bool](Get-TFToolkitJsonValue -Object $antivirus -Name "SignaturesNeverUpdated" -Default $false)
 
     if ($antivirus.Mode -eq "Active" -and ($never -or ($null -ne $antivirus.SignatureAgeDays -and [int]$antivirus.SignatureAgeDays -gt 3))) {
         $old = ($never -or [int]$antivirus.SignatureAgeDays -gt 7)
-        $age = $(if ($never) { (Get-WinForgeText 'nunca atualizadas') } else { (Get-WinForgeText 'atualizadas há {0} dias' "$($antivirus.SignatureAgeDays)") })
+        $age = $(if ($never) { (Get-TFToolkitText 'nunca atualizadas') } else { (Get-TFToolkitText 'atualizadas há {0} dias' "$($antivirus.SignatureAgeDays)") })
 
-        $findings += New-WinForgeCheckupFinding -Id "signatures" -Label (Get-WinForgeText 'Assinaturas do antivírus') -Value $age -Level $(if ($old) { "Warn" } else { "Info" }) `
-            -Fix $(if ($isAdmin) { "signatures" } else { "" }) -FixLabel (Get-WinForgeText 'Atualizar as assinaturas do antivírus') -Selected ($isAdmin -and $old) -Target "security.signatures" `
-            -Advice $(if ($isAdmin) { "" } elseif ($old) { (Get-WinForgeText 'atualize em Segurança > Atualizar assinaturas do antivírus') } else { "" })
+        $findings += New-TFToolkitCheckupFinding -Id "signatures" -Label (Get-TFToolkitText 'Assinaturas do antivírus') -Value $age -Level $(if ($old) { "Warn" } else { "Info" }) `
+            -Fix $(if ($isAdmin) { "signatures" } else { "" }) -FixLabel (Get-TFToolkitText 'Atualizar as assinaturas do antivírus') -Selected ($isAdmin -and $old) -Target "security.signatures" `
+            -Advice $(if ($isAdmin) { "" } elseif ($old) { (Get-TFToolkitText 'atualize em Segurança > Atualizar assinaturas do antivírus') } else { "" })
     }
 
     if ($findings.Count -eq 0) {
-        $findings += New-WinForgeCheckupFinding -Id "protection" -Label (Get-WinForgeText 'Proteção') -Value (Get-WinForgeText 'em dia') -Level Ok
+        $findings += New-TFToolkitCheckupFinding -Id "protection" -Label (Get-TFToolkitText 'Proteção') -Value (Get-TFToolkitText 'em dia') -Level Ok
     }
 
     return @($findings)
 }
 
 
-function Get-WinForgeCheckupReboot {
-    if (Test-WinForgePendingReboot) {
-        return (New-WinForgeCheckupFinding -Id "reboot" -Label (Get-WinForgeText 'Reinício pendente') -Value (Get-WinForgeText 'sim') -Level Warn -Target "diagnostics.pending-reboot" -Advice (Get-WinForgeText 'reinicie o PC quando puder; o motivo está em Diagnóstico > Reinício pendente'))
+function Get-TFToolkitCheckupReboot {
+    if (Test-TFToolkitPendingReboot) {
+        return (New-TFToolkitCheckupFinding -Id "reboot" -Label (Get-TFToolkitText 'Reinício pendente') -Value (Get-TFToolkitText 'sim') -Level Warn -Target "diagnostics.pending-reboot" -Advice (Get-TFToolkitText 'reinicie o PC quando puder; o motivo está em Diagnóstico > Reinício pendente'))
     }
 
-    return (New-WinForgeCheckupFinding -Id "reboot" -Label (Get-WinForgeText 'Reinício pendente') -Value (Get-WinForgeText 'não') -Level Ok)
+    return (New-TFToolkitCheckupFinding -Id "reboot" -Label (Get-TFToolkitText 'Reinício pendente') -Value (Get-TFToolkitText 'não') -Level Ok)
 }
 
 
-function Get-WinForgeCheckupBlueScreens {
-    # As telas azuis dos últimos 30 dias (Get-WinForgeBlueScreens): com alguma, um ponto de atenção que leva à causa
+function Get-TFToolkitCheckupBlueScreens {
+    # As telas azuis dos últimos 30 dias (Get-TFToolkitBlueScreens): com alguma, um ponto de atenção que leva à causa
     # provável em Diagnóstico > Telas azuis. Não há o que corrigir daqui.
-    $screens = @(Get-WinForgeBlueScreens -Days 30)
+    $screens = @(Get-TFToolkitBlueScreens -Days 30)
 
     if ($screens.Count -eq 0) {
-        return (New-WinForgeCheckupFinding -Id "bluescreens" -Label (Get-WinForgeText 'Telas azuis') -Value (Get-WinForgeText 'nenhuma nos últimos 30 dias') -Level Ok)
+        return (New-TFToolkitCheckupFinding -Id "bluescreens" -Label (Get-TFToolkitText 'Telas azuis') -Value (Get-TFToolkitText 'nenhuma nos últimos 30 dias') -Level Ok)
     }
 
-    $count = Format-WinForgeCount -Count $screens.Count -One (Get-WinForgeText 'tela azul') -Many (Get-WinForgeText 'telas azuis')
-    $about = Get-WinForgeBugCheckCauseText -Cause ([string](Get-WinForgeBlueScreenMainCause -Screens $screens).Cause)
+    $count = Format-TFToolkitCount -Count $screens.Count -One (Get-TFToolkitText 'tela azul') -Many (Get-TFToolkitText 'telas azuis')
+    $about = Get-TFToolkitBugCheckCauseText -Cause ([string](Get-TFToolkitBlueScreenMainCause -Screens $screens).Cause)
 
-    return (New-WinForgeCheckupFinding -Id "bluescreens" -Label (Get-WinForgeText 'Telas azuis') -Value (Get-WinForgeText '{0} nos últimos 30 dias; causa mais provável: {1}' "$count" "$($about.Cause)") -Level Warn `
-            -Target "diagnostics.blue-screens" -Advice (Get-WinForgeText 'veja o que fazer em Diagnóstico > Telas azuis'))
+    return (New-TFToolkitCheckupFinding -Id "bluescreens" -Label (Get-TFToolkitText 'Telas azuis') -Value (Get-TFToolkitText '{0} nos últimos 30 dias; causa mais provável: {1}' "$count" "$($about.Cause)") -Level Warn `
+            -Target "diagnostics.blue-screens" -Advice (Get-TFToolkitText 'veja o que fazer em Diagnóstico > Telas azuis'))
 }
 
 
-function Invoke-WinForgeCheckupScan {
+function Invoke-TFToolkitCheckupScan {
     <#
     Roda as etapas da verificação, uma por vez, com a barra de progresso. Uma etapa que falha vira um achado "não foi
     possível ler" e não interrompe as outras. A consulta do winget começa antes de todas e corre junto com elas
-    (Start-WinForgeWingetUpgradeRead): na vez dela, a etapa dos programas só recebe a resposta. Devolve os achados.
+    (Start-TFToolkitWingetUpgradeRead): na vez dela, a etapa dos programas só recebe a resposta. Devolve os achados.
     #>
-    $steps = @(Get-WinForgeCheckupSteps)
+    $steps = @(Get-TFToolkitCheckupSteps)
     $findings = @()
     $position = 0
     $programs = $null
 
     $readers = @{
-        disk        = { Get-WinForgeCheckupDisk }
-        junk        = { Get-WinForgeCheckupJunk }
-        registry    = { Get-WinForgeCheckupRegistry }
-        shortcuts   = { Get-WinForgeCheckupShortcuts }
-        memory      = { Get-WinForgeCheckupMemory }
-        startup     = { Get-WinForgeCheckupStartup }
-        programs    = { Get-WinForgeCheckupPrograms -Read $programs }
-        windows     = { Get-WinForgeCheckupWindows }
-        protection  = { Get-WinForgeCheckupProtection }
-        reboot      = { Get-WinForgeCheckupReboot }
-        bluescreens = { Get-WinForgeCheckupBlueScreens }
+        disk        = { Get-TFToolkitCheckupDisk }
+        junk        = { Get-TFToolkitCheckupJunk }
+        registry    = { Get-TFToolkitCheckupRegistry }
+        shortcuts   = { Get-TFToolkitCheckupShortcuts }
+        memory      = { Get-TFToolkitCheckupMemory }
+        startup     = { Get-TFToolkitCheckupStartup }
+        programs    = { Get-TFToolkitCheckupPrograms -Read $programs }
+        windows     = { Get-TFToolkitCheckupWindows }
+        protection  = { Get-TFToolkitCheckupProtection }
+        reboot      = { Get-TFToolkitCheckupReboot }
+        bluescreens = { Get-TFToolkitCheckupBlueScreens }
     }
 
     try {
         # Sem a consulta começada aqui, a etapa dos programas a começa na vez dela (e, se falhar de novo, fica não lida).
-        try { $programs = Start-WinForgeWingetUpgradeRead } catch { Write-Verbose "Verificar o PC, programas: $($_.Exception.Message)" }
+        try { $programs = Start-TFToolkitWingetUpgradeRead } catch { Write-Verbose "Verificar o PC, programas: $($_.Exception.Message)" }
 
         foreach ($step in $steps) {
-            Write-Progress -Activity (Get-WinForgeText 'Verificando o PC') -Status (Get-WinForgeText '{0} de {1}: {2}' "$($position + 1)" "$($steps.Count)" "$($step.Text)") -PercentComplete ([int]($position * 100 / $steps.Count))
+            Write-Progress -Activity (Get-TFToolkitText 'Verificando o PC') -Status (Get-TFToolkitText '{0} de {1}: {2}' "$($position + 1)" "$($steps.Count)" "$($step.Text)") -PercentComplete ([int]($position * 100 / $steps.Count))
             $position++
 
             try {
@@ -504,7 +504,7 @@ function Invoke-WinForgeCheckupScan {
             }
             catch {
                 Write-Verbose "Verificar o PC, $($step.Id): $($_.Exception.Message)"
-                $read = @(New-WinForgeCheckupFinding -Id $step.Id -Label $step.Label -Value (Get-WinForgeText 'não foi possível ler') -Level Info -Unread $true)
+                $read = @(New-TFToolkitCheckupFinding -Id $step.Id -Label $step.Label -Value (Get-TFToolkitText 'não foi possível ler') -Level Info -Unread $true)
             }
 
             # A etapa de cada achado: o veredito conta etapas lidas, não achados (a limpeza e a proteção dão mais de um).
@@ -515,32 +515,32 @@ function Invoke-WinForgeCheckupScan {
     }
     finally {
         # Parada no meio (o Parar), a consulta do winget que ninguém vai receber não fica rodando.
-        Stop-WinForgeInBackground -Task $programs
-        Write-Progress -Activity (Get-WinForgeText 'Verificando o PC') -Completed
+        Stop-TFToolkitInBackground -Task $programs
+        Write-Progress -Activity (Get-TFToolkitText 'Verificando o PC') -Completed
     }
 
     return @($findings)
 }
 
 
-function Invoke-WinForgeCheckupFix {
-    # Aplica uma correção e devolve um WinForge.Result (Etapa = o rótulo da correção; Data.FreedBytes quando libera espaço).
+function Invoke-TFToolkitCheckupFix {
+    # Aplica uma correção e devolve um TFToolkit.Result (Etapa = o rótulo da correção; Data.FreedBytes quando libera espaço).
     param ([Parameter(Mandatory)]$Finding)
 
     switch ($Finding.Fix) {
         { $_ -in "junk", "browser" } {
-            $result = Invoke-WinForgeCleanupTargets -Targets @($Finding.Data) -NoSummary
+            $result = Invoke-TFToolkitCleanupTargets -Targets @($Finding.Data) -NoSummary
 
             # Nada liberado e alguma parte com problema (tudo em uso, uma pasta recusada): a limpeza não aconteceu, e
             # contá-la como "correção feita" escondia isso na faixa.
-            $cleaned = Get-WinForgeResultData -Result $result -Name "FreedBytes"
+            $cleaned = Get-TFToolkitResultData -Result $result -Name "FreedBytes"
 
             if ($result.Kind -eq "Warning" -and ($null -eq $cleaned -or [int64]$cleaned -le 0)) {
-                $result = New-WinForgeResult -Kind Failed -Detail $result.Detail -Data $result.Data
+                $result = New-TFToolkitResult -Kind Failed -Detail $result.Detail -Data $result.Data
             }
         }
         "registry" {
-            $result = Clear-WinForgeRegistryIssues -Issues @($Finding.Data)
+            $result = Clear-TFToolkitRegistryIssues -Issues @($Finding.Data)
         }
         "shortcuts" {
             $moved = @()
@@ -549,26 +549,26 @@ function Invoke-WinForgeCheckupFix {
             try {
                 foreach ($shortcut in @($Finding.Data)) {
                     # Aberto em outro programa, o Windows mostraria a janela "Arquivo em uso" e a correção ficaria parada.
-                    if (Test-WinForgeItemInUse -Path $shortcut.Path) { $failed++; continue }
+                    if (Test-TFToolkitItemInUse -Path $shortcut.Path) { $failed++; continue }
 
-                    try { Move-WinForgeItemToRecycleBin -Path $shortcut.Path; $moved += $shortcut.Name } catch { $failed++ }
+                    try { Move-TFToolkitItemToRecycleBin -Path $shortcut.Path; $moved += $shortcut.Name } catch { $failed++ }
                 }
             }
             finally {
                 # No finally: parar a correção no meio não deixa sem anotação o que já foi para a Lixeira.
                 if ($moved.Count -gt 0) {
-                    [void](Add-WinForgeChange -Action (Get-WinForgeText 'Atalhos quebrados') -Text $(if ($moved.Count -eq 1) { (Get-WinForgeText '{0} foi para a Lixeira' "$(Join-WinForgeList -Items $moved)") } else { (Get-WinForgeText '{0} foram para a Lixeira' "$(Join-WinForgeList -Items $moved)") }))
+                    [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Atalhos quebrados') -Text $(if ($moved.Count -eq 1) { (Get-TFToolkitText '{0} foi para a Lixeira' "$(Join-TFToolkitList -Items $moved)") } else { (Get-TFToolkitText '{0} foram para a Lixeira' "$(Join-TFToolkitList -Items $moved)") }))
                 }
             }
 
-            $text = Format-WinForgeCount -Count $moved.Count -One (Get-WinForgeText 'atalho foi para a Lixeira') -Many (Get-WinForgeText 'atalhos foram para a Lixeira')
-            $result = $(if ($failed -eq 0) { New-WinForgeResult -Kind Ok -Detail $text } elseif ($moved.Count -eq 0) { New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhum atalho foi removido') } else { New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0}; {1} não' "$text" "$failed") })
+            $text = Format-TFToolkitCount -Count $moved.Count -One (Get-TFToolkitText 'atalho foi para a Lixeira') -Many (Get-TFToolkitText 'atalhos foram para a Lixeira')
+            $result = $(if ($failed -eq 0) { New-TFToolkitResult -Kind Ok -Detail $text } elseif ($moved.Count -eq 0) { New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhum atalho foi removido') } else { New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0}; {1} não' "$text" "$failed") })
         }
         "signatures" {
-            $result = Update-WinForgeDefenderSignatures -Embedded -PassThru
+            $result = Update-TFToolkitDefenderSignatures -Embedded -PassThru
         }
         default {
-            $result = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'correção desconhecida')
+            $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'correção desconhecida')
         }
     }
 
@@ -578,7 +578,7 @@ function Invoke-WinForgeCheckupFix {
 }
 
 
-function Get-WinForgeCheckupWeight {
+function Get-TFToolkitCheckupWeight {
     <#
     O peso de um ponto de atenção, para a ordem das listas e o botão da faixa: o que põe os arquivos ou o PC em risco (um
     disco falhando, a proteção, as atualizações de segurança) vem antes do que só deixa o PC mais lento ou mais cheio. Os
@@ -606,27 +606,27 @@ function Get-WinForgeCheckupWeight {
 }
 
 
-function Get-WinForgeCheckupOrder {
-    # Os pontos do mais importante ao menos (Get-WinForgeCheckupWeight); no mesmo peso, na ordem das etapas.
+function Get-TFToolkitCheckupOrder {
+    # Os pontos do mais importante ao menos (Get-TFToolkitCheckupWeight); no mesmo peso, na ordem das etapas.
     param ([object[]]$Findings = @())
 
     $position = 0
     $ranked = @(foreach ($finding in @($Findings | Where-Object { $null -ne $_ })) {
             $position++
-            [PSCustomObject]@{ Finding = $finding; Weight = (Get-WinForgeCheckupWeight -Finding $finding); Position = $position }
+            [PSCustomObject]@{ Finding = $finding; Weight = (Get-TFToolkitCheckupWeight -Finding $finding); Position = $position }
         })
 
     return @($ranked | Sort-Object -Property @{ Expression = "Weight"; Descending = $true }, @{ Expression = "Position"; Descending = $false } | ForEach-Object { $_.Finding })
 }
 
 
-function Format-WinForgeCheckupReason {
+function Format-TFToolkitCheckupReason {
     # O motivo de uma correção que não deu certo, para depois de "Nome: " na faixa: legível, sem o ponto final e com a
     # primeira letra minúscula (menos numa sigla). Longo demais (a faixa tem 220 letras para tudo), fica a primeira parte
     # ("nada foi liberado", sem a lista das pastas) ou nada, e a frase diz só o nome: o motivo inteiro continua no resumo.
     param ([AllowEmptyString()][AllowNull()][string]$Text)
 
-    $why = ([string](ConvertTo-WinForgeReadableError -Text $Text)).Trim().TrimEnd('.').Trim()
+    $why = ([string](ConvertTo-TFToolkitReadableError -Text $Text)).Trim().TrimEnd('.').Trim()
 
     if ($why.Length -gt 90) { $why = ($why -split ';')[0].Trim() }
     if (-not $why -or $why.Length -gt 90) { return "" }
@@ -639,12 +639,12 @@ function Format-WinForgeCheckupReason {
 }
 
 
-function Set-WinForgeCheckupView {
+function Set-TFToolkitCheckupView {
     <#
     Como a janela mostra o fim da verificação. O título da faixa diz o que aconteceu ("3 correções feitas, 1,9 GB
     liberados", "Nenhuma correção funcionou", "2 pontos pedem você", "Nada pedindo atenção no que foi lido"); a frase
     embaixo, a correção que deu problema e por quê, o que ainda pede a pessoa e o que não foi lido. Os pontos vêm do mais
-    importante ao menos (Get-WinForgeCheckupWeight), e o botão da faixa leva à tela do primeiro deles. O console continua
+    importante ao menos (Get-TFToolkitCheckupWeight), e o botão da faixa leva à tela do primeiro deles. O console continua
     com o Detail.
     Problems: as correções que falharam ou ficaram pela metade, cada uma com Finding e Result. -NotRead: a maior parte das
     etapas não respondeu.
@@ -662,23 +662,23 @@ function Set-WinForgeCheckupView {
     )
 
     if ($NotRead) {
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'Não foi possível verificar o PC') `
-                -Note (Get-WinForgeText 'Não foi possível ler a maior parte do PC: tente de novo; se continuar, reinicie o PC.'))
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'Não foi possível verificar o PC') `
+                -Note (Get-TFToolkitText 'Não foi possível ler a maior parte do PC: tente de novo; se continuar, reinicie o PC.'))
     }
 
     $troubled = @($Problems | Where-Object { $null -ne $_ -and $null -ne $_.Finding })
     $troubledIds = @($troubled | ForEach-Object { [string]$_.Finding.Id })
 
     # O que ainda pede a pessoa, sem as correções que deram problema: essas vêm à parte, com o motivo.
-    $still = @(Get-WinForgeCheckupOrder -Findings @($Remaining | Where-Object { $null -ne $_ -and $troubledIds -notcontains [string]$_.Id }))
+    $still = @(Get-TFToolkitCheckupOrder -Findings @($Remaining | Where-Object { $null -ne $_ -and $troubledIds -notcontains [string]$_.Id }))
 
     $next = ""
     $nextLabel = ""
-    $first = @(Get-WinForgeCheckupOrder -Findings @(@($troubled | ForEach-Object { $_.Finding }) + @($still)) | Where-Object { -not [string]::IsNullOrEmpty([string]$_.Target) }) | Select-Object -First 1
+    $first = @(Get-TFToolkitCheckupOrder -Findings @(@($troubled | ForEach-Object { $_.Finding }) + @($still)) | Where-Object { -not [string]::IsNullOrEmpty([string]$_.Target) }) | Select-Object -First 1
 
     if ($null -ne $first) {
         try {
-            $item = Get-WinForgeNavItem -Id ([string]$first.Target)
+            $item = Get-TFToolkitNavItem -Id ([string]$first.Target)
             if ($null -ne $item) { $next = [string]$item.Id; $nextLabel = [string]$item.Label }
         }
         catch {
@@ -691,21 +691,21 @@ function Set-WinForgeCheckupView {
     $notes = @()
 
     if (@($Results).Count -gt 0 -and $done -le 0) {
-        $headline = (Get-WinForgeText 'Nenhuma correção funcionou')
+        $headline = (Get-TFToolkitText 'Nenhuma correção funcionou')
     }
     elseif (@($Results).Count -gt 0) {
-        $headline = Format-WinForgeCount -Count $done -One (Get-WinForgeText 'correção feita') -Many (Get-WinForgeText 'correções feitas')
-        if ($Freed -gt 0) { $headline += (Get-WinForgeText ', {0} liberados' "$(Format-WinForgeBytes -Bytes $Freed)") }
+        $headline = Format-TFToolkitCount -Count $done -One (Get-TFToolkitText 'correção feita') -Many (Get-TFToolkitText 'correções feitas')
+        if ($Freed -gt 0) { $headline += (Get-TFToolkitText ', {0} liberados' "$(Format-TFToolkitBytes -Bytes $Freed)") }
     }
     elseif ($Declined) {
-        $headline = (Get-WinForgeText 'Nenhuma correção feita')
+        $headline = (Get-TFToolkitText 'Nenhuma correção feita')
     }
     elseif ($still.Count -gt 0) {
-        $headline = Format-WinForgeCount -Count $still.Count -One (Get-WinForgeText 'ponto pede você') -Many (Get-WinForgeText 'pontos pedem você')
+        $headline = Format-TFToolkitCount -Count $still.Count -One (Get-TFToolkitText 'ponto pede você') -Many (Get-TFToolkitText 'pontos pedem você')
     }
     elseif (-not [string]::IsNullOrWhiteSpace($Unread)) {
         # Tudo o que foi lido está em dia, mas não tudo foi lido: "Tudo certo" afirmaria o que não foi visto.
-        $headline = (Get-WinForgeText 'Nada pedindo atenção no que foi lido')
+        $headline = (Get-TFToolkitText 'Nada pedindo atenção no que foi lido')
     }
     else {
         return $Result
@@ -713,51 +713,51 @@ function Set-WinForgeCheckupView {
 
     # A correção que deu problema: com uma só, o motivo; com mais, os nomes (os motivos ficam no resumo).
     if ($troubled.Count -eq 1) {
-        $why = Format-WinForgeCheckupReason -Text ([string]$troubled[0].Result.Detail)
-        $notes += $(if ($why) { (Get-WinForgeText '{0}: {1}' "$($troubled[0].Finding.Short)" "$why") } else { (Get-WinForgeText 'Com problema: {0}' "$($troubled[0].Finding.Short)") })
+        $why = Format-TFToolkitCheckupReason -Text ([string]$troubled[0].Result.Detail)
+        $notes += $(if ($why) { (Get-TFToolkitText '{0}: {1}' "$($troubled[0].Finding.Short)" "$why") } else { (Get-TFToolkitText 'Com problema: {0}' "$($troubled[0].Finding.Short)") })
     }
     elseif ($troubled.Count -gt 1) {
-        $notes += (Get-WinForgeText 'Com problema: {0}' "$(Join-WinForgeShortList -Items @($troubled | ForEach-Object { [string]$_.Finding.Short }))")
+        $notes += (Get-TFToolkitText 'Com problema: {0}' "$(Join-TFToolkitShortList -Items @($troubled | ForEach-Object { [string]$_.Finding.Short }))")
     }
 
     if ($still.Count -gt 0) {
         # Os nomes curtos, do mais importante ao menos; numa lista longa, os primeiros e "e mais N", para a frase não
         # cortar no meio o que vem depois (o que não foi lido).
-        $names = Join-WinForgeShortList -Items @($still | ForEach-Object { [string]$_.Short })
+        $names = Join-TFToolkitShortList -Items @($still | ForEach-Object { [string]$_.Short })
 
         if (@($Results).Count -gt 0 -or $Declined) {
-            $notes += $(if ($still.Count -eq 1) { (Get-WinForgeText 'Ainda pede você: {0}' "$names") } else { (Get-WinForgeText 'Ainda pedem você: {0}' "$names") })
+            $notes += $(if ($still.Count -eq 1) { (Get-TFToolkitText 'Ainda pede você: {0}' "$names") } else { (Get-TFToolkitText 'Ainda pedem você: {0}' "$names") })
         }
         elseif ($still.Count -eq 1) {
             # Um ponto só: o que ele é, e não só o nome ("Proteção: 2 ameaças ativas e antivírus desligado").
-            $notes += (Get-WinForgeText '{0}: {1}' "$($still[0].Label)" "$($still[0].Value)")
+            $notes += (Get-TFToolkitText '{0}: {1}' "$($still[0].Label)" "$($still[0].Value)")
         }
         else {
             $notes += $names
         }
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($Unread)) { $notes += (Get-WinForgeText 'Não foi possível ler: {0}' "$Unread") }
-    if ($notes.Count -eq 0) { $notes += (Get-WinForgeText 'Nada mais pedindo atenção') }
+    if (-not [string]::IsNullOrWhiteSpace($Unread)) { $notes += (Get-TFToolkitText 'Não foi possível ler: {0}' "$Unread") }
+    if ($notes.Count -eq 0) { $notes += (Get-TFToolkitText 'Nada mais pedindo atenção') }
 
-    return (Set-WinForgeResultView -Result $Result -Headline $headline -Note "$($notes -join '. ')." -Next $next -NextLabel $nextLabel)
+    return (Set-TFToolkitResultView -Result $Result -Headline $headline -Note "$($notes -join '. ')." -Next $next -NextLabel $nextLabel)
 }
 
 
-function Invoke-WinForgeCheckup {
-    $title = (Get-WinForgeText 'Verificar o PC')
+function Invoke-TFToolkitCheckup {
+    $title = (Get-TFToolkitText 'Verificar o PC')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        $findings = @(Invoke-WinForgeCheckupScan)
+        $findings = @(Invoke-TFToolkitCheckupScan)
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'O que a verificação encontrou')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'O que a verificação encontrou')
 
         foreach ($finding in $findings) {
-            Write-WinForgeKeyValue -Label $finding.Label -Value $finding.Value -LabelWidth 32 -Level $(if ($finding.Level -eq "Info") { "Normal" } else { $finding.Level })
+            Write-TFToolkitKeyValue -Label $finding.Label -Value $finding.Value -LabelWidth 32 -Level $(if ($finding.Level -eq "Info") { "Normal" } else { $finding.Level })
         }
 
         Write-Host ""
@@ -768,29 +768,29 @@ function Invoke-WinForgeCheckup {
         $manual = @($attention | Where-Object { -not $_.Fix -and $_.Advice })
 
         foreach ($finding in $manual) {
-            Write-WinForgeStatus -Type Warning -Message "$($finding.Label): $($finding.Advice)."
+            Write-TFToolkitStatus -Type Warning -Message "$($finding.Label): $($finding.Advice)."
         }
 
         # A informação com orientação própria e sem correção daqui (atalhos quebrados só no OneDrive) diz onde ver, sem
         # pedir nada: sem a linha, a orientação não aparecia em lugar nenhum.
-        $hints = @($findings | Where-Object { $_.Level -eq "Info" -and -not $_.Fix -and $_.Advice -and -not [bool](Get-WinForgeJsonValue -Object $_ -Name "Unread" -Default $false) })
+        $hints = @($findings | Where-Object { $_.Level -eq "Info" -and -not $_.Fix -and $_.Advice -and -not [bool](Get-TFToolkitJsonValue -Object $_ -Name "Unread" -Default $false) })
 
         foreach ($finding in $hints) {
-            Write-WinForgeStatus -Type Info -Message "$($finding.Label): $($finding.Advice)."
+            Write-TFToolkitStatus -Type Info -Message "$($finding.Label): $($finding.Advice)."
         }
 
         # A verificação conta como cuidado com o PC (o Início e o monitor param de lembrar por um mês) só quando ela de
         # fato olhou o PC (mais da metade das etapas respondeu) e não deixou correções seguras para trás: cancelada, ou
         # com todas as correções falhando, ela não cuidou de nada.
-        $unreadFindings = @($findings | Where-Object { [bool](Get-WinForgeJsonValue -Object $_ -Name "Unread" -Default $false) })
-        $stepOf = { param ($item) [string](Get-WinForgeJsonValue -Object $item -Name "StepId" -Default $item.Id) }
+        $unreadFindings = @($findings | Where-Object { [bool](Get-TFToolkitJsonValue -Object $_ -Name "Unread" -Default $false) })
+        $stepOf = { param ($item) [string](Get-TFToolkitJsonValue -Object $item -Name "StepId" -Default $item.Id) }
         $stepCount = @($findings | ForEach-Object { & $stepOf $_ } | Select-Object -Unique).Count
         $unreadSteps = @($unreadFindings | ForEach-Object { & $stepOf $_ } | Select-Object -Unique).Count
         $scanRead = ($stepCount -gt 0 -and ($unreadSteps * 2) -lt $stepCount)
 
         # O que não respondeu vai junto do veredito (como a nota "Incompleta" do Início): "nada pedindo atenção" em verde
         # afirmaria o que não foi visto.
-        $unreadText = Join-WinForgeList -Items @($unreadFindings | ForEach-Object { [string]$_.Short })
+        $unreadText = Join-TFToolkitList -Items @($unreadFindings | ForEach-Object { [string]$_.Short })
 
         $results = @()
         # Cada correção feita, com o ponto dela: a faixa diz pelo nome do ponto qual deu problema.
@@ -806,18 +806,18 @@ function Invoke-WinForgeCheckup {
             if ($safe.Count -gt 0) {
                 # Só o que está de fato marcado na lista: falar do registro ou dos atalhos quando eles nem aparecem confunde.
                 $why = @{
-                    junk       = (Get-WinForgeText 'os temporários o Windows recria')
-                    registry   = (Get-WinForgeText 'o registro tem backup e volta em Manutenção > Histórico de mudanças')
-                    shortcuts  = (Get-WinForgeText 'os atalhos vão para a Lixeira')
-                    signatures = (Get-WinForgeText 'as assinaturas só são atualizadas')
+                    junk       = (Get-TFToolkitText 'os temporários o Windows recria')
+                    registry   = (Get-TFToolkitText 'o registro tem backup e volta em Manutenção > Histórico de mudanças')
+                    shortcuts  = (Get-TFToolkitText 'os atalhos vão para a Lixeira')
+                    signatures = (Get-TFToolkitText 'as assinaturas só são atualizadas')
                 }
                 $reasons = @($safe | Where-Object { $why.ContainsKey([string]$_.Fix) } | ForEach-Object { $why[[string]$_.Fix] } | Select-Object -Unique)
-                $message = $(if ($reasons.Count -gt 0) { (Get-WinForgeText 'O que vem marcado é seguro: {0}.' "$(Join-WinForgeList -Items $reasons)") } else { (Get-WinForgeText 'O que vem marcado é seguro de corrigir.') })
+                $message = $(if ($reasons.Count -gt 0) { (Get-TFToolkitText 'O que vem marcado é seguro: {0}.' "$(Join-TFToolkitList -Items $reasons)") } else { (Get-TFToolkitText 'O que vem marcado é seguro de corrigir.') })
 
-                Write-WinForgeStatus -Type Info -Message $message
+                Write-TFToolkitStatus -Type Info -Message $message
             }
             else {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nada desta lista é necessário: marque só o que quiser fazer agora.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nada desta lista é necessário: marque só o que quiser fazer agora.')
             }
 
             Write-Host ""
@@ -831,7 +831,7 @@ function Invoke-WinForgeCheckup {
             )
 
             try {
-                $picked = Read-WinForgeMultiSelect -Message (Get-WinForgeText 'O que corrigir agora?') -Options $options -ConfirmLabel (Get-WinForgeText 'Corrigir') -CancelLabel (Get-WinForgeText 'Agora não')
+                $picked = Read-TFToolkitMultiSelect -Message (Get-TFToolkitText 'O que corrigir agora?') -Options $options -ConfirmLabel (Get-TFToolkitText 'Corrigir') -CancelLabel (Get-TFToolkitText 'Agora não')
             }
             catch {
                 # No menu de texto, respostas que não valem até o limite: é não corrigir nada, e não um erro da verificação
@@ -845,41 +845,41 @@ function Invoke-WinForgeCheckup {
             # que é opcional (o cache dos navegadores, por exemplo), é a resposta "não, obrigado".
             if (($null -eq $picked -or @($picked).Count -eq 0) -and $safe.Count -gt 0) {
                 $declined = $true
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nenhuma correção foi feita.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nenhuma correção foi feita.')
             }
 
             $chosen = @($fixable | Where-Object { $null -ne $picked -and @($picked) -contains $_.Id })
             $position = 0
 
             foreach ($finding in $chosen) {
-                Write-Progress -Activity (Get-WinForgeText 'Corrigindo') -Status (Get-WinForgeText '{0} de {1}: {2}' "$($position + 1)" "$($chosen.Count)" "$($finding.FixLabel)") -PercentComplete ([int]($position * 100 / $chosen.Count))
+                Write-Progress -Activity (Get-TFToolkitText 'Corrigindo') -Status (Get-TFToolkitText '{0} de {1}: {2}' "$($position + 1)" "$($chosen.Count)" "$($finding.FixLabel)") -PercentComplete ([int]($position * 100 / $chosen.Count))
                 $position++
 
                 try {
-                    $result = Invoke-WinForgeCheckupFix -Finding $finding
+                    $result = Invoke-TFToolkitCheckupFix -Finding $finding
                 }
                 catch {
-                    $result = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.')
+                    $result = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.')
                     $result.Etapa = $finding.FixLabel
                 }
 
-                $bytes = Get-WinForgeResultData -Result $result -Name "FreedBytes"
+                $bytes = Get-TFToolkitResultData -Result $result -Name "FreedBytes"
                 if ($null -ne $bytes) { $freed += [int64]$bytes }
                 # Remaining: a correção rodou, mas o ponto continua pedindo atenção (a memória ainda alta, por exemplo).
-                if ($result.Kind -ne "Failed" -and -not [bool](Get-WinForgeResultData -Result $result -Name "Remaining")) { $fixedIds += $finding.Id }
+                if ($result.Kind -ne "Failed" -and -not [bool](Get-TFToolkitResultData -Result $result -Name "Remaining")) { $fixedIds += $finding.Id }
 
                 $results += $result
                 $pairs += [PSCustomObject]@{ Finding = $finding; Result = $result }
             }
 
             if ($chosen.Count -gt 0) {
-                Write-Progress -Activity (Get-WinForgeText 'Corrigindo') -Completed
+                Write-Progress -Activity (Get-TFToolkitText 'Corrigindo') -Completed
 
-                Write-WinForgeSection -Title (Get-WinForgeText 'Resumo')
-                Write-WinForgeResultTable -Results $results
+                Write-TFToolkitSection -Title (Get-TFToolkitText 'Resumo')
+                Write-TFToolkitResultTable -Results $results
 
                 if ($freed -gt 0) {
-                    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Espaço liberado') -Value (Format-WinForgeBytes -Bytes $freed) -Level Ok
+                    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Espaço liberado') -Value (Format-TFToolkitBytes -Bytes $freed) -Level Ok
 
                     # Com espaço liberado, o disco é lido de novo: "ainda pede atenção: Espaço no disco" com ele já acima do
                     # limite seria falso. Sem leitura agora, fica o que a verificação viu.
@@ -887,12 +887,12 @@ function Invoke-WinForgeCheckup {
 
                     if ($null -ne $diskFinding) {
                         try {
-                            $now = Get-WinForgeCheckupDiskSpace
+                            $now = Get-TFToolkitCheckupDiskSpace
 
                             if ($null -ne $now -and -not [bool]$now.Unread) {
                                 $diskFinding.Value = $now.Value
                                 $diskFinding.Data = $now.Data
-                                Write-WinForgeKeyValue -Label $now.Label -Value $now.Value -Level $now.Level
+                                Write-TFToolkitKeyValue -Label $now.Label -Value $now.Value -Level $now.Level
                                 if ($now.Level -eq "Ok") { $fixedIds += "disk" }
                             }
                         }
@@ -910,84 +910,84 @@ function Invoke-WinForgeCheckup {
 
         # O que continua pedindo atenção: tudo o que foi apontado e não foi corrigido (por escolha, ou porque a correção
         # falhou), do mais importante ao menos. Sem isso, "1 correção feita" em verde esconderia um antivírus desligado.
-        $remaining = @(Get-WinForgeCheckupOrder -Findings @($attention | Where-Object { $fixedIds -notcontains $_.Id }))
+        $remaining = @(Get-TFToolkitCheckupOrder -Findings @($attention | Where-Object { $fixedIds -notcontains $_.Id }))
 
         if ($scanRead -and -not $declined -and ($results.Count -eq 0 -or $failed.Count -lt $results.Count)) {
-            [void](Set-WinForgeSetting -Name "LastCheckup" -Value (Get-Date).ToString("s", [System.Globalization.CultureInfo]::InvariantCulture))
+            [void](Set-TFToolkitSetting -Name "LastCheckup" -Value (Get-Date).ToString("s", [System.Globalization.CultureInfo]::InvariantCulture))
         }
 
         $data = @{ FreedBytes = $freed }
 
         if ($results.Count -eq 0 -and -not $scanRead) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler a maior parte do PC: tente de novo; se continuar, reinicie o PC.')
-            $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'não foi possível ler a maior parte do PC') -Title $title
-            $final = Set-WinForgeCheckupView -Result $final -NotRead
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler a maior parte do PC: tente de novo; se continuar, reinicie o PC.')
+            $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'não foi possível ler a maior parte do PC') -Title $title
+            $final = Set-TFToolkitCheckupView -Result $final -NotRead
         }
         elseif ($results.Count -gt 0 -and $failed.Count -eq $results.Count) {
-            $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhuma correção funcionou') -Title $title -Data $data
-            $final = Set-WinForgeCheckupView -Result $final -Results $results -Failed $failed.Count -Remaining $remaining -Problems $problems -Unread $unreadText
+            $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhuma correção funcionou') -Title $title -Data $data
+            $final = Set-TFToolkitCheckupView -Result $final -Results $results -Failed $failed.Count -Remaining $remaining -Problems $problems -Unread $unreadText
         }
         else {
             $parts = @()
 
             if ($results.Count -gt 0) {
-                $done = Format-WinForgeCount -Count ($results.Count - $failed.Count) -One (Get-WinForgeText 'correção feita') -Many (Get-WinForgeText 'correções feitas')
-                $parts += $(if ($freed -gt 0) { (Get-WinForgeText '{0}; {1} liberados' "$done" "$(Format-WinForgeBytes -Bytes $freed)") } else { $done })
+                $done = Format-TFToolkitCount -Count ($results.Count - $failed.Count) -One (Get-TFToolkitText 'correção feita') -Many (Get-TFToolkitText 'correções feitas')
+                $parts += $(if ($freed -gt 0) { (Get-TFToolkitText '{0}; {1} liberados' "$done" "$(Format-TFToolkitBytes -Bytes $freed)") } else { $done })
             }
             elseif ($declined) {
-                $parts += (Get-WinForgeText 'nenhuma correção feita')
+                $parts += (Get-TFToolkitText 'nenhuma correção feita')
             }
 
             if ($problems.Count -gt 0) {
-                $parts += (Get-WinForgeText '{0} com problema' "$(Join-WinForgeList -Items @($problems | ForEach-Object { [string]$_.Finding.Short }))")
+                $parts += (Get-TFToolkitText '{0} com problema' "$(Join-TFToolkitList -Items @($problems | ForEach-Object { [string]$_.Finding.Short }))")
             }
 
             if ($remaining.Count -gt 0) {
                 # A faixa diz o que pede atenção pelo nome (um "2 pontos pedem a sua decisão" não diz quais).
                 $still = ($results.Count -gt 0 -or $declined)
-                $names = Join-WinForgeList -Items @($remaining | ForEach-Object { [string]$_.Short })
+                $names = Join-TFToolkitList -Items @($remaining | ForEach-Object { [string]$_.Short })
                 $parts += $(
-                    if ($still -and $remaining.Count -eq 1) { (Get-WinForgeText 'ainda pede atenção: {0}' "$names") }
-                    elseif ($still) { (Get-WinForgeText 'ainda pedem atenção: {0}' "$names") }
-                    elseif ($remaining.Count -eq 1) { (Get-WinForgeText 'pede atenção: {0}' "$names") }
-                    else { (Get-WinForgeText 'pedem atenção: {0}' "$names") }
+                    if ($still -and $remaining.Count -eq 1) { (Get-TFToolkitText 'ainda pede atenção: {0}' "$names") }
+                    elseif ($still) { (Get-TFToolkitText 'ainda pedem atenção: {0}' "$names") }
+                    elseif ($remaining.Count -eq 1) { (Get-TFToolkitText 'pede atenção: {0}' "$names") }
+                    else { (Get-TFToolkitText 'pedem atenção: {0}' "$names") }
                 )
 
                 if ($results.Count -gt 0 -or $declined) {
                     # O que fazer com cada um que tem orientação e ainda não a mostrou (os sem correção já a mostraram
                     # antes da lista): a memória, por exemplo, só tinha a dica dentro da lista de marcar.
                     foreach ($finding in @($remaining | Where-Object { $_.Fix -and $_.Advice })) {
-                        Write-WinForgeStatus -Type Warning -Message "$($finding.Label): $($finding.Advice)."
+                        Write-TFToolkitStatus -Type Warning -Message "$($finding.Label): $($finding.Advice)."
                     }
 
-                    Write-WinForgeStatus -Type Warning -Message $(if ($remaining.Count -eq 1) { (Get-WinForgeText 'Ainda pede atenção: {0}.' "$names") } else { (Get-WinForgeText 'Ainda pedem atenção: {0}.' "$names") })
+                    Write-TFToolkitStatus -Type Warning -Message $(if ($remaining.Count -eq 1) { (Get-TFToolkitText 'Ainda pede atenção: {0}.' "$names") } else { (Get-TFToolkitText 'Ainda pedem atenção: {0}.' "$names") })
                 }
             }
 
-            if ($unreadFindings.Count -gt 0) { $parts += (Get-WinForgeText 'não foi possível ler: {0}' "$unreadText") }
+            if ($unreadFindings.Count -gt 0) { $parts += (Get-TFToolkitText 'não foi possível ler: {0}' "$unreadText") }
 
             if ($parts.Count -eq 0) {
-                Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nada pedindo atenção.')
-                $parts += (Get-WinForgeText 'nada pedindo atenção')
+                Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nada pedindo atenção.')
+                $parts += (Get-TFToolkitText 'nada pedindo atenção')
             }
             elseif ($results.Count -eq 0 -and $remaining.Count -eq 0) {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Nada pedindo atenção no que foi lido; não foi possível ler: {0}.' "$unreadText")
-                $parts = @((Get-WinForgeText 'nada pedindo atenção no que foi lido; não foi possível ler: {0}' "$unreadText"))
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Nada pedindo atenção no que foi lido; não foi possível ler: {0}.' "$unreadText")
+                $parts = @((Get-TFToolkitText 'nada pedindo atenção no que foi lido; não foi possível ler: {0}' "$unreadText"))
             }
 
             $clean = ($failed.Count -eq 0 -and $warned.Count -eq 0 -and $remaining.Count -eq 0 -and $unreadFindings.Count -eq 0)
-            $final = New-WinForgeResult -Kind $(if ($clean) { "Ok" } else { "Warning" }) -Detail ($parts -join "; ") -Title $title -Data $data
-            $final = Set-WinForgeCheckupView -Result $final -Results $results -Failed $failed.Count -Freed $freed -Remaining $remaining -Problems $problems -Unread $unreadText -Declined:$declined
+            $final = New-TFToolkitResult -Kind $(if ($clean) { "Ok" } else { "Warning" }) -Detail ($parts -join "; ") -Title $title -Data $data
+            $final = Set-TFToolkitCheckupView -Result $final -Results $results -Failed $failed.Count -Freed $freed -Remaining $remaining -Problems $problems -Unread $unreadText -Declined:$declined
         }
     }
     catch {
-        Write-Progress -Activity (Get-WinForgeText 'Verificando o PC') -Completed
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível verificar o PC: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
-        $final = Set-WinForgeResultView -Result $final -Headline (Get-WinForgeText 'Não foi possível verificar o PC') -Note (Format-WinForgeReasonNote -Text $_.Exception.Message)
+        Write-Progress -Activity (Get-TFToolkitText 'Verificando o PC') -Completed
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível verificar o PC: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        $final = Set-TFToolkitResultView -Result $final -Headline (Get-TFToolkitText 'Não foi possível verificar o PC') -Note (Format-TFToolkitReasonNote -Text $_.Exception.Message)
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 

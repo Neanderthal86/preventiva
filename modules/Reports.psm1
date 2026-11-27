@@ -5,192 +5,192 @@
 # Seções
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeReportSystemItems {
-    $os = Get-WinForgeCimOrNull -ClassName "Win32_OperatingSystem" | Select-Object -First 1
+function Get-TFToolkitReportSystemItems {
+    $os = Get-TFToolkitCimOrNull -ClassName "Win32_OperatingSystem" | Select-Object -First 1
 
-    $system = Get-WinForgeCimOrNull -ClassName "Win32_ComputerSystem" | Select-Object -First 1
+    $system = Get-TFToolkitCimOrNull -ClassName "Win32_ComputerSystem" | Select-Object -First 1
 
-    @{ Label = (Get-WinForgeText 'Computador'); Value = $(if ([string]::IsNullOrWhiteSpace($env:COMPUTERNAME)) { [Environment]::MachineName } else { $env:COMPUTERNAME }) }
-    @{ Label = (Get-WinForgeText 'Usuário'); Value = $(if ([string]::IsNullOrWhiteSpace($env:USERNAME)) { [Environment]::UserName } else { $env:USERNAME }) }
+    @{ Label = (Get-TFToolkitText 'Computador'); Value = $(if ([string]::IsNullOrWhiteSpace($env:COMPUTERNAME)) { [Environment]::MachineName } else { $env:COMPUTERNAME }) }
+    @{ Label = (Get-TFToolkitText 'Usuário'); Value = $(if ([string]::IsNullOrWhiteSpace($env:USERNAME)) { [Environment]::UserName } else { $env:USERNAME }) }
 
     # Fabricante e modelo do PC, como em Sobre este PC: é o que um técnico pergunta primeiro (drivers, BIOS, garantia).
-    $machine = Get-WinForgeMachineModelText -System $system
+    $machine = Get-TFToolkitMachineModelText -System $system
 
-    if ($machine) { @{ Label = (Get-WinForgeText 'Fabricante e modelo'); Value = $machine } }
+    if ($machine) { @{ Label = (Get-TFToolkitText 'Fabricante e modelo'); Value = $machine } }
 
     if ($os) {
         # O mesmo texto do cartão Windows da tela inicial: "Windows 11 Pro 24H2 (build 26100)".
-        $build = [int](Get-WinForgeJsonValue -Object $os -Name "BuildNumber" -Default 0)
-        $windows = Get-WinForgeWindowsName -Caption ([string](Get-WinForgeJsonValue -Object $os -Name "Caption" -Default "")) -Build $build
-        $version = Get-WinForgeWindowsDisplayVersion
+        $build = [int](Get-TFToolkitJsonValue -Object $os -Name "BuildNumber" -Default 0)
+        $windows = Get-TFToolkitWindowsName -Caption ([string](Get-TFToolkitJsonValue -Object $os -Name "Caption" -Default "")) -Build $build
+        $version = Get-TFToolkitWindowsDisplayVersion
 
         if ($version) { $windows += " $version" }
-        if ($build -gt 0) { $windows += (Get-WinForgeText ' (build {0})' "$build") }
+        if ($build -gt 0) { $windows += (Get-TFToolkitText ' (build {0})' "$build") }
 
-        @{ Label = (Get-WinForgeText 'Sistema operacional'); Value = $windows.Trim() }
-        @{ Label = (Get-WinForgeText 'Tempo ligado'); Value = (Get-WinForgeUptimeText -LastBootTime $os.LastBootUpTime) }
+        @{ Label = (Get-TFToolkitText 'Sistema operacional'); Value = $windows.Trim() }
+        @{ Label = (Get-TFToolkitText 'Tempo ligado'); Value = (Get-TFToolkitUptimeText -LastBootTime $os.LastBootUpTime) }
     }
     else {
-        @{ Label = (Get-WinForgeText 'Sistema operacional'); Value = (Get-WinForgeText 'Não foi possível ler') }
+        @{ Label = (Get-TFToolkitText 'Sistema operacional'); Value = (Get-TFToolkitText 'Não foi possível ler') }
     }
 
     # O veredito da tela Suporte do Windows: num laudo, "este Windows ainda recebe correções?" é a primeira pergunta.
     try {
-        $support = Get-WinForgeWindowsSupportStatus
-        @{ Label = (Get-WinForgeText 'Suporte do Windows'); Value = $(if ($support.Text) { [string]$support.Text } else { (Get-WinForgeText 'Não foi possível conferir') }) }
+        $support = Get-TFToolkitWindowsSupportStatus
+        @{ Label = (Get-TFToolkitText 'Suporte do Windows'); Value = $(if ($support.Text) { [string]$support.Text } else { (Get-TFToolkitText 'Não foi possível conferir') }) }
     }
     catch {
-        @{ Label = (Get-WinForgeText 'Suporte do Windows'); Value = (Get-WinForgeText 'Não foi possível conferir') }
+        @{ Label = (Get-TFToolkitText 'Suporte do Windows'); Value = (Get-TFToolkitText 'Não foi possível conferir') }
     }
 
     # A ativação, como em Sobre este PC: é a pergunta seguinte de quem recebe o laudo.
-    @{ Label = (Get-WinForgeText 'Ativação do Windows'); Value = (Get-WinForgeWindowsActivationText -State (Get-WinForgeWindowsActivation)) }
+    @{ Label = (Get-TFToolkitText 'Ativação do Windows'); Value = (Get-TFToolkitWindowsActivationText -State (Get-TFToolkitWindowsActivation)) }
 
     # O mesmo veredito das telas: só os sinais fortes dizem "sim". Os fracos (arquivos esperando substituição) aparecem
     # em muitos PCs sem que o reinício seja necessário, e sozinhos não viram motivo.
-    $pending = @(Get-WinForgePendingReboot)
+    $pending = @(Get-TFToolkitPendingReboot)
     $strong = @($pending | Where-Object { $_.Strong })
     $rebootText = $(
         if ($strong.Count -gt 0) { ($strong | ForEach-Object { $_.Reason }) -join "; " }
-        elseif ($pending.Count -gt 0) { (Get-WinForgeText 'Não (só sinais que aparecem em quase todo PC; reiniciar não é obrigatório)') }
-        else { (Get-WinForgeText 'Não') }
+        elseif ($pending.Count -gt 0) { (Get-TFToolkitText 'Não (só sinais que aparecem em quase todo PC; reiniciar não é obrigatório)') }
+        else { (Get-TFToolkitText 'Não') }
     )
-    @{ Label = (Get-WinForgeText 'Reinício pendente'); Value = $rebootText }
+    @{ Label = (Get-TFToolkitText 'Reinício pendente'); Value = $rebootText }
 }
 
 
-function Get-WinForgeReportHardwareItems {
+function Get-TFToolkitReportHardwareItems {
     $items = @()
-    $cpu = Get-WinForgeCimOrNull -ClassName "Win32_Processor" | Select-Object -First 1
-    $memory = @(Get-WinForgeCimOrNull -ClassName "Win32_PhysicalMemory")
-    $board = Get-WinForgeCimOrNull -ClassName "Win32_BaseBoard" | Select-Object -First 1
-    $bios = Get-WinForgeCimOrNull -ClassName "Win32_BIOS" | Select-Object -First 1
+    $cpu = Get-TFToolkitCimOrNull -ClassName "Win32_Processor" | Select-Object -First 1
+    $memory = @(Get-TFToolkitCimOrNull -ClassName "Win32_PhysicalMemory")
+    $board = Get-TFToolkitCimOrNull -ClassName "Win32_BaseBoard" | Select-Object -First 1
+    $bios = Get-TFToolkitCimOrNull -ClassName "Win32_BIOS" | Select-Object -First 1
 
     if ($cpu) {
-        $items += @{ Label = (Get-WinForgeText 'Processador'); Value = ([string]$cpu.Name).Trim() }
+        $items += @{ Label = (Get-TFToolkitText 'Processador'); Value = ([string]$cpu.Name).Trim() }
     }
 
     if ($memory.Count -gt 0) {
-        $totalRam = Format-WinForgeBytes -Bytes (($memory | Measure-Object -Property Capacity -Sum).Sum) -ZeroText "?"
-        $memoryType = Convert-WinForgeMemoryType -Type ([int]($memory | Select-Object -First 1).SMBIOSMemoryType)
-        $modules = Get-WinForgeMemoryModulesText -Modules $memory
-        $items += @{ Label = (Get-WinForgeText 'Memória'); Value = "$totalRam $memoryType$(if ($modules) { " ($modules)" })" }
+        $totalRam = Format-TFToolkitBytes -Bytes (($memory | Measure-Object -Property Capacity -Sum).Sum) -ZeroText "?"
+        $memoryType = Convert-TFToolkitMemoryType -Type ([int]($memory | Select-Object -First 1).SMBIOSMemoryType)
+        $modules = Get-TFToolkitMemoryModulesText -Modules $memory
+        $items += @{ Label = (Get-TFToolkitText 'Memória'); Value = "$totalRam $memoryType$(if ($modules) { " ($modules)" })" }
     }
 
     if ($board) {
-        $items += @{ Label = (Get-WinForgeText 'Placa-mãe'); Value = "$($board.Manufacturer) $($board.Product)".Trim() }
+        $items += @{ Label = (Get-TFToolkitText 'Placa-mãe'); Value = "$($board.Manufacturer) $($board.Product)".Trim() }
     }
 
     if ($bios) {
         $items += @{ Label = "BIOS"; Value = $bios.SMBIOSBIOSVersion }
     }
 
-    foreach ($gpu in @(Get-WinForgeCimOrNull -ClassName "Win32_VideoController" | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) -and $_.Name -notmatch "Microsoft Basic|Remote|Parsec" })) {
-        $items += @{ Label = (Get-WinForgeText 'Vídeo'); Value = ([string]$gpu.Name).Trim() }
+    foreach ($gpu in @(Get-TFToolkitCimOrNull -ClassName "Win32_VideoController" | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) -and $_.Name -notmatch "Microsoft Basic|Remote|Parsec" })) {
+        $items += @{ Label = (Get-TFToolkitText 'Vídeo'); Value = ([string]$gpu.Name).Trim() }
     }
 
     if ($items.Count -eq 0) {
-        $items += @{ Label = (Get-WinForgeText 'Hardware'); Value = (Get-WinForgeText 'Não foi possível ler') }
+        $items += @{ Label = (Get-TFToolkitText 'Hardware'); Value = (Get-TFToolkitText 'Não foi possível ler') }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportDiskItems {
+function Get-TFToolkitReportDiskItems {
     $items = @()
 
     # As mesmas frases das telas Discos e espaço livre e Saúde dos discos. Uma leitura vazia vira uma linha que diz isso:
     # sem ela, o relatório parecia de um PC sem disco.
-    $summary = @(Get-WinForgeDiskSummary)
-    $healthList = @(Get-WinForgeDiskHealth)
+    $summary = @(Get-TFToolkitDiskSummary)
+    $healthList = @(Get-TFToolkitDiskHealth)
 
-    if ($summary.Count -eq 0) { $items += @{ Label = (Get-WinForgeText 'Unidades'); Value = (Get-WinForgeText 'Não foi possível ler') } }
+    if ($summary.Count -eq 0) { $items += @{ Label = (Get-TFToolkitText 'Unidades'); Value = (Get-TFToolkitText 'Não foi possível ler') } }
 
     foreach ($disk in $summary) {
-        $items += @{ Label = $disk.Unidade; Value = (Get-WinForgeDiskSummaryText -Disk $disk) }
+        $items += @{ Label = $disk.Unidade; Value = (Get-TFToolkitDiskSummaryText -Disk $disk) }
     }
 
-    if ($healthList.Count -eq 0) { $items += @{ Label = (Get-WinForgeText 'Saúde dos discos'); Value = (Get-WinForgeText 'Não foi possível ler (em alguns PCs, requer Administrador)') } }
+    if ($healthList.Count -eq 0) { $items += @{ Label = (Get-TFToolkitText 'Saúde dos discos'); Value = (Get-TFToolkitText 'Não foi possível ler (em alguns PCs, requer Administrador)') } }
 
     foreach ($health in $healthList) {
-        $status = Get-WinForgeDiskHealthStatusText -Status $health.HealthStatus
-        if ($status -eq (Get-WinForgeText 'Desconhecido')) { $status = (Get-WinForgeText 'Estado desconhecido') }
+        $status = Get-TFToolkitDiskHealthStatusText -Status $health.HealthStatus
+        if ($status -eq (Get-TFToolkitText 'Desconhecido')) { $status = (Get-TFToolkitText 'Estado desconhecido') }
 
-        $text = if ($health.Notes.Count -gt 0) { (Get-WinForgeText '{0}. Alertas: {1}' "$status" "$($health.Notes -join '; ')") }
-        elseif ($health.CountersAvailable) { (Get-WinForgeText '{0}, sem alertas' "$status") }
-        elseif ([bool](Get-WinForgeJsonValue -Object $health -Name "CountersTimedOut" -Default $false)) { (Get-WinForgeText '{0}; os contadores não vieram (o Windows não respondeu a tempo)' "$status") }
-        else { (Get-WinForgeText '{0}, sem contadores de confiabilidade' "$status") }
-        $drives = @(Get-WinForgeJsonValue -Object $health -Name "Drives" -Default @())
-        $items += @{ Label = (Get-WinForgeText 'Saúde: {0}{1}' "$($health.Name)" "$(if ($drives.Count -gt 0) { " ($($drives -join ', '))" })"); Value = $text }
+        $text = if ($health.Notes.Count -gt 0) { (Get-TFToolkitText '{0}. Alertas: {1}' "$status" "$($health.Notes -join '; ')") }
+        elseif ($health.CountersAvailable) { (Get-TFToolkitText '{0}, sem alertas' "$status") }
+        elseif ([bool](Get-TFToolkitJsonValue -Object $health -Name "CountersTimedOut" -Default $false)) { (Get-TFToolkitText '{0}; os contadores não vieram (o Windows não respondeu a tempo)' "$status") }
+        else { (Get-TFToolkitText '{0}, sem contadores de confiabilidade' "$status") }
+        $drives = @(Get-TFToolkitJsonValue -Object $health -Name "Drives" -Default @())
+        $items += @{ Label = (Get-TFToolkitText 'Saúde: {0}{1}' "$($health.Name)" "$(if ($drives.Count -gt 0) { " ($($drives -join ', '))" })"); Value = $text }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportTweakItems {
+function Get-TFToolkitReportTweakItems {
     $items = @()
 
-    foreach ($tweak in @(Get-WinForgeTweakOverview)) {
+    foreach ($tweak in @(Get-TFToolkitTweakOverview)) {
         # Como na janela: o recurso do Windows e se ele está ativado ou desativado agora.
-        $items += @{ Label = $tweak.Name; Value = (Get-WinForgeTweakSwitchState -Status $tweak.Status -Inverted ([bool]$tweak.Inverted)).Caption }
+        $items += @{ Label = $tweak.Name; Value = (Get-TFToolkitTweakSwitchState -Status $tweak.Status -Inverted ([bool]$tweak.Inverted)).Caption }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportEventItems {
+function Get-TFToolkitReportEventItems {
     $items = @()
-    $summary = @(ConvertTo-WinForgeEventSummary -Events @(Get-WinForgeRecentCriticalEvents -Days 7) -Top 10)
+    $summary = @(ConvertTo-TFToolkitEventSummary -Events @(Get-TFToolkitRecentCriticalEvents -Days 7) -Top 10)
 
     if ($summary.Count -eq 0) {
-        $items += @{ Label = (Get-WinForgeText 'Últimos 7 dias'); Value = (Get-WinForgeText 'Nenhum evento crítico ou de erro') }
+        $items += @{ Label = (Get-TFToolkitText 'Últimos 7 dias'); Value = (Get-TFToolkitText 'Nenhum evento crítico ou de erro') }
     }
 
     foreach ($entry in $summary) {
-        $value = Format-WinForgeEventOccurrences -Entry $entry
+        $value = Format-TFToolkitEventOccurrences -Entry $entry
         if ($entry.Hint) { $value += " - $($entry.Hint)" }
-        $items += @{ Label = (Get-WinForgeText '{0} (ID {1})' "$(Get-WinForgeEventProviderText -Provider $entry.Provider)" "$($entry.Id)"); Value = $value }
+        $items += @{ Label = (Get-TFToolkitText '{0} (ID {1})' "$(Get-TFToolkitEventProviderText -Provider $entry.Provider)" "$($entry.Id)"); Value = $value }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportStabilityItems {
+function Get-TFToolkitReportStabilityItems {
     # As telas azuis dos últimos 90 dias e o último teste de memória, como em Diagnóstico > Telas azuis e Teste de memória.
     $items = @()
-    $label = (Get-WinForgeText 'Telas azuis (90 dias)')
+    $label = (Get-TFToolkitText 'Telas azuis (90 dias)')
 
     try {
-        $screens = @(Get-WinForgeBlueScreens -Days 90)
+        $screens = @(Get-TFToolkitBlueScreens -Days 90)
 
         if ($screens.Count -eq 0) {
-            $items += @{ Label = $label; Value = (Get-WinForgeText 'Nenhuma') }
+            $items += @{ Label = $label; Value = (Get-TFToolkitText 'Nenhuma') }
         }
         else {
-            $about = Get-WinForgeBugCheckCauseText -Cause (Get-WinForgeBlueScreenMainCause -Screens $screens).Cause
+            $about = Get-TFToolkitBugCheckCauseText -Cause (Get-TFToolkitBlueScreenMainCause -Screens $screens).Cause
             $latest = $screens[0]
             $code = "0x{0:X8}" -f [uint32]$latest.Code
-            $count = Format-WinForgeCount -Count $screens.Count -One (Get-WinForgeText 'tela azul') -Many (Get-WinForgeText 'telas azuis')
+            $count = Format-TFToolkitCount -Count $screens.Count -One (Get-TFToolkitText 'tela azul') -Many (Get-TFToolkitText 'telas azuis')
 
-            $items += @{ Label = $label; Value = (Get-WinForgeText '{0}; causa mais provável: {1}' "$count" "$($about.Cause)") }
-            $items += @{ Label = (Get-WinForgeText 'A mais recente'); Value = (Get-WinForgeText '{0} ({1})' "$(Format-WinForgeDateTime -When $latest.When)" "$(if ($latest.Info.Name) { "$code $($latest.Info.Name)" } else { $code })") }
+            $items += @{ Label = $label; Value = (Get-TFToolkitText '{0}; causa mais provável: {1}' "$count" "$($about.Cause)") }
+            $items += @{ Label = (Get-TFToolkitText 'A mais recente'); Value = (Get-TFToolkitText '{0} ({1})' "$(Format-TFToolkitDateTime -When $latest.When)" "$(if ($latest.Info.Name) { "$code $($latest.Info.Name)" } else { $code })") }
         }
     }
     catch {
-        $items += @{ Label = $label; Value = (Get-WinForgeText 'Não foi possível ler') }
+        $items += @{ Label = $label; Value = (Get-TFToolkitText 'Não foi possível ler') }
     }
 
     try {
-        $memory = Get-WinForgeMemoryTestResult
-        $value = $(if ($null -eq $memory) { (Get-WinForgeText 'nenhum no último ano') }
-            elseif ($memory.Errors) { (Get-WinForgeText '{0}: {1}' "$(Format-WinForgeDateTime -When $memory.When)" "$(Get-WinForgeText 'encontrou erros na memória')") }
-            else { (Get-WinForgeText '{0}: {1}' "$(Format-WinForgeDateTime -When $memory.When)" "$(Get-WinForgeText 'nenhum erro')") })
+        $memory = Get-TFToolkitMemoryTestResult
+        $value = $(if ($null -eq $memory) { (Get-TFToolkitText 'nenhum no último ano') }
+            elseif ($memory.Errors) { (Get-TFToolkitText '{0}: {1}' "$(Format-TFToolkitDateTime -When $memory.When)" "$(Get-TFToolkitText 'encontrou erros na memória')") }
+            else { (Get-TFToolkitText '{0}: {1}' "$(Format-TFToolkitDateTime -When $memory.When)" "$(Get-TFToolkitText 'nenhum erro')") })
 
-        $items += @{ Label = (Get-WinForgeText 'Último teste de memória'); Value = $value }
+        $items += @{ Label = (Get-TFToolkitText 'Último teste de memória'); Value = $value }
     }
     catch {
         Write-Verbose "Teste de memória: $($_.Exception.Message)"
@@ -200,68 +200,68 @@ function Get-WinForgeReportStabilityItems {
 }
 
 
-function Get-WinForgeReportBatteryItems {
+function Get-TFToolkitReportBatteryItems {
     $items = @()
-    $info = Get-WinForgeBatteryInfo
+    $info = Get-TFToolkitBatteryInfo
 
     if (-not $info.Present) {
-        return @(@{ Label = (Get-WinForgeText 'Bateria'); Value = (Get-WinForgeText 'Nenhuma bateria encontrada') })
+        return @(@{ Label = (Get-TFToolkitText 'Bateria'); Value = (Get-TFToolkitText 'Nenhuma bateria encontrada') })
     }
 
     $now = @()
     if ($null -ne $info.State.ChargePercent) { $now += "$($info.State.ChargePercent)%" }
     if ($info.State.State) { $now += $info.State.State }
-    if ($now.Count -gt 0) { $items += @{ Label = (Get-WinForgeText 'Agora'); Value = ($now -join ", ") } }
+    if ($now.Count -gt 0) { $items += @{ Label = (Get-TFToolkitText 'Agora'); Value = ($now -join ", ") } }
 
     foreach ($reading in @($info.Readings)) {
-        $label = $(if ($reading.Name) { $reading.Name } else { (Get-WinForgeText 'Bateria') })
-        $assessment = Get-WinForgeBatteryAssessment -HealthPercent $reading.HealthPercent -Missing $(if ($null -ne $reading.DesignMwh -and $null -eq $reading.FullMwh) { "full" } else { "design" })
+        $label = $(if ($reading.Name) { $reading.Name } else { (Get-TFToolkitText 'Bateria') })
+        $assessment = Get-TFToolkitBatteryAssessment -HealthPercent $reading.HealthPercent -Missing $(if ($null -ne $reading.DesignMwh -and $null -eq $reading.FullMwh) { "full" } else { "design" })
 
         $capacity = @()
-        if ($null -ne $reading.FullMwh -and $null -ne $reading.DesignMwh -and -not [bool](Get-WinForgeJsonValue -Object $reading -Name "Relative" -Default $false)) {
-            $capacity += (Get-WinForgeText '{0} de {1} de fábrica' "$(Format-WinForgeWattHours -MilliwattHours $reading.FullMwh)" "$(Format-WinForgeWattHours -MilliwattHours $reading.DesignMwh)")
+        if ($null -ne $reading.FullMwh -and $null -ne $reading.DesignMwh -and -not [bool](Get-TFToolkitJsonValue -Object $reading -Name "Relative" -Default $false)) {
+            $capacity += (Get-TFToolkitText '{0} de {1} de fábrica' "$(Format-TFToolkitWattHours -MilliwattHours $reading.FullMwh)" "$(Format-TFToolkitWattHours -MilliwattHours $reading.DesignMwh)")
         }
-        if ($null -ne $reading.Cycles) { $capacity += (Format-WinForgeCount -Count ([int]$reading.Cycles) -One (Get-WinForgeText 'ciclo') -Many (Get-WinForgeText 'ciclos')) }
+        if ($null -ne $reading.Cycles) { $capacity += (Format-TFToolkitCount -Count ([int]$reading.Cycles) -One (Get-TFToolkitText 'ciclo') -Many (Get-TFToolkitText 'ciclos')) }
 
         $parts = @($assessment.Text) + @($capacity)
         $items += @{ Label = $label; Value = ($parts -join " | ") }
     }
 
     if (@($info.Readings).Count -eq 0) {
-        $items += @{ Label = (Get-WinForgeText 'Capacidade'); Value = (Get-WinForgeText 'O Windows não informou a capacidade da bateria') }
+        $items += @{ Label = (Get-TFToolkitText 'Capacidade'); Value = (Get-TFToolkitText 'O Windows não informou a capacidade da bateria') }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportSecurityItems {
+function Get-TFToolkitReportSecurityItems {
     # Sem a consulta ao Windows Update (a tela a faz à parte): ela vai até o serviço e deixaria o relatório lento.
-    $status = Get-WinForgeSecurityStatus
+    $status = Get-TFToolkitSecurityStatus
     $antivirus = $status.Antivirus
     $items = @()
 
     # As mesmas linhas da tela Estado da proteção (sem a última verificação completa); "Situação" vira "Antivírus".
-    foreach ($row in @(Get-WinForgeAntivirusRows -Antivirus $antivirus -Threats $status.Threats -Brief)) {
-        $items += @{ Label = $(if ($row.Label -eq (Get-WinForgeText 'Situação')) { (Get-WinForgeText 'Antivírus') } else { $row.Label }); Value = $row.Value }
+    foreach ($row in @(Get-TFToolkitAntivirusRows -Antivirus $antivirus -Threats $status.Threats -Brief)) {
+        $items += @{ Label = $(if ($row.Label -eq (Get-TFToolkitText 'Situação')) { (Get-TFToolkitText 'Antivírus') } else { $row.Label }); Value = $row.Value }
     }
 
     if ($null -eq $status.Firewall) {
-        $items += @{ Label = (Get-WinForgeText 'Firewall'); Value = (Get-WinForgeText 'Não foi possível ler') }
+        $items += @{ Label = (Get-TFToolkitText 'Firewall'); Value = (Get-TFToolkitText 'Não foi possível ler') }
     }
     else {
-        $items += @{ Label = (Get-WinForgeText 'Firewall'); Value = ((@($status.Firewall) | ForEach-Object { $product = [string](Get-WinForgeJsonValue -Object $_ -Name "Product" -Default ""); "$(Get-WinForgeFirewallProfileName -Name $_.Name): $(if ($product) { (Get-WinForgeText 'protegido por {0}' "$product") } elseif ($_.Enabled) { (Get-WinForgeText 'ligado') } elseif (-not [bool](Get-WinForgeJsonValue -Object $_ -Name 'Applies' -Default $true)) { (Get-WinForgeText 'desligado (não vale para este PC, que não está num domínio)') } else { (Get-WinForgeText 'desligado') })" }) -join "; ") }
+        $items += @{ Label = (Get-TFToolkitText 'Firewall'); Value = ((@($status.Firewall) | ForEach-Object { $product = [string](Get-TFToolkitJsonValue -Object $_ -Name "Product" -Default ""); "$(Get-TFToolkitFirewallProfileName -Name $_.Name): $(if ($product) { (Get-TFToolkitText 'protegido por {0}' "$product") } elseif ($_.Enabled) { (Get-TFToolkitText 'ligado') } elseif (-not [bool](Get-TFToolkitJsonValue -Object $_ -Name 'Applies' -Default $true)) { (Get-TFToolkitText 'desligado (não vale para este PC, que não está num domínio)') } else { (Get-TFToolkitText 'desligado') })" }) -join "; ") }
     }
 
     foreach ($finding in @($status.Findings | Where-Object { $_.Level -eq "Warning" })) {
-        $items += @{ Label = (Get-WinForgeText 'Atenção'); Value = $finding.Text }
+        $items += @{ Label = (Get-TFToolkitText 'Atenção'); Value = $finding.Text }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportMaintenanceItems {
+function Get-TFToolkitReportMaintenanceItems {
     param (
         [Parameter(Mandatory)]
         $Maintenance
@@ -279,7 +279,7 @@ function Get-WinForgeReportMaintenanceItems {
     $before = $(if ($null -ne $Maintenance.PSObject.Properties["Before"]) { $Maintenance.Before } else { $null })
     $after = $(if ($null -ne $Maintenance.PSObject.Properties["After"]) { $Maintenance.After } else { $null })
 
-    foreach ($row in @(Get-WinForgeSnapshotComparison -Before $before -After $after)) {
+    foreach ($row in @(Get-TFToolkitSnapshotComparison -Before $before -After $after)) {
         $items += @{ Label = $row.Label; Value = $row.Text }
     }
 
@@ -287,7 +287,7 @@ function Get-WinForgeReportMaintenanceItems {
         $span = $after.At - $Maintenance.StartedAt
 
         if ($span.Ticks -gt 0) {
-            $items += @{ Label = (Get-WinForgeText 'Duração'); Value = (Get-WinForgeText '{0} (das {1} às {2})' "$(Format-WinForgeDuration -Span $span)" "$(Format-WinForgeDateTime -When $Maintenance.StartedAt -Pattern 'HH:mm')" "$(Format-WinForgeDateTime -When $after.At -Pattern 'HH:mm')") }
+            $items += @{ Label = (Get-TFToolkitText 'Duração'); Value = (Get-TFToolkitText '{0} (das {1} às {2})' "$(Format-TFToolkitDuration -Span $span)" "$(Format-TFToolkitDateTime -When $Maintenance.StartedAt -Pattern 'HH:mm')" "$(Format-TFToolkitDateTime -When $after.At -Pattern 'HH:mm')") }
         }
     }
 
@@ -295,7 +295,7 @@ function Get-WinForgeReportMaintenanceItems {
 }
 
 
-function New-WinForgeReportSection {
+function New-TFToolkitReportSection {
     # Uma seção que falha vira uma linha de aviso: o resto do relatório continua sendo gerado e salvo.
     param (
         [Parameter(Mandatory)]
@@ -309,76 +309,76 @@ function New-WinForgeReportSection {
         $items = @(& $Build)
     }
     catch {
-        $items = @(@{ Label = (Get-WinForgeText 'Não foi possível ler esta seção'); Value = $_.Exception.Message })
+        $items = @(@{ Label = (Get-TFToolkitText 'Não foi possível ler esta seção'); Value = $_.Exception.Message })
     }
 
     return @{ Title = $Title; Items = $items }
 }
 
 
-function Get-WinForgeReportAttentionItems {
+function Get-TFToolkitReportAttentionItems {
     # O resumo do que pede atenção, no topo do relatório: a nota de saúde do Início e os pontos que descontam dela, para
     # quem vai ajudar ver o problema antes de ler as seções técnicas.
-    $status = Get-WinForgeHomeStatus
+    $status = Get-TFToolkitHomeStatus
     $health = $status.Health
     $items = @()
 
-    if (Test-WinForgeHealthKnown -Health $health) {
-        $items += @{ Label = (Get-WinForgeText 'Saúde do PC'); Value = (Get-WinForgeText '{0} de 100 ({1})' "$($health.Score)" "$($health.Label)") }
+    if (Test-TFToolkitHealthKnown -Health $health) {
+        $items += @{ Label = (Get-TFToolkitText 'Saúde do PC'); Value = (Get-TFToolkitText '{0} de 100 ({1})' "$($health.Score)" "$($health.Label)") }
     }
     else {
-        $items += @{ Label = (Get-WinForgeText 'Saúde do PC'); Value = (Get-WinForgeText 'Não foi possível avaliar') }
+        $items += @{ Label = (Get-TFToolkitText 'Saúde do PC'); Value = (Get-TFToolkitText 'Não foi possível avaliar') }
     }
 
     $issues = @($health.Issues | Where-Object { $null -ne $_ })
 
     foreach ($issue in $issues) {
-        $items += @{ Label = $(if ($issue.Severe) { (Get-WinForgeText 'Grave') } else { (Get-WinForgeText 'Atenção') }); Value = [string]$issue.Text }
+        $items += @{ Label = $(if ($issue.Severe) { (Get-TFToolkitText 'Grave') } else { (Get-TFToolkitText 'Atenção') }); Value = [string]$issue.Text }
     }
 
     if ($issues.Count -eq 0) {
-        $items += @{ Label = (Get-WinForgeText 'Pontos de atenção'); Value = (Get-WinForgeText 'Nenhum') }
+        $items += @{ Label = (Get-TFToolkitText 'Pontos de atenção'); Value = (Get-TFToolkitText 'Nenhum') }
     }
 
-    $unread = @(Get-WinForgeJsonValue -Object $health -Name "Unread" -Default @())
+    $unread = @(Get-TFToolkitJsonValue -Object $health -Name "Unread" -Default @())
 
     if ($unread.Count -gt 0) {
-        $items += @{ Label = (Get-WinForgeText 'Não foi possível ler'); Value = ($unread -join ", ") }
+        $items += @{ Label = (Get-TFToolkitText 'Não foi possível ler'); Value = ($unread -join ", ") }
     }
 
     foreach ($notice in @($status.Notices | Where-Object { $null -ne $_ })) {
-        $items += @{ Label = (Get-WinForgeText 'Aviso'); Value = [string]$notice.Text }
+        $items += @{ Label = (Get-TFToolkitText 'Aviso'); Value = [string]$notice.Text }
     }
 
     return $items
 }
 
 
-function Get-WinForgeReportSections {
+function Get-TFToolkitReportSections {
     $sections = @()
 
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Pontos de atenção') -Build { Get-WinForgeReportAttentionItems }
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Sistema') -Build { Get-WinForgeReportSystemItems }
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Hardware') -Build { Get-WinForgeReportHardwareItems }
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Discos') -Build { Get-WinForgeReportDiskItems }
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Ajustes do Windows e Personalização') -Build { Get-WinForgeReportTweakItems }
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Eventos críticos (7 dias)') -Build { Get-WinForgeReportEventItems }
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Telas azuis e memória') -Build { Get-WinForgeReportStabilityItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Pontos de atenção') -Build { Get-TFToolkitReportAttentionItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Sistema') -Build { Get-TFToolkitReportSystemItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Hardware') -Build { Get-TFToolkitReportHardwareItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Discos') -Build { Get-TFToolkitReportDiskItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Ajustes do Windows e Personalização') -Build { Get-TFToolkitReportTweakItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Eventos críticos (7 dias)') -Build { Get-TFToolkitReportEventItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Telas azuis e memória') -Build { Get-TFToolkitReportStabilityItems }
 
-    $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Segurança') -Build { Get-WinForgeReportSecurityItems }
+    $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Segurança') -Build { Get-TFToolkitReportSecurityItems }
 
-    if (Test-WinForgeLaptop) {
-        $sections += New-WinForgeReportSection -Title (Get-WinForgeText 'Bateria') -Build { Get-WinForgeReportBatteryItems }
+    if (Test-TFToolkitLaptop) {
+        $sections += New-TFToolkitReportSection -Title (Get-TFToolkitText 'Bateria') -Build { Get-TFToolkitReportBatteryItems }
     }
 
-    $maintenance = Get-WinForgeLastMaintenance
+    $maintenance = Get-TFToolkitLastMaintenance
 
     if ($null -ne $maintenance) {
-        $title = (Get-WinForgeText 'Última manutenção')
+        $title = (Get-TFToolkitText 'Última manutenção')
 
-        try { $title += " ($(Format-WinForgeDateTime -When $maintenance.StartedAt))" } catch { }
+        try { $title += " ($(Format-TFToolkitDateTime -When $maintenance.StartedAt))" } catch { }
 
-        $sections += New-WinForgeReportSection -Title $title -Build { Get-WinForgeReportMaintenanceItems -Maintenance $maintenance }
+        $sections += New-TFToolkitReportSection -Title $title -Build { Get-TFToolkitReportMaintenanceItems -Maintenance $maintenance }
     }
 
     return @($sections)
@@ -389,7 +389,7 @@ function Get-WinForgeReportSections {
 # Formatos
 # ---------------------------------------------------------------------------
 
-function ConvertTo-WinForgeTextReport {
+function ConvertTo-TFToolkitTextReport {
     param (
         [Parameter(Mandatory)]
         [object[]]$Sections,
@@ -398,8 +398,8 @@ function ConvertTo-WinForgeTextReport {
     )
 
     $builder = New-Object System.Text.StringBuilder
-    [void]$builder.AppendLine((Get-WinForgeText 'WinForge - Relatório (versão {0})' "$Build"))
-    [void]$builder.AppendLine((Get-WinForgeText 'Gerado em {0}' "$(Format-WinForgeDateTime -When (Get-Date))"))
+    [void]$builder.AppendLine((Get-TFToolkitText 'TF-Toolkit - Relatório (versão {0})' "$Build"))
+    [void]$builder.AppendLine((Get-TFToolkitText 'Gerado em {0}' "$(Format-TFToolkitDateTime -When (Get-Date))"))
 
     foreach ($section in $Sections) {
         [void]$builder.AppendLine("")
@@ -415,7 +415,7 @@ function ConvertTo-WinForgeTextReport {
 }
 
 
-function ConvertTo-WinForgeHtmlReport {
+function ConvertTo-TFToolkitHtmlReport {
     param (
         [Parameter(Mandatory)]
         [object[]]$Sections,
@@ -427,10 +427,10 @@ function ConvertTo-WinForgeHtmlReport {
     $builder = New-Object System.Text.StringBuilder
 
     # O idioma da página é o da interface (o leitor de tela e o tradutor do navegador usam o atributo lang).
-    $htmlLanguage = switch (Get-WinForgeLanguage) { "en" { "en" } "es" { "es" } default { "pt-BR" } }
+    $htmlLanguage = switch (Get-TFToolkitLanguage) { "en" { "en" } "es" { "es" } default { "pt-BR" } }
     [void]$builder.AppendLine("<!doctype html><html lang=`"$htmlLanguage`"><head><meta charset=`"utf-8`">")
     [void]$builder.AppendLine("<meta name=`"viewport`" content=`"width=device-width, initial-scale=1`">")
-    [void]$builder.AppendLine("<title>$(& $encode (Get-WinForgeText 'WinForge - Relatório'))</title><style>")
+    [void]$builder.AppendLine("<title>$(& $encode (Get-TFToolkitText 'TF-Toolkit - Relatório'))</title><style>")
     [void]$builder.AppendLine(":root{--bg:#f6f8fa;--card:#fff;--text:#1f2328;--muted:#656d76;--line:#d8dee4;--accent:#0969da}")
     [void]$builder.AppendLine("@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--text:#e6edf3;--muted:#8b949e;--line:#30363d;--accent:#58a6ff}}")
     [void]$builder.AppendLine("body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Segoe UI,system-ui,sans-serif}")
@@ -439,7 +439,7 @@ function ConvertTo-WinForgeHtmlReport {
     [void]$builder.AppendLine("h2{margin:0 0 8px;font-size:16px;color:var(--accent)}dl{display:grid;grid-template-columns:minmax(140px,30%) 1fr;gap:4px 14px;margin:0}")
     [void]$builder.AppendLine("dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}@media (max-width:560px){dl{grid-template-columns:1fr}}")
     [void]$builder.AppendLine("</style></head><body><main>")
-    [void]$builder.AppendLine("<h1>WinForge</h1><div class=`"meta`">$(& $encode (Get-WinForgeText 'Relatório gerado em {0} · versão {1}' "$(Format-WinForgeDateTime -When (Get-Date))" "$Build"))</div>")
+    [void]$builder.AppendLine("<h1>TF-Toolkit</h1><div class=`"meta`">$(& $encode (Get-TFToolkitText 'Relatório gerado em {0} · versão {1}' "$(Format-TFToolkitDateTime -When (Get-Date))" "$Build"))</div>")
 
     foreach ($section in $Sections) {
         [void]$builder.AppendLine("<section><h2>$(& $encode $section.Title)</h2><dl>")
@@ -460,13 +460,13 @@ function ConvertTo-WinForgeHtmlReport {
 # Ações
 # ---------------------------------------------------------------------------
 
-function Export-WinForgeReport {
+function Export-TFToolkitReport {
     param (
         [string]$Directory
     )
 
     if ([string]::IsNullOrWhiteSpace($Directory)) {
-        $Directory = Join-Path (Get-WinForgeDataPath) "reports"
+        $Directory = Join-Path (Get-TFToolkitDataPath) "reports"
     }
 
     # Um erro de disco aqui (pasta que não pode ser criada, sem permissão, disco cheio) interrompe a exportação: sem o
@@ -476,39 +476,39 @@ function Export-WinForgeReport {
             [void](New-Item -Path $Directory -ItemType Directory -Force -ErrorAction Stop)
         }
         catch {
-            throw (Get-WinForgeText 'não foi possível criar a pasta dos relatórios ({0}): {1}' "$Directory" "$($_.Exception.Message.TrimEnd('.'))")
+            throw (Get-TFToolkitText 'não foi possível criar a pasta dos relatórios ({0}): {1}' "$Directory" "$($_.Exception.Message.TrimEnd('.'))")
         }
     }
 
-    $sections = @(Get-WinForgeReportSections)
-    $build = Get-WinForgeBuild
+    $sections = @(Get-TFToolkitReportSections)
+    $build = Get-TFToolkitBuild
 
     # O nome vem do horário de quando a coleta terminou; dois relatórios no mesmo segundo (o segundo clique enquanto o
     # primeiro salvava, ou o agendamento) ganham "-2", "-3": sem isso, um apagaria o outro.
     $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
-    $base = "winforge-relatorio-$stamp"
+    $base = "tf-toolkit-relatorio-$stamp"
     $suffix = 1
 
     while ((Test-Path -LiteralPath (Join-Path $Directory "$base.html")) -or (Test-Path -LiteralPath (Join-Path $Directory "$base.txt"))) {
         $suffix++
-        $base = "winforge-relatorio-$stamp-$suffix"
+        $base = "tf-toolkit-relatorio-$stamp-$suffix"
     }
 
     $htmlPath = Join-Path $Directory "$base.html"
     $textPath = Join-Path $Directory "$base.txt"
 
     try {
-        Set-Content -LiteralPath $htmlPath -Value (ConvertTo-WinForgeHtmlReport -Sections $sections -Build $build) -Encoding UTF8 -ErrorAction Stop
+        Set-Content -LiteralPath $htmlPath -Value (ConvertTo-TFToolkitHtmlReport -Sections $sections -Build $build) -Encoding UTF8 -ErrorAction Stop
     }
     catch {
-        throw (Get-WinForgeText 'não foi possível gravar o relatório em {0}: {1}' "${Directory}" "$($_.Exception.Message.TrimEnd('.'))")
+        throw (Get-TFToolkitText 'não foi possível gravar o relatório em {0}: {1}' "${Directory}" "$($_.Exception.Message.TrimEnd('.'))")
     }
 
     # O HTML é o relatório; o texto é a cópia para colar num e-mail. Se só ele falhar, o HTML salvo continua valendo.
     $textProblem = ""
 
     try {
-        Set-Content -LiteralPath $textPath -Value (ConvertTo-WinForgeTextReport -Sections $sections -Build $build) -Encoding UTF8 -ErrorAction Stop
+        Set-Content -LiteralPath $textPath -Value (ConvertTo-TFToolkitTextReport -Sections $sections -Build $build) -Encoding UTF8 -ErrorAction Stop
     }
     catch {
         $textProblem = $_.Exception.Message.TrimEnd(".")
@@ -519,30 +519,30 @@ function Export-WinForgeReport {
 }
 
 
-function Open-WinForgeSavedReport {
+function Open-TFToolkitSavedReport {
     <#
     Pergunta o que fazer com um relatório que acabou de ser salvo (abrir, mostrar na pasta ou nada) e faz. Devolve "" ou,
     quando o Windows recusou, o que não foi possível com o motivo ("abrir o relatório: ..."); a mensagem já apareceu.
     #>
     param ([Parameter(Mandatory)][string]$Path)
 
-    $next = Read-WinForgeChoice -Message (Get-WinForgeText 'O que deseja fazer com o relatório?') -DefaultKey "A" -ShowMenu -TextPrompt (Get-WinForgeText 'Opção (ENTER = abrir)') -Options @(
-        @{ Key = "A"; Label = (Get-WinForgeText 'Abrir o relatório'); Accent = $true },
-        @{ Key = "P"; Label = (Get-WinForgeText 'Mostrar na pasta') },
-        @{ Key = "X"; Label = (Get-WinForgeText 'Agora não'); Exit = $true }
+    $next = Read-TFToolkitChoice -Message (Get-TFToolkitText 'O que deseja fazer com o relatório?') -DefaultKey "A" -ShowMenu -TextPrompt (Get-TFToolkitText 'Opção (ENTER = abrir)') -Options @(
+        @{ Key = "A"; Label = (Get-TFToolkitText 'Abrir o relatório'); Accent = $true },
+        @{ Key = "P"; Label = (Get-TFToolkitText 'Mostrar na pasta') },
+        @{ Key = "X"; Label = (Get-TFToolkitText 'Agora não'); Exit = $true }
     )
 
     if ($next -notin @("A", "P")) { return "" }
 
     try {
-        # Pelo Explorer, e não direto: com o WinForge como Administrador, o navegador abriria elevado também. O
+        # Pelo Explorer, e não direto: com o TF-Toolkit como Administrador, o navegador abriria elevado também. O
         # Explorer já está aberto na sessão da pessoa e abre o arquivo no navegador padrão, sem privilégios.
         $arguments = $(if ($next -eq "P") { "/select,`"$Path`"" } else { "`"$Path`"" })
         Start-Process -FilePath "explorer.exe" -ArgumentList $arguments -ErrorAction Stop
     }
     catch {
-        $what = $(if ($next -eq "P") { (Get-WinForgeText 'mostrar a pasta') } else { (Get-WinForgeText 'abrir o relatório') })
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível {0}: {1}' "${what}" "$($_.Exception.Message)")
+        $what = $(if ($next -eq "P") { (Get-TFToolkitText 'mostrar a pasta') } else { (Get-TFToolkitText 'abrir o relatório') })
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível {0}: {1}' "${what}" "$($_.Exception.Message)")
         return "${what}: $($_.Exception.Message)"
     }
 
@@ -550,63 +550,63 @@ function Open-WinForgeSavedReport {
 }
 
 
-function Invoke-WinForgeReport {
-    $title = (Get-WinForgeText 'Exportar relatório')
-    Enter-WinForgeAction -Title $title
+function Invoke-TFToolkitReport {
+    $title = (Get-TFToolkitText 'Exportar relatório')
+    Enter-TFToolkitAction -Title $title
 
     $result = $null
 
     try {
         # O andamento vai na barra: uma linha "Coletando..." ficaria no resumo depois do fim.
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'coletando sistema, discos, eventos e segurança')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'coletando sistema, discos, eventos e segurança')
 
         try {
-            $report = Export-WinForgeReport
+            $report = Export-TFToolkitReport
         }
         finally {
             Write-Progress -Activity $title -Completed
         }
 
-        $textProblem = [string](Get-WinForgeJsonValue -Object $report -Name "TextProblem" -Default "")
+        $textProblem = [string](Get-TFToolkitJsonValue -Object $report -Name "TextProblem" -Default "")
 
         Write-Host ""
 
         if ($textProblem) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Relatório HTML salvo; a cópia em texto não pôde ser gravada: {0}.' "${textProblem}")
-            Write-WinForgeKeyValue -Label "HTML" -Value $report.Html
-            $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'relatório salvo em HTML; a cópia em texto não pôde ser gravada')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Relatório HTML salvo; a cópia em texto não pôde ser gravada: {0}.' "${textProblem}")
+            Write-TFToolkitKeyValue -Label "HTML" -Value $report.Html
+            $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'relatório salvo em HTML; a cópia em texto não pôde ser gravada')
         }
         else {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Relatório salvo.')
-            Write-WinForgeKeyValue -Label "HTML" -Value $report.Html
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Texto') -Value $report.Text
-            $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'relatório salvo em HTML e em texto')
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Relatório salvo.')
+            Write-TFToolkitKeyValue -Label "HTML" -Value $report.Html
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Texto') -Value $report.Text
+            $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'relatório salvo em HTML e em texto')
         }
 
         Write-Host ""
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O relatório traz o nome do PC e do usuário, o hardware e a segurança: confira antes de enviar a alguém.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O relatório traz o nome do PC e do usuário, o hardware e a segurança: confira antes de enviar a alguém.')
 
-        $problem = Open-WinForgeSavedReport -Path $report.Html
+        $problem = Open-TFToolkitSavedReport -Path $report.Html
 
         if ($problem) {
-            $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'relatório salvo, mas não foi possível {0}' "$problem")
+            $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'relatório salvo, mas não foi possível {0}' "$problem")
         }
     }
     catch {
         Write-Host ""
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'O relatório não foi salvo: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $result = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o relatório não foi salvo')
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'O relatório não foi salvo: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o relatório não foi salvo')
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
 # ---------------------------------------------------------------------------
-# Verificação rápida (WinForge.Console.ps1 -Action Check)
+# Verificação rápida (TF-Toolkit.Console.ps1 -Action Check)
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeCheckLevel {
+function Get-TFToolkitCheckLevel {
     <#
     O resultado único da verificação rápida. Critical: nota de saúde abaixo de 50, algum ponto de saúde de peso 25 ou
     mais (disco quase cheio, nenhum antivírus, ameaça ativa) ou um ponto grave da auditoria (Critical + Bad). Attention:
@@ -642,7 +642,7 @@ function Get-WinForgeCheckLevel {
 }
 
 
-function Get-WinForgeCheckExitCode {
+function Get-TFToolkitCheckExitCode {
     # 0 = tudo em dia, 1 = há pontos de atenção, 2 = há algo crítico, 3 = não foi possível avaliar.
     param (
         [Parameter(Mandatory)]
@@ -659,7 +659,7 @@ function Get-WinForgeCheckExitCode {
 }
 
 
-function Get-WinForgeCheckReport {
+function Get-TFToolkitCheckReport {
     <#
     Uma leitura rápida e só de leitura do PC: a nota de saúde da tela inicial e a nota da auditoria de segurança, sem
     a consulta ao Windows Update (que leva até um minuto). Nunca lança erro: se a leitura inteira falhar, devolve
@@ -668,7 +668,7 @@ function Get-WinForgeCheckReport {
     $notes = @()
 
     try {
-        $status = Get-WinForgeHomeStatus
+        $status = Get-TFToolkitHomeStatus
         $health = $status.Health
 
         $facts = @()
@@ -684,18 +684,18 @@ function Get-WinForgeCheckReport {
         }
 
         # O que entraria na nota de saúde, mas não pôde ser lido: a nota vale para o resto (como diz o Início).
-        $unread = @(Get-WinForgeJsonValue -Object $health -Name "Unread" -Default @())
+        $unread = @(Get-TFToolkitJsonValue -Object $health -Name "Unread" -Default @())
 
         if ($unread.Count -gt 0) {
-            $notes += (Get-WinForgeText 'A nota de saúde não inclui o que não pôde ser lido: {0}.' "$($unread -join ', ')")
+            $notes += (Get-TFToolkitText 'A nota de saúde não inclui o que não pôde ser lido: {0}.' "$($unread -join ', ')")
         }
 
         $security = $null
         $attention = @()
 
         try {
-            $auditChecks = @(Get-WinForgeSecurityAuditChecks -Facts (Get-WinForgeSecurityAuditFacts))
-            $grade = Get-WinForgeSecurityGrade -Checks $auditChecks
+            $auditChecks = @(Get-TFToolkitSecurityAuditChecks -Facts (Get-TFToolkitSecurityAuditFacts))
+            $grade = Get-TFToolkitSecurityGrade -Checks $auditChecks
 
             foreach ($check in @($auditChecks | Where-Object { $_.Weight -gt 0 -and $_.Status -in "Warn", "Bad" })) {
                 $attention += [PSCustomObject]@{
@@ -711,30 +711,30 @@ function Get-WinForgeCheckReport {
             $security = [PSCustomObject]@{
                 Grade         = $grade.Grade
                 Score         = $grade.Score
-                NoGradeReason = [string](Get-WinForgeJsonValue -Object $grade -Name "NoGradeReason" -Default "")
+                NoGradeReason = [string](Get-TFToolkitJsonValue -Object $grade -Name "NoGradeReason" -Default "")
                 Capped        = [bool]$grade.Capped
                 Unverified    = @($auditChecks | Where-Object { $_.Weight -gt 0 -and $_.Status -eq "Unknown" }).Count
                 Attention     = $attention
             }
 
-            $notes += (Get-WinForgeText 'A consulta ao Windows Update foi pulada para a verificação ser rápida; rode Segurança > Auditoria de segurança para incluí-la.')
+            $notes += (Get-TFToolkitText 'A consulta ao Windows Update foi pulada para a verificação ser rápida; rode Segurança > Auditoria de segurança para incluí-la.')
         }
         catch {
-            $notes += (Get-WinForgeText 'Não foi possível fazer a auditoria de segurança: {0}' "$($_.Exception.Message)")
+            $notes += (Get-TFToolkitText 'Não foi possível fazer a auditoria de segurança: {0}' "$($_.Exception.Message)")
         }
 
-        if (-not (Test-WinForgeAdministrator)) {
-            $notes += (Get-WinForgeText 'Sem Administrador: pontos como a criptografia do disco não são verificados.')
+        if (-not (Test-TFToolkitAdministrator)) {
+            $notes += (Get-TFToolkitText 'Sem Administrador: pontos como a criptografia do disco não são verificados.')
         }
 
-        $level = Get-WinForgeCheckLevel -Health $health -Attention $attention
+        $level = Get-TFToolkitCheckLevel -Health $health -Attention $attention
         $problem = ""
 
         # Nada do que forma a nota foi lido: a nota 100 não quer dizer "tudo em dia". Sem nada grave vindo da auditoria, o
         # resultado é "não foi possível avaliar".
-        if ($level -eq "Ok" -and -not (Test-WinForgeHealthKnown -Health $health)) {
+        if ($level -eq "Ok" -and -not (Test-TFToolkitHealthKnown -Health $health)) {
             $level = "Unknown"
-            $problem = (Get-WinForgeText 'nenhuma leitura da nota de saúde respondeu ({0})' "$($unread -join ', ')")
+            $problem = (Get-TFToolkitText 'nenhuma leitura da nota de saúde respondeu ({0})' "$($unread -join ', ')")
         }
         elseif ($level -eq "Ok" -and $unread.Count -gt 0) {
             # Parte da nota sem leitura (a nota já diz qual): "em dia" (código 0) prometeria o que não foi conferido.
@@ -749,7 +749,7 @@ function Get-WinForgeCheckReport {
         $stability = $null
 
         try {
-            $screens = @(Get-WinForgeBlueScreens -Days 30)
+            $screens = @(Get-TFToolkitBlueScreens -Days 30)
             $latest = $(if ($screens.Count -gt 0) {
                     [PSCustomObject]@{ At = $screens[0].When.ToString("o"); Code = ("0x{0:X8}" -f [uint32]$screens[0].Code); Name = [string]$screens[0].Info.Name; Cause = [string]$screens[0].Info.Cause }
                 })
@@ -760,13 +760,13 @@ function Get-WinForgeCheckReport {
         }
 
         return [PSCustomObject]@{
-            Format        = "WinForge.Check"
+            Format        = "TFToolkit.Check"
             Version       = 2
-            Build         = [string](Get-WinForgeBuild)
+            Build         = [string](Get-TFToolkitBuild)
             CheckedAt     = (Get-Date).ToString("o")
-            Administrator = [bool](Test-WinForgeAdministrator)
+            Administrator = [bool](Test-TFToolkitAdministrator)
             Status        = $level
-            ExitCode      = (Get-WinForgeCheckExitCode -Status $level)
+            ExitCode      = (Get-TFToolkitCheckExitCode -Status $level)
             Health        = [PSCustomObject]@{ Score = [int]$health.Score; Label = $health.Label; Level = $health.Level; Issues = $issues; Unread = @($unread) }
             Security      = $security
             Stability     = $stability
@@ -777,13 +777,13 @@ function Get-WinForgeCheckReport {
     }
     catch {
         return [PSCustomObject]@{
-            Format        = "WinForge.Check"
+            Format        = "TFToolkit.Check"
             Version       = 2
-            Build         = [string](Get-WinForgeBuild)
+            Build         = [string](Get-TFToolkitBuild)
             CheckedAt     = (Get-Date).ToString("o")
             Administrator = $false
             Status        = "Unknown"
-            ExitCode      = (Get-WinForgeCheckExitCode -Status "Unknown")
+            ExitCode      = (Get-TFToolkitCheckExitCode -Status "Unknown")
             Health        = $null
             Security      = $null
             Stability     = $null
@@ -795,7 +795,7 @@ function Get-WinForgeCheckReport {
 }
 
 
-function ConvertTo-WinForgeCheckJson {
+function ConvertTo-TFToolkitCheckJson {
     param (
         [Parameter(Mandatory)]
         $Report
@@ -805,48 +805,48 @@ function ConvertTo-WinForgeCheckJson {
 }
 
 
-function Show-WinForgeCheckReport {
+function Show-TFToolkitCheckReport {
     param (
         [Parameter(Mandatory)]
         $Report
     )
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'Verificação rápida do WinForge (versão {0})' "$($Report.Build)")
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'Verificação rápida do TF-Toolkit (versão {0})' "$($Report.Build)")
 
     if ($Report.Status -eq "Unknown") {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível avaliar o PC: {0}' "$($Report.Error)")
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Código de saída') -Value ([string]$Report.ExitCode)
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível avaliar o PC: {0}' "$($Report.Error)")
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Código de saída') -Value ([string]$Report.ExitCode)
         return
     }
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Saúde do PC') -Value (Get-WinForgeText '{0} de 100 ({1})' "$($Report.Health.Score)" "$($Report.Health.Label)")
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Saúde do PC') -Value (Get-TFToolkitText '{0} de 100 ({1})' "$($Report.Health.Score)" "$($Report.Health.Label)")
 
     foreach ($issue in @($Report.Health.Issues)) {
-        Write-WinForgeStatus -Type $(if ($issue.Weight -ge 25) { "Error" } else { "Warning" }) -Message $issue.Text
+        Write-TFToolkitStatus -Type $(if ($issue.Weight -ge 25) { "Error" } else { "Warning" }) -Message $issue.Text
     }
 
     if (@($Report.Health.Issues).Count -eq 0) {
-        $unread = @(Get-WinForgeJsonValue -Object $Report.Health -Name "Unread" -Default @())
-        Write-WinForgeStatus -Type Success -Message $(if ($unread.Count -gt 0) { (Get-WinForgeText 'Nenhum ponto de atenção no que foi lido.') } else { (Get-WinForgeText 'Nenhum ponto de atenção na saúde do PC.') })
+        $unread = @(Get-TFToolkitJsonValue -Object $Report.Health -Name "Unread" -Default @())
+        Write-TFToolkitStatus -Type Success -Message $(if ($unread.Count -gt 0) { (Get-TFToolkitText 'Nenhum ponto de atenção no que foi lido.') } else { (Get-TFToolkitText 'Nenhum ponto de atenção na saúde do PC.') })
     }
 
     if ($null -ne $Report.Security) {
         if ($null -eq $Report.Security.Score) {
-            $reason = [string](Get-WinForgeJsonValue -Object $Report.Security -Name "NoGradeReason" -Default "")
+            $reason = [string](Get-TFToolkitJsonValue -Object $Report.Security -Name "NoGradeReason" -Default "")
             $why = switch ($reason) {
-                "Antivirus" { (Get-WinForgeText 'sem nota: o antivírus não pôde ser verificado') }
-                "Coverage" { (Get-WinForgeText 'sem nota: menos da metade dos pontos pôde ser verificada') }
-                default { (Get-WinForgeText 'sem nota: não foi possível calcular') }
+                "Antivirus" { (Get-TFToolkitText 'sem nota: o antivírus não pôde ser verificado') }
+                "Coverage" { (Get-TFToolkitText 'sem nota: menos da metade dos pontos pôde ser verificada') }
+                default { (Get-TFToolkitText 'sem nota: não foi possível calcular') }
             }
 
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Segurança') -Value $why -Level Warn
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Segurança') -Value $why -Level Warn
         }
         else {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Segurança') -Value (Get-WinForgeText '{0} de 100 · {1}' "$($Report.Security.Score)" "$($Report.Security.Grade)")
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Segurança') -Value (Get-TFToolkitText '{0} de 100 · {1}' "$($Report.Security.Score)" "$($Report.Security.Grade)")
         }
 
         foreach ($item in @($Report.Security.Attention)) {
-            Write-WinForgeStatus -Type $(if ($item.Status -eq "Bad") { "Error" } else { "Warning" }) -Message "$($item.Title): $($item.Detail)"
+            Write-TFToolkitStatus -Type $(if ($item.Status -eq "Bad") { "Error" } else { "Warning" }) -Message "$($item.Title): $($item.Detail)"
         }
     }
 
@@ -855,20 +855,20 @@ function Show-WinForgeCheckReport {
     }
 
     $text = switch ($Report.Status) {
-        "Ok"        { (Get-WinForgeText 'Tudo em dia') }
-        "Attention" { (Get-WinForgeText 'Há pontos de atenção') }
-        default     { (Get-WinForgeText 'Há algo crítico') }
+        "Ok"        { (Get-TFToolkitText 'Tudo em dia') }
+        "Attention" { (Get-TFToolkitText 'Há pontos de atenção') }
+        default     { (Get-TFToolkitText 'Há algo crítico') }
     }
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Resultado') -Value (Get-WinForgeText '{0} (código de saída {1})' "$text" "$($Report.ExitCode)")
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Resultado') -Value (Get-TFToolkitText '{0} (código de saída {1})' "$text" "$($Report.ExitCode)")
 }
 
 
 # ---------------------------------------------------------------------------
-# Pacote de suporte (Sobre o WinForge > Pacote de suporte)
+# Pacote de suporte (Sobre o TF-Toolkit > Pacote de suporte)
 # ---------------------------------------------------------------------------
 
-function Copy-WinForgeSharedFile {
+function Copy-TFToolkitSharedFile {
     # Copia um arquivo que outro processo pode estar gravando (o log da janela aberta): lê com o compartilhamento total.
     param ([Parameter(Mandatory)][string]$From, [Parameter(Mandatory)][string]$To)
 
@@ -887,8 +887,8 @@ function Copy-WinForgeSharedFile {
 }
 
 
-function Get-WinForgeSupportInfoText {
-    # As versões, em texto, para quem vai ajudar: WinForge, Windows, PowerShell, .NET, idioma e se abriu como Administrador.
+function Get-TFToolkitSupportInfoText {
+    # As versões, em texto, para quem vai ajudar: TF-Toolkit, Windows, PowerShell, .NET, idioma e se abriu como Administrador.
     $culture = [System.Globalization.CultureInfo]::InvariantCulture
     $lines = New-Object System.Collections.Generic.List[string]
     $windows = ""
@@ -896,69 +896,69 @@ function Get-WinForgeSupportInfoText {
 
     try {
         $current = Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -ErrorAction Stop
-        $windows = "$(Get-WinForgeWindowsName -Caption ([string](Get-WinForgeJsonValue -Object $current -Name 'ProductName' -Default '')) -Build (Get-WinForgeWindowsBuild)) $(Get-WinForgeWindowsDisplayVersion) (build $(Get-WinForgeWindowsBuild).$([string](Get-WinForgeJsonValue -Object $current -Name 'UBR' -Default '')))"
+        $windows = "$(Get-TFToolkitWindowsName -Caption ([string](Get-TFToolkitJsonValue -Object $current -Name 'ProductName' -Default '')) -Build (Get-TFToolkitWindowsBuild)) $(Get-TFToolkitWindowsDisplayVersion) (build $(Get-TFToolkitWindowsBuild).$([string](Get-TFToolkitJsonValue -Object $current -Name 'UBR' -Default '')))"
     }
     catch {
         $windows = "?"
     }
 
-    try { $netRelease = [string](Get-WinForgeRegistryValueOrNull -Path "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" -Name "Release") } catch { $netRelease = "" }
+    try { $netRelease = [string](Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" -Name "Release") } catch { $netRelease = "" }
 
-    $installed = $(try { if (Test-WinForgeInstalledHere) { "yes" } else { "no" } } catch { "?" })
+    $installed = $(try { if (Test-TFToolkitInstalledHere) { "yes" } else { "no" } } catch { "?" })
 
     # Em inglês e sem tradução: é para quem dá suporte, e o arquivo é o mesmo em qualquer idioma da tela.
-    $lines.Add("WinForge Build $(Get-WinForgeBuild)")
+    $lines.Add("TF-Toolkit Build $(Get-TFToolkitBuild)")
     $lines.Add("Created: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', $culture))")
-    $lines.Add("Folder: $(Get-WinForgeAppRoot)")
+    $lines.Add("Folder: $(Get-TFToolkitAppRoot)")
     $lines.Add("Installed (Apps): $installed")
-    $lines.Add("Language: $(Get-WinForgeLanguage) (preference $(Get-WinForgeLanguagePreference); Windows $([System.Globalization.CultureInfo]::CurrentUICulture.Name))")
+    $lines.Add("Language: $(Get-TFToolkitLanguage) (preference $(Get-TFToolkitLanguagePreference); Windows $([System.Globalization.CultureInfo]::CurrentUICulture.Name))")
     $lines.Add("Windows: $windows")
     $lines.Add("64-bit Windows: $([Environment]::Is64BitOperatingSystem); 64-bit process: $([Environment]::Is64BitProcess)")
     $lines.Add("PowerShell: $($PSVersionTable.PSVersion) ($($PSVersionTable.PSEdition))")
     $lines.Add(".NET Framework release: $netRelease")
-    $lines.Add("Administrator: $(Test-WinForgeAdministrator)")
-    $lines.Add("Window: $(Test-WinForgeGuiMode)")
+    $lines.Add("Administrator: $(Test-TFToolkitAdministrator)")
+    $lines.Add("Window: $(Test-TFToolkitGuiMode)")
 
     return ($lines -join "`r`n")
 }
 
 
-function New-WinForgeSupportPackage {
+function New-TFToolkitSupportPackage {
     <#
-    Junta num zip, na pasta Downloads, o que ajuda alguém a entender um problema do WinForge: as versões (info.txt), os
+    Junta num zip, na pasta Downloads, o que ajuda alguém a entender um problema do TF-Toolkit: as versões (info.txt), os
     logs mais recentes e o tempo de abertura, a verificação rápida do PC (check.json), o último relatório, o histórico de
     mudanças e de manutenção e as preferências. Não entram backups (que podem ter senhas de Wi-Fi), cópias de ajustes nem
-    arquivos pessoais. Devolve um WinForge.Result.
+    arquivos pessoais. Devolve um TFToolkit.Result.
     #>
-    $title = (Get-WinForgeText 'Pacote de suporte')
+    $title = (Get-TFToolkitText 'Pacote de suporte')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
     $final = $null
-    $staging = Join-Path ([System.IO.Path]::GetTempPath()) ("WinForge-support-{0}" -f [guid]::NewGuid().ToString("N"))
+    $staging = Join-Path ([System.IO.Path]::GetTempPath()) ("TF-Toolkit-support-{0}" -f [guid]::NewGuid().ToString("N"))
 
     try {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Junta num zip os logs, a verificação rápida do PC, o último relatório e as versões. Não leva backups, senhas nem arquivos pessoais.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Junta num zip os logs, a verificação rápida do PC, o último relatório e as versões. Não leva backups, senhas nem arquivos pessoais.')
         Write-Host ""
 
         # Elevado com a conta de outro Administrador, a pasta Downloads seria a dessa conta.
-        $folder = $(if (Test-WinForgeUserContextMismatch) { Join-Path (Get-WinForgeDataPath) "support" } else { Get-WinForgeDownloadsPath })
+        $folder = $(if (Test-TFToolkitUserContextMismatch) { Join-Path (Get-TFToolkitDataPath) "support" } else { Get-TFToolkitDownloadsPath })
         if (-not (Test-Path -LiteralPath $folder)) { [void](New-Item -ItemType Directory -Path $folder -Force -ErrorAction Stop) }
 
         [void](New-Item -ItemType Directory -Path $staging -Force -ErrorAction Stop)
-        $data = Get-WinForgeDataPath
+        $data = Get-TFToolkitDataPath
         $included = @()
 
-        Write-WinForgeStatus -Type Running -Message (Get-WinForgeText 'Lendo as versões e conferindo o PC...')
-        [System.IO.File]::WriteAllText((Join-Path $staging "info.txt"), (Get-WinForgeSupportInfoText), (New-Object System.Text.UTF8Encoding $true))
-        $included += (Get-WinForgeText 'versões')
+        Write-TFToolkitStatus -Type Running -Message (Get-TFToolkitText 'Lendo as versões e conferindo o PC...')
+        [System.IO.File]::WriteAllText((Join-Path $staging "info.txt"), (Get-TFToolkitSupportInfoText), (New-Object System.Text.UTF8Encoding $true))
+        $included += (Get-TFToolkitText 'versões')
 
         try {
-            [System.IO.File]::WriteAllText((Join-Path $staging "check.json"), (ConvertTo-WinForgeCheckJson -Report (Get-WinForgeCheckReport)), (New-Object System.Text.UTF8Encoding $false))
-            $included += (Get-WinForgeText 'verificação rápida do PC')
+            [System.IO.File]::WriteAllText((Join-Path $staging "check.json"), (ConvertTo-TFToolkitCheckJson -Report (Get-TFToolkitCheckReport)), (New-Object System.Text.UTF8Encoding $false))
+            $included += (Get-TFToolkitText 'verificação rápida do PC')
         }
         catch {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'A verificação rápida do PC ficou de fora: {0}' "$(([string]$_.Exception.Message).TrimEnd('.'))")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'A verificação rápida do PC ficou de fora: {0}' "$(([string]$_.Exception.Message).TrimEnd('.'))")
         }
 
         # Os 10 logs mais recentes, o tempo de abertura e as partes da janela que não puderam ser mostradas.
@@ -966,7 +966,7 @@ function New-WinForgeSupportPackage {
         $logFiles = @()
 
         if (Test-Path -LiteralPath $logs -PathType Container) {
-            $logFiles = @(Get-ChildItem -LiteralPath $logs -Filter "winforge-*.log" -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 10)
+            $logFiles = @(Get-ChildItem -LiteralPath $logs -Filter "tf-toolkit-*.log" -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 10)
             $logFiles += @(Get-ChildItem -LiteralPath $logs -Filter "abertura.log" -File -ErrorAction SilentlyContinue)
             $logFiles += @(Get-ChildItem -LiteralPath $logs -Filter "janela.log" -File -ErrorAction SilentlyContinue)
         }
@@ -975,10 +975,10 @@ function New-WinForgeSupportPackage {
         $copied = 0
 
         foreach ($file in $logFiles) {
-            try { Copy-WinForgeSharedFile -From $file.FullName -To (Join-Path (Join-Path $staging "logs") $file.Name); $copied++ } catch { Write-Verbose "Log: $($_.Exception.Message)" }
+            try { Copy-TFToolkitSharedFile -From $file.FullName -To (Join-Path (Join-Path $staging "logs") $file.Name); $copied++ } catch { Write-Verbose "Log: $($_.Exception.Message)" }
         }
 
-        if ($copied -gt 0) { $included += (Format-WinForgeCount -Count $copied -One (Get-WinForgeText 'log') -Many (Get-WinForgeText 'logs')) }
+        if ($copied -gt 0) { $included += (Format-TFToolkitCount -Count $copied -One (Get-TFToolkitText 'log') -Many (Get-TFToolkitText 'logs')) }
 
         # O último relatório (HTML e texto), se houver.
         $reports = Join-Path $data "reports"
@@ -989,31 +989,31 @@ function New-WinForgeSupportPackage {
             $copied = 0
 
             foreach ($file in $latest) {
-                try { Copy-WinForgeSharedFile -From $file.FullName -To (Join-Path (Join-Path $staging "report") $file.Name); $copied++ } catch { Write-Verbose "Relatório: $($_.Exception.Message)" }
+                try { Copy-TFToolkitSharedFile -From $file.FullName -To (Join-Path (Join-Path $staging "report") $file.Name); $copied++ } catch { Write-Verbose "Relatório: $($_.Exception.Message)" }
             }
 
-            if ($copied -gt 0) { $included += (Get-WinForgeText 'último relatório') }
+            if ($copied -gt 0) { $included += (Get-TFToolkitText 'último relatório') }
         }
 
         # Os históricos (mudanças e manutenções) e as preferências (as da janela e as do monitor), quando existem.
         $state = @{ History = $false; Settings = $false }
 
         foreach ($entry in @(
-                @{ Path = (Get-WinForgeChangeJournalPath); Kind = "History" },
-                @{ Path = (Get-WinForgeMaintenanceHistoryPath); Kind = "History" },
-                @{ Path = (Get-WinForgeSettingsPath); Kind = "Settings" },
+                @{ Path = (Get-TFToolkitChangeJournalPath); Kind = "History" },
+                @{ Path = (Get-TFToolkitMaintenanceHistoryPath); Kind = "History" },
+                @{ Path = (Get-TFToolkitSettingsPath); Kind = "Settings" },
                 @{ Path = (Join-Path $data "agent.json"); Kind = "Settings" }
             )) {
             if (Test-Path -LiteralPath $entry.Path -PathType Leaf) {
-                try { Copy-WinForgeSharedFile -From $entry.Path -To (Join-Path (Join-Path $staging "state") (Split-Path -Leaf $entry.Path)); $state[$entry.Kind] = $true } catch { Write-Verbose "Estado: $($_.Exception.Message)" }
+                try { Copy-TFToolkitSharedFile -From $entry.Path -To (Join-Path (Join-Path $staging "state") (Split-Path -Leaf $entry.Path)); $state[$entry.Kind] = $true } catch { Write-Verbose "Estado: $($_.Exception.Message)" }
             }
         }
 
-        if ($state.History) { $included += (Get-WinForgeText 'históricos') }
-        if ($state.Settings) { $included += (Get-WinForgeText 'preferências') }
+        if ($state.History) { $included += (Get-TFToolkitText 'históricos') }
+        if ($state.Settings) { $included += (Get-TFToolkitText 'preferências') }
 
         $stamp = (Get-Date).ToString("yyyyMMdd-HHmm", [System.Globalization.CultureInfo]::InvariantCulture)
-        $path = Join-Path $folder (Get-WinForgeText 'WinForge-suporte-{0}.zip' "$stamp")
+        $path = Join-Path $folder (Get-TFToolkitText 'TF-Toolkit-suporte-{0}.zip' "$stamp")
 
         if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force -ErrorAction Stop }
 
@@ -1021,27 +1021,27 @@ function New-WinForgeSupportPackage {
         [System.IO.Compression.ZipFile]::CreateFromDirectory($staging, $path)
 
         Write-Host ""
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Pacote de suporte salvo: {0}' "$path")
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Leva') -Value (Join-WinForgeList -Items $included)
-        Write-WinForgeStatus -Type Info -Notice -Message (Get-WinForgeText 'Os logs mostram o nome do PC e caminhos de pastas; confira o zip antes de mandar.')
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Pacote de suporte salvo: {0}' "$path")
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Leva') -Value (Join-TFToolkitList -Items $included)
+        Write-TFToolkitStatus -Type Info -Notice -Message (Get-TFToolkitText 'Os logs mostram o nome do PC e caminhos de pastas; confira o zip antes de mandar.')
 
-        $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'pacote salvo em {0}' "$path") -Title $title) `
-            -Headline (Get-WinForgeText 'Pacote de suporte salvo') -Note (Get-WinForgeText '{0} está em {1}. Mande esse arquivo a quem vai ajudar.' "$(Split-Path -Leaf $path)" "$folder")
+        $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'pacote salvo em {0}' "$path") -Title $title) `
+            -Headline (Get-TFToolkitText 'Pacote de suporte salvo') -Note (Get-TFToolkitText '{0} está em {1}. Mande esse arquivo a quem vai ajudar.' "$(Split-Path -Leaf $path)" "$folder")
 
-        if (Confirm-WinForgeAction -Message (Get-WinForgeText 'Mostrar o arquivo na pasta?') -DefaultKey S -YesLabel (Get-WinForgeText 'Mostrar') -NoLabel (Get-WinForgeText 'Agora não')) {
+        if (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Mostrar o arquivo na pasta?') -DefaultKey S -YesLabel (Get-TFToolkitText 'Mostrar') -NoLabel (Get-TFToolkitText 'Agora não')) {
             try { Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$path`"" -ErrorAction Stop } catch { Write-Verbose "Explorador: $($_.Exception.Message)" }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível criar o pacote de suporte: {0}' "$(([string]$_.Exception.Message).TrimEnd('.'))")
-        $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail ([string]$_.Exception.Message).TrimEnd('.') -Title $title) `
-            -Headline (Get-WinForgeText 'O pacote de suporte não foi criado') -Note (Format-WinForgeReasonNote -Text $_.Exception.Message)
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível criar o pacote de suporte: {0}' "$(([string]$_.Exception.Message).TrimEnd('.'))")
+        $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail ([string]$_.Exception.Message).TrimEnd('.') -Title $title) `
+            -Headline (Get-TFToolkitText 'O pacote de suporte não foi criado') -Note (Format-TFToolkitReasonNote -Text $_.Exception.Message)
     }
     finally {
-        Remove-WinForgeFolder -Path $staging -Quiet
+        Remove-TFToolkitFolder -Path $staging -Quiet
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 

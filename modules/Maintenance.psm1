@@ -2,7 +2,7 @@
 #
 #   1. Preparação          os avisos que importam e a sugestão forte de fechar os programas (com a lista dos abertos)
 #   2. Plano               sempre o inteiro, na ordem da lista abaixo, sem perguntar o que fazer
-#   3. Com você, no começo ponto de restauração, programas, o que abre com o Windows e as pastas pessoais (telas do WinForge);
+#   3. Com você, no começo ponto de restauração, programas, o que abre com o Windows e as pastas pessoais (telas do TF-Toolkit);
 #                          depois dos programas, a lista do winget começa em segundo plano, para a pergunta dela não esperar
 #   4. Perguntas           o que a parte automática precisa saber (numa conexão limitada, se baixa os programas; o que
 #                          atualizar no winget, que restos apagar, a Lixeira)
@@ -13,18 +13,18 @@
 #                          só quando o Windows precisa)
 #
 # Na tela, o mínimo de texto: uma linha por aviso, perguntas curtas; o porquê de cada coisa fica nestes comentários. Na
-# janela, o alto da tela diz a etapa ("Etapa 3 de 20") e, nas perguntas e no encerramento, a parte (Write-WinForgePhase).
+# janela, o alto da tela diz a etapa ("Etapa 3 de 20") e, nas perguntas e no encerramento, a parte (Write-TFToolkitPhase).
 
-# A lista das janelas abertas (Get-WinForgeTopLevelWindows): as que a barra de tarefas mostra, como ela decide (visível,
+# A lista das janelas abertas (Get-TFToolkitTopLevelWindows): as que a barra de tarefas mostra, como ela decide (visível,
 # sem dono, que não é janela de ferramenta) e sem as encobertas pelo Windows (aplicativos suspensos, outras áreas de
 # trabalho virtuais).
-$script:WinForgeOpenWindowsSource = @'
+$script:TFToolkitOpenWindowsSource = @'
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WinForge
+namespace TFToolkit
 {
     public static class OpenWindows
     {
@@ -106,19 +106,19 @@ namespace WinForge
 }
 '@
 
-$script:WinForgeWindowListFailed = $false
-$script:WinForgeWindowNativeFailed = $false
+$script:TFToolkitWindowListFailed = $false
+$script:TFToolkitWindowNativeFailed = $false
 
 
 # ---------------------------------------------------------------------------
 # Plano
 # ---------------------------------------------------------------------------
 
-function New-WinForgePlanItem {
+function New-TFToolkitPlanItem {
     # Uma etapa do Otimizar. Phase: Before (antes da parte automática), Auto ou After (depois dela). -WithYou: a etapa
-    # mostra uma tela do WinForge e espera a pessoa escolher; sem ele, roda sozinha. Title é o nome na tela, no resumo e no
+    # mostra uma tela do TF-Toolkit e espera a pessoa escolher; sem ele, roda sozinha. Title é o nome na tela, no resumo e no
     # histórico. O plano não aparece como lista (o Otimizar é sempre o inteiro): o que cada etapa faz fica no comentário
-    # dela, em Get-WinForgeMaintenancePlanItems.
+    # dela, em Get-TFToolkitMaintenancePlanItems.
     param (
         [string]$Id,
         [ValidateSet("Before", "Auto", "After")]
@@ -136,7 +136,7 @@ function New-WinForgePlanItem {
 }
 
 
-function Get-WinForgeMaintenancePlanItems {
+function Get-TFToolkitMaintenancePlanItems {
     # A ordem desta lista é a ordem de execução. Antes: o ponto de restauração e o que precisa da pessoa (enxugar o PC).
     # Automático: proteger; limpar os componentes e reparar o Windows ANTES do Windows Update (uma atualização instalada
     # deixa o Windows esperando o reinício, e aí o DISM recusa a limpeza e o reparo, 0x800F0806, e o SFC também); atualizar
@@ -153,57 +153,57 @@ function Get-WinForgeMaintenancePlanItems {
     # Lixeira" seria falsa.
     return @(
         # Antes de qualquer mudança, para poder voltar atrás.
-        (New-WinForgePlanItem -Id "restore-point" -Phase Before -Title (Get-WinForgeText 'Criar ponto de restauração')),
+        (New-TFToolkitPlanItem -Id "restore-point" -Phase Before -Title (Get-TFToolkitText 'Criar ponto de restauração')),
         # A lista do winget; a pessoa marca o que não usa.
-        (New-WinForgePlanItem -Id "uninstall" -Phase Before -WithYou -Title (Get-WinForgeText 'Desinstalar programas')),
+        (New-TFToolkitPlanItem -Id "uninstall" -Phase Before -WithYou -Title (Get-TFToolkitText 'Desinstalar programas')),
         # Os que vêm com o PC; a pessoa marca o que remover.
-        (New-WinForgePlanItem -Id "windows-apps" -Phase Before -WithYou -Title (Get-WinForgeText 'Remover aplicativos do Windows')),
+        (New-TFToolkitPlanItem -Id "windows-apps" -Phase Before -WithYou -Title (Get-TFToolkitText 'Remover aplicativos do Windows')),
         # Uma lista só: marcado abre com o Windows.
-        (New-WinForgePlanItem -Id "startup" -Phase Before -WithYou -Title (Get-WinForgeText 'Revisar o que abre com o Windows')),
+        (New-TFToolkitPlanItem -Id "startup" -Phase Before -WithYou -Title (Get-TFToolkitText 'Revisar o que abre com o Windows')),
         # Uma pasta por vez: limpar, abrir no Explorador ou procurar duplicados.
-        (New-WinForgePlanItem -Id "folders" -Phase Before -WithYou -Title (Get-WinForgeText 'Organizar Downloads, Documentos e Imagens')),
+        (New-TFToolkitPlanItem -Id "folders" -Phase Before -WithYou -Title (Get-TFToolkitText 'Organizar Downloads, Documentos e Imagens')),
 
         # Atualiza o antivírus e faz a verificação rápida do Windows Defender.
-        (New-WinForgePlanItem -Id "security" -Phase Auto -Title (Get-WinForgeText 'Verificar vírus')),
+        (New-TFToolkitPlanItem -Id "security" -Phase Auto -Title (Get-TFToolkitText 'Verificar vírus')),
         # Só sem reinício pendente; com ele, fica para a próxima vez.
-        (New-WinForgePlanItem -Id "components" -Phase Auto -Title (Get-WinForgeText 'Limpar componentes do Windows (WinSxS)')),
+        (New-TFToolkitPlanItem -Id "components" -Phase Auto -Title (Get-TFToolkitText 'Limpar componentes do Windows (WinSxS)')),
         # O reparo completo, mesmo sem sinal de dano, antes das atualizações; não mexe nos arquivos da pessoa.
-        (New-WinForgePlanItem -Id "repair" -Phase Auto -Title (Get-WinForgeText 'Reparar o Windows (DISM + SFC)')),
+        (New-TFToolkitPlanItem -Id "repair" -Phase Auto -Title (Get-TFToolkitText 'Reparar o Windows (DISM + SFC)')),
         # As atualizações do Windows; drivers opcionais, prévias e uma versão nova ficam de fora.
-        (New-WinForgePlanItem -Id "windows-update" -Phase Auto -Title (Get-WinForgeText 'Atualizar o Windows')),
+        (New-TFToolkitPlanItem -Id "windows-update" -Phase Auto -Title (Get-TFToolkitText 'Atualizar o Windows')),
         # Procura hardware novo; o Windows instala o driver que já tiver para ele.
-        (New-WinForgePlanItem -Id "drivers" -Phase Auto -Title (Get-WinForgeText 'Detectar dispositivos e drivers')),
+        (New-TFToolkitPlanItem -Id "drivers" -Phase Auto -Title (Get-TFToolkitText 'Detectar dispositivos e drivers')),
         # A pessoa escolhe o que atualizar antes da parte automática.
-        (New-WinForgePlanItem -Id "winget" -Phase Auto -Title (Get-WinForgeText 'Atualizar programas (winget)')),
+        (New-TFToolkitPlanItem -Id "winget" -Phase Auto -Title (Get-TFToolkitText 'Atualizar programas (winget)')),
         # Edge, Chrome e Firefox, os que estiverem instalados.
-        (New-WinForgePlanItem -Id "browsers" -Phase Auto -Title (Get-WinForgeText 'Atualizar os navegadores')),
+        (New-TFToolkitPlanItem -Id "browsers" -Phase Auto -Title (Get-TFToolkitText 'Atualizar os navegadores')),
         # O mesmo pedido do botão Obter atualizações; a Store instala em segundo plano.
-        (New-WinForgePlanItem -Id "store" -Phase Auto -Title (Get-WinForgeText 'Atualizar aplicativos da Microsoft Store')),
+        (New-TFToolkitPlanItem -Id "store" -Phase Auto -Title (Get-TFToolkitText 'Atualizar aplicativos da Microsoft Store')),
         # Temporários do usuário e do Windows; a Lixeira, só se a pessoa confirmar.
-        (New-WinForgePlanItem -Id "cleanup" -Phase Auto -Title (Get-WinForgeText 'Limpeza rápida')),
+        (New-TFToolkitPlanItem -Id "cleanup" -Phase Auto -Title (Get-TFToolkitText 'Limpeza rápida')),
         # Vão para a Lixeira; os de pastas do OneDrive ficam.
-        (New-WinForgePlanItem -Id "shortcuts" -Phase Auto -Title (Get-WinForgeText 'Remover atalhos quebrados')),
-        # Pastas de programas desinstalados pelo WinForge; a pessoa escolhe antes da parte automática.
-        (New-WinForgePlanItem -Id "leftovers" -Phase Auto -Title (Get-WinForgeText 'Restos de programas desinstalados')),
+        (New-TFToolkitPlanItem -Id "shortcuts" -Phase Auto -Title (Get-TFToolkitText 'Remover atalhos quebrados')),
+        # Pastas de programas desinstalados pelo TF-Toolkit; a pessoa escolhe antes da parte automática.
+        (New-TFToolkitPlanItem -Id "leftovers" -Phase Auto -Title (Get-TFToolkitText 'Restos de programas desinstalados')),
         # Limpa o DNS; refaz as configurações de rede só se a internet estiver falhando.
-        (New-WinForgePlanItem -Id "network" -Phase Auto -Title (Get-WinForgeText 'Reparar rede e DNS')),
+        (New-TFToolkitPlanItem -Id "network" -Phase Auto -Title (Get-TFToolkitText 'Reparar rede e DNS')),
         # Confere o disco com o Windows aberto; se precisar de reparo ao reiniciar, o Otimizar pergunta no fim.
-        (New-WinForgePlanItem -Id "chkdsk" -Phase Auto -Title (Get-WinForgeText 'Verificar o sistema de arquivos (CHKDSK)')),
+        (New-TFToolkitPlanItem -Id "chkdsk" -Phase Auto -Title (Get-TFToolkitText 'Verificar o sistema de arquivos (CHKDSK)')),
         # Deixa o disco em ordem (TRIM no SSD, desfragmentação no HD).
-        (New-WinForgePlanItem -Id "optimize" -Phase Auto -Title (Get-WinForgeText 'Otimizar a unidade do sistema')),
+        (New-TFToolkitPlanItem -Id "optimize" -Phase Auto -Title (Get-TFToolkitText 'Otimizar a unidade do sistema')),
 
         # Cada ajuste vem marcado se já está em uso; a pessoa marca o que aplicar.
-        (New-WinForgePlanItem -Id "tweaks" -Phase After -WithYou -Title (Get-WinForgeText 'Revisar os ajustes do Windows'))
+        (New-TFToolkitPlanItem -Id "tweaks" -Phase After -WithYou -Title (Get-TFToolkitText 'Revisar os ajustes do Windows'))
     )
 }
 
 
-function Get-WinForgeMaintenanceProfileLabel {
+function Get-TFToolkitMaintenanceProfileLabel {
     # O nome do jeito como uma manutenção do histórico rodou: as da 3.50 e anteriores tinham perfil (Rápida, Completa,
     # Profunda); o Otimizar é um só. "" para um Id que esta versão não conhece.
     param ([AllowEmptyString()][string]$Id)
 
-    $labels = @{ quick = (Get-WinForgeText 'Rápida'); full = (Get-WinForgeText 'Completa'); deep = (Get-WinForgeText 'Profunda'); optimize = (Get-WinForgeText 'Otimizar') }
+    $labels = @{ quick = (Get-TFToolkitText 'Rápida'); full = (Get-TFToolkitText 'Completa'); deep = (Get-TFToolkitText 'Profunda'); optimize = (Get-TFToolkitText 'Otimizar') }
 
     if ([string]::IsNullOrWhiteSpace($Id) -or -not $labels.ContainsKey($Id)) { return "" }
 
@@ -215,7 +215,7 @@ function Get-WinForgeMaintenanceProfileLabel {
 # Fase 1: preparação
 # ---------------------------------------------------------------------------
 
-function Test-WinForgeWindowCloaked {
+function Test-TFToolkitWindowCloaked {
     <#
     Se a janela está "encoberta" (cloaked) pelo Windows: os aplicativos da Store pré-carregados ou suspensos e as janelas
     de outras áreas de trabalho virtuais têm janela e título, mas a pessoa não as vê nem tem o que fechar. Sem poder
@@ -224,11 +224,11 @@ function Test-WinForgeWindowCloaked {
     param ([IntPtr]$Handle)
 
     # A ponte que já falhou uma vez (fora do Windows, por exemplo) não é compilada de novo a cada processo da lista.
-    if ($script:WinForgeWindowNativeFailed) { return $false }
+    if ($script:TFToolkitWindowNativeFailed) { return $false }
 
     try {
-        if (-not ("WinForge.WindowNative" -as [type])) {
-            Add-Type -Namespace WinForge -Name WindowNative -MemberDefinition @'
+        if (-not ("TFToolkit.WindowNative" -as [type])) {
+            Add-Type -namespace TFToolkit -Name WindowNative -MemberDefinition @'
 [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
 public static extern int DwmGetWindowAttribute(System.IntPtr hwnd, int attribute, out int value, int size);
 [System.Runtime.InteropServices.DllImport("user32.dll")]
@@ -236,14 +236,14 @@ public static extern bool IsWindowVisible(System.IntPtr hwnd);
 '@ -ErrorAction Stop
         }
 
-        if (-not [WinForge.WindowNative]::IsWindowVisible($Handle)) { return $true }
+        if (-not [TFToolkit.WindowNative]::IsWindowVisible($Handle)) { return $true }
 
         $cloaked = 0
         # DWMWA_CLOAKED = 14
-        if ([WinForge.WindowNative]::DwmGetWindowAttribute($Handle, 14, [ref]$cloaked, 4) -eq 0 -and $cloaked -ne 0) { return $true }
+        if ([TFToolkit.WindowNative]::DwmGetWindowAttribute($Handle, 14, [ref]$cloaked, 4) -eq 0 -and $cloaked -ne 0) { return $true }
     }
     catch {
-        $script:WinForgeWindowNativeFailed = $true
+        $script:TFToolkitWindowNativeFailed = $true
         return $false
     }
 
@@ -251,7 +251,7 @@ public static extern bool IsWindowVisible(System.IntPtr hwnd);
 }
 
 
-function Get-WinForgeTopLevelWindows {
+function Get-TFToolkitTopLevelWindows {
     <#
     As janelas que a barra de tarefas mostra (visíveis, sem dono, que não são janelas de ferramenta nem estão encobertas),
     com o processo e o título, numa passada só pelo Windows (EnumWindows): os aplicativos da Store, que aparecem pela
@@ -259,23 +259,23 @@ function Get-WinForgeTopLevelWindows {
     compila ou a chamada falha): quem chama usa o caminho do Get-Process. A falha fica guardada, para não ser tentada de
     novo a cada conferência.
     #>
-    if ($script:WinForgeWindowListFailed) { return $null }
+    if ($script:TFToolkitWindowListFailed) { return $null }
 
     try {
-        if (-not ("WinForge.OpenWindows" -as [type])) {
-            Add-Type -TypeDefinition $script:WinForgeOpenWindowsSource -ErrorAction Stop
+        if (-not ("TFToolkit.OpenWindows" -as [type])) {
+            Add-Type -TypeDefinition $script:TFToolkitOpenWindowsSource -ErrorAction Stop
         }
 
-        return , @([WinForge.OpenWindows]::List())
+        return , @([TFToolkit.OpenWindows]::List())
     }
     catch {
-        $script:WinForgeWindowListFailed = $true
+        $script:TFToolkitWindowListFailed = $true
         return $null
     }
 }
 
 
-function Get-WinForgeFrameAppName {
+function Get-TFToolkitFrameAppName {
     # O nome de um aplicativo da Store pelo título da janela que o ApplicationFrameHost desenha: "Calculadora", ou o fim de
     # "IMG_0042.jpg - Fotos". "" para as partes do Windows que usam a mesma moldura (as Configurações).
     param ([AllowEmptyString()][string]$Title)
@@ -293,9 +293,9 @@ function Get-WinForgeFrameAppName {
 }
 
 
-function Get-WinForgeOwnProcessIds {
+function Get-TFToolkitOwnProcessIds {
     <#
-    O próprio WinForge e a cadeia de quem o abriu (o PowerShell, o cmd). Um pai só conta se foi criado antes do filho: o
+    O próprio TF-Toolkit e a cadeia de quem o abriu (o PowerShell, o cmd). Um pai só conta se foi criado antes do filho: o
     número de um processo que já fechou (o PowerShell que pediu o Administrador e saiu) pode ter sido reaproveitado por
     um programa de verdade, que não pode sumir da lista.
     #>
@@ -314,12 +314,12 @@ function Get-WinForgeOwnProcessIds {
 
         if ($null -eq $row) { break }
 
-        $start = Get-WinForgeJsonValue -Object $row -Name "CreationDate" -Default $null
+        $start = Get-TFToolkitJsonValue -Object $row -Name "CreationDate" -Default $null
         if ($null -ne $childStart -and $null -ne $start -and [datetime]$start -gt [datetime]$childStart) { break }
         if (-not $own.Add($id)) { break }
 
         $childStart = $start
-        $id = [int](Get-WinForgeJsonValue -Object $row -Name "ParentProcessId" -Default 0)
+        $id = [int](Get-TFToolkitJsonValue -Object $row -Name "ParentProcessId" -Default 0)
     }
 
     [void]$own.Add([int]$PID)
@@ -327,12 +327,12 @@ function Get-WinForgeOwnProcessIds {
 }
 
 
-function Get-WinForgeOpenPrograms {
+function Get-TFToolkitOpenPrograms {
     <#
     Os programas com janela aberta na sessão de quem usa o PC, pelo nome que o Windows mostra (a descrição do arquivo,
     como "Google Chrome"; sem ela, o nome do processo), sem repetir e em ordem alfabética. Ficam de fora o próprio
-    WinForge e quem o abriu, os terminais (no Windows 11, o Terminal que mostra o WinForge não é pai dele: fechá-lo
-    fecharia o WinForge), as janelas encobertas (aplicativos da Store suspensos) e as partes do Windows e de drivers que
+    TF-Toolkit e quem o abriu, os terminais (no Windows 11, o Terminal que mostra o TF-Toolkit não é pai dele: fechá-lo
+    fecharia o TF-Toolkit), as janelas encobertas (aplicativos da Store suspensos) e as partes do Windows e de drivers que
     sempre têm janela (Explorador, Iniciar, busca, teclado virtual, Configurações, Gerenciador de Tarefas, a sobreposição
     da NVIDIA). Sem poder ler os processos, devolve uma lista vazia.
     #>
@@ -340,7 +340,7 @@ function Get-WinForgeOpenPrograms {
         "SearchApp", "SearchUI", "LockApp", "SystemSettings", "Taskmgr", "dwm", "ctfmon", "WidgetBoard", "Widgets", "PhoneExperienceHost",
         "WindowsTerminal", "OpenConsole", "conhost", "NVIDIA Overlay", "nvcontainer", "NVIDIA Share")
 
-    $own = Get-WinForgeOwnProcessIds
+    $own = Get-TFToolkitOwnProcessIds
 
     try {
         $session = [int](Get-Process -Id $PID -ErrorAction Stop).SessionId
@@ -361,9 +361,9 @@ function Get-WinForgeOpenPrograms {
         return $text.Trim()
     }
 
-    # O caminho principal: as janelas da barra de tarefas, numa passada só. Os filtros baratos (sessão, o próprio WinForge,
+    # O caminho principal: as janelas da barra de tarefas, numa passada só. Os filtros baratos (sessão, o próprio TF-Toolkit,
     # as partes do Windows) vêm antes de ler a descrição do arquivo.
-    $windows = Get-WinForgeTopLevelWindows
+    $windows = Get-TFToolkitTopLevelWindows
 
     if ($null -ne $windows) {
         $byId = @{}
@@ -378,7 +378,7 @@ function Get-WinForgeOpenPrograms {
 
                 $processName = [string]$process.ProcessName
 
-                if ($processName -eq "ApplicationFrameHost") { $name = Get-WinForgeFrameAppName -Title ([string]$window.Title) }
+                if ($processName -eq "ApplicationFrameHost") { $name = Get-TFToolkitFrameAppName -Title ([string]$window.Title) }
                 elseif ($shell -contains $processName) { continue }
                 else { $name = & $displayName $process }
 
@@ -398,7 +398,7 @@ function Get-WinForgeOpenPrograms {
             if ([int]$process.SessionId -ne $session -or $own.Contains([int]$process.Id)) { continue }
             if ($shell -contains [string]$process.ProcessName) { continue }
             if ($process.MainWindowHandle -eq [IntPtr]::Zero -or [string]::IsNullOrWhiteSpace([string]$process.MainWindowTitle)) { continue }
-            if (Test-WinForgeWindowCloaked -Handle $process.MainWindowHandle) { continue }
+            if (Test-TFToolkitWindowCloaked -Handle $process.MainWindowHandle) { continue }
 
             $name = & $displayName $process
 
@@ -413,52 +413,52 @@ function Get-WinForgeOpenPrograms {
 }
 
 
-function Format-WinForgeOpenPrograms {
+function Format-TFToolkitOpenPrograms {
     # "Google Chrome, Microsoft Word e Spotify"; com mais de seis, os seis primeiros e "e mais N".
     param ([string[]]$Names)
 
     $list = @($Names | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
-    if ($list.Count -le 6) { return (Join-WinForgeList -Items $list) }
+    if ($list.Count -le 6) { return (Join-TFToolkitList -Items $list) }
 
-    return (Get-WinForgeText '{0} e mais {1}' "$(@($list[0..5]) -join ', ')" "$($list.Count - 6)")
+    return (Get-TFToolkitText '{0} e mais {1}' "$(@($list[0..5]) -join ', ')" "$($list.Count - 6)")
 }
 
 
-function Confirm-WinForgeProgramsClosed {
+function Confirm-TFToolkitProgramsClosed {
     # A sugestão forte de fechar tudo antes de começar: o Otimizar atualiza e repara o Windows, e um programa aberto
     # atrapalha (arquivo em uso, atualização que não instala) e pode perder o que não foi salvo no reinício do fim. A
     # lista do que está aberto deixa a pergunta concreta (numa linha só com o aviso); começar com algo ainda aberto pede
     # uma segunda resposta.
-    $open = @(Get-WinForgeOpenPrograms)
+    $open = @(Get-TFToolkitOpenPrograms)
 
     if ($open.Count -gt 0) {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Salve seu trabalho e feche os programas abertos: {0}.' "$(Format-WinForgeOpenPrograms -Names $open)")
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Salve seu trabalho e feche os programas abertos: {0}.' "$(Format-TFToolkitOpenPrograms -Names $open)")
     }
     else {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Salve seu trabalho e feche todos os programas antes de otimizar.')
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Salve seu trabalho e feche todos os programas antes de otimizar.')
     }
 
     # Uma entrada que terminou (Ctrl+Z, entrada redirecionada) faz a pergunta desistir: conta como cancelar, sem derrubar
     # o Otimizar. Por isso o "começar" só é a resposta do Enter na janela, onde a entrada não termina: lá, o Enter faz o
     # mesmo que o botão em destaque.
     try {
-        $answer = Read-WinForgeChoice -Message (Get-WinForgeText 'Fechou todos os programas?') -ShowMenu -DefaultKey $(if (Test-WinForgeGuiMode) { "S" } else { "" }) -TextPrompt (Get-WinForgeText 'Opção (S = já fechei, começar; X = cancelar)') -Options @(
-            @{ Key = "S"; Label = (Get-WinForgeText 'Já fechei, começar'); Accent = $true },
-            @{ Key = "X"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+        $answer = Read-TFToolkitChoice -Message (Get-TFToolkitText 'Fechou todos os programas?') -ShowMenu -DefaultKey $(if (Test-TFToolkitGuiMode) { "S" } else { "" }) -TextPrompt (Get-TFToolkitText 'Opção (S = já fechei, começar; X = cancelar)') -Options @(
+            @{ Key = "S"; Label = (Get-TFToolkitText 'Já fechei, começar'); Accent = $true },
+            @{ Key = "X"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
         )
 
         while ($answer -ieq "S" -or $answer -ieq "V") {
-            $open = @(Get-WinForgeOpenPrograms)
+            $open = @(Get-TFToolkitOpenPrograms)
 
             if ($open.Count -eq 0) { return $true }
 
-            Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Ainda abertos: {0}.' "$(Format-WinForgeOpenPrograms -Names $open)")
+            Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Ainda abertos: {0}.' "$(Format-TFToolkitOpenPrograms -Names $open)")
 
-            $answer = Read-WinForgeChoice -Message (Get-WinForgeText 'Fechar esses programas antes?') -ShowMenu -TextPrompt (Get-WinForgeText 'Opção (V = verificar de novo, C = começar assim mesmo, X = cancelar)') -Options @(
-                @{ Key = "V"; Label = (Get-WinForgeText 'Já fechei, verificar de novo'); Accent = $true },
-                @{ Key = "C"; Label = (Get-WinForgeText 'Começar assim mesmo') },
-                @{ Key = "X"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+            $answer = Read-TFToolkitChoice -Message (Get-TFToolkitText 'Fechar esses programas antes?') -ShowMenu -TextPrompt (Get-TFToolkitText 'Opção (V = verificar de novo, C = começar assim mesmo, X = cancelar)') -Options @(
+                @{ Key = "V"; Label = (Get-TFToolkitText 'Já fechei, verificar de novo'); Accent = $true },
+                @{ Key = "C"; Label = (Get-TFToolkitText 'Começar assim mesmo') },
+                @{ Key = "X"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
             )
 
             if ($answer -ieq "C") { return $true }
@@ -472,25 +472,25 @@ function Confirm-WinForgeProgramsClosed {
 }
 
 
-function Confirm-WinForgeMaintenancePreflight {
+function Confirm-TFToolkitMaintenancePreflight {
     # O que pode atrapalhar, em uma linha cada: outra conta, reinício pendente, bateria, pouco espaço e, por último, os
     # programas abertos. Devolve verdadeiro para começar, falso para cancelar ou "Restarting".
-    $session = Get-WinForgeSessionInfo
+    $session = Get-TFToolkitSessionInfo
 
     if ($session.UserMismatch) {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'O WinForge foi aberto com a senha de outra conta: pastas, inicialização e ajustes vão valer para aquela conta.')
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'O TF-Toolkit foi aberto com a senha de outra conta: pastas, inicialização e ajustes vão valer para aquela conta.')
 
-        if (-not (Confirm-WinForgeAction (Get-WinForgeText 'Continuar mesmo assim?') -DefaultKey N -YesLabel (Get-WinForgeText 'Continuar') -NoLabel (Get-WinForgeText 'Cancelar'))) {
+        if (-not (Confirm-TFToolkitAction (Get-TFToolkitText 'Continuar mesmo assim?') -DefaultKey N -YesLabel (Get-TFToolkitText 'Continuar') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
             return $false
         }
     }
 
-    if (Test-WinForgePendingReboot) {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'O Windows está esperando um reinício.')
+    if (Test-TFToolkitPendingReboot) {
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'O Windows está esperando um reinício.')
 
-        $answer = Read-WinForgePendingRebootChoice -Question (Get-WinForgeText 'Reiniciar antes de otimizar?') -Then (Get-WinForgeText 'Depois, clique em Otimizar de novo') `
-            -Reason (Get-WinForgeText 'Depois de reiniciar, clique em Otimizar de novo.') -Comment (Get-WinForgeText 'Reinicialização solicitada pelo WinForge antes do Otimizar.') `
-            -DeclinedMessage (Get-WinForgeText 'O PC não foi reiniciado; o Otimizar não começou.')
+        $answer = Read-TFToolkitPendingRebootChoice -Question (Get-TFToolkitText 'Reiniciar antes de otimizar?') -Then (Get-TFToolkitText 'Depois, clique em Otimizar de novo') `
+            -Reason (Get-TFToolkitText 'Depois de reiniciar, clique em Otimizar de novo.') -Comment (Get-TFToolkitText 'Reinicialização solicitada pelo TF-Toolkit antes do Otimizar.') `
+            -DeclinedMessage (Get-TFToolkitText 'O PC não foi reiniciado; o Otimizar não começou.')
 
         if ($answer -eq "Restarting") {
             return "Restarting"
@@ -501,21 +501,21 @@ function Confirm-WinForgeMaintenancePreflight {
         }
     }
 
-    if (Test-WinForgeOnBattery) {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Ligue o carregador: o Otimizar pode levar mais de uma hora.')
+    if (Test-TFToolkitOnBattery) {
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Ligue o carregador: o Otimizar pode levar mais de uma hora.')
 
-        if (-not (Confirm-WinForgeAction (Get-WinForgeText 'Continuar na bateria?') -DefaultKey N -YesLabel (Get-WinForgeText 'Continuar') -NoLabel (Get-WinForgeText 'Cancelar'))) {
+        if (-not (Confirm-TFToolkitAction (Get-TFToolkitText 'Continuar na bateria?') -DefaultKey N -YesLabel (Get-TFToolkitText 'Continuar') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
             return $false
         }
     }
 
-    $freeBytes = Get-WinForgeSystemDriveFreeBytes
+    $freeBytes = Get-TFToolkitSystemDriveFreeBytes
 
-    if ((Get-WinForgeDiskSpaceLevel -FreeBytes $freeBytes) -eq "Critical") {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Pouco espaço livre no disco do Windows ({0}): as atualizações podem falhar.' "$(Format-WinForgeBytes -Bytes $freeBytes)")
+    if ((Get-TFToolkitDiskSpaceLevel -FreeBytes $freeBytes) -eq "Critical") {
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Pouco espaço livre no disco do Windows ({0}): as atualizações podem falhar.' "$(Format-TFToolkitBytes -Bytes $freeBytes)")
     }
 
-    return (Confirm-WinForgeProgramsClosed)
+    return (Confirm-TFToolkitProgramsClosed)
 }
 
 
@@ -523,54 +523,54 @@ function Confirm-WinForgeMaintenancePreflight {
 # Fase 4: as perguntas da parte automática
 # ---------------------------------------------------------------------------
 
-function New-WinForgeMaintenanceDetails {
-    # As respostas que a parte automática usa, ainda sem nenhuma (Read-WinForgeMaintenanceDetails as preenche): o que
+function New-TFToolkitMaintenanceDetails {
+    # As respostas que a parte automática usa, ainda sem nenhuma (Read-TFToolkitMaintenanceDetails as preenche): o que
     # atualizar no winget, se a Lixeira é esvaziada, os restos escolhidos (e o resultado da busca deles) e se as etapas
     # que baixam programas ficam para depois (numa conexão limitada).
     return [PSCustomObject]@{ WingetPlan = $null; EmptyRecycleBin = $false; Leftovers = @(); LeftoversResult = $null; SkipDownloads = $false }
 }
 
 
-function Read-WinForgeMaintenanceDetails {
+function Read-TFToolkitMaintenanceDetails {
     # Tudo o que as etapas automáticas precisam saber, perguntado de uma vez, para a parte demorada rodar sem ninguém por
     # perto: numa conexão limitada, se baixa os programas; o que atualizar no winget, que restos de programas mandar para
     # a Lixeira e se a Lixeira é esvaziada.
     param (
         [string[]]$AutoIds,
 
-        # A consulta do winget já começada em segundo plano (Start-WinForgeWingetUpgradeRead), enquanto a pessoa estava
+        # A consulta do winget já começada em segundo plano (Start-TFToolkitWingetUpgradeRead), enquanto a pessoa estava
         # nas telas do começo: a lista chega sem espera, com o prazo da consulta. Sem ela, a consulta roda aqui.
         $WingetRead = $null
     )
 
-    $details = New-WinForgeMaintenanceDetails
+    $details = New-TFToolkitMaintenanceDetails
 
     # Numa conexão limitada (plano de dados), o Windows baixa só as atualizações prioritárias e pode pausar as da
     # Microsoft Store: baixar os programas, os navegadores e os aplicativos da Store é decisão da pessoa, com Deixar para
-    # depois como padrão. O Windows Update segue, na etapa dele, a regra do próprio Windows (Install-WinForgePendingUpdates).
-    if (@($AutoIds | Where-Object { $_ -in @("winget", "browsers", "store") }).Count -gt 0 -and (Test-WinForgeMeteredConnection)) {
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'A conexão com a internet está marcada como limitada (plano de dados): {0} pode consumir a sua franquia.' "$(Get-WinForgeText 'atualizar os programas, os navegadores e os aplicativos da Store')")
-        $details.SkipDownloads = -not [bool](Confirm-WinForgeAction (Get-WinForgeText 'Atualizar os programas mesmo assim?') -DefaultKey N -YesLabel (Get-WinForgeText 'Atualizar mesmo assim') -NoLabel (Get-WinForgeText 'Deixar para depois'))
+    # depois como padrão. O Windows Update segue, na etapa dele, a regra do próprio Windows (Install-TFToolkitPendingUpdates).
+    if (@($AutoIds | Where-Object { $_ -in @("winget", "browsers", "store") }).Count -gt 0 -and (Test-TFToolkitMeteredConnection)) {
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'A conexão com a internet está marcada como limitada (plano de dados): {0} pode consumir a sua franquia.' "$(Get-TFToolkitText 'atualizar os programas, os navegadores e os aplicativos da Store')")
+        $details.SkipDownloads = -not [bool](Confirm-TFToolkitAction (Get-TFToolkitText 'Atualizar os programas mesmo assim?') -DefaultKey N -YesLabel (Get-TFToolkitText 'Atualizar mesmo assim') -NoLabel (Get-TFToolkitText 'Deixar para depois'))
     }
 
     if ($AutoIds -contains "winget" -and -not $details.SkipDownloads) {
-        if (-not (Test-WinForgeWinget)) {
+        if (-not (Test-TFToolkitWinget)) {
             # Sem o winget, o começo do Otimizar já ofereceu o reparo e disse que as etapas dele ficam de fora: a etapa
             # diz isso de novo na vez dela, sem repetir aqui a falta dele.
             $details.WingetPlan = [PSCustomObject]@{ Action = "Unavailable"; Ids = @(); Packages = @() }
         }
         else {
-            Write-WinForgeSection -Title (Get-WinForgeText 'Atualizar programas (winget)')
+            Write-TFToolkitSection -Title (Get-TFToolkitText 'Atualizar programas (winget)')
 
             # Edge, Chrome e Firefox ficam com a etapa dos navegadores, pelo atualizador de cada um: na lista do winget,
             # um "Não atualizar" ou um Firefox desmarcado seria desfeito por ela, e "Atualizar todos" os atualizaria duas
             # vezes.
             try {
-                $details.WingetPlan = Get-WinForgeWingetUpgradePlan -SkipBrowsers -Read $WingetRead
+                $details.WingetPlan = Get-TFToolkitWingetUpgradePlan -SkipBrowsers -Read $WingetRead
             }
             catch {
                 $why = ([string]$_.Exception.Message).Trim().TrimEnd('.')
-                Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível consultar o winget: {0}.' "$why")
+                Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível consultar o winget: {0}.' "$why")
                 $details.WingetPlan = [PSCustomObject]@{ Action = "Error"; Detail = $why; Ids = @(); Packages = @() }
             }
         }
@@ -578,16 +578,16 @@ function Read-WinForgeMaintenanceDetails {
 
     # Os restos são procurados agora, depois das desinstalações do começo: os programas que acabaram de sair entram.
     if ($AutoIds -contains "leftovers") {
-        Write-WinForgeSection -Title (Get-WinForgeText 'Restos de programas desinstalados')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Restos de programas desinstalados')
 
         try {
-            $selection = Select-WinForgeProgramLeftovers
+            $selection = Select-TFToolkitProgramLeftovers
             $details.Leftovers = @($selection.Chosen)
             $details.LeftoversResult = $selection.Result
         }
         catch {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível procurar os restos: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-            $details.LeftoversResult = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.')
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível procurar os restos: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+            $details.LeftoversResult = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.')
         }
     }
 
@@ -595,15 +595,15 @@ function Read-WinForgeMaintenanceDetails {
     # que há nela à vista, e não um efeito da limpeza automática.
     if ($AutoIds -contains "cleanup") {
         $bin = $null
-        try { $bin = Get-WinForgeRecycleBinContents } catch { $bin = $null }
+        try { $bin = Get-TFToolkitRecycleBinContents } catch { $bin = $null }
 
         if ($null -eq $bin -or [int]$bin.Count -gt 0) {
-            Write-WinForgeSection -Title (Get-WinForgeText 'Lixeira')
+            Write-TFToolkitSection -Title (Get-TFToolkitText 'Lixeira')
 
-            if ($null -ne $bin) { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Na Lixeira') -Value (Format-WinForgeRecycleBinText -Contents $bin) }
+            if ($null -ne $bin) { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Na Lixeira') -Value (Format-TFToolkitRecycleBinText -Contents $bin) }
 
             # Na janela, os botões dizem o que fazem; "Manter" é a saída segura e a resposta do Enter.
-            $details.EmptyRecycleBin = [bool](Confirm-WinForgeAction (Get-WinForgeText 'Esvaziar a Lixeira? O que está nela é apagado de vez.') -DefaultKey N -YesLabel (Get-WinForgeText 'Esvaziar') -NoLabel (Get-WinForgeText 'Manter'))
+            $details.EmptyRecycleBin = [bool](Confirm-TFToolkitAction (Get-TFToolkitText 'Esvaziar a Lixeira? O que está nela é apagado de vez.') -DefaultKey N -YesLabel (Get-TFToolkitText 'Esvaziar') -NoLabel (Get-TFToolkitText 'Manter'))
         }
     }
 
@@ -611,18 +611,18 @@ function Read-WinForgeMaintenanceDetails {
 }
 
 
-function Confirm-WinForgeAutomaticPhase {
+function Confirm-TFToolkitAutomaticPhase {
     # O último clique antes da parte demorada: ela roda sem perguntas, e a pessoa pode sair de perto até a revisão dos
     # ajustes, no fim.
     Write-Host ""
-    Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'A parte automática segue sozinha e pode levar mais de uma hora. No fim, falta revisar os ajustes.')
+    Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'A parte automática segue sozinha e pode levar mais de uma hora. No fim, falta revisar os ajustes.')
 
     # Uma entrada que terminou (Ctrl+Z, entrada redirecionada) conta como "não": as telas com você já mudaram o PC, e o
     # resumo e o fim do Otimizar ainda têm de aparecer. Na janela, o Enter faz o mesmo que o botão em destaque.
     try {
-        $start = Read-WinForgeChoice -Message (Get-WinForgeText 'Começar a parte automática?') -ShowMenu -DefaultKey $(if (Test-WinForgeGuiMode) { "S" } else { "" }) -TextPrompt (Get-WinForgeText 'Opção (S = começar, X = cancelar)') -Options @(
-            @{ Key = "S"; Label = (Get-WinForgeText 'Começar'); Accent = $true },
-            @{ Key = "X"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+        $start = Read-TFToolkitChoice -Message (Get-TFToolkitText 'Começar a parte automática?') -ShowMenu -DefaultKey $(if (Test-TFToolkitGuiMode) { "S" } else { "" }) -TextPrompt (Get-TFToolkitText 'Opção (S = começar, X = cancelar)') -Options @(
+            @{ Key = "S"; Label = (Get-TFToolkitText 'Começar'); Accent = $true },
+            @{ Key = "X"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
         )
     }
     catch {
@@ -637,88 +637,88 @@ function Confirm-WinForgeAutomaticPhase {
 # As etapas
 # ---------------------------------------------------------------------------
 
-function ConvertTo-WinForgeStepResult {
+function ConvertTo-TFToolkitStepResult {
     # O resultado de uma tela com você no resumo do Otimizar: desistir da lista ("cancelado pelo usuário") não é uma
     # operação cancelada, é escolher não mudar nada naquela etapa.
     param ([Parameter(Mandatory)]$Result)
 
-    if ([string]$Result.Kind -eq "Skipped" -and (Test-WinForgeCanceledText -Text ([string](Get-WinForgeJsonValue -Object $Result -Name "Detail" -Default "")))) {
-        return (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'nada mudou') -Data $Result.Data)
+    if ([string]$Result.Kind -eq "Skipped" -and (Test-TFToolkitCanceledText -Text ([string](Get-TFToolkitJsonValue -Object $Result -Name "Detail" -Default "")))) {
+        return (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'nada mudou') -Data $Result.Data)
     }
 
     return $Result
 }
 
 
-function Invoke-WinForgeMaintenanceShortcuts {
+function Invoke-TFToolkitMaintenanceShortcuts {
     # A etapa dos atalhos quebrados: a mesma correção de Verificar o PC (para a Lixeira, anotada no Histórico de
     # mudanças). Os de pastas do OneDrive ficam de fora: o atalho apagado aqui some também dos outros PCs da pessoa.
-    $title = (Get-WinForgeText 'Remover atalhos quebrados')
+    $title = (Get-TFToolkitText 'Remover atalhos quebrados')
 
-    Write-Progress -Activity $title -Status (Get-WinForgeText 'conferindo os atalhos')
+    Write-Progress -Activity $title -Status (Get-TFToolkitText 'conferindo os atalhos')
 
-    try { $broken = @(Find-WinForgeBrokenShortcuts | Where-Object { -not [bool](Get-WinForgeJsonValue -Object $_ -Name "Synced" -Default $false) }) }
+    try { $broken = @(Find-TFToolkitBrokenShortcuts | Where-Object { -not [bool](Get-TFToolkitJsonValue -Object $_ -Name "Synced" -Default $false) }) }
     finally { Write-Progress -Activity $title -Completed }
 
     if ($broken.Count -eq 0) {
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum atalho quebrado.')
-        return (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum atalho quebrado'))
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum atalho quebrado.')
+        return (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum atalho quebrado'))
     }
 
     foreach ($shortcut in $broken) {
-        Write-WinForgeKeyValue -Label $shortcut.Name -Value (Get-WinForgeText 'aponta para {0}, que não existe mais' "$($shortcut.Target)")
+        Write-TFToolkitKeyValue -Label $shortcut.Name -Value (Get-TFToolkitText 'aponta para {0}, que não existe mais' "$($shortcut.Target)")
     }
 
-    $finding = New-WinForgeCheckupFinding -Id "shortcuts" -Label (Get-WinForgeText 'Atalhos') -Value (Format-WinForgeCount -Count $broken.Count -One (Get-WinForgeText 'atalho quebrado') -Many (Get-WinForgeText 'atalhos quebrados')) -Fix "shortcuts" -FixLabel $title -Data $broken
-    $result = Invoke-WinForgeCheckupFix -Finding $finding
+    $finding = New-TFToolkitCheckupFinding -Id "shortcuts" -Label (Get-TFToolkitText 'Atalhos') -Value (Format-TFToolkitCount -Count $broken.Count -One (Get-TFToolkitText 'atalho quebrado') -Many (Get-TFToolkitText 'atalhos quebrados')) -Fix "shortcuts" -FixLabel $title -Data $broken
+    $result = Invoke-TFToolkitCheckupFix -Finding $finding
     $detail = [string]$result.Detail
 
-    if ($result.Kind -eq "Ok" -and $detail) { Write-WinForgeStatus -Type Success -Message "$($detail.Substring(0, 1).ToUpper())$($detail.Substring(1))." }
+    if ($result.Kind -eq "Ok" -and $detail) { Write-TFToolkitStatus -Type Success -Message "$($detail.Substring(0, 1).ToUpper())$($detail.Substring(1))." }
 
     return $result
 }
 
 
-function Repair-WinForgeMaintenanceWinget {
+function Repair-TFToolkitMaintenanceWinget {
     <#
     O começo do Otimizar sem o Instalador de Aplicativo (o winget), comum logo depois de formatar: desinstalar e atualizar
     os programas dependem dele. Com a pessoa presente, ele oferece repará-lo ali mesmo, com Reparar como padrão, pelo
-    mesmo registro de Programas > Reparar o Instalador de Aplicativo e da restauração de um backup (Register-WinForgeWinget).
+    mesmo registro de Programas > Reparar o Instalador de Aplicativo e da restauração de um backup (Register-TFToolkitWinget).
     Elevado com outra conta, não oferece: o registro valeria para ela, e não para quem usa o PC. Devolve verdadeiro quando
     ele passou a responder; sem ele, diz uma vez que as etapas dele ficam de fora e onde repará-lo depois.
     #>
-    Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Falta o Instalador de Aplicativo (winget), que o WinForge usa para desinstalar e atualizar os programas.')
+    Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Falta o Instalador de Aplicativo (winget), que o TF-Toolkit usa para desinstalar e atualizar os programas.')
 
-    if (-not (Test-WinForgeUserContextMismatch) -and (Confirm-WinForgeAction -Message (Get-WinForgeText 'Reparar o Instalador de Aplicativo agora?') -DefaultKey S -YesLabel (Get-WinForgeText 'Reparar') -NoLabel (Get-WinForgeText 'Agora não'))) {
-        $registration = Register-WinForgeWinget
+    if (-not (Test-TFToolkitUserContextMismatch) -and (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Reparar o Instalador de Aplicativo agora?') -DefaultKey S -YesLabel (Get-TFToolkitText 'Reparar') -NoLabel (Get-TFToolkitText 'Agora não'))) {
+        $registration = Register-TFToolkitWinget
 
         if ($registration.Version) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'O Instalador de Aplicativo voltou a funcionar ({0}).' "$($registration.Version)")
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'O Instalador de Aplicativo voltou a funcionar ({0}).' "$($registration.Version)")
             return $true
         }
 
-        Write-WinForgeStatus -Type Warning -Message $(if ($registration.Problem) { (Get-WinForgeText 'O registro não resolveu: {0}.' "$($registration.Problem)") } else { (Get-WinForgeText 'O registro terminou, mas o winget continua sem responder.') })
+        Write-TFToolkitStatus -Type Warning -Message $(if ($registration.Problem) { (Get-TFToolkitText 'O registro não resolveu: {0}.' "$($registration.Problem)") } else { (Get-TFToolkitText 'O registro terminou, mas o winget continua sem responder.') })
     }
 
-    Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Desinstalar e atualizar os programas ficam de fora. Para reparar o Instalador de Aplicativo depois, use Programas > Reparar o Instalador de Aplicativo.')
+    Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Desinstalar e atualizar os programas ficam de fora. Para reparar o Instalador de Aplicativo depois, use Programas > Reparar o Instalador de Aplicativo.')
 
     return $false
 }
 
 
-function Skip-WinForgeMeteredStep {
+function Skip-TFToolkitMeteredStep {
     # Uma etapa que baixaria programas, numa conexão limitada em que a pessoa escolheu Deixar para depois: ela diz isso
     # e fica de fora, sem baixar nada.
     param ([Parameter(Mandatory)][string]$Title)
 
-    Enter-WinForgeAction -Title $Title -Embedded
-    Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'A conexão é limitada (plano de dados): a etapa fica para uma conexão sem limite.')
+    Enter-TFToolkitAction -Title $Title -Embedded
+    Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'A conexão é limitada (plano de dados): a etapa fica para uma conexão sem limite.')
 
-    return (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'conexão limitada: fica para uma conexão sem limite'))
+    return (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'conexão limitada: fica para uma conexão sem limite'))
 }
 
 
-function Invoke-WinForgeMaintenanceStepAction {
+function Invoke-TFToolkitMaintenanceStepAction {
     param (
         [Parameter(Mandatory)]
         [string]$Id,
@@ -729,117 +729,117 @@ function Invoke-WinForgeMaintenanceStepAction {
 
     switch ($Id) {
         # A pessoa está presente no começo: sem a Proteção do Sistema, o ponto oferece ligá-la (Não como padrão).
-        "restore-point" { Invoke-WinForgeRestorePoint -Embedded -PassThru -OfferProtection -Description (Get-WinForgeText 'WinForge - antes do Otimizar') }
+        "restore-point" { Invoke-TFToolkitRestorePoint -Embedded -PassThru -OfferProtection -Description (Get-TFToolkitText 'TF-Toolkit - antes do Otimizar') }
         "uninstall" {
-            # Sem o winget, o reparo vem antes (Repair-WinForgeMaintenanceWinget): a tela de desinstalar, sem ele, diria em
+            # Sem o winget, o reparo vem antes (Repair-TFToolkitMaintenanceWinget): a tela de desinstalar, sem ele, diria em
             # vermelho que ele falta e perguntaria se abre a Microsoft Store, no meio do Otimizar.
-            if (-not (Test-WinForgeWinget) -and -not (Repair-WinForgeMaintenanceWinget)) {
-                New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'winget não encontrado')
+            if (-not (Test-TFToolkitWinget) -and -not (Repair-TFToolkitMaintenanceWinget)) {
+                New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'winget não encontrado')
             }
             else {
-                $uninstall = Invoke-WinForgeNestedAction -Command "Uninstall-WinForgeSoftware"
+                $uninstall = Invoke-TFToolkitNestedAction -Command "Uninstall-TFToolkitSoftware"
 
                 # Sem o winget mesmo assim (ele sumiu, ou não respondeu), a tela não tem como rodar: não é uma falha do
                 # Otimizar, como na etapa do winget.
-                if ($null -ne $uninstall -and [string]$uninstall.Kind -eq "Failed" -and [string]$uninstall.Detail -eq (Get-WinForgeWingetMissingDetail)) {
-                    New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'winget não encontrado')
+                if ($null -ne $uninstall -and [string]$uninstall.Kind -eq "Failed" -and [string]$uninstall.Detail -eq (Get-TFToolkitWingetMissingDetail)) {
+                    New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'winget não encontrado')
                 }
                 else {
-                    ConvertTo-WinForgeStepResult -Result $uninstall
+                    ConvertTo-TFToolkitStepResult -Result $uninstall
                 }
             }
         }
-        "windows-apps"  { ConvertTo-WinForgeStepResult -Result (Invoke-WinForgeNestedAction -Command "Remove-WinForgePreinstalledApps") }
-        "startup"       { ConvertTo-WinForgeStepResult -Result (Invoke-WinForgeNestedAction -Command "Set-WinForgeStartupItems" -Arguments @{ Review = $true }) }
-        "folders"       { Invoke-WinForgeFolderReview -Embedded -PassThru }
-        "security"      { Invoke-WinForgeSecurityCheck -Embedded -PassThru }
-        "windows-update" { Install-WinForgePendingUpdates -Embedded -PassThru }
-        "drivers"       { Invoke-WinForgeDeviceScan -Embedded -PassThru }
+        "windows-apps"  { ConvertTo-TFToolkitStepResult -Result (Invoke-TFToolkitNestedAction -Command "Remove-TFToolkitPreinstalledApps") }
+        "startup"       { ConvertTo-TFToolkitStepResult -Result (Invoke-TFToolkitNestedAction -Command "Set-TFToolkitStartupItems" -Arguments @{ Review = $true }) }
+        "folders"       { Invoke-TFToolkitFolderReview -Embedded -PassThru }
+        "security"      { Invoke-TFToolkitSecurityCheck -Embedded -PassThru }
+        "windows-update" { Install-TFToolkitPendingUpdates -Embedded -PassThru }
+        "drivers"       { Invoke-TFToolkitDeviceScan -Embedded -PassThru }
         "winget" {
-            if ([bool](Get-WinForgeJsonValue -Object $Details -Name "SkipDownloads" -Default $false)) { return (Skip-WinForgeMeteredStep -Title (Get-WinForgeText 'Atualizar programas (winget)')) }
+            if ([bool](Get-TFToolkitJsonValue -Object $Details -Name "SkipDownloads" -Default $false)) { return (Skip-TFToolkitMeteredStep -Title (Get-TFToolkitText 'Atualizar programas (winget)')) }
 
-            Enter-WinForgeAction -Title (Get-WinForgeText 'Atualizar programas (winget)') -Embedded
+            Enter-TFToolkitAction -Title (Get-TFToolkitText 'Atualizar programas (winget)') -Embedded
 
             if ($null -eq $Details.WingetPlan) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'As atualizações do winget não foram revisadas nesta execução.')
-                New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'não revisado')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'As atualizações do winget não foram revisadas nesta execução.')
+                New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'não revisado')
             }
             elseif ([string]$Details.WingetPlan.Action -eq "Unavailable") {
                 # Sem o winget no PC, a etapa não tem como rodar: não é uma falha do Otimizar (nem um "problema repetido"
                 # no histórico a cada mês). Onde repará-lo, o começo do Otimizar já disse.
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Falta o Instalador de Aplicativo (winget): a etapa foi ignorada.')
-                New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'winget não encontrado')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Falta o Instalador de Aplicativo (winget): a etapa foi ignorada.')
+                New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'winget não encontrado')
             }
             else {
                 # "Não atualizar" é escolher não mudar nada nesta etapa, como desistir de uma tela com você.
-                ConvertTo-WinForgeStepResult -Result (Invoke-WinForgeWingetUpgradePlan -Plan $Details.WingetPlan)
+                ConvertTo-TFToolkitStepResult -Result (Invoke-TFToolkitWingetUpgradePlan -Plan $Details.WingetPlan)
             }
         }
         "browsers" {
-            if ([bool](Get-WinForgeJsonValue -Object $Details -Name "SkipDownloads" -Default $false)) { Skip-WinForgeMeteredStep -Title (Get-WinForgeText 'Atualizar os navegadores') }
-            else { Update-WinForgeBrowsers -Embedded -PassThru }
+            if ([bool](Get-TFToolkitJsonValue -Object $Details -Name "SkipDownloads" -Default $false)) { Skip-TFToolkitMeteredStep -Title (Get-TFToolkitText 'Atualizar os navegadores') }
+            else { Update-TFToolkitBrowsers -Embedded -PassThru }
         }
         "store" {
-            if ([bool](Get-WinForgeJsonValue -Object $Details -Name "SkipDownloads" -Default $false)) { Skip-WinForgeMeteredStep -Title (Get-WinForgeText 'Atualizar aplicativos da Microsoft Store') }
-            else { Update-WinForgeStoreApps -Embedded -PassThru }
+            if ([bool](Get-TFToolkitJsonValue -Object $Details -Name "SkipDownloads" -Default $false)) { Skip-TFToolkitMeteredStep -Title (Get-TFToolkitText 'Atualizar aplicativos da Microsoft Store') }
+            else { Update-TFToolkitStoreApps -Embedded -PassThru }
         }
-        "shortcuts"     { Invoke-WinForgeMaintenanceShortcuts }
+        "shortcuts"     { Invoke-TFToolkitMaintenanceShortcuts }
         "leftovers" {
-            $chosen = @(Get-WinForgeJsonValue -Object $Details -Name "Leftovers" -Default @() | Where-Object { $null -ne $_ })
-            $earlier = Get-WinForgeJsonValue -Object $Details -Name "LeftoversResult" -Default $null
+            $chosen = @(Get-TFToolkitJsonValue -Object $Details -Name "Leftovers" -Default @() | Where-Object { $null -ne $_ })
+            $earlier = Get-TFToolkitJsonValue -Object $Details -Name "LeftoversResult" -Default $null
 
             if ($chosen.Count -gt 0) {
-                Remove-WinForgeProgramLeftovers -Items $chosen
+                Remove-TFToolkitProgramLeftovers -Items $chosen
             }
             elseif ($null -ne $earlier) {
                 # A busca já disse o que houve (nenhum programa, nenhum resto, desistência): esse é o resultado da etapa.
-                ConvertTo-WinForgeStepResult -Result $earlier
+                ConvertTo-TFToolkitStepResult -Result $earlier
             }
             else {
-                New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'nenhuma pasta escolhida')
+                New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'nenhuma pasta escolhida')
             }
         }
         "components" {
             # Com a manutenção dos componentes esperando o reinício (uma atualização que o Windows instalou sozinho), o DISM
             # recusa a limpeza (0x800F0806): ela fica para a próxima vez, sem virar uma falha. Os outros motivos de reinício
             # (um driver, um nome novo do PC) não atrapalham o DISM e não seguram a etapa.
-            if (Test-WinForgeServicingRebootPending) {
-                Enter-WinForgeAction -Title (Get-WinForgeText 'Limpar componentes do Windows (WinSxS)') -Embedded
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Há um reinício pendente: o Windows só limpa os componentes depois de reiniciar. A limpeza fica para o próximo Otimizar.')
-                New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'reinício pendente; fica para depois de reiniciar')
+            if (Test-TFToolkitServicingRebootPending) {
+                Enter-TFToolkitAction -Title (Get-TFToolkitText 'Limpar componentes do Windows (WinSxS)') -Embedded
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Há um reinício pendente: o Windows só limpa os componentes depois de reiniciar. A limpeza fica para o próximo Otimizar.')
+                New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'reinício pendente; fica para depois de reiniciar')
             }
             else {
-                Invoke-WinForgeComponentCleanup -Embedded -PassThru
+                Invoke-TFToolkitComponentCleanup -Embedded -PassThru
             }
         }
         "cleanup" {
-            if ([bool](Get-WinForgeJsonValue -Object $Details -Name "EmptyRecycleBin" -Default $false)) { Invoke-WinForgeQuickCleanup -Embedded -PassThru }
-            else { Invoke-WinForgeQuickCleanup -Embedded -PassThru -SkipRecycleBin }
+            if ([bool](Get-TFToolkitJsonValue -Object $Details -Name "EmptyRecycleBin" -Default $false)) { Invoke-TFToolkitQuickCleanup -Embedded -PassThru }
+            else { Invoke-TFToolkitQuickCleanup -Embedded -PassThru -SkipRecycleBin }
         }
-        "network"       { Invoke-WinForgeNetworkRepair -Embedded -PassThru -Force }
+        "network"       { Invoke-TFToolkitNetworkRepair -Embedded -PassThru -Force }
         # Sem -CheckFirst: o Otimizar roda o DISM /RestoreHealth sempre, mesmo sem sinal de dano. Com a manutenção dos
         # componentes esperando o reinício, o DISM recusa o reparo (0x800F0806) e o SFC também: a etapa fica para depois de
         # reiniciar, sem virar uma falha.
         "repair" {
-            if (Test-WinForgeServicingRebootPending) {
-                Enter-WinForgeAction -Title (Get-WinForgeText 'Reparar o Windows (DISM + SFC)') -Embedded
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Há um reinício pendente: o DISM e o SFC só reparam depois de reiniciar. Depois do reinício, use Reparo > Reparar o Windows (DISM + SFC).')
-                New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'reinício pendente; rode depois de reiniciar')
+            if (Test-TFToolkitServicingRebootPending) {
+                Enter-TFToolkitAction -Title (Get-TFToolkitText 'Reparar o Windows (DISM + SFC)') -Embedded
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Há um reinício pendente: o DISM e o SFC só reparam depois de reiniciar. Depois do reinício, use Reparo > Reparar o Windows (DISM + SFC).')
+                New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'reinício pendente; rode depois de reiniciar')
             }
             else {
-                Invoke-WinForgeDismAndSfc -Embedded -PassThru
+                Invoke-TFToolkitDismAndSfc -Embedded -PassThru
             }
         }
-        "chkdsk"        { Start-WinForgeChkdsk -DeferRepairPrompt -Embedded -PassThru }
-        "optimize"      { Start-WinForgeDriveOptimization -Embedded -PassThru }
-        "tweaks"        { Invoke-WinForgeTweakReview -Embedded -PassThru }
+        "chkdsk"        { Start-TFToolkitChkdsk -DeferRepairPrompt -Embedded -PassThru }
+        "optimize"      { Start-TFToolkitDriveOptimization -Embedded -PassThru }
+        "tweaks"        { Invoke-TFToolkitTweakReview -Embedded -PassThru }
         default         { throw "Etapa desconhecida: $Id" }
     }
 }
 
 
-function Invoke-WinForgeMaintenanceStep {
-    # Roda uma etapa e devolve exatamente um WinForge.Result, aconteça o que acontecer dentro dela.
+function Invoke-TFToolkitMaintenanceStep {
+    # Roda uma etapa e devolve exatamente um TFToolkit.Result, aconteça o que acontecer dentro dela.
     param (
         [Parameter(Mandatory)]
         $Step,
@@ -853,22 +853,22 @@ function Invoke-WinForgeMaintenanceStep {
 
     Write-Host ""
 
-    if (Test-WinForgeGuiMode) {
+    if (Test-TFToolkitGuiMode) {
         # Na janela, "Etapa 3 de 21: ..." fica em destaque no alto da tela de execução e vira um subtítulo do resumo.
-        Write-WinForgeSubStep -Title (Get-WinForgeText 'Etapa {0} de {1}: {2}' "$Position" "${Total}" "$($Step.Title)")
+        Write-TFToolkitSubStep -Title (Get-TFToolkitText 'Etapa {0} de {1}: {2}' "$Position" "${Total}" "$($Step.Title)")
     }
     else {
-        Write-WinForgeProgress -Current ($Position - 1) -Total $Total -Label (Get-WinForgeText 'Próxima: {0}' "$($Step.Title)")
+        Write-TFToolkitProgress -Current ($Position - 1) -Total $Total -Label (Get-TFToolkitText 'Próxima: {0}' "$($Step.Title)")
     }
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $result = $null
 
     try {
-        $output = @(Invoke-WinForgeMaintenanceStepAction -Id $Step.Id -Details $Details)
+        $output = @(Invoke-TFToolkitMaintenanceStepAction -Id $Step.Id -Details $Details)
 
-        $results = @($output | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "WinForge.Result" })
-        $others = @($output | Where-Object { $null -ne $_ -and -not ($_.PSObject.TypeNames -contains "WinForge.Result") })
+        $results = @($output | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "TFToolkit.Result" })
+        $others = @($output | Where-Object { $null -ne $_ -and -not ($_.PSObject.TypeNames -contains "TFToolkit.Result") })
 
         # Texto ou objetos soltos de uma etapa aparecem na tela, mas nunca entram no resumo.
         if ($others.Count -gt 0) {
@@ -879,30 +879,30 @@ function Invoke-WinForgeMaintenanceStep {
             $result = $results[$results.Count - 1]
         }
         else {
-            $result = New-WinForgeResult -Kind Ok
+            $result = New-TFToolkitResult -Kind Ok
         }
     }
     catch {
         Write-Host ""
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Falha nesta etapa ({0}): {1}' "$($Step.Title)" "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Falha nesta etapa ({0}): {1}' "$($Step.Title)" "$($_.Exception.Message)")
 
         # Na última etapa não há "próxima": a frase prometeria uma etapa que não vem.
-        if ($Position -lt $Total) { Write-Host (Get-WinForgeText '      O WinForge continuará para a próxima etapa.') -ForegroundColor DarkGray }
+        if ($Position -lt $Total) { Write-Host (Get-TFToolkitText '      O TF-Toolkit continuará para a próxima etapa.') -ForegroundColor DarkGray }
 
-        $result = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message
+        $result = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message
     }
 
     $stopwatch.Stop()
 
     $result.Etapa = $Step.Title
-    $result.Duracao = Format-WinForgeDuration -Span $stopwatch.Elapsed
+    $result.Duracao = Format-TFToolkitDuration -Span $stopwatch.Elapsed
     Add-Member -InputObject $result -NotePropertyName "StepId" -NotePropertyValue $Step.Id -Force
 
     return $result
 }
 
 
-function Invoke-WinForgeMaintenancePhase {
+function Invoke-TFToolkitMaintenancePhase {
     # Roda as etapas pedidas de uma fase (StepIds), na ordem do plano. Start: a posição da primeira (a numeração "Etapa N
     # de M" corre pelo Otimizar inteiro); Total: quantas etapas o Otimizar tem ao todo. A parte automática (-KeepAwake)
     # impede o Windows de suspender o PC no meio das atualizações, do DISM e do CHKDSK.
@@ -924,24 +924,24 @@ function Invoke-WinForgeMaintenancePhase {
         [switch]$KeepAwake
     )
 
-    $catalog = @(Get-WinForgeMaintenancePlanItems | Where-Object { $_.Phase -eq $Phase })
+    $catalog = @(Get-TFToolkitMaintenancePlanItems | Where-Object { $_.Phase -eq $Phase })
     $steps = @($catalog | Where-Object { $StepIds -contains $_.Id })
     $results = @()
 
     if ($Total -lt ($Start + $steps.Count - 1)) { $Total = $Start + $steps.Count - 1 }
 
-    if ($KeepAwake) { [void](Set-WinForgeKeepAwake -Enabled $true) }
+    if ($KeepAwake) { [void](Set-TFToolkitKeepAwake -Enabled $true) }
 
     try {
         $position = $Start - 1
 
         foreach ($step in $steps) {
             $position++
-            $results += @(Invoke-WinForgeMaintenanceStep -Step $step -Details $Details -Position $position -Total $Total)
+            $results += @(Invoke-TFToolkitMaintenanceStep -Step $step -Details $Details -Position $position -Total $Total)
         }
     }
     finally {
-        if ($KeepAwake) { [void](Set-WinForgeKeepAwake -Enabled $false) }
+        if ($KeepAwake) { [void](Set-TFToolkitKeepAwake -Enabled $false) }
     }
 
     return @($results)
@@ -952,14 +952,14 @@ function Invoke-WinForgeMaintenancePhase {
 # Antes e depois
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeMaintenanceSnapshot {
+function Get-TFToolkitMaintenanceSnapshot {
     # Uma foto do PC para comparar o começo com o fim da manutenção: espaço livre no disco do sistema e quantos
     # programas abrem junto com o Windows. O que não puder ser lido fica $null e some da comparação.
     $freeBytes = $null
     $startupItems = $null
 
     try {
-        $space = Get-WinForgeSystemDriveSpace
+        $space = Get-TFToolkitSystemDriveSpace
         if ($null -ne $space) { $freeBytes = [int64]$space.FreeBytes }
     }
     catch {
@@ -967,7 +967,7 @@ function Get-WinForgeMaintenanceSnapshot {
     }
 
     try {
-        $startupItems = [int]@(Get-WinForgeStartupItems | Where-Object { $_.Enabled }).Count
+        $startupItems = [int]@(Get-TFToolkitStartupItems | Where-Object { $_.Enabled }).Count
     }
     catch {
         $startupItems = $null
@@ -977,21 +977,21 @@ function Get-WinForgeMaintenanceSnapshot {
 }
 
 
-function Format-WinForgeSignedBytes {
+function Format-TFToolkitSignedBytes {
     # "+11,5 GB" / "-2 GB"; menos de 1 MB de diferença conta como "sem mudança".
     param ([int64]$Delta)
 
     if ([math]::Abs($Delta) -lt 1MB) {
-        return (Get-WinForgeText 'sem mudança')
+        return (Get-TFToolkitText 'sem mudança')
     }
 
     $sign = $(if ($Delta -gt 0) { "+" } else { "-" })
 
-    return "$sign$(Format-WinForgeBytes -Bytes ([math]::Abs($Delta)))"
+    return "$sign$(Format-TFToolkitBytes -Bytes ([math]::Abs($Delta)))"
 }
 
 
-function Get-WinForgeSnapshotComparison {
+function Get-TFToolkitSnapshotComparison {
     # As linhas "antes e depois" (Label e Text) entre duas fotos. Linha cujo dado falta em uma das fotos não aparece.
     param (
         $Before,
@@ -1006,18 +1006,18 @@ function Get-WinForgeSnapshotComparison {
 
     if ($null -ne $Before.FreeBytes -and $null -ne $After.FreeBytes) {
         $rows += [PSCustomObject]@{
-            Label = (Get-WinForgeText 'Espaço livre no disco do sistema')
-            Text  = (Get-WinForgeText 'de {0} para {1} ({2})' "$(Format-WinForgeBytes -Bytes $Before.FreeBytes)" "$(Format-WinForgeBytes -Bytes $After.FreeBytes)" "$(Format-WinForgeSignedBytes -Delta ([int64]$After.FreeBytes - [int64]$Before.FreeBytes))")
+            Label = (Get-TFToolkitText 'Espaço livre no disco do sistema')
+            Text  = (Get-TFToolkitText 'de {0} para {1} ({2})' "$(Format-TFToolkitBytes -Bytes $Before.FreeBytes)" "$(Format-TFToolkitBytes -Bytes $After.FreeBytes)" "$(Format-TFToolkitSignedBytes -Delta ([int64]$After.FreeBytes - [int64]$Before.FreeBytes))")
         }
     }
 
     if ($null -ne $Before.StartupItems -and $null -ne $After.StartupItems) {
         $delta = [int]$After.StartupItems - [int]$Before.StartupItems
-        $change = $(if ($delta -eq 0) { (Get-WinForgeText 'sem mudança') } elseif ($delta -gt 0) { "+$delta" } else { "$delta" })
+        $change = $(if ($delta -eq 0) { (Get-TFToolkitText 'sem mudança') } elseif ($delta -gt 0) { "+$delta" } else { "$delta" })
 
         $rows += [PSCustomObject]@{
-            Label = (Get-WinForgeText 'Programas que abrem com o Windows')
-            Text  = (Get-WinForgeText 'de {0} para {1} ({2})' "$($Before.StartupItems)" "$($After.StartupItems)" "$change")
+            Label = (Get-TFToolkitText 'Programas que abrem com o Windows')
+            Text  = (Get-TFToolkitText 'de {0} para {1} ({2})' "$($Before.StartupItems)" "$($After.StartupItems)" "$change")
         }
     }
 
@@ -1029,12 +1029,12 @@ function Get-WinForgeSnapshotComparison {
 # Resumo e encerramento
 # ---------------------------------------------------------------------------
 
-function Show-WinForgeMaintenanceSummary {
+function Show-TFToolkitMaintenanceSummary {
     param (
         [object[]]$Results,
         [datetime]$StartedAt,
 
-        # Fotos do PC no começo e no fim (Get-WinForgeMaintenanceSnapshot); sem elas não há comparação.
+        # Fotos do PC no começo e no fim (Get-TFToolkitMaintenanceSnapshot); sem elas não há comparação.
         $Before = $null,
         $After = $null,
 
@@ -1042,62 +1042,62 @@ function Show-WinForgeMaintenanceSummary {
         [string]$ProfileId = "optimize",
 
         # O desfecho já calculado por quem chama (com a parte automática cancelada, por exemplo); sem ele, a conta é a de
-        # Get-WinForgeMaintenanceResult, a mesma da faixa de resultado.
+        # Get-TFToolkitMaintenanceResult, a mesma da faixa de resultado.
         $Verdict = $null,
 
         # Não grava no histórico nem como última manutenção (a parte automática foi cancelada: segurança, atualizações e
         # reparos não rodaram, e o Início deve continuar lembrando do Otimizar).
         [switch]$NoRecord,
 
-        # A execução, para a gravação do fim substituir a do meio (Set-WinForgeLastMaintenance -RunId).
+        # A execução, para a gravação do fim substituir a do meio (Set-TFToolkitLastMaintenance -RunId).
         [string]$RunId = ""
     )
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'Resumo')
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'Resumo')
 
     # Só resultados formais de etapa compõem a tabela.
     $summaryResults = @($Results | Where-Object { $null -ne $_ -and $null -ne $_.PSObject.Properties["Etapa"] -and $null -ne $_.PSObject.Properties["Status"] })
 
-    Write-WinForgeResultTable -Results $summaryResults
+    Write-TFToolkitResultTable -Results $summaryResults
 
     if (-not $NoRecord) {
-        Set-WinForgeLastMaintenance -Results $summaryResults -StartedAt $StartedAt -Before $Before -After $After -ProfileId $ProfileId -RunId $RunId
+        Set-TFToolkitLastMaintenance -Results $summaryResults -StartedAt $StartedAt -Before $Before -After $After -ProfileId $ProfileId -RunId $RunId
     }
 
-    $comparison = @(Get-WinForgeSnapshotComparison -Before $Before -After $After)
+    $comparison = @(Get-TFToolkitSnapshotComparison -Before $Before -After $After)
 
     if ($comparison.Count -gt 0) {
-        Write-WinForgeSection -Title (Get-WinForgeText 'Antes e depois')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Antes e depois')
 
         foreach ($row in $comparison) {
-            Write-WinForgeKeyValue -Label $row.Label -Value $row.Text -LabelWidth 34
+            Write-TFToolkitKeyValue -Label $row.Label -Value $row.Text -LabelWidth 34
         }
     }
 
     # Na janela, o desfecho e a duração ficam na faixa de resultado e ao lado do título: repetidos no resumo, eram três
     # vezes a mesma informação na mesma tela.
-    if (Test-WinForgeGuiMode) { return }
+    if (Test-TFToolkitGuiMode) { return }
 
     Write-Host ""
 
-    # A mesma conta da faixa de resultado (Get-WinForgeMaintenanceResult): tudo ignorado não é "tudo concluído".
-    if ($null -eq $Verdict) { $Verdict = Get-WinForgeMaintenanceResult -Results $summaryResults -Before $Before -After $After }
+    # A mesma conta da faixa de resultado (Get-TFToolkitMaintenanceResult): tudo ignorado não é "tudo concluído".
+    if ($null -eq $Verdict) { $Verdict = Get-TFToolkitMaintenanceResult -Results $summaryResults -Before $Before -After $After }
     $detail = [string]$Verdict.Detail
     $sentence = $(if ($detail) { $detail.Substring(0, 1).ToUpper() + $detail.Substring(1) } else { "" })
 
     switch ([string]$Verdict.Kind) {
-        "Ok" { Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Otimização concluída: {0}.' "$detail") }
-        "Skipped" { Write-WinForgeStatus -Type Info -Message "$sentence." }
-        "Failed" { Write-WinForgeStatus -Type Error -Message (Get-WinForgeText '{0}. Veja acima o que cada etapa disse.' "$sentence") }
-        default { Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0}. Veja acima o que cada etapa disse.' "$sentence") }
+        "Ok" { Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Otimização concluída: {0}.' "$detail") }
+        "Skipped" { Write-TFToolkitStatus -Type Info -Message "$sentence." }
+        "Failed" { Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText '{0}. Veja acima o que cada etapa disse.' "$sentence") }
+        default { Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0}. Veja acima o que cada etapa disse.' "$sentence") }
     }
 
     # O caminho do log fica no botão "Abrir log" dos detalhes técnicos (e no Sobre): o resumo diz só a duração.
-    Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Duração: {0}.' "$(Format-WinForgeDuration -Span ((Get-Date) - $StartedAt))")
+    Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Duração: {0}.' "$(Format-TFToolkitDuration -Span ((Get-Date) - $StartedAt))")
 }
 
 
-function Test-WinForgeMaintenanceNeedsRestart {
+function Test-TFToolkitMaintenanceNeedsRestart {
     param (
         [object[]]$Results,
         [bool]$ChkdskScheduled
@@ -1107,7 +1107,7 @@ function Test-WinForgeMaintenanceNeedsRestart {
         return $true
     }
 
-    if (Test-WinForgePendingReboot) {
+    if (Test-TFToolkitPendingReboot) {
         return $true
     }
 
@@ -1117,7 +1117,7 @@ function Test-WinForgeMaintenanceNeedsRestart {
         # Cada etapa avisa por Data quando uma mudança só termina depois de reiniciar: as atualizações do Windows, o
         # reparo de rede (quando os resets de Winsock e TCP/IP funcionaram), o DISM e o SFC, quando o reparo pede, e um
         # ajuste que só vale depois de reiniciar.
-        if (Test-WinForgeResultFlag -Result $result -Name "RebootRequired") {
+        if (Test-TFToolkitResultFlag -Result $result -Name "RebootRequired") {
             return $true
         }
     }
@@ -1126,13 +1126,13 @@ function Test-WinForgeMaintenanceNeedsRestart {
 }
 
 
-function Read-WinForgePendingRebootChoice {
+function Read-TFToolkitPendingRebootChoice {
     <#
     Com o Windows esperando um reinício, antes do que ele atrapalha (o Otimizar, as atualizações, os drivers e o reparo do
     Windows Update): uma escolha só, com a saída que resolve à mão (Reiniciar agora, Continuar sem reiniciar ou Cancelar).
     Um Sim/Não terminaria em "cancelada" sem oferecer o reinício. Reiniciar agora ainda pede a confirmação do reinício
-    (Request-WinForgeRestart, com Depois como padrão). Then: a descrição de Reiniciar agora; Reason, Comment e
-    DeclinedMessage vão para Request-WinForgeRestart. Devolve "Restarting" (o reinício começou), "Continue" ou
+    (Request-TFToolkitRestart, com Depois como padrão). Then: a descrição de Reiniciar agora; Reason, Comment e
+    DeclinedMessage vão para Request-TFToolkitRestart. Devolve "Restarting" (o reinício começou), "Continue" ou
     "Cancelled" (a pessoa desistiu, ou não confirmou o reinício).
     #>
     param (
@@ -1143,23 +1143,23 @@ function Read-WinForgePendingRebootChoice {
         [Parameter(Mandatory)][string]$DeclinedMessage
     )
 
-    $answer = Read-WinForgeChoice -Message $Question -DefaultKey "R" -ShowMenu `
-        -TextPrompt (Get-WinForgeText 'Opção (R = reiniciar agora, C = continuar sem reiniciar, X = cancelar; ENTER = reiniciar agora)') -Options @(
-        @{ Key = "R"; Label = (Get-WinForgeText 'Reiniciar agora'); Description = $Then; Accent = $true },
-        @{ Key = "C"; Label = (Get-WinForgeText 'Continuar sem reiniciar') },
-        @{ Key = "X"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+    $answer = Read-TFToolkitChoice -Message $Question -DefaultKey "R" -ShowMenu `
+        -TextPrompt (Get-TFToolkitText 'Opção (R = reiniciar agora, C = continuar sem reiniciar, X = cancelar; ENTER = reiniciar agora)') -Options @(
+        @{ Key = "R"; Label = (Get-TFToolkitText 'Reiniciar agora'); Description = $Then; Accent = $true },
+        @{ Key = "C"; Label = (Get-TFToolkitText 'Continuar sem reiniciar') },
+        @{ Key = "X"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
     )
 
     if ($answer -ieq "C") { return "Continue" }
     if ($answer -ine "R") { return "Cancelled" }
 
-    if (Request-WinForgeRestart -Reason $Reason -Comment $Comment -DeclinedMessage $DeclinedMessage) { return "Restarting" }
+    if (Request-TFToolkitRestart -Reason $Reason -Comment $Comment -DeclinedMessage $DeclinedMessage) { return "Restarting" }
 
     return "Cancelled"
 }
 
 
-function Request-WinForgeRestart {
+function Request-TFToolkitRestart {
     <#
     Oferece reiniciar o Windows (Não como padrão) e, com o sim, reinicia na hora, sem fechar nada à força: com um prazo
     (shutdown /t 30, por exemplo), o Windows fecha os programas à força (o /f vem junto) e um arquivo sem salvar se perde.
@@ -1169,47 +1169,47 @@ function Request-WinForgeRestart {
     #>
     param (
         [switch]$ChkdskScheduled,
-        [string]$Reason = (Get-WinForgeText 'Reinicie para concluir a otimização.'),
-        [string]$Comment = (Get-WinForgeText 'Reinicialização solicitada pelo WinForge após o Otimizar.'),
-        [string]$DeclinedMessage = (Get-WinForgeText 'O PC não foi reiniciado. Reinicie quando puder.')
+        [string]$Reason = (Get-TFToolkitText 'Reinicie para concluir a otimização.'),
+        [string]$Comment = (Get-TFToolkitText 'Reinicialização solicitada pelo TF-Toolkit após o Otimizar.'),
+        [string]$DeclinedMessage = (Get-TFToolkitText 'O PC não foi reiniciado. Reinicie quando puder.')
     )
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'Reiniciar o PC')
-    Write-WinForgeStatus -Type Info -Message $Reason
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'Reiniciar o PC')
+    Write-TFToolkitStatus -Type Info -Message $Reason
 
     if ($ChkdskScheduled) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O reparo do disco roda antes de o Windows abrir e pode demorar.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O reparo do disco roda antes de o Windows abrir e pode demorar.')
     }
 
     Write-Host ""
 
-    if (-not (Confirm-WinForgeAction (Get-WinForgeText 'Reiniciar o Windows agora? Salve o que estiver aberto antes.') -DefaultKey N -YesLabel (Get-WinForgeText 'Reiniciar agora') -NoLabel (Get-WinForgeText 'Depois'))) {
-        Write-WinForgeStatus -Type Info -Message $DeclinedMessage
+    if (-not (Confirm-TFToolkitAction (Get-TFToolkitText 'Reiniciar o Windows agora? Salve o que estiver aberto antes.') -DefaultKey N -YesLabel (Get-TFToolkitText 'Reiniciar agora') -NoLabel (Get-TFToolkitText 'Depois'))) {
+        Write-TFToolkitStatus -Type Info -Message $DeclinedMessage
         return $false
     }
 
     # O shutdown.exe bloqueado (por uma política da empresa, por exemplo) não pode derrubar o fim do Otimizar: o reinício
     # volta a ser pendência, como quando o Windows o recusa.
     try {
-        $run = Invoke-WinForgeCapture -FilePath "shutdown.exe" -Arguments @("/r", "/t", "0", "/c", $Comment)
+        $run = Invoke-TFToolkitCapture -FilePath "shutdown.exe" -Arguments @("/r", "/t", "0", "/c", $Comment)
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível reiniciar: {0}. Reinicie pelo menu Iniciar.' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível reiniciar: {0}. Reinicie pelo menu Iniciar.' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
         return $false
     }
 
     if ($run.ExitCode -ne 0) {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível reiniciar (código {0}): {1}' "$($run.ExitCode)" "$($run.Text.Trim())")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível reiniciar (código {0}): {1}' "$($run.ExitCode)" "$($run.Text.Trim())")
         return $false
     }
 
-    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'O Windows está reiniciando. Se algum programa tiver arquivo sem salvar, o Windows pergunta antes de fechá-lo.')
+    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'O Windows está reiniciando. Se algum programa tiver arquivo sem salvar, o Windows pergunta antes de fechá-lo.')
 
     return $true
 }
 
 
-function Invoke-WinForgeMaintenanceClosing {
+function Invoke-TFToolkitMaintenanceClosing {
     # O fim do Otimizar: o reparo offline do CHKDSK (se a verificação achou problema), o relatório e, sempre, a sugestão
     # de reiniciar; sem reiniciar, o Explorador, quando algum ajuste só aparece depois dele. Devolve verdadeiro quando o
     # Windows ainda precisa reiniciar para concluir (a faixa lembra disso). -OnlyWhenNeeded (a parte automática
@@ -1223,16 +1223,16 @@ function Invoke-WinForgeMaintenanceClosing {
     # O reparo offline do CHKDSK só é oferecido se a verificação rodou nesta otimização.
     $chkdskScheduled = $false
 
-    if ($StepIds -contains "chkdsk" -and (Test-WinForgeChkdskRepairPending)) {
-        Write-WinForgeSection -Title "CHKDSK"
+    if ($StepIds -contains "chkdsk" -and (Test-TFToolkitChkdskRepairPending)) {
+        Write-TFToolkitSection -Title "CHKDSK"
         # Na janela, as mensagens ficam no resumo, à vista durante a pergunta. Erro no disco pode ser o disco falhando.
         # O código 3 do CHKDSK também é "não deu para verificar tudo com o Windows aberto": a frase não afirma que há erro.
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O CHKDSK pede um reparo que só roda ao reiniciar.')
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Ele roda antes de o Windows abrir e pode levar horas; não desligue o PC até o Windows abrir.')
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O CHKDSK pede um reparo que só roda ao reiniciar.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Ele roda antes de o Windows abrir e pode levar horas; não desligue o PC até o Windows abrir.')
         Write-Host ""
 
-        if (Confirm-WinForgeAction (Get-WinForgeText 'Agendar o reparo do disco para a próxima reinicialização?') -DefaultKey N -YesLabel (Get-WinForgeText 'Agendar') -NoLabel (Get-WinForgeText 'Agora não')) {
-            $chkdskScheduled = [bool](Invoke-WinForgeScheduleChkdskRepair)
+        if (Confirm-TFToolkitAction (Get-TFToolkitText 'Agendar o reparo do disco para a próxima reinicialização?') -DefaultKey N -YesLabel (Get-TFToolkitText 'Agendar') -NoLabel (Get-TFToolkitText 'Agora não')) {
+            $chkdskScheduled = [bool](Invoke-TFToolkitScheduleChkdskRepair)
         }
     }
 
@@ -1241,20 +1241,20 @@ function Invoke-WinForgeMaintenanceClosing {
 
     # O Otimizar sempre sugere reiniciar: o Windows começa do zero, com tudo o que mudou já valendo. Quando alguma etapa
     # só termina com o reinício, a frase diz isso, e a faixa lembra dele se a pessoa não reiniciar.
-    $needed = Test-WinForgeMaintenanceNeedsRestart -Results $Results -ChkdskScheduled $chkdskScheduled
+    $needed = Test-TFToolkitMaintenanceNeedsRestart -Results $Results -ChkdskScheduled $chkdskScheduled
 
     if ($OnlyWhenNeeded -and -not $needed) {
-        Invoke-WinForgeExplorerRestartOffer -Results $Results
+        Invoke-TFToolkitExplorerRestartOffer -Results $Results
         return $false
     }
 
-    $reason = $(if ($needed) { (Get-WinForgeText 'Reinicie para concluir: algumas mudanças só valem depois do reinício.') } else { (Get-WinForgeText 'Reinicie para o Windows começar do zero, com tudo o que mudou valendo.') })
-    $declined = $(if ($needed) { (Get-WinForgeText 'O PC não foi reiniciado. Reinicie quando puder para concluir.') } else { (Get-WinForgeText 'O PC não foi reiniciado. Reinicie quando puder.') })
+    $reason = $(if ($needed) { (Get-TFToolkitText 'Reinicie para concluir: algumas mudanças só valem depois do reinício.') } else { (Get-TFToolkitText 'Reinicie para o Windows começar do zero, com tudo o que mudou valendo.') })
+    $declined = $(if ($needed) { (Get-TFToolkitText 'O PC não foi reiniciado. Reinicie quando puder para concluir.') } else { (Get-TFToolkitText 'O PC não foi reiniciado. Reinicie quando puder.') })
 
-    $restarting = Request-WinForgeRestart -ChkdskScheduled:$chkdskScheduled -Reason $reason -DeclinedMessage $declined
+    $restarting = Request-TFToolkitRestart -ChkdskScheduled:$chkdskScheduled -Reason $reason -DeclinedMessage $declined
 
     if (-not $restarting) {
-        Invoke-WinForgeExplorerRestartOffer -Results $Results
+        Invoke-TFToolkitExplorerRestartOffer -Results $Results
     }
 
     # Mesmo com o reinício pedido, a faixa lembra dele quando ele é necessário: um programa com arquivo sem salvar pode
@@ -1263,14 +1263,14 @@ function Invoke-WinForgeMaintenanceClosing {
 }
 
 
-function Invoke-WinForgeExplorerRestartOffer {
+function Invoke-TFToolkitExplorerRestartOffer {
     # Alguns ajustes (as extensões dos arquivos, os itens ocultos) só aparecem quando o Explorador reinicia: sem o
     # reinício do Windows, o Otimizar oferece só isso.
     param (
         [object[]]$Results
     )
 
-    $needsExplorer = @($Results | Where-Object { $null -ne $_ -and $_.Kind -in @("Ok", "Warning") -and (Test-WinForgeResultFlag -Result $_ -Name "ExplorerRestart") }).Count -gt 0
+    $needsExplorer = @($Results | Where-Object { $null -ne $_ -and $_.Kind -in @("Ok", "Warning") -and (Test-TFToolkitResultFlag -Result $_ -Name "ExplorerRestart") }).Count -gt 0
 
     if (-not $needsExplorer) {
         return
@@ -1280,13 +1280,13 @@ function Invoke-WinForgeExplorerRestartOffer {
 
     # Reiniciar o Explorador fecha as janelas de pastas abertas: no fim de uma execução longa, sem ninguém para responder,
     # nada acontece sozinho (Não como padrão).
-    if (Confirm-WinForgeAction (Get-WinForgeText 'Reiniciar o Explorador de Arquivos agora para ver os ajustes?') -DefaultKey N -YesLabel (Get-WinForgeText 'Reiniciar o Explorador') -NoLabel (Get-WinForgeText 'Depois')) {
+    if (Confirm-TFToolkitAction (Get-TFToolkitText 'Reiniciar o Explorador de Arquivos agora para ver os ajustes?') -DefaultKey N -YesLabel (Get-TFToolkitText 'Reiniciar o Explorador') -NoLabel (Get-TFToolkitText 'Depois')) {
         try {
-            Restart-WinForgeExplorerShell
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Explorador reiniciado.')
+            Restart-TFToolkitExplorerShell
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Explorador reiniciado.')
         }
         catch {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível reiniciar o Explorador: {0}' "$($_.Exception.Message)")
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível reiniciar o Explorador: {0}' "$($_.Exception.Message)")
         }
     }
 }
@@ -1296,8 +1296,8 @@ function Invoke-WinForgeExplorerRestartOffer {
 # Desfecho
 # ---------------------------------------------------------------------------
 
-function Format-WinForgeMaintenanceGain {
-    # "; 2 GB a mais de espaço livre", entre as fotos do começo e do fim (Get-WinForgeMaintenanceSnapshot), com 100 MB ou
+function Format-TFToolkitMaintenanceGain {
+    # "; 2 GB a mais de espaço livre", entre as fotos do começo e do fim (Get-TFToolkitMaintenanceSnapshot), com 100 MB ou
     # mais a mais: é o que a pessoa percebe da manutenção. "" sem uma das fotos ou com menos que isso.
     param (
         $Before = $null,
@@ -1306,19 +1306,19 @@ function Format-WinForgeMaintenanceGain {
 
     if ($null -eq $Before -or $null -eq $After) { return "" }
 
-    $beforeFree = Get-WinForgeJsonValue -Object $Before -Name "FreeBytes" -Default $null
-    $afterFree = Get-WinForgeJsonValue -Object $After -Name "FreeBytes" -Default $null
+    $beforeFree = Get-TFToolkitJsonValue -Object $Before -Name "FreeBytes" -Default $null
+    $afterFree = Get-TFToolkitJsonValue -Object $After -Name "FreeBytes" -Default $null
 
     if ($null -eq $beforeFree -or $null -eq $afterFree -or ([int64]$afterFree - [int64]$beforeFree) -lt 100MB) { return "" }
 
-    return (Get-WinForgeText '; {0} a mais de espaço livre' "$(Format-WinForgeBytes -Bytes ([int64]$afterFree - [int64]$beforeFree))")
+    return (Get-TFToolkitText '; {0} a mais de espaço livre' "$(Format-TFToolkitBytes -Bytes ([int64]$afterFree - [int64]$beforeFree))")
 }
 
 
-function Get-WinForgeMaintenanceStepTarget {
+function Get-TFToolkitMaintenanceStepTarget {
     # A tela que roda sozinha uma etapa do Otimizar (o Id dela na navegação), para o botão da faixa. "" para as que só
     # existem dentro do Otimizar (as pastas pessoais e os navegadores). Um teste confere que cada uma existe e que leva ao
-    # mesmo lugar que o "rode de novo em" do histórico (Get-WinForgeMaintenanceStepReference).
+    # mesmo lugar que o "rode de novo em" do histórico (Get-TFToolkitMaintenanceStepReference).
     param ([AllowEmptyString()][string]$Id)
 
     $targets = @{
@@ -1348,14 +1348,14 @@ function Get-WinForgeMaintenanceStepTarget {
 }
 
 
-function Set-WinForgeMaintenanceView {
+function Set-TFToolkitMaintenanceView {
     <#
     Como a janela mostra o fim do Otimizar, quando o genérico ("Concluído com ressalvas: 1 etapa falhou e 2 terminaram com
     ressalvas") não basta. O título diz o que aconteceu: "PC otimizado", "2 etapas pedem atenção", "Atualizar o Windows
     falhou", "Nenhuma etapa funcionou" ou "Parte automática cancelada". A frase embaixo diz qual etapa e por quê (com uma
     só) ou quais (com mais, as que falharam antes das que terminaram com ressalvas), e o espaço ganho. O botão leva à tela
     que roda sozinha a primeira delas. Tudo ignorado, cancelado e reiniciando ficam com a faixa genérica, que já diz isso.
-    O console e o histórico continuam com o Detail de Get-WinForgeMaintenanceResult. Devolve o próprio resultado.
+    O console e o histórico continuam com o Detail de Get-TFToolkitMaintenanceResult. Devolve o próprio resultado.
     -AutoCancelled: a parte automática foi cancelada; Results são as etapas que rodaram antes dela.
     #>
     param (
@@ -1367,21 +1367,21 @@ function Set-WinForgeMaintenanceView {
     )
 
     $steps = @($Results | Where-Object { $null -ne $_ -and $null -ne $_.PSObject.Properties["Kind"] })
-    $nameOf = { param ($Step) Get-WinForgeText ([string](Get-WinForgeJsonValue -Object $Step -Name "Etapa" -Default "")) }
+    $nameOf = { param ($Step) Get-TFToolkitText ([string](Get-TFToolkitJsonValue -Object $Step -Name "Etapa" -Default "")) }
 
     # As que falharam primeiro, depois as que terminaram com ressalvas, cada grupo na ordem em que rodou.
     $problems = @(@($steps | Where-Object { [string]$_.Kind -eq "Failed" }) + @($steps | Where-Object { [string]$_.Kind -eq "Warning" }))
-    $gain = Format-WinForgeMaintenanceGain -Before $Before -After $After
+    $gain = Format-TFToolkitMaintenanceGain -Before $Before -After $After
 
     $next = ""
     $nextLabel = ""
 
     foreach ($step in $problems) {
-        $target = Get-WinForgeMaintenanceStepTarget -Id ([string](Get-WinForgeJsonValue -Object $step -Name "StepId" -Default ""))
+        $target = Get-TFToolkitMaintenanceStepTarget -Id ([string](Get-TFToolkitJsonValue -Object $step -Name "StepId" -Default ""))
         if ([string]::IsNullOrEmpty($target)) { continue }
 
         try {
-            $item = Get-WinForgeNavItem -Id $target
+            $item = Get-TFToolkitNavItem -Id $target
             if ($null -ne $item) { $next = [string]$item.Id; $nextLabel = [string]$item.Label; break }
         }
         catch {
@@ -1396,7 +1396,7 @@ function Set-WinForgeMaintenanceView {
     $reasonOf = {
         param ([string]$Text)
 
-        $why = ([string](ConvertTo-WinForgeReadableError -Text $Text)).Trim().TrimEnd('.').Trim()
+        $why = ([string](ConvertTo-TFToolkitReadableError -Text $Text)).Trim().TrimEnd('.').Trim()
 
         if (-not $why -or $why.Length -gt 90) { return "" }
 
@@ -1412,48 +1412,48 @@ function Set-WinForgeMaintenanceView {
     $problemNote = ""
 
     if ($problems.Count -eq 1) {
-        $why = & $reasonOf ([string](Get-WinForgeJsonValue -Object $problems[0] -Name "Detail" -Default ""))
-        $problemNote = $(if ($why) { (Get-WinForgeText '{0}: {1}' "$(& $nameOf $problems[0])" "$why") } else { (Get-WinForgeText 'Com problema: {0}' "$(& $nameOf $problems[0])") })
+        $why = & $reasonOf ([string](Get-TFToolkitJsonValue -Object $problems[0] -Name "Detail" -Default ""))
+        $problemNote = $(if ($why) { (Get-TFToolkitText '{0}: {1}' "$(& $nameOf $problems[0])" "$why") } else { (Get-TFToolkitText 'Com problema: {0}' "$(& $nameOf $problems[0])") })
     }
     elseif ($problems.Count -gt 1) {
-        $problemNote = (Get-WinForgeText 'Com problema: {0}' "$(Join-WinForgeShortList -Items @($problems | ForEach-Object { & $nameOf $_ }))")
+        $problemNote = (Get-TFToolkitText 'Com problema: {0}' "$(Join-TFToolkitShortList -Items @($problems | ForEach-Object { & $nameOf $_ }))")
     }
 
     if ($AutoCancelled) {
-        $partial = Get-WinForgeMaintenanceResult -Results $steps -Before $Before -After $After
-        $done = $(if ([string]$partial.Kind -eq "Skipped") { (Get-WinForgeText 'nada mudou') } else { [string]$partial.Detail })
+        $partial = Get-TFToolkitMaintenanceResult -Results $steps -Before $Before -After $After
+        $done = $(if ([string]$partial.Kind -eq "Skipped") { (Get-TFToolkitText 'nada mudou') } else { [string]$partial.Detail })
 
-        return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'Parte automática cancelada') `
-                -Note (Get-WinForgeText 'O que já foi feito continua valendo: {0}.' "$done") -Next $next -NextLabel $nextLabel)
+        return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'Parte automática cancelada') `
+                -Note (Get-TFToolkitText 'O que já foi feito continua valendo: {0}.' "$done") -Next $next -NextLabel $nextLabel)
     }
 
     switch ([string]$Result.Kind) {
         "Ok" {
-            return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'PC otimizado') -Note "$(([string]$Result.Detail).Trim().TrimEnd('.'))." )
+            return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'PC otimizado') -Note "$(([string]$Result.Detail).Trim().TrimEnd('.'))." )
         }
         "Warning" {
-            $headline = Format-WinForgeCount -Count $problems.Count -One (Get-WinForgeText 'etapa pede atenção') -Many (Get-WinForgeText 'etapas pedem atenção')
-            return (Set-WinForgeResultView -Result $Result -Headline $headline -Note "$problemNote$gain." -Next $next -NextLabel $nextLabel)
+            $headline = Format-TFToolkitCount -Count $problems.Count -One (Get-TFToolkitText 'etapa pede atenção') -Many (Get-TFToolkitText 'etapas pedem atenção')
+            return (Set-TFToolkitResultView -Result $Result -Headline $headline -Note "$problemNote$gain." -Next $next -NextLabel $nextLabel)
         }
         "Failed" {
             # Só uma etapa rodou (as outras não tinham o que fazer) e ela falhou: o título diz qual.
             if ($problems.Count -eq 1) {
-                return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText '{0} falhou' "$(& $nameOf $problems[0])") -Note "$problemNote." -Next $next -NextLabel $nextLabel)
+                return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText '{0} falhou' "$(& $nameOf $problems[0])") -Note "$problemNote." -Next $next -NextLabel $nextLabel)
             }
 
             # Todas pelo mesmo motivo (sem internet, por exemplo): a frase diz qual; senão, cada motivo está no resumo.
-            $reasons = @($problems | ForEach-Object { ([string](Get-WinForgeJsonValue -Object $_ -Name "Detail" -Default "")).Trim() } | Select-Object -Unique)
+            $reasons = @($problems | ForEach-Object { ([string](Get-TFToolkitJsonValue -Object $_ -Name "Detail" -Default "")).Trim() } | Select-Object -Unique)
             $why = $(if ($reasons.Count -eq 1) { & $reasonOf $reasons[0] } else { "" })
-            $note = $(if ($why) { (Get-WinForgeText 'As {0} etapas falharam: {1}.' "$($problems.Count)" "$why") } else { (Get-WinForgeText 'As {0} etapas falharam; o motivo de cada uma está no resumo.' "$($problems.Count)") })
+            $note = $(if ($why) { (Get-TFToolkitText 'As {0} etapas falharam: {1}.' "$($problems.Count)" "$why") } else { (Get-TFToolkitText 'As {0} etapas falharam; o motivo de cada uma está no resumo.' "$($problems.Count)") })
 
-            return (Set-WinForgeResultView -Result $Result -Headline (Get-WinForgeText 'Nenhuma etapa funcionou') -Note $note)
+            return (Set-TFToolkitResultView -Result $Result -Headline (Get-TFToolkitText 'Nenhuma etapa funcionou') -Note $note)
         }
         default { return $Result }
     }
 }
 
 
-function Get-WinForgeMaintenanceResult {
+function Get-TFToolkitMaintenanceResult {
     <#
     O desfecho do Otimizar, que a janela mostra na faixa de resultado: Falhou quando nenhuma etapa
     funcionou, Atenção quando alguma falhou ou terminou com ressalvas, Ok nos demais casos e Ignorado quando todas as
@@ -1463,7 +1463,7 @@ function Get-WinForgeMaintenanceResult {
         [object[]]$Results,
         [bool]$RestartPending = $false,
 
-        # Fotos do começo e do fim (Get-WinForgeMaintenanceSnapshot): com 100 MB ou mais de espaço livre a mais, a faixa
+        # Fotos do começo e do fim (Get-TFToolkitMaintenanceSnapshot): com 100 MB ou mais de espaço livre a mais, a faixa
         # diz isso, que é o que a pessoa percebe da manutenção.
         $Before = $null,
         $After = $null
@@ -1474,13 +1474,13 @@ function Get-WinForgeMaintenanceResult {
     # Os nomes das etapas de um desfecho; sem nome em alguma delas, a frase usa a contagem.
     $namesOf = {
         param ([string]$Kind)
-        @($steps | Where-Object { $_.Kind -eq $Kind } | ForEach-Object { Get-WinForgeText ([string](Get-WinForgeJsonValue -Object $_ -Name "Etapa" -Default "")) })
+        @($steps | Where-Object { $_.Kind -eq $Kind } | ForEach-Object { Get-TFToolkitText ([string](Get-TFToolkitJsonValue -Object $_ -Name "Etapa" -Default "")) })
     }
     # Até três nomes ("A, B e C"); passando disso, "A, B, C e mais 2".
     $listOf = {
         param ([string[]]$Names)
-        if ($Names.Count -gt 3) { return (Get-WinForgeText '{0} e mais {1}' "$(@($Names | Select-Object -First 3) -join ', ')" "$($Names.Count - 3)") }
-        return (Join-WinForgeList -Items $Names)
+        if ($Names.Count -gt 3) { return (Get-TFToolkitText '{0} e mais {1}' "$(@($Names | Select-Object -First 3) -join ', ')" "$($Names.Count - 3)") }
+        return (Join-TFToolkitList -Items $Names)
     }
 
     $failed = [int](& $count "Failed")
@@ -1492,18 +1492,18 @@ function Get-WinForgeMaintenanceResult {
 
     if ($RestartPending) { $data.RebootRequired = $true }
 
-    $gain = Format-WinForgeMaintenanceGain -Before $Before -After $After
+    $gain = Format-TFToolkitMaintenanceGain -Before $Before -After $After
 
     if ($steps.Count -eq 0) {
-        return (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'nenhuma etapa rodou') -Data $data)
+        return (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'nenhuma etapa rodou') -Data $data)
     }
 
     if ($done -eq 0) {
-        return (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'todas as etapas foram ignoradas') -Data $data)
+        return (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'todas as etapas foram ignoradas') -Data $data)
     }
 
     if ($failed -eq $done) {
-        return (New-WinForgeResult -Kind Failed -Detail $(if ($failed -eq 1) { (Get-WinForgeText 'a única etapa falhou') } else { (Get-WinForgeText 'as {0} etapas falharam' "$failed") }) -Data $data)
+        return (New-TFToolkitResult -Kind Failed -Detail $(if ($failed -eq 1) { (Get-TFToolkitText 'a única etapa falhou') } else { (Get-TFToolkitText 'as {0} etapas falharam' "$failed") }) -Data $data)
     }
 
     if ($failed -gt 0 -or $warned -gt 0) {
@@ -1515,32 +1515,32 @@ function Get-WinForgeMaintenanceResult {
         $parts = @()
 
         if ($named) {
-            if ($failed -gt 0) { $parts += $(if ($failed -eq 1) { (Get-WinForgeText '{0} falhou' "$(& $listOf $failedNames)") } else { (Get-WinForgeText '{0} falharam' "$(& $listOf $failedNames)") }) }
-            if ($warned -gt 0) { $parts += $(if ($warned -eq 1) { (Get-WinForgeText '{0} terminou com ressalvas' "$(& $listOf $warnedNames)") } else { (Get-WinForgeText '{0} terminaram com ressalvas' "$(& $listOf $warnedNames)") }) }
+            if ($failed -gt 0) { $parts += $(if ($failed -eq 1) { (Get-TFToolkitText '{0} falhou' "$(& $listOf $failedNames)") } else { (Get-TFToolkitText '{0} falharam' "$(& $listOf $failedNames)") }) }
+            if ($warned -gt 0) { $parts += $(if ($warned -eq 1) { (Get-TFToolkitText '{0} terminou com ressalvas' "$(& $listOf $warnedNames)") } else { (Get-TFToolkitText '{0} terminaram com ressalvas' "$(& $listOf $warnedNames)") }) }
 
-            return (New-WinForgeResult -Kind Warning -Detail (($parts -join "; ") + $gain) -Data $data)
+            return (New-TFToolkitResult -Kind Warning -Detail (($parts -join "; ") + $gain) -Data $data)
         }
 
-        if ($failed -gt 0) { $parts += $(if ($failed -eq 1) { (Get-WinForgeText '1 etapa falhou') } else { (Get-WinForgeText '{0} etapas falharam' "$failed") }) }
+        if ($failed -gt 0) { $parts += $(if ($failed -eq 1) { (Get-TFToolkitText '1 etapa falhou') } else { (Get-TFToolkitText '{0} etapas falharam' "$failed") }) }
 
         if ($warned -gt 0) {
             # Depois de "1 etapa falhou e", a palavra "etapa" fica subentendida; sozinha, a frase precisa dela.
             $parts += $(
-                if ($failed -gt 0 -and $warned -eq 1) { (Get-WinForgeText '1 terminou com ressalvas') }
-                elseif ($failed -gt 0) { (Get-WinForgeText '{0} terminaram com ressalvas' "$warned") }
-                elseif ($warned -eq 1) { (Get-WinForgeText '1 etapa terminou com ressalvas') }
-                else { (Get-WinForgeText '{0} etapas terminaram com ressalvas' "$warned") }
+                if ($failed -gt 0 -and $warned -eq 1) { (Get-TFToolkitText '1 terminou com ressalvas') }
+                elseif ($failed -gt 0) { (Get-TFToolkitText '{0} terminaram com ressalvas' "$warned") }
+                elseif ($warned -eq 1) { (Get-TFToolkitText '1 etapa terminou com ressalvas') }
+                else { (Get-TFToolkitText '{0} etapas terminaram com ressalvas' "$warned") }
             )
         }
 
-        return (New-WinForgeResult -Kind Warning -Detail ((Join-WinForgeList -Items $parts) + $gain) -Data $data)
+        return (New-TFToolkitResult -Kind Warning -Detail ((Join-TFToolkitList -Items $parts) + $gain) -Data $data)
     }
 
-    $text = $(if ($done -eq 1) { (Get-WinForgeText '1 etapa executada') } else { (Get-WinForgeText '{0} etapas executadas' "$done") })
+    $text = $(if ($done -eq 1) { (Get-TFToolkitText '1 etapa executada') } else { (Get-TFToolkitText '{0} etapas executadas' "$done") })
 
-    if ($skipped -gt 0) { $text += $(if ($skipped -eq 1) { (Get-WinForgeText ' e 1 ignorada') } else { (Get-WinForgeText ' e {0} ignoradas' "$skipped") }) }
+    if ($skipped -gt 0) { $text += $(if ($skipped -eq 1) { (Get-TFToolkitText ' e 1 ignorada') } else { (Get-TFToolkitText ' e {0} ignoradas' "$skipped") }) }
 
-    return (New-WinForgeResult -Kind Ok -Detail ($text + $gain) -Data $data)
+    return (New-TFToolkitResult -Kind Ok -Detail ($text + $gain) -Data $data)
 }
 
 
@@ -1548,27 +1548,27 @@ function Get-WinForgeMaintenanceResult {
 # Ação principal
 # ---------------------------------------------------------------------------
 
-function Invoke-WinForgeRecommendedMaintenance {
+function Invoke-TFToolkitRecommendedMaintenance {
     # O Otimizar (o botão do Início e Manutenção > Otimizar): veja as fases no alto deste arquivo.
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Otimizar')
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Otimizar')
 
-    if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'O Otimizar exige privilégios de Administrador.'))) {
-        Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador'))
+    if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'O Otimizar exige privilégios de Administrador.'))) {
+        Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador'))
         return
     }
 
     $cancelled = {
         Write-Host ""
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Otimização cancelada.')
-        Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'operação cancelada'))
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Otimização cancelada.')
+        Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'operação cancelada'))
     }
 
     # Fase 1: preparação. "Restarting": a pessoa escolheu reiniciar antes (havia um reinício pendente) e o Windows já
     # está reiniciando; o Otimizar fica para depois.
-    $preflight = Confirm-WinForgeMaintenancePreflight
+    $preflight = Confirm-TFToolkitMaintenancePreflight
 
     if ($preflight -is [string] -and $preflight -eq "Restarting") {
-        Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'o PC está reiniciando; depois, abra o WinForge e clique em Otimizar de novo'))
+        Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'o PC está reiniciando; depois, abra o TF-Toolkit e clique em Otimizar de novo'))
         return
     }
 
@@ -1579,28 +1579,28 @@ function Invoke-WinForgeRecommendedMaintenance {
 
     # Fase 2: o plano é sempre o inteiro, sem lista para escolher: cada etapa decide sozinha se tem o que fazer (e as
     # telas com você deixam escolher o que entra nelas).
-    $items = @(Get-WinForgeMaintenancePlanItems)
+    $items = @(Get-TFToolkitMaintenancePlanItems)
     $beforeIds = @($items | Where-Object { $_.Phase -eq "Before" } | ForEach-Object { $_.Id })
     $autoIds = @($items | Where-Object { $_.Phase -eq "Auto" } | ForEach-Object { $_.Id })
     $afterIds = @($items | Where-Object { $_.Phase -eq "After" } | ForEach-Object { $_.Id })
     $total = $items.Count
 
     # A foto do "antes" vem antes de tudo: desinstalar e desativar programas da inicialização também contam.
-    $before = Get-WinForgeMaintenanceSnapshot
+    $before = Get-TFToolkitMaintenanceSnapshot
     $startedAt = Get-Date
     $runId = [guid]::NewGuid().ToString("N")
 
-    $details = New-WinForgeMaintenanceDetails
+    $details = New-TFToolkitMaintenanceDetails
 
     # Fase 3: com você, no começo. O ponto de restauração vem antes de qualquer mudança, e sem ele (Proteção do Sistema
     # desligada e a pessoa não quis ligá-la, o Windows recusou, ou a criação falhou) a pessoa decide se segue sem a rede
     # de segurança, com Cancelar como padrão: desinstalar, a inicialização, a rede e os ajustes não teriam para onde voltar.
-    $results = @(Invoke-WinForgeMaintenancePhase -Phase Before -StepIds @("restore-point") -Details $details -Start 1 -Total $total)
+    $results = @(Invoke-TFToolkitMaintenancePhase -Phase Before -StepIds @("restore-point") -Details $details -Start 1 -Total $total)
 
-    if (@($results | Where-Object { [string]$_.Kind -eq "Failed" -or (Test-WinForgeResultFlag -Result $_ -Name "NotCreated") }).Count -gt 0) {
+    if (@($results | Where-Object { [string]$_.Kind -eq "Failed" -or (Test-TFToolkitResultFlag -Result $_ -Name "NotCreated") }).Count -gt 0) {
         Write-Host ""
 
-        if (-not (Confirm-WinForgeAction (Get-WinForgeText 'Continuar sem o ponto de restauração?') -DefaultKey N -YesLabel (Get-WinForgeText 'Continuar sem o ponto') -NoLabel (Get-WinForgeText 'Cancelar'))) {
+        if (-not (Confirm-TFToolkitAction (Get-TFToolkitText 'Continuar sem o ponto de restauração?') -DefaultKey N -YesLabel (Get-TFToolkitText 'Continuar sem o ponto') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
             & $cancelled
             return
         }
@@ -1610,14 +1610,14 @@ function Invoke-WinForgeRecommendedMaintenance {
     # atualizações começa em segundo plano e corre enquanto a pessoa revisa a inicialização e as pastas; na pergunta, a
     # lista já está pronta. Isso conta com a ordem do plano: o ponto, desinstalar, os aplicativos do Windows e o resto.
     $programIds = @($beforeIds | Where-Object { $_ -in @("uninstall", "windows-apps") })
-    $results += @(Invoke-WinForgeMaintenancePhase -Phase Before -StepIds $programIds -Details $details -Start 2 -Total $total)
+    $results += @(Invoke-TFToolkitMaintenancePhase -Phase Before -StepIds $programIds -Details $details -Start 2 -Total $total)
 
     $wingetRead = $null
 
     try {
         if ($autoIds -contains "winget") {
             try {
-                $wingetRead = Start-WinForgeWingetUpgradeRead
+                $wingetRead = Start-TFToolkitWingetUpgradeRead
             }
             catch {
                 # Sem a consulta adiantada, a pergunta consulta o winget na hora, como antes.
@@ -1625,20 +1625,20 @@ function Invoke-WinForgeRecommendedMaintenance {
             }
         }
 
-        $results += @(Invoke-WinForgeMaintenancePhase -Phase Before -StepIds @($beforeIds | Where-Object { $_ -notin @("restore-point", "uninstall", "windows-apps") }) -Details $details -Start (2 + $programIds.Count) -Total $total)
+        $results += @(Invoke-TFToolkitMaintenancePhase -Phase Before -StepIds @($beforeIds | Where-Object { $_ -notin @("restore-point", "uninstall", "windows-apps") }) -Details $details -Start (2 + $programIds.Count) -Total $total)
 
         # Fase 4: as perguntas da parte automática. Não são uma etapa: na janela, o destaque do alto deixa de dizer a
         # última etapa com você e diz em que parte o Otimizar está.
-        Write-WinForgePhase -Title (Get-WinForgeText 'Antes da parte automática')
-        $details = Read-WinForgeMaintenanceDetails -AutoIds $autoIds -WingetRead $wingetRead
+        Write-TFToolkitPhase -Title (Get-TFToolkitText 'Antes da parte automática')
+        $details = Read-TFToolkitMaintenanceDetails -AutoIds $autoIds -WingetRead $wingetRead
     }
     finally {
         # Recebida na pergunta, a consulta já terminou; sem ela (a conexão limitada deixou os programas para depois, ou o
         # Otimizar parou antes), ela é largada.
-        Stop-WinForgeInBackground -Task $wingetRead
+        Stop-TFToolkitInBackground -Task $wingetRead
     }
 
-    if (-not (Confirm-WinForgeAutomaticPhase)) {
+    if (-not (Confirm-TFToolkitAutomaticPhase)) {
         # Nada mudou até aqui (todas as telas com você foram puladas e o ponto não foi criado): é só um cancelamento.
         if (@($results | Where-Object { [string]$_.Kind -ne "Skipped" }).Count -eq 0) {
             & $cancelled
@@ -1647,50 +1647,50 @@ function Invoke-WinForgeRecommendedMaintenance {
 
         # As telas com você já mudaram o PC: o resumo mostra o que foi feito, mas a execução não conta como manutenção
         # (segurança, atualizações e reparos não rodaram, e o Início continua lembrando do Otimizar).
-        Write-WinForgePhase -Title (Get-WinForgeText 'Para terminar')
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Parte automática cancelada. O que já foi feito continua valendo.')
+        Write-TFToolkitPhase -Title (Get-TFToolkitText 'Para terminar')
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Parte automática cancelada. O que já foi feito continua valendo.')
 
-        $after = Get-WinForgeMaintenanceSnapshot
-        $partial = Get-WinForgeMaintenanceResult -Results $results -Before $before -After $after
-        $verdict = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a parte automática foi cancelada; {0}' "$($partial.Detail)") -Data $partial.Data
+        $after = Get-TFToolkitMaintenanceSnapshot
+        $partial = Get-TFToolkitMaintenanceResult -Results $results -Before $before -After $after
+        $verdict = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a parte automática foi cancelada; {0}' "$($partial.Detail)") -Data $partial.Data
 
-        Show-WinForgeMaintenanceSummary -Results $results -StartedAt $startedAt -Before $before -After $after -Verdict $verdict -NoRecord
-        $restartPending = [bool](@(Invoke-WinForgeMaintenanceClosing -Results $results -StepIds @() -OnlyWhenNeeded) | Select-Object -Last 1)
+        Show-TFToolkitMaintenanceSummary -Results $results -StartedAt $startedAt -Before $before -After $after -Verdict $verdict -NoRecord
+        $restartPending = [bool](@(Invoke-TFToolkitMaintenanceClosing -Results $results -StepIds @() -OnlyWhenNeeded) | Select-Object -Last 1)
 
-        $outcome = New-WinForgeResult -Kind Warning -Detail $verdict.Detail -Data $(if ($restartPending) { @{ RebootRequired = $true } } else { @{} })
-        [void](Set-WinForgeMaintenanceView -Result $outcome -Results $results -Before $before -After $after -AutoCancelled)
-        Exit-WinForgeAction -Result $outcome
+        $outcome = New-TFToolkitResult -Kind Warning -Detail $verdict.Detail -Data $(if ($restartPending) { @{ RebootRequired = $true } } else { @{} })
+        [void](Set-TFToolkitMaintenanceView -Result $outcome -Results $results -Before $before -After $after -AutoCancelled)
+        Exit-TFToolkitAction -Result $outcome
         return
     }
 
     # Fase 5: automática. No fim dela, o resultado já fica gravado: a revisão dos ajustes espera a pessoa, e uma janela
     # fechada ou um reinício do Windows Update nessa espera não podem apagar uma hora de manutenção. O fim do Otimizar
     # grava de novo, por cima da mesma execução (o mesmo RunId).
-    $results += @(Invoke-WinForgeMaintenancePhase -Phase Auto -StepIds $autoIds -Details $details -Start ($beforeIds.Count + 1) -Total $total -KeepAwake)
+    $results += @(Invoke-TFToolkitMaintenancePhase -Phase Auto -StepIds $autoIds -Details $details -Start ($beforeIds.Count + 1) -Total $total -KeepAwake)
 
     try {
-        Set-WinForgeLastMaintenance -Results $results -StartedAt $startedAt -Before $before -After (Get-WinForgeMaintenanceSnapshot) -ProfileId "optimize" -RunId $runId
+        Set-TFToolkitLastMaintenance -Results $results -StartedAt $startedAt -Before $before -After (Get-TFToolkitMaintenanceSnapshot) -ProfileId "optimize" -RunId $runId
     }
     catch {
         Write-Verbose "Gravação parcial do Otimizar: $($_.Exception.Message)"
     }
 
     # Fase 6: com você, no fim
-    $results += @(Invoke-WinForgeMaintenancePhase -Phase After -StepIds $afterIds -Details $details -Start ($beforeIds.Count + $autoIds.Count + 1) -Total $total)
+    $results += @(Invoke-TFToolkitMaintenancePhase -Phase After -StepIds $afterIds -Details $details -Start ($beforeIds.Count + $autoIds.Count + 1) -Total $total)
 
     # Fase 7: resumo e encerramento
-    Write-WinForgePhase -Title (Get-WinForgeText 'Para terminar')
-    $after = Get-WinForgeMaintenanceSnapshot
-    Show-WinForgeMaintenanceSummary -Results $results -StartedAt $startedAt -Before $before -After $after -ProfileId "optimize" -RunId $runId
+    Write-TFToolkitPhase -Title (Get-TFToolkitText 'Para terminar')
+    $after = Get-TFToolkitMaintenanceSnapshot
+    Show-TFToolkitMaintenanceSummary -Results $results -StartedAt $startedAt -Before $before -After $after -ProfileId "optimize" -RunId $runId
 
-    $restartPending = [bool](@(Invoke-WinForgeMaintenanceClosing -Results $results -StepIds $autoIds) | Select-Object -Last 1)
+    $restartPending = [bool](@(Invoke-TFToolkitMaintenanceClosing -Results $results -StepIds $autoIds) | Select-Object -Last 1)
 
     # O desfecho é o das etapas: a contagem das mensagens de estado trataria o aviso do preparo ("Salve seu trabalho...")
     # como uma ressalva e mostraria só a última mensagem de erro.
-    $outcome = Get-WinForgeMaintenanceResult -Results $results -RestartPending $restartPending -Before $before -After $after
-    [void](Set-WinForgeMaintenanceView -Result $outcome -Results $results -Before $before -After $after)
+    $outcome = Get-TFToolkitMaintenanceResult -Results $results -RestartPending $restartPending -Before $before -After $after
+    [void](Set-TFToolkitMaintenanceView -Result $outcome -Results $results -Before $before -After $after)
 
-    Exit-WinForgeAction -Result $outcome
+    Exit-TFToolkitAction -Result $outcome
 }
 
 
@@ -1698,11 +1698,11 @@ function Invoke-WinForgeRecommendedMaintenance {
 # Histórico
 # ---------------------------------------------------------------------------
 
-function Format-WinForgeHistoryLine {
+function Format-TFToolkitHistoryLine {
     <#
     Uma manutenção do histórico em uma linha: como rodou (Otimizar, ou o perfil das manutenções da 3.50 e anteriores),
     duração, o desfecho das etapas e a variação de espaço ("Otimizar · 1h 12min · 18 ok, 1 com ressalvas · espaço: +1,2
-    GB"). A data vai no rótulo da linha (Show-WinForgeMaintenanceHistory). O que não foi registrado (o jeito de uma versão
+    GB"). A data vai no rótulo da linha (Show-TFToolkitMaintenanceHistory). O que não foi registrado (o jeito de uma versão
     antiga, espaço sem medição) fica de fora.
     #>
     param (
@@ -1713,34 +1713,34 @@ function Format-WinForgeHistoryLine {
     $parts = @()
 
     # Um jeito que esta versão não conhece fica de fora, em vez de virar outro.
-    $label = Get-WinForgeMaintenanceProfileLabel -Id ([string](Get-WinForgeJsonValue -Object $Entry -Name "ProfileId" -Default ""))
+    $label = Get-TFToolkitMaintenanceProfileLabel -Id ([string](Get-TFToolkitJsonValue -Object $Entry -Name "ProfileId" -Default ""))
 
     if ($label) {
         $parts += $label
     }
 
     if ([int]$Entry.DurationSeconds -gt 0) {
-        $parts += Format-WinForgeDuration -Span ([TimeSpan]::FromSeconds($Entry.DurationSeconds))
+        $parts += Format-TFToolkitDuration -Span ([TimeSpan]::FromSeconds($Entry.DurationSeconds))
     }
 
     $steps = @()
 
     if ([int]$Entry.Ok -gt 0) { $steps += "$($Entry.Ok) ok" }
-    if ([int]$Entry.Warning -gt 0) { $steps += $(if ([int]$Entry.Warning -eq 1) { (Get-WinForgeText '1 com ressalva') } else { (Get-WinForgeText '{0} com ressalvas' "$($Entry.Warning)") }) }
-    if ([int]$Entry.Failed -gt 0) { $steps += $(if ([int]$Entry.Failed -eq 1) { (Get-WinForgeText '1 falhou') } else { (Get-WinForgeText '{0} falharam' "$($Entry.Failed)") }) }
-    if ([int]$Entry.Skipped -gt 0) { $steps += $(if ([int]$Entry.Skipped -eq 1) { (Get-WinForgeText '1 ignorada') } else { (Get-WinForgeText '{0} ignoradas' "$($Entry.Skipped)") }) }
+    if ([int]$Entry.Warning -gt 0) { $steps += $(if ([int]$Entry.Warning -eq 1) { (Get-TFToolkitText '1 com ressalva') } else { (Get-TFToolkitText '{0} com ressalvas' "$($Entry.Warning)") }) }
+    if ([int]$Entry.Failed -gt 0) { $steps += $(if ([int]$Entry.Failed -eq 1) { (Get-TFToolkitText '1 falhou') } else { (Get-TFToolkitText '{0} falharam' "$($Entry.Failed)") }) }
+    if ([int]$Entry.Skipped -gt 0) { $steps += $(if ([int]$Entry.Skipped -eq 1) { (Get-TFToolkitText '1 ignorada') } else { (Get-TFToolkitText '{0} ignoradas' "$($Entry.Skipped)") }) }
 
     if ($steps.Count -gt 0) { $parts += ($steps -join ", ") }
 
     if ($null -ne $Entry.FreeBefore -and $null -ne $Entry.FreeAfter) {
-        $parts += (Get-WinForgeText 'espaço: {0}' "$(Format-WinForgeSignedBytes -Delta ([int64]$Entry.FreeAfter - [int64]$Entry.FreeBefore))")
+        $parts += (Get-TFToolkitText 'espaço: {0}' "$(Format-TFToolkitSignedBytes -Delta ([int64]$Entry.FreeAfter - [int64]$Entry.FreeBefore))")
     }
 
     return ($parts -join " · ")
 }
 
 
-function Get-WinForgeMaintenanceTrends {
+function Get-TFToolkitMaintenanceTrends {
     # Tendências das últimas manutenções (a lista vem da mais recente para a mais antiga, na ordem em que foram gravadas).
     # Cada linha tem Label, Text e Level (Info | Success | Warning). Com uma manutenção só não há tendência: as linhas
     # que comparam (primeira e última, média) dizem só o que ela registrou.
@@ -1759,26 +1759,26 @@ function Get-WinForgeMaintenanceTrends {
     $oldest = $entries[$entries.Count - 1]
 
     $rows += [PSCustomObject]@{
-        Label = (Get-WinForgeText 'Manutenções registradas')
-        Text  = $(if ($entries.Count -eq 1) { (Get-WinForgeText '1 (em {0})' "$(Format-WinForgeDateTime -When $newest.StartedAt)") } else { (Get-WinForgeText '{0}, de {1} a {2}' "$($entries.Count)" "$(Format-WinForgeDateTime -When $oldest.StartedAt)" "$(Format-WinForgeDateTime -When $newest.StartedAt)") })
+        Label = (Get-TFToolkitText 'Manutenções registradas')
+        Text  = $(if ($entries.Count -eq 1) { (Get-TFToolkitText '1 (em {0})' "$(Format-TFToolkitDateTime -When $newest.StartedAt)") } else { (Get-TFToolkitText '{0}, de {1} a {2}' "$($entries.Count)" "$(Format-TFToolkitDateTime -When $oldest.StartedAt)" "$(Format-TFToolkitDateTime -When $newest.StartedAt)") })
         Level = "Info"
     }
 
     $durations = @($entries | Where-Object { $_.DurationSeconds -gt 0 } | ForEach-Object { [double]$_.DurationSeconds })
 
     if ($entries.Count -eq 1 -and $durations.Count -eq 1) {
-        $rows += [PSCustomObject]@{ Label = (Get-WinForgeText 'Duração'); Text = (Format-WinForgeDuration -Span ([TimeSpan]::FromSeconds($durations[0]))); Level = "Info" }
+        $rows += [PSCustomObject]@{ Label = (Get-TFToolkitText 'Duração'); Text = (Format-TFToolkitDuration -Span ([TimeSpan]::FromSeconds($durations[0]))); Level = "Info" }
     }
     elseif ($durations.Count -gt 0) {
         $average = ($durations | Measure-Object -Average).Average
-        $text = (Get-WinForgeText 'média de {0}' "$(Format-WinForgeDuration -Span ([TimeSpan]::FromSeconds($average)))")
+        $text = (Get-TFToolkitText 'média de {0}' "$(Format-TFToolkitDuration -Span ([TimeSpan]::FromSeconds($average)))")
 
         # Uma entrada antiga sem duração registrada não vira "a última levou 0s".
         if ([int]$newest.DurationSeconds -gt 0) {
-            $text += (Get-WinForgeText '; a última levou {0}' "$(Format-WinForgeDuration -Span ([TimeSpan]::FromSeconds($newest.DurationSeconds)))")
+            $text += (Get-TFToolkitText '; a última levou {0}' "$(Format-TFToolkitDuration -Span ([TimeSpan]::FromSeconds($newest.DurationSeconds)))")
         }
 
-        $rows += [PSCustomObject]@{ Label = (Get-WinForgeText 'Duração'); Text = $text; Level = "Info" }
+        $rows += [PSCustomObject]@{ Label = (Get-TFToolkitText 'Duração'); Text = $text; Level = "Info" }
     }
 
     # O espaço: o que as etapas liberaram, somado, e o espaço livre da primeira à última. A variação de cada manutenção
@@ -1794,10 +1794,10 @@ function Get-WinForgeMaintenanceTrends {
         $total = [int64]0
         foreach ($entry in $measured) { if ([int64]$entry.Freed -gt 0) { $total += [int64]$entry.Freed } }
 
-        $text = Format-WinForgeBytes -Bytes $total
-        if ($measured.Count -lt $entries.Count) { $text += (Get-WinForgeText ' (em {0} com medição)' "$(Format-WinForgeCount -Count $measured.Count -One (Get-WinForgeText 'manutenção') -Many (Get-WinForgeText 'manutenções'))") }
+        $text = Format-TFToolkitBytes -Bytes $total
+        if ($measured.Count -lt $entries.Count) { $text += (Get-TFToolkitText ' (em {0} com medição)' "$(Format-TFToolkitCount -Count $measured.Count -One (Get-TFToolkitText 'manutenção') -Many (Get-TFToolkitText 'manutenções'))") }
 
-        $rows += [PSCustomObject]@{ Label = (Get-WinForgeText 'Liberado nas manutenções'); Text = $text; Level = "Info" }
+        $rows += [PSCustomObject]@{ Label = (Get-TFToolkitText 'Liberado nas manutenções'); Text = $text; Level = "Info" }
     }
 
     $withFree = @($entries | Where-Object { $null -ne $_.FreeAfter })
@@ -1808,8 +1808,8 @@ function Get-WinForgeMaintenanceTrends {
         $delta = [int64]$last.FreeAfter - [int64]$first.FreeAfter
 
         $rows += [PSCustomObject]@{
-            Label = (Get-WinForgeText 'Espaço livre, da primeira à última')
-            Text  = (Get-WinForgeText 'de {0} para {1} ({2})' "$(Format-WinForgeBytes -Bytes ([int64]$first.FreeAfter))" "$(Format-WinForgeBytes -Bytes ([int64]$last.FreeAfter))" "$(Format-WinForgeSignedBytes -Delta $delta)")
+            Label = (Get-TFToolkitText 'Espaço livre, da primeira à última')
+            Text  = (Get-TFToolkitText 'de {0} para {1} ({2})' "$(Format-TFToolkitBytes -Bytes ([int64]$first.FreeAfter))" "$(Format-TFToolkitBytes -Bytes ([int64]$last.FreeAfter))" "$(Format-TFToolkitSignedBytes -Delta $delta)")
             Level = $(if ($delta -le -(5GB)) { "Warning" } else { "Info" })
         }
     }
@@ -1822,8 +1822,8 @@ function Get-WinForgeMaintenanceTrends {
         $to = $withStartupAfter[0].StartupAfter
 
         $rows += [PSCustomObject]@{
-            Label = (Get-WinForgeText 'Programas que abrem com o Windows')
-            Text  = $(if ($entries.Count -eq 1) { (Get-WinForgeText 'de {0} para {1}' "$from" "$to") } else { (Get-WinForgeText 'de {0} na primeira para {1} na última' "$from" "$to") })
+            Label = (Get-TFToolkitText 'Programas que abrem com o Windows')
+            Text  = $(if ($entries.Count -eq 1) { (Get-TFToolkitText 'de {0} para {1}' "$from" "$to") } else { (Get-TFToolkitText 'de {0} na primeira para {1} na última' "$from" "$to") })
             Level = "Info"
         }
     }
@@ -1837,7 +1837,7 @@ function Get-WinForgeMaintenanceTrends {
 
         foreach ($step in @($entry.Steps)) {
             # O nome no idioma de agora: uma etapa gravada em português e a mesma em inglês contam juntas.
-            $stepName = Get-WinForgeText ([string]$step.Etapa)
+            $stepName = Get-TFToolkitText ([string]$step.Etapa)
             if ($step.Kind -in @("Warning", "Failed") -and -not [string]::IsNullOrWhiteSpace($stepName) -and -not $seen.ContainsKey($stepName)) {
                 $seen[$stepName] = $true
                 $problems[$stepName] = 1 + $(if ($problems.ContainsKey($stepName)) { [int]$problems[$stepName] } else { 0 })
@@ -1848,13 +1848,13 @@ function Get-WinForgeMaintenanceTrends {
     foreach ($name in @($problems.Keys | Sort-Object)) {
         if ([int]$problems[$name] -ge 2) {
             # O próximo passo: rodar a etapa sozinha mostra o motivo, sem o resto da manutenção em volta.
-            $reference = Get-WinForgeMaintenanceStepReference -Name $name
+            $reference = Get-TFToolkitMaintenanceStepReference -Name $name
             # A mesma frase da seção da última manutenção, logo acima.
-            $next = $(if ($reference) { (Get-WinForgeText '; rode de novo em {0}' "$reference") } else { "" })
+            $next = $(if ($reference) { (Get-TFToolkitText '; rode de novo em {0}' "$reference") } else { "" })
 
             $rows += [PSCustomObject]@{
-                Label = (Get-WinForgeText 'Etapa com problema repetido')
-                Text  = (Get-WinForgeText '{0}: ressalva ou falha em {1} das últimas {2} manutenções{3}' "${name}" "$($problems[$name])" "$($recent.Count)" "$next")
+                Label = (Get-TFToolkitText 'Etapa com problema repetido')
+                Text  = (Get-TFToolkitText '{0}: ressalva ou falha em {1} das últimas {2} manutenções{3}' "${name}" "$($problems[$name])" "$($recent.Count)" "$next")
                 Level = "Warning"
             }
         }
@@ -1864,7 +1864,7 @@ function Get-WinForgeMaintenanceTrends {
 }
 
 
-function Get-WinForgeMaintenanceStepReference {
+function Get-TFToolkitMaintenanceStepReference {
     <#
     Onde rodar sozinha uma etapa automática da manutenção, como "Página > Item" (a janela faz disso um link), pelo nome
     da etapa (o que o histórico guarda). Uma tabela fixa, e não uma busca na navegação: a tela do histórico não pede
@@ -1876,27 +1876,27 @@ function Get-WinForgeMaintenanceStepReference {
     # Os nomes antigos (Verificação de segurança, Aplicar ajustes recomendados) continuam: o histórico guarda manutenções
     # da 3.50 e anteriores.
     $references = @{
-        "Criar ponto de restauração"               = (Get-WinForgeText 'Manutenção > Criar ponto de restauração')
-        "Desinstalar programas"                    = (Get-WinForgeText 'Programas > Desinstalar programas')
-        "Remover aplicativos do Windows"           = (Get-WinForgeText 'Programas > Remover aplicativos do Windows')
-        "Revisar o que abre com o Windows"         = (Get-WinForgeText 'Desempenho > Gerenciar inicialização')
-        "Verificar vírus"                          = (Get-WinForgeText 'Segurança > Verificar vírus')
-        "Verificação de segurança"                 = (Get-WinForgeText 'Segurança > Verificar vírus')
-        "Atualizar o Windows"                      = (Get-WinForgeText 'Atualizações > Instalar atualizações do Windows')
-        "Detectar dispositivos e drivers"          = (Get-WinForgeText 'Reparo > Detectar dispositivos e drivers')
-        "Atualizar programas (winget)"             = (Get-WinForgeText 'Atualizações > Atualizar programas (winget)')
-        "Atualizar aplicativos da Microsoft Store" = (Get-WinForgeText 'Atualizações > Atualizar aplicativos da Microsoft Store')
-        "Remover atalhos quebrados"                = (Get-WinForgeText 'Limpeza > Remover atalhos quebrados')
-        "Restos de programas desinstalados"        = (Get-WinForgeText 'Limpeza > Restos de programas desinstalados')
-        "Limpar o registro"                        = (Get-WinForgeText 'Limpeza > Limpar o registro')
-        "Limpar componentes do Windows (WinSxS)"   = (Get-WinForgeText 'Limpeza > Limpar componentes do Windows (WinSxS)')
-        "Limpeza rápida"                           = (Get-WinForgeText 'Limpeza > Limpeza rápida')
-        "Reparar rede e DNS"                       = (Get-WinForgeText 'Rede > Reparar rede e DNS')
-        "Reparar o Windows (DISM + SFC)"           = (Get-WinForgeText 'Reparo > Reparar o Windows (DISM + SFC)')
-        "Verificar o sistema de arquivos (CHKDSK)" = (Get-WinForgeText 'Reparo > Verificar o sistema de arquivos (CHKDSK)')
-        "Otimizar a unidade do sistema"            = (Get-WinForgeText 'Reparo > Otimizar a unidade do sistema')
-        "Aplicar ajustes recomendados"             = (Get-WinForgeText 'Ajustes do Windows > Aplicar ajustes recomendados')
-        "Revisar os ajustes do Windows"            = (Get-WinForgeText 'Ajustes do Windows > Aplicar ajustes recomendados')
+        "Criar ponto de restauração"               = (Get-TFToolkitText 'Manutenção > Criar ponto de restauração')
+        "Desinstalar programas"                    = (Get-TFToolkitText 'Programas > Desinstalar programas')
+        "Remover aplicativos do Windows"           = (Get-TFToolkitText 'Programas > Remover aplicativos do Windows')
+        "Revisar o que abre com o Windows"         = (Get-TFToolkitText 'Desempenho > Gerenciar inicialização')
+        "Verificar vírus"                          = (Get-TFToolkitText 'Segurança > Verificar vírus')
+        "Verificação de segurança"                 = (Get-TFToolkitText 'Segurança > Verificar vírus')
+        "Atualizar o Windows"                      = (Get-TFToolkitText 'Atualizações > Instalar atualizações do Windows')
+        "Detectar dispositivos e drivers"          = (Get-TFToolkitText 'Reparo > Detectar dispositivos e drivers')
+        "Atualizar programas (winget)"             = (Get-TFToolkitText 'Atualizações > Atualizar programas (winget)')
+        "Atualizar aplicativos da Microsoft Store" = (Get-TFToolkitText 'Atualizações > Atualizar aplicativos da Microsoft Store')
+        "Remover atalhos quebrados"                = (Get-TFToolkitText 'Limpeza > Remover atalhos quebrados')
+        "Restos de programas desinstalados"        = (Get-TFToolkitText 'Limpeza > Restos de programas desinstalados')
+        "Limpar o registro"                        = (Get-TFToolkitText 'Limpeza > Limpar o registro')
+        "Limpar componentes do Windows (WinSxS)"   = (Get-TFToolkitText 'Limpeza > Limpar componentes do Windows (WinSxS)')
+        "Limpeza rápida"                           = (Get-TFToolkitText 'Limpeza > Limpeza rápida')
+        "Reparar rede e DNS"                       = (Get-TFToolkitText 'Rede > Reparar rede e DNS')
+        "Reparar o Windows (DISM + SFC)"           = (Get-TFToolkitText 'Reparo > Reparar o Windows (DISM + SFC)')
+        "Verificar o sistema de arquivos (CHKDSK)" = (Get-TFToolkitText 'Reparo > Verificar o sistema de arquivos (CHKDSK)')
+        "Otimizar a unidade do sistema"            = (Get-TFToolkitText 'Reparo > Otimizar a unidade do sistema')
+        "Aplicar ajustes recomendados"             = (Get-TFToolkitText 'Ajustes do Windows > Aplicar ajustes recomendados')
+        "Revisar os ajustes do Windows"            = (Get-TFToolkitText 'Ajustes do Windows > Aplicar ajustes recomendados')
     }
 
     if ([string]::IsNullOrWhiteSpace($Name)) { return "" }
@@ -1904,14 +1904,14 @@ function Get-WinForgeMaintenanceStepReference {
 
     # Etapa gravada noutro idioma da interface (o histórico guarda o nome como apareceu na tela).
     foreach ($key in $references.Keys) {
-        if ((Get-WinForgeText $key) -ceq $Name) { return [string]$references[$key] }
+        if ((Get-TFToolkitText $key) -ceq $Name) { return [string]$references[$key] }
     }
 
     return ""
 }
 
 
-function Write-WinForgeLastMaintenanceSteps {
+function Write-TFToolkitLastMaintenanceSteps {
     <#
     A primeira seção do histórico: a última manutenção e, uma por linha, as etapas que pediram atenção nela, com o
     motivo guardado e onde rodá-la sozinha de novo ("Página > Item"). É o que o cartão Última manutenção (do Início e da
@@ -1920,146 +1920,146 @@ function Write-WinForgeLastMaintenanceSteps {
     $last = $null
 
     try {
-        $last = Get-WinForgeLastMaintenance -Strict
+        $last = Get-TFToolkitLastMaintenance -Strict
     }
     catch {
-        Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Não foi possível ler a última manutenção agora: o arquivo está em uso ou sem permissão.')
+        Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Não foi possível ler a última manutenção agora: o arquivo está em uso ou sem permissão.')
         return
     }
 
     if ($null -eq $last) { return }
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'A última manutenção ({0})' "$(Format-WinForgeDateTime -When ([datetime]$last.StartedAt))")
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'A última manutenção ({0})' "$(Format-TFToolkitDateTime -When ([datetime]$last.StartedAt))")
 
     $attention = @(@($last.Results) | Where-Object { $null -ne $_ -and $null -ne $_.PSObject.Properties["Kind"] -and [string]$_.Kind -in @("Warning", "Failed") })
 
     if ($attention.Count -eq 0) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nenhuma etapa pediu atenção.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nenhuma etapa pediu atenção.')
         return
     }
 
     foreach ($step in $attention) {
         # Gravados como apareceram na tela: de uma versão em português, saem no idioma de agora.
-        $status = Get-WinForgeText ([string](Get-WinForgeJsonValue -Object $step -Name "Status" -Default ""))
-        if ([string]::IsNullOrWhiteSpace($status)) { $status = $(if ([string]$step.Kind -eq "Failed") { (Get-WinForgeText 'Falhou') } else { (Get-WinForgeText 'Atenção') }) }
+        $status = Get-TFToolkitText ([string](Get-TFToolkitJsonValue -Object $step -Name "Status" -Default ""))
+        if ([string]::IsNullOrWhiteSpace($status)) { $status = $(if ([string]$step.Kind -eq "Failed") { (Get-TFToolkitText 'Falhou') } else { (Get-TFToolkitText 'Atenção') }) }
 
-        $name = Get-WinForgeText ([string](Get-WinForgeJsonValue -Object $step -Name "Etapa" -Default ""))
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = (Get-WinForgeText 'Etapa sem nome') }
+        $name = Get-TFToolkitText ([string](Get-TFToolkitJsonValue -Object $step -Name "Etapa" -Default ""))
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = (Get-TFToolkitText 'Etapa sem nome') }
 
         $text = "$($name): $status"
-        $reference = Get-WinForgeMaintenanceStepReference -Name $name
-        if (-not [string]::IsNullOrEmpty($reference)) { $text += (Get-WinForgeText '; rode de novo em {0}' "$reference") }
+        $reference = Get-TFToolkitMaintenanceStepReference -Name $name
+        if (-not [string]::IsNullOrEmpty($reference)) { $text += (Get-TFToolkitText '; rode de novo em {0}' "$reference") }
 
         # Aviso à vista (com o ícone), mas não um desfecho: só olhar o histórico não termina "com ressalvas".
-        Write-WinForgeStatus -Type Warning -Notice -Message $text
+        Write-TFToolkitStatus -Type Warning -Notice -Message $text
     }
 }
 
 
-function Show-WinForgeMaintenanceHistory {
+function Show-TFToolkitMaintenanceHistory {
     # Uma tela de consulta: termina sem veredito (sem a faixa "Tudo certo"); o que pede atenção aparece com o ícone de
     # aviso, mas não vira desfecho. Primeiro a última manutenção, com o que pediu atenção nela (é por isso que a pessoa
     # chega aqui pelo cartão Última manutenção); depois a última verificação, as tendências e a lista.
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Histórico de manutenções')
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Histórico de manutenções')
 
     try {
-        Write-WinForgeLastMaintenanceSteps
+        Write-TFToolkitLastMaintenanceSteps
 
         # O último Verificar o PC: o cartão Última manutenção conta os dois, e a pessoa que clicou nele precisa ver aqui
         # a verificação que ele citou. Uma data no futuro (relógio adiantado) não vira "agora há pouco".
         # Preferências presas por outro programa não viram "ainda não feita".
-        $checkupText = (Get-WinForgeText 'ainda não feita')
+        $checkupText = (Get-TFToolkitText 'ainda não feita')
 
         try {
-            $checkupAt = Get-WinForgeLastCheckup -Strict
+            $checkupAt = Get-TFToolkitLastCheckup -Strict
 
             if ($null -ne $checkupAt -and $checkupAt -gt (Get-Date).AddDays(1)) {
-                $checkupText = (Get-WinForgeText 'registrada com data depois da de hoje no relógio do Windows')
+                $checkupText = (Get-TFToolkitText 'registrada com data depois da de hoje no relógio do Windows')
             }
             elseif ($null -ne $checkupAt) {
-                $checkupText = "$(Format-WinForgeRelativeTime -When $checkupAt) ($(Format-WinForgeDateTime -When $checkupAt))"
+                $checkupText = "$(Format-TFToolkitRelativeTime -When $checkupAt) ($(Format-TFToolkitDateTime -When $checkupAt))"
             }
         }
         catch {
-            $checkupText = (Get-WinForgeText 'não foi possível ler')
+            $checkupText = (Get-TFToolkitText 'não foi possível ler')
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Verificar o PC')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última verificação') -Value $checkupText -LabelWidth 34
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Verificar o PC')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última verificação') -Value $checkupText -LabelWidth 34
 
-        $read = Get-WinForgeMaintenanceHistory -Status
+        $read = Get-TFToolkitMaintenanceHistory -Status
         $history = @($read.Entries)
 
         # Um histórico que existe, mas não abriu agora (preso por outro programa, sem permissão), não é "nenhuma manutenção".
         if ($read.Status -eq "Unreadable") {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler o histórico de manutenções agora: o arquivo está em uso ou sem permissão. Tente de novo em instantes.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Title (Get-WinForgeText 'Histórico de manutenções') -Detail (Get-WinForgeText 'o arquivo do histórico está em uso ou sem permissão'))
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler o histórico de manutenções agora: o arquivo está em uso ou sem permissão. Tente de novo em instantes.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Title (Get-TFToolkitText 'Histórico de manutenções') -Detail (Get-TFToolkitText 'o arquivo do histórico está em uso ou sem permissão'))
             return
         }
 
         if ($history.Count -eq 0) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nenhuma manutenção registrada ainda. Ela aparece aqui depois de Manutenção > Otimizar; a execução mensal fica em Manutenção > Manutenção agendada.')
-            Exit-WinForgeAction
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nenhuma manutenção registrada ainda. Ela aparece aqui depois de Manutenção > Otimizar; a execução mensal fica em Manutenção > Manutenção agendada.')
+            Exit-TFToolkitAction
             return
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Tendências')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Tendências')
 
-        foreach ($row in @(Get-WinForgeMaintenanceTrends -History $history)) {
+        foreach ($row in @(Get-TFToolkitMaintenanceTrends -History $history)) {
             if ($row.Level -eq "Warning") {
                 # Aviso à vista (com o ícone), mas não um desfecho: só olhar o histórico não termina "com ressalvas".
-                Write-WinForgeStatus -Type Warning -Notice -Message "$($row.Label): $($row.Text)"
+                Write-TFToolkitStatus -Type Warning -Notice -Message "$($row.Label): $($row.Text)"
             }
             else {
-                Write-WinForgeKeyValue -Label $row.Label -Value $row.Text -LabelWidth 34
+                Write-TFToolkitKeyValue -Label $row.Label -Value $row.Text -LabelWidth 34
             }
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Últimas manutenções')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Últimas manutenções')
 
         foreach ($entry in $history) {
-            Write-WinForgeKeyValue -Label (Format-WinForgeDateTime -When $entry.StartedAt) -Value (Format-WinForgeHistoryLine -Entry $entry) -LabelWidth 18
+            Write-TFToolkitKeyValue -Label (Format-TFToolkitDateTime -When $entry.StartedAt) -Value (Format-TFToolkitHistoryLine -Entry $entry) -LabelWidth 18
         }
 
         Write-Host ""
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O WinForge guarda as últimas {0} manutenções neste computador (pasta de dados do WinForge).' "$(Get-WinForgeMaintenanceHistoryLimit)")
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O TF-Toolkit guarda as últimas {0} manutenções neste computador (pasta de dados do TF-Toolkit).' "$(Get-TFToolkitMaintenanceHistoryLimit)")
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler o histórico: {0}' "$($_.Exception.Message)")
-        Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Title (Get-WinForgeText 'Histórico de manutenções') -Detail $_.Exception.Message)
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler o histórico: {0}' "$($_.Exception.Message)")
+        Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Title (Get-TFToolkitText 'Histórico de manutenções') -Detail $_.Exception.Message)
         return
     }
 
-    Exit-WinForgeAction
+    Exit-TFToolkitAction
 }
 
 
-function Get-WinForgeMaintenancePageStatus {
+function Get-TFToolkitMaintenancePageStatus {
     <#
     O resumo no alto da página Manutenção, como o das outras páginas (New-GuiPageStatus): a última manutenção, com a mesma
-    leitura do Início (Read-WinForgeHomeMaintenance, só arquivos pequenos do WinForge). A linha leva ao Histórico de
+    leitura do Início (Read-TFToolkitHomeMaintenance, só arquivos pequenos do TF-Toolkit). A linha leva ao Histórico de
     manutenções (Opens, o mesmo destino do Início), onde está o que pediu atenção nela. Cada linha tem Label, Text,
     Level (Normal | Warn | Muted) e Opens.
     #>
-    $label = (Get-WinForgeText 'Última manutenção')
-    $opens = Get-WinForgeHomeFactTarget -Id "maintenance"
+    $label = (Get-TFToolkitText 'Última manutenção')
+    $opens = Get-TFToolkitHomeFactTarget -Id "maintenance"
     $fact = $null
 
     try {
-        $fact = @(@((Read-WinForgeHomeMaintenance).Facts) | Where-Object { $null -ne $_ })[0]
+        $fact = @(@((Read-TFToolkitHomeMaintenance).Facts) | Where-Object { $null -ne $_ })[0]
     }
     catch {
         $fact = $null
     }
 
     if ($null -eq $fact) {
-        return @([PSCustomObject]@{ Label = $label; Text = (Get-WinForgeText 'não foi possível ler'); Level = "Muted"; Opens = $opens })
+        return @([PSCustomObject]@{ Label = $label; Text = (Get-TFToolkitText 'não foi possível ler'); Level = "Muted"; Opens = $opens })
     }
 
     # A frase do Início (o valor, a data e o que pede atenção) e, quando ela não o traz, o complemento do cartão ("o ideal
     # é uma por mês", "confira o relógio").
     $text = [string]$fact.Text
-    $detail = [string](Get-WinForgeJsonValue -Object $fact -Name "Detail" -Default "")
+    $detail = [string](Get-TFToolkitJsonValue -Object $fact -Name "Detail" -Default "")
     if ($detail -and -not $text.Contains($detail)) { $text = "$text · $detail" }
 
     $level = $(switch ([string]$fact.Level) { "Warn" { "Warn" } "Muted" { "Muted" } default { "Normal" } })

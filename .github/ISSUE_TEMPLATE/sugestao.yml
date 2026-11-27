@@ -1,5 +1,5 @@
 name: Sugestão / Feature request
-description: Uma ideia para o WinForge. / An idea for WinForge.
+description: Uma ideia para o TF-Toolkit. / An idea for TF-Toolkit.
 labels: ["enhancement"]
 body:
   - type: textarea

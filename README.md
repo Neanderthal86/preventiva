@@ -50,16 +50,16 @@ irm techfontes.com.br/p | iex
 .\TF-Toolkit.cmd
 
 # Abrir o menu no terminal
-.\WinForge-Console.cmd
+.\TF-Toolkit-Console.cmd
 
 # Verificação rápida em JSON (ideal para automação/RMM)
-.\WinForge-Console.cmd -Action Check -Json
+.\TF-Toolkit-Console.cmd -Action Check -Json
 
 # Gerar relatório HTML e texto
-.\WinForge-Console.cmd -Action Report
+.\TF-Toolkit-Console.cmd -Action Report
 
 # Instalar/desinstalar na máquina
-.\WinForge-Setup.cmd
+.\TF-Toolkit-Setup.cmd
 ```
 
 ## Requisitos

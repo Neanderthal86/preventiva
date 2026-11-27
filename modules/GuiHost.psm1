@@ -1,4 +1,4 @@
-﻿# Ponte entre os módulos do WinForge (que usam Write-Host, Read-Host e programas nativos) e a interface gráfica.
+﻿# Ponte entre os módulos do TF-Toolkit (que usam Write-Host, Read-Host e programas nativos) e a interface gráfica.
 # As ações rodam num runspace próprio com um "host" personalizado: toda a saída vai para uma fila lida pela janela
 # e toda pergunta vira um pedido (botões ou caixa de texto) respondido pelo usuário. Nenhum console é aberto.
 
@@ -14,10 +14,10 @@ using System.Security;
 using System.Text;
 using System.Threading;
 
-namespace WinForge
+namespace TFToolkit
 {
     // Os poucos textos que o próprio host escreve, no idioma da interface: a tabela é preenchida pelo
-    // Initialize-WinForgeGuiHost (Get-WinForgeText); sem ela, o texto sai em português.
+    // Initialize-TFToolkitGuiHost (Get-TFToolkitText); sem ela, o texto sai em português.
     public static class GuiText
     {
         public static readonly Dictionary<string, string> Table = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -88,7 +88,7 @@ namespace WinForge
         private Coordinates cursor = new Coordinates(0, 0);
         private Coordinates windowPosition = new Coordinates(0, 0);
         private int cursorSize = 25;
-        private string title = "WinForge";
+        private string title = "TF-Toolkit";
         private volatile int columns = 100;
 
         public GuiRawUI(GuiHostUI owner)
@@ -152,7 +152,7 @@ namespace WinForge
         private int progressVersion;
 
         // O log da sessão: cada linha que as ações escrevem, com a hora (o transcript do PowerShell não vê o que passa
-        // por este host). Aberto por Start-WinForgeLogging, fechado por Stop-WinForgeLogging ou ao fechar a janela.
+        // por este host). Aberto por Start-TFToolkitLogging, fechado por Stop-TFToolkitLogging ou ao fechar a janela.
         private readonly object logLock = new object();
         private StreamWriter log;
         private bool logLineOpen;
@@ -222,7 +222,7 @@ namespace WinForge
         }
 
         // Um segredo (a senha de uma rede Wi-Fi, a chave do BitLocker) como um dado "rótulo : valor", nos mesmos pedaços e
-        // cores do Write-WinForgeKeyValue: o resumo da janela o reconhece e mostra, e o log grava só o rótulo e o aviso no
+        // cores do Write-TFToolkitKeyValue: o resumo da janela o reconhece e mostra, e o log grava só o rótulo e o aviso no
         // lugar do valor.
         public void WriteSecretValue(string label, string value, ConsoleColor color, string placeholder)
         {
@@ -620,12 +620,12 @@ namespace WinForge
 
         public override PSCredential PromptForCredential(string caption, string message, string userName, string targetName)
         {
-            throw new NotSupportedException(GuiText.T("Credenciais não são solicitadas pela interface do WinForge."));
+            throw new NotSupportedException(GuiText.T("Credenciais não são solicitadas pela interface do TF-Toolkit."));
         }
 
         public override PSCredential PromptForCredential(string caption, string message, string userName, string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            throw new NotSupportedException(GuiText.T("Credenciais não são solicitadas pela interface do WinForge."));
+            throw new NotSupportedException(GuiText.T("Credenciais não são solicitadas pela interface do TF-Toolkit."));
         }
     }
 
@@ -637,7 +637,7 @@ namespace WinForge
         public GuiHostUI GuiUI { get { return ui; } }
         public bool ExitRequested;
 
-        public override string Name { get { return "WinForgeGuiHost"; } }
+        public override string Name { get { return "TFToolkitGuiHost"; } }
         public override Version Version { get { return new Version(2, 2); } }
         public override Guid InstanceId { get { return id; } }
         public override PSHostUserInterface UI { get { return ui; } }
@@ -655,14 +655,14 @@ namespace WinForge
 }
 '@
 
-# Executado dentro do runspace da ação (escopo global). As variáveis WinForgeGui* são definidas antes de cada execução.
+# Executado dentro do runspace da ação (escopo global). As variáveis TFToolkitGui* são definidas antes de cada execução.
 $script:GuiRunnerScript = @'
 $ErrorActionPreference = "Continue"
 
-if (-not $global:WinForgeGuiReady) {
-    $global:WinForgeGuiMode = $true
+if (-not $global:TFToolkitGuiReady) {
+    $global:TFToolkitGuiMode = $true
 
-    function global:Clear-Host { $global:WinForgeGuiHost.ClearScreen() }
+    function global:Clear-Host { $global:TFToolkitGuiHost.ClearScreen() }
 
     # O Write-Host padrão chega ao host depois da saída de programas nativos; esta versão grava na fila na hora,
     # preservando a ordem das mensagens (por exemplo, "Executando..." antes da saída do DISM).
@@ -684,7 +684,7 @@ if (-not $global:WinForgeGuiReady) {
                 $text = (@($Object | ForEach-Object { [string]$_ }) -join [string]$Separator)
             }
 
-            $ui = $global:WinForgeGuiHost.GuiUI
+            $ui = $global:TFToolkitGuiHost.GuiUI
 
             if ($PSBoundParameters.ContainsKey("ForegroundColor")) {
                 $color = $ForegroundColor
@@ -706,13 +706,13 @@ if (-not $global:WinForgeGuiReady) {
         [CmdletBinding()]
         param ([Parameter(Position = 0, Mandatory = $true)][AllowEmptyString()][string]$Message)
 
-        $global:WinForgeGuiHost.GuiUI.WriteWarningLine($Message)
+        $global:TFToolkitGuiHost.GuiUI.WriteWarningLine($Message)
     }
 
-    # Programas nativos são executados por Invoke-WinForgeNative / Invoke-WinForgeCapture (Core), que capturam
+    # Programas nativos são executados por Invoke-TFToolkitNative / Invoke-TFToolkitCapture (Core), que capturam
     # stdout e stderr; não há mais funções de atalho para winget, dism e outros neste runspace.
-    foreach ($name in $WinForgeGuiModules) {
-        $modulePath = Join-Path $WinForgeGuiModuleRoot "$name.psm1"
+    foreach ($name in $TFToolkitGuiModules) {
+        $modulePath = Join-Path $TFToolkitGuiModuleRoot "$name.psm1"
 
         try {
             Import-Module -Name $modulePath -Force -DisableNameChecking -Global -ErrorAction Stop
@@ -723,68 +723,68 @@ if (-not $global:WinForgeGuiReady) {
         }
     }
 
-    Initialize-WinForgeEnvironment
+    Initialize-TFToolkitEnvironment
 
-    try { [void](Start-WinForgeLogging) } catch { }
+    try { [void](Start-TFToolkitLogging) } catch { }
 
-    $global:WinForgeGuiReady = $true
+    $global:TFToolkitGuiReady = $true
 }
 
-try { Reset-WinForgeOutcome } catch { }
+try { Reset-TFToolkitOutcome } catch { }
 
 try {
-    # O comando vem da tabela de navegação do próprio WinForge; vira um scriptblock para aceitar parâmetros.
-    $commandBlock = [scriptblock]::Create($WinForgeGuiCommand)
+    # O comando vem da tabela de navegação do próprio TF-Toolkit; vira um scriptblock para aceitar parâmetros.
+    $commandBlock = [scriptblock]::Create($TFToolkitGuiCommand)
     & $commandBlock | Out-Default
 }
 catch {
     $failure = $_.Exception.Message
-    try { $failure = ConvertTo-WinForgeReadableError -Text $failure } catch { }
+    try { $failure = ConvertTo-TFToolkitReadableError -Text $failure } catch { }
 
     $failureLabel = "Falha: "
-    try { $failureLabel = Get-WinForgeText 'Falha: ' } catch { }
+    try { $failureLabel = Get-TFToolkitText 'Falha: ' } catch { }
     Write-Host ""
     Write-Host ($failureLabel + $failure) -ForegroundColor Red
 
-    try { Set-WinForgeOutcome -Kind Failed -Detail $failure } catch { }
+    try { Set-TFToolkitOutcome -Kind Failed -Detail $failure } catch { }
 }
 
 # O desfecho (OK, ressalvas, falha...) é a única saída do pipeline; a janela o lê quando a ação termina.
-try { Get-WinForgeOutcome } catch { }
+try { Get-TFToolkitOutcome } catch { }
 '@
 
 
 # ---------------------------------------------------------------------------
 # Uma janela só por usuário
 # ---------------------------------------------------------------------------
-# Abrir o WinForge de novo (pelo atalho, pelo .cmd ou pelo monitor na bandeja) não abre uma segunda janela, que rodaria
+# Abrir o TF-Toolkit de novo (pelo atalho, pelo .cmd ou pelo monitor na bandeja) não abre uma segunda janela, que rodaria
 # ações ao mesmo tempo que a primeira: o pedido (abrir, ou abrir já rodando uma ação) vai para a janela aberta, que
 # confere a cada meio segundo se chegou algum.
 
-$script:WinForgeWindowLock = $null
+$script:TFToolkitWindowLock = $null
 
 
-function Get-WinForgeWindowLockName {
+function Get-TFToolkitWindowLockName {
     # Por sessão do Windows e por conta: a janela de outro Administrador (outra pasta de dados) não segura esta.
     try {
-        return "Local\WinForge.Window.$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"
+        return "Local\TFToolkit.Window.$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"
     }
     catch {
-        return "Local\WinForge.Window"
+        return "Local\TFToolkit.Window"
     }
 }
 
 
-function Enter-WinForgeWindowLock {
+function Enter-TFToolkitWindowLock {
     <#
-    $true quando esta é a janela do WinForge (a trava ficou com ela até o processo terminar) ou quando não deu para saber
+    $true quando esta é a janela do TF-Toolkit (a trava ficou com ela até o processo terminar) ou quando não deu para saber
     (melhor abrir do que não abrir nada); $false quando já há uma janela aberta. -WaitMilliseconds: a reabertura como
     Administrador espera a janela anterior fechar.
     #>
     param ([int]$WaitMilliseconds = 0)
 
-    # A janela elevada e a não elevada do mesmo usuário precisam enxergar a mesma trava (Open-WinForgeNamedMutex).
-    $mutex = Open-WinForgeNamedMutex -Name (Get-WinForgeWindowLockName)
+    # A janela elevada e a não elevada do mesmo usuário precisam enxergar a mesma trava (Open-TFToolkitNamedMutex).
+    $mutex = Open-TFToolkitNamedMutex -Name (Get-TFToolkitWindowLockName)
 
     if ($null -eq $mutex) { return $true }
 
@@ -793,7 +793,7 @@ function Enter-WinForgeWindowLock {
     try { $owned = $mutex.WaitOne($WaitMilliseconds) } catch [System.Threading.AbandonedMutexException] { $owned = $true }
 
     if ($owned) {
-        $script:WinForgeWindowLock = $mutex
+        $script:TFToolkitWindowLock = $mutex
         return $true
     }
 
@@ -802,15 +802,15 @@ function Enter-WinForgeWindowLock {
 }
 
 
-function Get-WinForgeWindowRequestPath {
-    return (Join-Path (Get-WinForgeDataPath) "window-request.json")
+function Get-TFToolkitWindowRequestPath {
+    return (Join-Path (Get-TFToolkitDataPath) "window-request.json")
 }
 
 
-function Send-WinForgeWindowRequest {
+function Send-TFToolkitWindowRequest {
     <#
     Deixa o pedido para a janela aberta: Action = Id da navegação a rodar ("" = só trazer a janela para a frente). Leva
-    também a pasta desta abertura (Root) e a identidade dela (App, Get-WinForgeAppId): a janela aberta pode ser de outra
+    também a pasta desta abertura (Root) e a identidade dela (App, Get-TFToolkitAppId): a janela aberta pode ser de outra
     pasta (uma versão anterior, extraída de outro zip), e então ela diz isso em vez de só vir para a frente.
     #>
     param ([string]$Action = "")
@@ -821,15 +821,15 @@ function Send-WinForgeWindowRequest {
     $app = ""
 
     try {
-        $root = [string](Get-WinForgeAppRoot)
-        $app = [string](Get-WinForgeAppId -Root $root)
+        $root = [string](Get-TFToolkitAppRoot)
+        $app = [string](Get-TFToolkitAppId -Root $root)
     }
     catch {
         Write-Verbose "Pasta do pedido: $($_.Exception.Message)"
     }
 
     try {
-        Write-WinForgeStateJson -Path (Get-WinForgeWindowRequestPath) -InputObject ([ordered]@{ Action = $Action; At = (Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture); Root = $root; App = $app })
+        Write-TFToolkitStateJson -Path (Get-TFToolkitWindowRequestPath) -InputObject ([ordered]@{ Action = $Action; At = (Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture); Root = $root; App = $app })
         return $true
     }
     catch {
@@ -838,21 +838,21 @@ function Send-WinForgeWindowRequest {
 }
 
 
-function Receive-WinForgeWindowRequest {
+function Receive-TFToolkitWindowRequest {
     <#
     O pedido que outra abertura deixou (e que é apagado ao ser lido), ou $null. Um pedido de mais de um minuto (de uma
     janela que estava travada) é descartado: rodar uma ação tanto tempo depois do clique surpreenderia a pessoa. Root e
     App: a pasta e a identidade de quem pediu ("" num pedido de uma versão anterior, que não os grava). O arquivo é
     gravado sem elevação, por qualquer programa da conta: Root só serve para ser mostrado, numa linha e com um limite.
     #>
-    $path = Get-WinForgeWindowRequestPath
+    $path = Get-TFToolkitWindowRequestPath
 
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return $null }
 
     $document = $null
 
     try {
-        $document = (Read-WinForgeStateFile -Path $path).Document
+        $document = (Read-TFToolkitStateFile -Path $path).Document
     }
     finally {
         Get-ChildItem -LiteralPath (Split-Path -Parent $path) -Filter "window-request.json*" -Force -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
@@ -860,28 +860,28 @@ function Receive-WinForgeWindowRequest {
 
     if ($null -eq $document) { return [PSCustomObject]@{ Action = ""; Root = ""; App = "" } }
 
-    $root = ([regex]::Replace([string](Get-WinForgeJsonValue -Object $document -Name "Root" -Default ""), '[\p{Cc}\p{Zl}\p{Zp}]+', ' ')).Trim()
+    $root = ([regex]::Replace([string](Get-TFToolkitJsonValue -Object $document -Name "Root" -Default ""), '[\p{Cc}\p{Zl}\p{Zp}]+', ' ')).Trim()
     if ($root.Length -gt 260) { $root = "" }
 
-    $app = [string](Get-WinForgeJsonValue -Object $document -Name "App" -Default "")
-    if ($app -notmatch '^WinForge\.App(\.[0-9A-F]{16})?$') { $app = "" }
+    $app = [string](Get-TFToolkitJsonValue -Object $document -Name "App" -Default "")
+    if ($app -notmatch '^TF-Toolkit\.App(\.[0-9A-F]{16})?$') { $app = "" }
 
     $at = [datetime]::MinValue
-    $atText = [string](Get-WinForgeJsonValue -Object $document -Name "At" -Default "")
+    $atText = [string](Get-TFToolkitJsonValue -Object $document -Name "At" -Default "")
 
     if ([datetime]::TryParse($atText, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind, [ref]$at) -and ((Get-Date) - $at).TotalSeconds -gt 60) {
         return [PSCustomObject]@{ Action = ""; Root = $root; App = $app }
     }
 
-    $action = [string](Get-WinForgeJsonValue -Object $document -Name "Action" -Default "")
+    $action = [string](Get-TFToolkitJsonValue -Object $document -Name "Action" -Default "")
     if ($action -notmatch '^[a-z0-9][a-z0-9.-]*$') { $action = "" }
 
     return [PSCustomObject]@{ Action = $action; Root = $root; App = $app }
 }
 
 
-function Initialize-WinForgeGuiHost {
-    if (-not ('WinForge.GuiHost' -as [type])) {
+function Initialize-TFToolkitGuiHost {
+    if (-not ('TFToolkit.GuiHost' -as [type])) {
         # Windows PowerShell 5.1 já referencia System.Management.Automation por padrão; no PowerShell 7 informar
         # -ReferencedAssemblies substituiria as referências padrão, então nada extra é passado.
         if ($PSVersionTable.PSEdition -eq "Core") {
@@ -893,21 +893,21 @@ function Initialize-WinForgeGuiHost {
     }
 
     # Os textos que o host escreve sozinho (GuiText), no idioma da interface.
-    $table = [WinForge.GuiText]::Table
-    $table["Pressione Continuar para prosseguir."] = (Get-WinForgeText 'Pressione Continuar para prosseguir.')
-    $table["AVISO: "] = (Get-WinForgeText 'AVISO: ')
-    $table["DETALHE: "] = (Get-WinForgeText 'DETALHE: ')
-    $table["DEPURAÇÃO: "] = (Get-WinForgeText 'DEPURAÇÃO: ')
-    $table["cancelado"] = (Get-WinForgeText 'cancelado')
-    $table["nenhum item"] = (Get-WinForgeText 'nenhum item')
-    $table["Entrada"] = (Get-WinForgeText 'Entrada')
-    $table["Entrada protegida"] = (Get-WinForgeText 'Entrada protegida')
-    $table["Escolha uma opção"] = (Get-WinForgeText 'Escolha uma opção')
-    $table["Credenciais não são solicitadas pela interface do WinForge."] = (Get-WinForgeText 'Credenciais não são solicitadas pela interface do WinForge.')
+    $table = [TFToolkit.GuiText]::Table
+    $table["Pressione Continuar para prosseguir."] = (Get-TFToolkitText 'Pressione Continuar para prosseguir.')
+    $table["AVISO: "] = (Get-TFToolkitText 'AVISO: ')
+    $table["DETALHE: "] = (Get-TFToolkitText 'DETALHE: ')
+    $table["DEPURAÇÃO: "] = (Get-TFToolkitText 'DEPURAÇÃO: ')
+    $table["cancelado"] = (Get-TFToolkitText 'cancelado')
+    $table["nenhum item"] = (Get-TFToolkitText 'nenhum item')
+    $table["Entrada"] = (Get-TFToolkitText 'Entrada')
+    $table["Entrada protegida"] = (Get-TFToolkitText 'Entrada protegida')
+    $table["Escolha uma opção"] = (Get-TFToolkitText 'Escolha uma opção')
+    $table["Credenciais não são solicitadas pela interface do TF-Toolkit."] = (Get-TFToolkitText 'Credenciais não são solicitadas pela interface do TF-Toolkit.')
 }
 
 
-function New-WinForgeGuiSession {
+function New-TFToolkitGuiSession {
     param (
         [Parameter(Mandatory)]
         [string]$ModuleRoot,
@@ -917,14 +917,14 @@ function New-WinForgeGuiSession {
         [string[]]$Modules
     )
 
-    Initialize-WinForgeGuiHost
+    Initialize-TFToolkitGuiHost
 
-    $guiHost = New-Object WinForge.GuiHost
+    $guiHost = New-Object TFToolkit.GuiHost
     $runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace($guiHost)
     $runspace.Open()
 
     # O $Host automático é um invólucro interno; o objeto real fica acessível por esta variável global.
-    $runspace.SessionStateProxy.SetVariable("WinForgeGuiHost", $guiHost)
+    $runspace.SessionStateProxy.SetVariable("TFToolkitGuiHost", $guiHost)
 
     return [PSCustomObject]@{
         Host        = $guiHost
@@ -944,7 +944,7 @@ function New-WinForgeGuiSession {
 }
 
 
-function Start-WinForgeGuiCommand {
+function Start-TFToolkitGuiCommand {
     param (
         [Parameter(Mandatory)]
         $Session,
@@ -965,9 +965,9 @@ function Start-WinForgeGuiCommand {
     $Session.Host.GuiUI.Raw.Columns = $Columns
 
     $proxy = $Session.Runspace.SessionStateProxy
-    $proxy.SetVariable("WinForgeGuiCommand", $Command)
-    $proxy.SetVariable("WinForgeGuiModuleRoot", $Session.ModuleRoot)
-    $proxy.SetVariable("WinForgeGuiModules", $Session.Modules)
+    $proxy.SetVariable("TFToolkitGuiCommand", $Command)
+    $proxy.SetVariable("TFToolkitGuiModuleRoot", $Session.ModuleRoot)
+    $proxy.SetVariable("TFToolkitGuiModules", $Session.Modules)
 
     $ps = [System.Management.Automation.PowerShell]::Create()
     $ps.Runspace = $Session.Runspace
@@ -987,11 +987,11 @@ function Start-WinForgeGuiCommand {
 }
 
 
-function Get-WinForgeDescendantProcesses {
+function Get-TFToolkitDescendantProcesses {
     <#
-    Os processos que descendem deste WinForge (os filhos e os filhos deles: o DISM e o DismHost que ele abre, o winget e o
+    Os processos que descendem deste TF-Toolkit (os filhos e os filhos deles: o DISM e o DismHost que ele abre, o winget e o
     instalador do programa, o atualizador de um navegador), numa leitura só do Win32_Process. Fica de fora o conhost: o
-    console do próprio WinForge mora num deles, e ele termina sozinho com quem o usa. Fica de fora também o MpCmdRun: depois
+    console do próprio TF-Toolkit mora num deles, e ele termina sozinho com quem o usa. Fica de fora também o MpCmdRun: depois
     do Parar, é ele que pede ao Windows Defender para cancelar a verificação (fechar a janela nessa hora não pode matar o
     pedido e deixar a verificação rodando por horas). Um "filho" mais velho que o pai é
     um número de processo reaproveitado, e não entra. Devolve as linhas do Win32_Process (ProcessId, Name, CreationDate).
@@ -1042,18 +1042,18 @@ function Get-WinForgeDescendantProcesses {
 }
 
 
-function Stop-WinForgeChildTools {
+function Stop-TFToolkitChildTools {
     <#
     Quando uma ação é interrompida, o que ela iniciou não pode continuar rodando escondido: encerra a árvore de processos
-    que descende deste WinForge (Get-WinForgeDescendantProcesses), dos mais novos para os mais velhos, ou a lista dada
+    que descende deste TF-Toolkit (Get-TFToolkitDescendantProcesses), dos mais novos para os mais velhos, ou a lista dada
     (Processes, lida antes de a ação parar: depois, o DismHost já não tem o DISM como pai). Um processo só é encerrado se
     ainda for o mesmo (a hora de início confere). O serviço que instala as atualizações do Windows não é filho do
-    WinForge e termina sozinho o que estiver fazendo. Devolve quantos foram encerrados.
+    TF-Toolkit e termina sozinho o que estiver fazendo. Devolve quantos foram encerrados.
     #>
     param ([object[]]$Processes = $null)
 
     # Sempre uma lista (sob Set-StrictMode, uma lista vazia que vira $null não tem Count).
-    $targets = @(if ($null -ne $Processes) { $Processes } else { Get-WinForgeDescendantProcesses })
+    $targets = @(if ($null -ne $Processes) { $Processes } else { Get-TFToolkitDescendantProcesses })
     $stopped = 0
 
     for ($i = $targets.Count - 1; $i -ge 0; $i--) {
@@ -1076,7 +1076,7 @@ function Stop-WinForgeChildTools {
 }
 
 
-function Stop-WinForgeGuiCommand {
+function Stop-TFToolkitGuiCommand {
     param (
         [Parameter(Mandatory)]
         $Session
@@ -1088,17 +1088,17 @@ function Stop-WinForgeGuiCommand {
 
     # A árvore é lida antes de parar: o PowerShell encerra só a ferramenta que ele mesmo abriu (o DISM), e os filhos dela
     # (o DismHost, que faz o reparo de verdade; o instalador que o winget abriu) ficariam rodando sem ninguém ver.
-    $tree = @(Get-WinForgeDescendantProcesses)
+    $tree = @(Get-TFToolkitDescendantProcesses)
 
     $Session.Host.GuiUI.CancelPending()
     [void]$Session.Ps.BeginStop($null, $null)
     $Session.StopAskedAt = Get-Date
 
-    if ($tree.Count -gt 0) { [void](Stop-WinForgeChildTools -Processes $tree) }
+    if ($tree.Count -gt 0) { [void](Stop-TFToolkitChildTools -Processes $tree) }
 }
 
 
-function Read-WinForgeGuiUpdate {
+function Read-TFToolkitGuiUpdate {
     param (
         [Parameter(Mandatory)]
         $Session,
@@ -1134,7 +1134,7 @@ function Read-WinForgeGuiUpdate {
                 $output = @($ps.EndInvoke($Session.Async))
 
                 # O desfecho vem como último item do pipeline (ver o final de GuiRunnerScript).
-                $found = @($output | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "WinForge.Outcome" })
+                $found = @($output | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "TFToolkit.Outcome" })
 
                 if ($found.Count -gt 0) {
                     $Session.Outcome = $found[$found.Count - 1]
@@ -1150,8 +1150,8 @@ function Read-WinForgeGuiUpdate {
             if ($state -eq "Stopped") {
                 $finalState = "Stopped"
 
-                if ((Stop-WinForgeChildTools) -gt 0) {
-                    $ui.WriteInfoLine((Get-WinForgeText 'Ferramentas que ainda estavam rodando foram encerradas.'), [ConsoleColor]::DarkGray)
+                if ((Stop-TFToolkitChildTools) -gt 0) {
+                    $ui.WriteInfoLine((Get-TFToolkitText 'Ferramentas que ainda estavam rodando foram encerradas.'), [ConsoleColor]::DarkGray)
                 }
             }
             elseif ($state -eq "Failed" -and $finalState -ne "Failed") {
@@ -1203,7 +1203,7 @@ function Read-WinForgeGuiUpdate {
 }
 
 
-function Complete-WinForgeGuiPrompt {
+function Complete-TFToolkitGuiPrompt {
     param (
         [Parameter(Mandatory)]
         $Session,
@@ -1229,7 +1229,7 @@ function Complete-WinForgeGuiPrompt {
 }
 
 
-function Close-WinForgeGuiSession {
+function Close-TFToolkitGuiSession {
     param (
         [Parameter(Mandatory)]
         $Session
@@ -1244,7 +1244,7 @@ function Close-WinForgeGuiSession {
             }
 
             # A janela está fechando com a ação rodando: o que ela abriu também para, e o log fica fechado e completo.
-            [void](Stop-WinForgeChildTools)
+            [void](Stop-TFToolkitChildTools)
             $Session.Host.GuiUI.CloseLog()
 
             # O Dispose abaixo espera a ação terminar de parar, de propósito: os finally dela (religar os serviços do
@@ -1256,7 +1256,7 @@ function Close-WinForgeGuiSession {
             # Fecha o log da sessão (Start-Transcript) antes de descartar o runspace.
             $closer = [System.Management.Automation.PowerShell]::Create()
             $closer.Runspace = $Session.Runspace
-            [void]$closer.AddScript('if ($global:WinForgeGuiReady) { try { Stop-WinForgeLogging } catch { } }', $false)
+            [void]$closer.AddScript('if ($global:TFToolkitGuiReady) { try { Stop-TFToolkitLogging } catch { } }', $false)
             [void]$closer.Invoke()
             $closer.Dispose()
         }
@@ -1269,7 +1269,7 @@ function Close-WinForgeGuiSession {
 }
 
 
-function Test-WinForgeProgressLine {
+function Test-TFToolkitProgressLine {
     <#
     Linhas que representam apenas o avanço de uma barra (winget, DISM, SFC). A janela substitui a linha anterior
     em vez de empilhar centenas de atualizações.
@@ -1294,7 +1294,7 @@ function Test-WinForgeProgressLine {
 }
 
 
-function Test-WinForgeSpinnerLine {
+function Test-TFToolkitSpinnerLine {
     param (
         [AllowEmptyString()]
         [string]$Text
@@ -1304,7 +1304,7 @@ function Test-WinForgeSpinnerLine {
 }
 
 
-function Get-WinForgePromptPlan {
+function Get-TFToolkitPromptPlan {
     <#
     Decide como a janela apresenta uma pergunta: botões prontos (Sim/Não, Continuar, opções), lista de marcação
     (seleção múltipla) ou caixa de texto.
@@ -1321,14 +1321,14 @@ function Get-WinForgePromptPlan {
 
     switch ($Prompt.Kind) {
         "key" {
-            $buttons += [PSCustomObject]@{ Text = (Get-WinForgeText 'Continuar'); Answer = ""; Index = -1; Accent = $true; Description = ""; Exit = $false }
+            $buttons += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Continuar'); Answer = ""; Index = -1; Accent = $true; Description = ""; Exit = $false }
         }
 
         "choice" {
             $index = 0
 
             # Um destaque só por pergunta: a resposta padrão só ganha a cor quando a ação não destacou nenhuma outra (na
-            # pasta da revisão, "Limpar com o WinForge" em destaque e "Pular esta pasta" como padrão ficavam os dois).
+            # pasta da revisão, "Limpar com o TF-Toolkit" em destaque e "Pular esta pasta" como padrão ficavam os dois).
             $anyAccent = (@($Prompt.Options | Where-Object { [bool]$_.Accent }).Count -gt 0)
 
             foreach ($option in @($Prompt.Options)) {
@@ -1347,7 +1347,7 @@ function Get-WinForgePromptPlan {
                     Accent      = $isAccent
                     Description = [string]$option.Description
                     Exit        = [bool]$option.Exit
-                    Danger      = [bool](Get-WinForgeJsonValue -Object $option -Name "Danger" -Default $false)
+                    Danger      = [bool](Get-TFToolkitJsonValue -Object $option -Name "Danger" -Default $false)
                 }
 
                 $index++
@@ -1360,23 +1360,23 @@ function Get-WinForgePromptPlan {
 
         default {
             if ($label -match '(?i)[\(\[]\s*S\s*/\s*N\s*[\)\]]') {
-                $buttons += [PSCustomObject]@{ Text = (Get-WinForgeText 'Sim'); Answer = "S"; Index = -1; Accent = $true; Description = ""; Exit = $false }
-                $buttons += [PSCustomObject]@{ Text = (Get-WinForgeText 'Não'); Answer = "N"; Index = -1; Accent = $false; Description = ""; Exit = $false }
+                $buttons += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Sim'); Answer = "S"; Index = -1; Accent = $true; Description = ""; Exit = $false }
+                $buttons += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Não'); Answer = "N"; Index = -1; Accent = $false; Description = ""; Exit = $false }
             }
             elseif ($label -match '(?i)\bENTER\b' -and $label -match '(?i)pressione|conclua' -and $label -notmatch '(?i)digite|cole|informe') {
                 # "Pressione ENTER para seguir": só o botão; uma caixa de texto ali não serviria para nada.
-                $buttons += [PSCustomObject]@{ Text = (Get-WinForgeText 'Continuar'); Answer = ""; Index = -1; Accent = $true; Description = ""; Exit = $false }
+                $buttons += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Continuar'); Answer = ""; Index = -1; Accent = $true; Description = ""; Exit = $false }
 
                 if ($label -match '(?i)\bP\s*=\s*pular') {
-                    $buttons += [PSCustomObject]@{ Text = (Get-WinForgeText 'Pular as etapas restantes'); Answer = "P"; Index = -1; Accent = $false; Description = ""; Exit = $false }
+                    $buttons += [PSCustomObject]@{ Text = (Get-TFToolkitText 'Pular as etapas restantes'); Answer = "P"; Index = -1; Accent = $false; Description = ""; Exit = $false }
                 }
             }
             else {
                 # Texto livre. As dicas de teclado do console saem do rótulo e viram o que são na janela: "(ENTER = 30)"
                 # é a resposta já escrita na caixa; "(ENTER cancela)" e "(vazio = voltar)" viram o botão de sair. Sem
-                # resposta padrão, a caixa vazia é desistir (Read-WinForgeText): o botão Cancelar manda isso.
+                # resposta padrão, a caixa vazia é desistir (Read-TFToolkitText): o botão Cancelar manda isso.
                 $showText = $true
-                $exitText = (Get-WinForgeText 'Cancelar')
+                $exitText = (Get-TFToolkitText 'Cancelar')
 
                 if ($label -match '(?i)\s*\(\s*ENTER\s*=\s*([^)]+)\)') {
                     $defaultText = $Matches[1].Trim()
@@ -1385,7 +1385,7 @@ function Get-WinForgePromptPlan {
                 }
                 elseif ($label -match '(?i)\s*\(\s*vazio\s*=\s*voltar\s*\)') {
                     $label = $label.Replace($Matches[0], "")
-                    $exitText = (Get-WinForgeText 'Voltar')
+                    $exitText = (Get-TFToolkitText 'Voltar')
                 }
                 elseif ($label -match '(?i)\s*\(\s*ENTER\s+cancela\s*\)') {
                     $label = $label.Replace($Matches[0], "")
@@ -1416,13 +1416,13 @@ function Get-WinForgePromptPlan {
 # Um runspace à parte, só para leituras: a janela continua respondendo enquanto o PC é lido (a proteção do Windows e as
 # consultas WMI podem levar segundos). Os módulos são importados uma vez, na primeira leitura, e não na thread da janela.
 $script:GuiReaderScript = @'
-param ([string]$WinForgeReadModuleRoot, [string[]]$WinForgeReadModules, [string]$WinForgeReadCommand, [hashtable]$WinForgeReadArguments)
+param ([string]$TFToolkitReadModuleRoot, [string[]]$TFToolkitReadModules, [string]$TFToolkitReadCommand, [hashtable]$TFToolkitReadArguments)
 
 $ErrorActionPreference = "Stop"
 
-if (-not $global:WinForgeReaderReady) {
-    foreach ($name in $WinForgeReadModules) {
-        $modulePath = Join-Path $WinForgeReadModuleRoot "$name.psm1"
+if (-not $global:TFToolkitReaderReady) {
+    foreach ($name in $TFToolkitReadModules) {
+        $modulePath = Join-Path $TFToolkitReadModuleRoot "$name.psm1"
 
         try {
             Import-Module -Name $modulePath -Force -DisableNameChecking -Global
@@ -1433,14 +1433,14 @@ if (-not $global:WinForgeReaderReady) {
         }
     }
 
-    $global:WinForgeReaderReady = $true
+    $global:TFToolkitReaderReady = $true
 }
 
-& $WinForgeReadCommand @WinForgeReadArguments
+& $TFToolkitReadCommand @TFToolkitReadArguments
 '@
 
 
-function New-WinForgeGuiReader {
+function New-TFToolkitGuiReader {
     # Prepara o runspace das leituras. Abrir é rápido; os módulos só são importados na primeira leitura.
     param (
         [Parameter(Mandatory)]
@@ -1466,7 +1466,7 @@ function New-WinForgeGuiReader {
 }
 
 
-function Start-WinForgeGuiRead {
+function Start-TFToolkitGuiRead {
     # Começa uma leitura (uma função dos módulos, com os parâmetros dados). Devolve $false se a anterior não terminou.
     param (
         [Parameter(Mandatory)]
@@ -1498,7 +1498,7 @@ function Start-WinForgeGuiRead {
 }
 
 
-function Get-WinForgeGuiReadSeconds {
+function Get-TFToolkitGuiReadSeconds {
     # Há quanto tempo a leitura em andamento começou, pelo cronômetro: um acerto do relógio do Windows no meio (a hora da
     # internet, o fuso) não a faz passar do limite antes da hora nem a deixa presa. Sem cronômetro, pela hora de início.
     param ([Parameter(Mandatory)]$Reader)
@@ -1512,7 +1512,7 @@ function Get-WinForgeGuiReadSeconds {
 }
 
 
-function Receive-WinForgeGuiRead {
+function Receive-TFToolkitGuiRead {
     <#
     O resultado da leitura em andamento: $null enquanto ela não termina; depois, Output (o que a função devolveu) e
     Failed (verdadeiro quando ela lançou erro), e o leitor fica livre para a próxima.
@@ -1546,7 +1546,7 @@ function Receive-WinForgeGuiRead {
 }
 
 
-function Close-WinForgeGuiReader {
+function Close-TFToolkitGuiReader {
     # Descarta o leitor sem esperar: uma leitura presa (WMI que não responde) é interrompida e o runspace fechado em
     # segundo plano, e a janela não fica parada esperando por ela.
     param (
@@ -1571,7 +1571,7 @@ function Close-WinForgeGuiReader {
 # Auxiliares da janela (lógica sem WPF, para ser testada fora do Windows)
 # ---------------------------------------------------------------------------
 
-function Format-WinForgeClock {
+function Format-TFToolkitClock {
     # Relógio da execução: 00:00 ou 1:02:03.
     param ([TimeSpan]$Span)
 
@@ -1585,13 +1585,13 @@ function Format-WinForgeClock {
 }
 
 
-function Get-WinForgeRunView {
+function Get-TFToolkitRunView {
     <#
     Como a janela apresenta o fim de uma ação: Level (Ok | Warn | Bad | Muted) escolhe a cor; StatusText é o texto ao
     lado do título; a faixa de resultado só aparece quando há algo a dizer (ShowBanner). Taskbar é o estado do botão
     na barra de tarefas (Normal = verde, Paused = amarelo, Error = vermelho) enquanto a pessoa não volta à janela.
-    Status é o da sessão (Completed | Stopped | Failed); Outcome é o WinForge.Outcome devolvido pela ação, se houver.
-    Quando a ação deu título próprio ao resultado (Set-WinForgeResultView), ele vale na faixa e no status, com a cor que
+    Status é o da sessão (Completed | Stopped | Failed); Outcome é o TFToolkit.Outcome devolvido pela ação, se houver.
+    Quando a ação deu título próprio ao resultado (Set-TFToolkitResultView), ele vale na faixa e no status, com a cor que
     ela pediu; Next e NextLabel são o botão do próximo passo, e HideSummary esconde o resumo.
     #>
     param (
@@ -1600,7 +1600,7 @@ function Get-WinForgeRunView {
         [TimeSpan]$Elapsed = [TimeSpan]::Zero
     )
 
-    $clock = Format-WinForgeClock -Span $Elapsed
+    $clock = Format-TFToolkitClock -Span $Elapsed
     $kind = "Done"
     $title = ""
     $summary = ""
@@ -1613,13 +1613,13 @@ function Get-WinForgeRunView {
         $title = [string]$Outcome.Title
         $summary = [string]$Outcome.Summary
         $reboot = [bool]$Outcome.RebootRequired
-        $headline = ([string](Get-WinForgeJsonValue -Object $Outcome -Name "Headline" -Default "")).Trim()
-        $tone = [string](Get-WinForgeJsonValue -Object $Outcome -Name "Tone" -Default "")
+        $headline = ([string](Get-TFToolkitJsonValue -Object $Outcome -Name "Headline" -Default "")).Trim()
+        $tone = [string](Get-TFToolkitJsonValue -Object $Outcome -Name "Tone" -Default "")
     }
 
     $view = [ordered]@{
         Level      = "Muted"
-        StatusText = (Get-WinForgeText 'Concluído')
+        StatusText = (Get-TFToolkitText 'Concluído')
         ShowBanner = $false
         BannerTitle = ""
         BannerText  = ""
@@ -1634,43 +1634,43 @@ function Get-WinForgeRunView {
 
     if ($Status -eq "Stopped") {
         $view.Level = "Warn"
-        $view.StatusText = (Get-WinForgeText 'Interrompido')
+        $view.StatusText = (Get-TFToolkitText 'Interrompido')
         $view.ShowBanner = $true
-        $view.BannerTitle = (Get-WinForgeText 'Interrompido')
-        $view.BannerText = (Get-WinForgeText 'A ação foi interrompida. O que já tinha sido feito continua feito; a etapa em andamento ficou incompleta.')
+        $view.BannerTitle = (Get-TFToolkitText 'Interrompido')
+        $view.BannerText = (Get-TFToolkitText 'A ação foi interrompida. O que já tinha sido feito continua feito; a etapa em andamento ficou incompleta.')
         $view.Taskbar = "Paused"
         $view.Notify = $false
     }
     elseif ($Status -eq "Failed") {
         $view.Level = "Bad"
-        $view.StatusText = (Get-WinForgeText 'Terminou com erro')
+        $view.StatusText = (Get-TFToolkitText 'Terminou com erro')
         $view.ShowBanner = $true
-        $view.BannerTitle = (Get-WinForgeText 'Terminou com erro')
-        $view.BannerText = $(if ($summary) { $summary } else { (Get-WinForgeText 'A ação terminou com erro. Veja os detalhes técnicos.') })
+        $view.BannerTitle = (Get-TFToolkitText 'Terminou com erro')
+        $view.BannerText = $(if ($summary) { $summary } else { (Get-TFToolkitText 'A ação terminou com erro. Veja os detalhes técnicos.') })
         $view.Taskbar = "Error"
     }
     else {
         switch ($kind) {
             "Ok" {
-                $view.Level = "Ok"; $view.StatusText = (Get-WinForgeText 'Concluído'); $view.Taskbar = "Normal"
-                $view.ShowBanner = $true; $view.BannerTitle = (Get-WinForgeText 'Tudo certo'); $view.BannerText = $summary
+                $view.Level = "Ok"; $view.StatusText = (Get-TFToolkitText 'Concluído'); $view.Taskbar = "Normal"
+                $view.ShowBanner = $true; $view.BannerTitle = (Get-TFToolkitText 'Tudo certo'); $view.BannerText = $summary
             }
             "Warning" {
-                $view.Level = "Warn"; $view.StatusText = (Get-WinForgeText 'Concluído com ressalvas'); $view.Taskbar = "Paused"
-                $view.ShowBanner = $true; $view.BannerTitle = (Get-WinForgeText 'Concluído com ressalvas'); $view.BannerText = $summary
+                $view.Level = "Warn"; $view.StatusText = (Get-TFToolkitText 'Concluído com ressalvas'); $view.Taskbar = "Paused"
+                $view.ShowBanner = $true; $view.BannerTitle = (Get-TFToolkitText 'Concluído com ressalvas'); $view.BannerText = $summary
             }
             "Failed" {
-                $view.Level = "Bad"; $view.StatusText = (Get-WinForgeText 'Não foi concluído'); $view.Taskbar = "Error"
-                $view.ShowBanner = $true; $view.BannerTitle = (Get-WinForgeText 'Não foi concluído'); $view.BannerText = $summary
+                $view.Level = "Bad"; $view.StatusText = (Get-TFToolkitText 'Não foi concluído'); $view.Taskbar = "Error"
+                $view.ShowBanner = $true; $view.BannerTitle = (Get-TFToolkitText 'Não foi concluído'); $view.BannerText = $summary
             }
             "Skipped" {
-                $view.Level = "Muted"; $view.StatusText = $(if ($title) { $title } else { (Get-WinForgeText 'Nada a fazer') }); $view.Taskbar = "None"
+                $view.Level = "Muted"; $view.StatusText = $(if ($title) { $title } else { (Get-TFToolkitText 'Nada a fazer') }); $view.Taskbar = "None"
                 $view.ShowBanner = $true; $view.BannerTitle = $view.StatusText; $view.BannerText = $summary
                 $view.Notify = $false
             }
             default {
                 # A ação só mostrou informações (consulta): não há veredito a destacar.
-                $view.Level = "Muted"; $view.StatusText = (Get-WinForgeText 'Concluído')
+                $view.Level = "Muted"; $view.StatusText = (Get-TFToolkitText 'Concluído')
                 $view.Notify = $false
             }
         }
@@ -1688,25 +1688,25 @@ function Get-WinForgeRunView {
                 $view.Notify = $true
             }
 
-            $view.Next = [string](Get-WinForgeJsonValue -Object $Outcome -Name "Next" -Default "")
-            $view.NextLabel = [string](Get-WinForgeJsonValue -Object $Outcome -Name "NextLabel" -Default "")
-            $view.HideSummary = [bool](Get-WinForgeJsonValue -Object $Outcome -Name "HideSummary" -Default $false)
+            $view.Next = [string](Get-TFToolkitJsonValue -Object $Outcome -Name "Next" -Default "")
+            $view.NextLabel = [string](Get-TFToolkitJsonValue -Object $Outcome -Name "NextLabel" -Default "")
+            $view.HideSummary = [bool](Get-TFToolkitJsonValue -Object $Outcome -Name "HideSummary" -Default $false)
         }
 
         if ($view.ShowBanner -and $reboot) {
-            $view.BannerText = ($view.BannerText + (Get-WinForgeRebootSentence -Kind $kind -Detail $view.BannerText)).Trim()
+            $view.BannerText = ($view.BannerText + (Get-TFToolkitRebootSentence -Kind $kind -Detail $view.BannerText)).Trim()
         }
     }
 
-    $view.BannerText = ($view.BannerText + (Get-WinForgeText ' Duração: {0}.' "$clock")).Trim()
-    $view.ResultText = (Get-WinForgeResultSentence -Status $Status -Outcome $Outcome -ShowBanner $view.ShowBanner) + (Get-WinForgeText ' Duração: {0}.' "$clock")
+    $view.BannerText = ($view.BannerText + (Get-TFToolkitText ' Duração: {0}.' "$clock")).Trim()
+    $view.ResultText = (Get-TFToolkitResultSentence -Status $Status -Outcome $Outcome -ShowBanner $view.ShowBanner) + (Get-TFToolkitText ' Duração: {0}.' "$clock")
     $view.ResultText = $view.ResultText.Trim()
 
     return [PSCustomObject]$view
 }
 
 
-function Get-WinForgeResultSentence {
+function Get-TFToolkitResultSentence {
     <#
     A frase do resultado na tela de execução, embaixo do título ("Tudo certo", "Concluído com ressalvas"...): o que
     aconteceu, sem repetir o título. Vem do detalhe que a ação registrou; sem ele, uma frase do próprio desfecho. Quando a
@@ -1719,7 +1719,7 @@ function Get-WinForgeResultSentence {
     )
 
     if ($Status -eq "Stopped") {
-        return (Get-WinForgeText 'O que já tinha sido feito continua feito; a etapa em andamento ficou incompleta.')
+        return (Get-TFToolkitText 'O que já tinha sido feito continua feito; a etapa em andamento ficou incompleta.')
     }
 
     $kind = "Done"
@@ -1731,8 +1731,8 @@ function Get-WinForgeResultSentence {
         $detail = ([string]$Outcome.Detail).Trim().TrimEnd(".").Trim()
         $reboot = [bool]$Outcome.RebootRequired
 
-        $headline = ([string](Get-WinForgeJsonValue -Object $Outcome -Name "Headline" -Default "")).Trim()
-        $note = ([string](Get-WinForgeJsonValue -Object $Outcome -Name "Note" -Default "")).Trim().TrimEnd(".").Trim()
+        $headline = ([string](Get-TFToolkitJsonValue -Object $Outcome -Name "Headline" -Default "")).Trim()
+        $note = ([string](Get-TFToolkitJsonValue -Object $Outcome -Name "Note" -Default "")).Trim().TrimEnd(".").Trim()
 
         if ($headline -and $note -and $Status -ne "Failed") { $detail = $note }
     }
@@ -1752,28 +1752,28 @@ function Get-WinForgeResultSentence {
     }
 
     if ($Status -eq "Failed") {
-        if ($sentence.Length -eq 0) { $sentence = (Get-WinForgeText 'A ação terminou com um erro inesperado. Veja os detalhes técnicos.') }
+        if ($sentence.Length -eq 0) { $sentence = (Get-TFToolkitText 'A ação terminou com um erro inesperado. Veja os detalhes técnicos.') }
         return $sentence
     }
 
     switch ($kind) {
-        "Ok" { if ($sentence.Length -eq 0) { $sentence = (Get-WinForgeText 'Concluído com sucesso.') } }
-        "Warning" { if ($sentence.Length -eq 0) { $sentence = (Get-WinForgeText 'Algumas etapas pediram atenção; veja os detalhes técnicos.') } }
-        "Failed" { if ($sentence.Length -eq 0) { $sentence = (Get-WinForgeText 'Veja os detalhes técnicos para saber o motivo.') } }
+        "Ok" { if ($sentence.Length -eq 0) { $sentence = (Get-TFToolkitText 'Concluído com sucesso.') } }
+        "Warning" { if ($sentence.Length -eq 0) { $sentence = (Get-TFToolkitText 'Algumas etapas pediram atenção; veja os detalhes técnicos.') } }
+        "Failed" { if ($sentence.Length -eq 0) { $sentence = (Get-TFToolkitText 'Veja os detalhes técnicos para saber o motivo.') } }
         "Skipped" {
-            if (Test-WinForgeCanceledText -Text $detail) { $sentence = (Get-WinForgeText 'Operação cancelada.') }
-            elseif ($sentence.Length -eq 0) { $sentence = (Get-WinForgeText 'Não havia nada a fazer.') }
+            if (Test-TFToolkitCanceledText -Text $detail) { $sentence = (Get-TFToolkitText 'Operação cancelada.') }
+            elseif ($sentence.Length -eq 0) { $sentence = (Get-TFToolkitText 'Não havia nada a fazer.') }
         }
         default { $sentence = "" }
     }
 
-    if ($ShowBanner -and $reboot) { $sentence = ($sentence + (Get-WinForgeRebootSentence -Kind $kind -Detail $detail)).Trim() }
+    if ($ShowBanner -and $reboot) { $sentence = ($sentence + (Get-TFToolkitRebootSentence -Kind $kind -Detail $detail)).Trim() }
 
     return $sentence
 }
 
 
-function Get-WinForgePromptLayout {
+function Get-TFToolkitPromptLayout {
     <#
     A tela de execução não rola, e os botões de uma pergunta têm de ficar sempre à vista. O cartão da pergunta recebe
     como altura máxima o espaço que sobra entre o alto dele e os detalhes técnicos; dentro dele, só a lista (ou as opções
@@ -1831,8 +1831,8 @@ function Get-WinForgePromptLayout {
 }
 
 
-function Get-WinForgeOutputFileName {
-    # Nome sugerido ao salvar a saída de uma ação: "WinForge - Reparar o Windows - 2026-10-18 1502.txt".
+function Get-TFToolkitOutputFileName {
+    # Nome sugerido ao salvar a saída de uma ação: "TF-Toolkit - Reparar o Windows - 2026-10-18 1502.txt".
     param (
         [string]$Title,
         [datetime]$When = (Get-Date)
@@ -1844,11 +1844,11 @@ function Get-WinForgeOutputFileName {
     if ($clean.Length -gt 60) { $clean = $clean.Substring(0, 60).Trim() }
     if ([string]::IsNullOrEmpty($clean)) { $clean = "saida" }
 
-    return ("WinForge - {0} - {1}.txt" -f $clean, $When.ToString("yyyy-MM-dd HHmm"))
+    return ("TF-Toolkit - {0} - {1}.txt" -f $clean, $When.ToString("yyyy-MM-dd HHmm"))
 }
 
 
-function Resolve-WinForgeWindowBounds {
+function Resolve-TFToolkitWindowBounds {
     <#
     Valida o tamanho e a posição guardados da janela. Devolve Left/Top/Width/Height/Maximized prontos para usar, ou
     $null quando nada foi guardado ou a janela ficaria fora das telas atuais (monitor desligado, resolução menor).

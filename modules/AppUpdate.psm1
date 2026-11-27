@@ -1,8 +1,8 @@
-﻿# Nova versão do WinForge: consulta a última versão publicada no GitHub, baixa o WinForge.zip para a pasta Downloads e
+﻿# Nova versão do TF-Toolkit: consulta a última versão publicada no GitHub, baixa o TF-Toolkit.zip para a pasta Downloads e
 # confere o SHA-256 do arquivo antes de dizer que ele está pronto.
 #
-# Instalar é com a janela fechada: o WinForge.Setup.ps1 da versão nova espera o WinForge fechar, troca os arquivos
-# (voltando ao que era se algo falhar; Install.psm1) e abre o WinForge de novo. O hash vem do "digest" que o GitHub
+# Instalar é com a janela fechada: o TF-Toolkit.Setup.ps1 da versão nova espera o TF-Toolkit fechar, troca os arquivos
+# (voltando ao que era se algo falhar; Install.psm1) e abre o TF-Toolkit de novo. O hash vem do "digest" que o GitHub
 # publica para cada arquivo de um release; sem ele, nada é baixado (um arquivo que não pode ser conferido não deve virar
 # instalação).
 
@@ -11,21 +11,21 @@
 # Versão e endereços
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeRepository {
+function Get-TFToolkitRepository {
     return "Neanderthal86/tf-toolkit"
 }
 
 
-function Get-WinForgeWebsiteUrl {
-    # O site do WinForge, na página de um idioma (sem -Language, o da janela): o português na raiz, o inglês em /en/ e o
-    # espanhol em /es/. O download e a atualização continuam no GitHub (Get-WinForgeRepository).
+function Get-TFToolkitWebsiteUrl {
+    # O site do TF-Toolkit, na página de um idioma (sem -Language, o da janela): o português na raiz, o inglês em /en/ e o
+    # espanhol em /es/. O download e a atualização continuam no GitHub (Get-TFToolkitRepository).
     param (
         [string]$Language = ""
     )
 
     $site = "https://techfontes.com.br"
 
-    if ([string]::IsNullOrEmpty($Language)) { $Language = [string](Get-WinForgeLanguage) }
+    if ([string]::IsNullOrEmpty($Language)) { $Language = [string](Get-TFToolkitLanguage) }
 
     switch ($Language) {
         "en" { return "$site/en/" }
@@ -36,7 +36,7 @@ function Get-WinForgeWebsiteUrl {
 }
 
 
-function ConvertTo-WinForgeVersion {
+function ConvertTo-TFToolkitVersion {
     # "v3.7", "Build 3.7" e "3.7.0" viram o mesmo [version] (sem componentes -1, que fariam 3.7 ser menor que 3.7.0).
     # Texto sem número vira $null.
     param (
@@ -47,7 +47,7 @@ function ConvertTo-WinForgeVersion {
         return $null
     }
 
-    # O primeiro número com ponto que não é pedaço de outro: em "WinForge 2026 v3.45" é 3.45 (e não 2026), e ".44"
+    # O primeiro número com ponto que não é pedaço de outro: em "TF-Toolkit 2026 v3.45" é 3.45 (e não 2026), e ".44"
     # sozinho não é versão. Sem ponto, só um número que é o texto inteiro ("v4", "Build 4").
     $match = [regex]::Match($Text, '(?<![0-9.])v?([0-9]+\.[0-9]+(?:\.[0-9]+){0,2})(?![0-9.])')
 
@@ -71,7 +71,7 @@ function ConvertTo-WinForgeVersion {
 }
 
 
-function Format-WinForgeVersion {
+function Format-TFToolkitVersion {
     # 3.7.0.0 volta a ser "3.7"; só mostra Build e Revision quando existem.
     param (
         [Parameter(Mandatory)]
@@ -90,9 +90,9 @@ function Format-WinForgeVersion {
 }
 
 
-function Test-WinForgeReleaseDownloadUrl {
+function Test-TFToolkitReleaseDownloadUrl {
     # O arquivo só é baixado se o endereço for https e apontar para um release do próprio repositório. Um nome de
-    # arquivo vindo da internet nunca é usado como caminho: quem escolhe o nome do arquivo local é o WinForge.
+    # arquivo vindo da internet nunca é usado como caminho: quem escolhe o nome do arquivo local é o TF-Toolkit.
     param (
         [string]$Url
     )
@@ -117,7 +117,7 @@ function Test-WinForgeReleaseDownloadUrl {
         return $false
     }
 
-    $folder = "/$(Get-WinForgeRepository)/releases/download/"
+    $folder = "/$(Get-TFToolkitRepository)/releases/download/"
 
     return ($uri.AbsolutePath.Length -gt $folder.Length -and $uri.AbsolutePath.StartsWith($folder, [StringComparison]::OrdinalIgnoreCase))
 }
@@ -127,7 +127,7 @@ function Test-WinForgeReleaseDownloadUrl {
 # Consulta
 # ---------------------------------------------------------------------------
 
-function ConvertTo-WinForgeWebErrorText {
+function ConvertTo-TFToolkitWebErrorText {
     <#
     Uma falha de rede, do GitHub ou do disco em português, com o que fazer: o .NET escreve a mensagem em inglês na
     maioria dos Windows em português. Devolve "" quando a falha não é de um tipo conhecido (quem chama usa a mensagem
@@ -136,7 +136,7 @@ function ConvertTo-WinForgeWebErrorText {
     #>
     param (
         $Exception,
-        [string]$NotFound = (Get-WinForgeText 'o GitHub não encontrou uma versão publicada do WinForge')
+        [string]$NotFound = (Get-TFToolkitText 'o GitHub não encontrou uma versão publicada do TF-Toolkit')
     )
 
     $code = 0
@@ -147,7 +147,7 @@ function ConvertTo-WinForgeWebErrorText {
 
     for ($current = $Exception; $null -ne $current; $current = $current.InnerException) {
         if ($current -is [System.IO.IOException] -and (($current.HResult -band 0xFFFF) -in 39, 112)) {
-            return (Get-WinForgeText 'falta espaço em disco')
+            return (Get-TFToolkitText 'falta espaço em disco')
         }
 
         if ($current -is [System.Net.WebException] -and -not $status) { $status = [string]$current.Status }
@@ -181,71 +181,71 @@ function ConvertTo-WinForgeWebErrorText {
 
     # O limite secundário (consultas demais em pouco tempo) vem como 403 com Retry-After, em segundos.
     if (($code -eq 403 -or $code -eq 429) -and $retryAfter) {
-        return (Get-WinForgeText 'o GitHub limitou por um tempo as consultas vindas desta conexão; tente de novo em alguns minutos')
+        return (Get-TFToolkitText 'o GitHub limitou por um tempo as consultas vindas desta conexão; tente de novo em alguns minutos')
     }
 
     if ($code -eq 429 -or ($code -eq 403 -and $remaining -eq "0")) {
-        $text = (Get-WinForgeText 'o GitHub limitou por um tempo as consultas vindas desta conexão')
+        $text = (Get-TFToolkitText 'o GitHub limitou por um tempo as consultas vindas desta conexão')
         $epoch = 0L
 
         if ([int64]::TryParse($reset, [ref]$epoch) -and $epoch -gt 0) {
             $when = [DateTimeOffset]::FromUnixTimeSeconds($epoch).LocalDateTime
-            $text = (Get-WinForgeText '{0}; tente de novo depois das {1}' "$text" "$(Format-WinForgeDateTime -When $when -Pattern 'HH:mm')")
+            $text = (Get-TFToolkitText '{0}; tente de novo depois das {1}' "$text" "$(Format-TFToolkitDateTime -When $when -Pattern 'HH:mm')")
         }
         else {
-            $text = (Get-WinForgeText '{0}; tente de novo em uma hora' "$text")
+            $text = (Get-TFToolkitText '{0}; tente de novo em uma hora' "$text")
         }
 
         return $text
     }
 
     if ($code -eq 404) { return $NotFound }
-    if ($code -ge 500) { return (Get-WinForgeText 'o GitHub está com problemas agora (erro {0}); tente de novo mais tarde' "$code") }
-    if ($code -ge 400) { return (Get-WinForgeText 'o GitHub recusou a consulta (erro {0}); tente de novo mais tarde' "$code") }
+    if ($code -ge 500) { return (Get-TFToolkitText 'o GitHub está com problemas agora (erro {0}); tente de novo mais tarde' "$code") }
+    if ($code -ge 400) { return (Get-TFToolkitText 'o GitHub recusou a consulta (erro {0}); tente de novo mais tarde' "$code") }
 
     switch -Regex ($status) {
-        '^(NameResolutionFailure|ProxyNameResolutionFailure|ConnectFailure)$' { return (Get-WinForgeText 'sem conexão com o GitHub: confira a internet ou se esta rede bloqueia o github.com') }
-        '^Timeout$' { return (Get-WinForgeText 'o GitHub não respondeu a tempo; tente de novo mais tarde') }
-        '^(TrustFailure|SecureChannelFailure)$' { return (Get-WinForgeText 'a conexão segura com o GitHub falhou; confira se a data e a hora do PC estão certas') }
-        '^(ConnectionClosed|ReceiveFailure|SendFailure|KeepAliveFailure)$' { return (Get-WinForgeText 'a conexão com o GitHub caiu no meio; tente de novo') }
+        '^(NameResolutionFailure|ProxyNameResolutionFailure|ConnectFailure)$' { return (Get-TFToolkitText 'sem conexão com o GitHub: confira a internet ou se esta rede bloqueia o github.com') }
+        '^Timeout$' { return (Get-TFToolkitText 'o GitHub não respondeu a tempo; tente de novo mais tarde') }
+        '^(TrustFailure|SecureChannelFailure)$' { return (Get-TFToolkitText 'a conexão segura com o GitHub falhou; confira se a data e a hora do PC estão certas') }
+        '^(ConnectionClosed|ReceiveFailure|SendFailure|KeepAliveFailure)$' { return (Get-TFToolkitText 'a conexão com o GitHub caiu no meio; tente de novo') }
     }
 
     return ""
 }
 
 
-function Get-WinForgeLatestRelease {
+function Get-TFToolkitLatestRelease {
     <#
     Lê a última versão publicada (não conta rascunho nem pré-lançamento). Devolve Tag, Version, PageUrl, Published,
-    Notes e Asset (Url, Size, Digest; $null quando o release não tem o WinForge.zip). Lança erro quando o GitHub não
+    Notes e Asset (Url, Size, Digest; $null quando o release não tem o TF-Toolkit.zip). Lança erro quando o GitHub não
     responde ou a resposta não faz sentido; quem chama decide como avisar.
     #>
-    $uri = "https://api.github.com/repos/$(Get-WinForgeRepository)/releases/latest"
+    $uri = "https://api.github.com/repos/$(Get-TFToolkitRepository)/releases/latest"
 
-    Enable-WinForgeTls12
+    Enable-TFToolkitTls12
 
     $headers = @{
-        "User-Agent" = "WinForge/$(Get-WinForgeBuild)"
+        "User-Agent" = "TF-Toolkit/$(Get-TFToolkitBuild)"
         "Accept"     = "application/vnd.github+json"
     }
 
     $release = Invoke-RestMethod -Uri $uri -Headers $headers -TimeoutSec 15 -ErrorAction Stop
 
-    $tag = [string](Get-WinForgeJsonValue -Object $release -Name "tag_name" -Default "")
-    $version = ConvertTo-WinForgeVersion -Text $tag
+    $tag = [string](Get-TFToolkitJsonValue -Object $release -Name "tag_name" -Default "")
+    $version = ConvertTo-TFToolkitVersion -Text $tag
 
     if ($null -eq $version) {
-        throw (Get-WinForgeText 'A resposta do GitHub não trouxe uma versão reconhecível.')
+        throw (Get-TFToolkitText 'A resposta do GitHub não trouxe uma versão reconhecível.')
     }
 
     $asset = $null
 
-    foreach ($candidate in @(Get-WinForgeJsonValue -Object $release -Name "assets" -Default @())) {
-        if ([string](Get-WinForgeJsonValue -Object $candidate -Name "name" -Default "") -ieq "WinForge.zip") {
+    foreach ($candidate in @(Get-TFToolkitJsonValue -Object $release -Name "assets" -Default @())) {
+        if ([string](Get-TFToolkitJsonValue -Object $candidate -Name "name" -Default "") -ieq "TF-Toolkit.zip") {
             $asset = [PSCustomObject]@{
-                Url    = [string](Get-WinForgeJsonValue -Object $candidate -Name "browser_download_url" -Default "")
-                Size   = [int64](Get-WinForgeJsonValue -Object $candidate -Name "size" -Default 0)
-                Digest = [string](Get-WinForgeJsonValue -Object $candidate -Name "digest" -Default "")
+                Url    = [string](Get-TFToolkitJsonValue -Object $candidate -Name "browser_download_url" -Default "")
+                Size   = [int64](Get-TFToolkitJsonValue -Object $candidate -Name "size" -Default 0)
+                Digest = [string](Get-TFToolkitJsonValue -Object $candidate -Name "digest" -Default "")
             }
             break
         }
@@ -254,7 +254,7 @@ function Get-WinForgeLatestRelease {
     # A data do GitHub é ISO 8601 em UTC; vira a hora local (uma publicação às 01:30 UTC do dia 30 ainda é dia 29 no
     # Brasil). A leitura não depende do idioma do Windows.
     $published = $null
-    $publishedText = [string](Get-WinForgeJsonValue -Object $release -Name "published_at" -Default "")
+    $publishedText = [string](Get-TFToolkitJsonValue -Object $release -Name "published_at" -Default "")
     $parsed = [datetime]::MinValue
 
     if ($publishedText -and [datetime]::TryParse($publishedText, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind, [ref]$parsed)) {
@@ -264,28 +264,28 @@ function Get-WinForgeLatestRelease {
     return [PSCustomObject]@{
         Tag       = $tag
         Version   = $version
-        PageUrl   = [string](Get-WinForgeJsonValue -Object $release -Name "html_url" -Default "")
+        PageUrl   = [string](Get-TFToolkitJsonValue -Object $release -Name "html_url" -Default "")
         Published = $published
-        Notes     = [string](Get-WinForgeJsonValue -Object $release -Name "body" -Default "")
+        Notes     = [string](Get-TFToolkitJsonValue -Object $release -Name "body" -Default "")
         Asset     = $asset
     }
 }
 
 
-function Get-WinForgeUpdateStatus {
+function Get-TFToolkitUpdateStatus {
     <#
     Compara a versão instalada com a última publicada. Status: UpdateAvailable, UpToDate, Ahead (a instalada é mais
     nova que a publicada, comum em quem testa uma versão antes do release) ou Unreachable (sem internet, bloqueio ou
     resposta inválida; Error leva o motivo em português quando ele é conhecido). Current e Release vêm preenchidos
     quando foi possível ler.
     #>
-    $current = ConvertTo-WinForgeVersion -Text ([string](Get-WinForgeBuild))
+    $current = ConvertTo-TFToolkitVersion -Text ([string](Get-TFToolkitBuild))
 
     try {
-        $release = Get-WinForgeLatestRelease
+        $release = Get-TFToolkitLatestRelease
     }
     catch {
-        $friendly = ConvertTo-WinForgeWebErrorText -Exception $_.Exception
+        $friendly = ConvertTo-TFToolkitWebErrorText -Exception $_.Exception
 
         return [PSCustomObject]@{
             Status  = "Unreachable"
@@ -315,45 +315,45 @@ function Get-WinForgeUpdateStatus {
 }
 
 
-function Save-WinForgeUpdateCheck {
+function Save-TFToolkitUpdateCheck {
     <#
     Guarda a última versão publicada que uma consulta ao GitHub leu (Verificar nova versão ou o monitor), com a hora: o
-    resumo de Sobre o WinForge e o monitor dizem dela sem consultar de novo. Uma consulta que não chegou ao GitHub não
+    resumo de Sobre o TF-Toolkit e o monitor dizem dela sem consultar de novo. Uma consulta que não chegou ao GitHub não
     apaga o que já se sabia.
     #>
     param ([Parameter(Mandatory)]$Check)
 
-    $release = Get-WinForgeJsonValue -Object $Check -Name "Release" -Default $null
-    $version = $(if ($null -ne $release) { Get-WinForgeJsonValue -Object $release -Name "Version" -Default $null } else { $null })
+    $release = Get-TFToolkitJsonValue -Object $Check -Name "Release" -Default $null
+    $version = $(if ($null -ne $release) { Get-TFToolkitJsonValue -Object $release -Name "Version" -Default $null } else { $null })
 
     if ($version -isnot [version]) { return }
 
-    [void](Set-WinForgeSetting -Name "UpdateLatest" -Value (Format-WinForgeVersion -Version $version))
-    [void](Set-WinForgeSetting -Name "UpdateCheckedAt" -Value ((Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)))
+    [void](Set-TFToolkitSetting -Name "UpdateLatest" -Value (Format-TFToolkitVersion -Version $version))
+    [void](Set-TFToolkitSetting -Name "UpdateCheckedAt" -Value ((Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)))
 }
 
 
-function Get-WinForgeKnownUpdate {
+function Get-TFToolkitKnownUpdate {
     <#
-    O que o WinForge sabe da última versão publicada, sem consultar a internet (Save-WinForgeUpdateCheck): Latest (o
+    O que o TF-Toolkit sabe da última versão publicada, sem consultar a internet (Save-TFToolkitUpdateCheck): Latest (o
     número), Newer (mais nova que esta), Current (esta é a última), CheckedAt e Fresh (a consulta tem até 30 dias: depois
     disso, "a mais recente" já não se pode dizer). $null sem nenhuma consulta guardada, ou com uma que não se entende. A
     comparação é com a versão aberta agora: depois de atualizar, a versão guardada deixa de ser nova sozinha.
     #>
     param ([datetime]$Now = (Get-Date))
 
-    $latest = ConvertTo-WinForgeVersion -Text ([string](Get-WinForgeSetting -Name "UpdateLatest" -Default ""))
-    $current = ConvertTo-WinForgeVersion -Text ([string](Get-WinForgeBuild))
+    $latest = ConvertTo-TFToolkitVersion -Text ([string](Get-TFToolkitSetting -Name "UpdateLatest" -Default ""))
+    $current = ConvertTo-TFToolkitVersion -Text ([string](Get-TFToolkitBuild))
 
     if ($null -eq $latest -or $null -eq $current) { return $null }
 
-    $checkedAt = Get-WinForgeSettingDate -Name "UpdateCheckedAt"
+    $checkedAt = Get-TFToolkitSettingDate -Name "UpdateCheckedAt"
 
     # Uma data no futuro (o relógio estava adiantado) não vale como consulta recente.
     $fresh = ($null -ne $checkedAt -and $checkedAt -le $Now.AddDays(1) -and ($Now - $checkedAt).TotalDays -le 30)
 
     return [PSCustomObject]@{
-        Latest    = (Format-WinForgeVersion -Version $latest)
+        Latest    = (Format-TFToolkitVersion -Version $latest)
         Newer     = ($latest -gt $current)
         Current   = ($latest -eq $current)
         CheckedAt = $checkedAt
@@ -366,7 +366,7 @@ function Get-WinForgeKnownUpdate {
 # Integridade
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeFileSha256 {
+function Get-TFToolkitFileSha256 {
     param (
         [Parameter(Mandatory)]
         [string]$Path
@@ -376,7 +376,7 @@ function Get-WinForgeFileSha256 {
 }
 
 
-function Get-WinForgeExpectedHash {
+function Get-TFToolkitExpectedHash {
     <#
     O SHA-256 que o arquivo deve ter: o "digest" que o GitHub publica para cada arquivo de um release (sha256:...).
     Devolve "" quando o release não traz nenhum (quem chama não baixa). Um digest estragado lança erro: é um hash
@@ -387,29 +387,29 @@ function Get-WinForgeExpectedHash {
         $Release
     )
 
-    $asset = Get-WinForgeJsonValue -Object $Release -Name "Asset"
+    $asset = Get-TFToolkitJsonValue -Object $Release -Name "Asset"
     if ($null -eq $asset) { return "" }
 
-    $digest = [string](Get-WinForgeJsonValue -Object $asset -Name "Digest" -Default "")
+    $digest = [string](Get-TFToolkitJsonValue -Object $asset -Name "Digest" -Default "")
     if (-not $digest) { return "" }
 
     if ($digest -notmatch "(?i)^sha256:") {
-        throw (Get-WinForgeText 'O GitHub publicou um hash que não é SHA-256 para o WinForge.zip.')
+        throw (Get-TFToolkitText 'O GitHub publicou um hash que não é SHA-256 para o TF-Toolkit.zip.')
     }
 
     $hash = $digest.Substring(7).Trim()
 
     if ($hash -notmatch '^[0-9a-fA-F]{64}$') {
-        throw (Get-WinForgeText 'O hash publicado pelo GitHub para o WinForge.zip não é um SHA-256 reconhecível.')
+        throw (Get-TFToolkitText 'O hash publicado pelo GitHub para o TF-Toolkit.zip não é um SHA-256 reconhecível.')
     }
 
     return $hash.ToLowerInvariant()
 }
 
 
-function Save-WinForgeRelease {
+function Save-TFToolkitRelease {
     <#
-    Baixa o WinForge.zip do release para a pasta de destino com um nome que o WinForge escolhe (WinForge-<versão>.zip)
+    Baixa o TF-Toolkit.zip do release para a pasta de destino com um nome que o TF-Toolkit escolhe (TF-Toolkit-<versão>.zip)
     e confere tamanho e SHA-256. Integrity: Verified (hash igual; Reused quando o arquivo já estava lá, conferido),
     Mismatch (o download é apagado), NoHash (o release não publica hash; nada é baixado) ou Failed (Error leva o
     motivo). O download parcial (.download) nunca fica na pasta, nem quando a ação é interrompida.
@@ -422,7 +422,7 @@ function Save-WinForgeRelease {
         [string]$DestinationFolder
     )
 
-    $asset = Get-WinForgeJsonValue -Object $Release -Name "Asset"
+    $asset = Get-TFToolkitJsonValue -Object $Release -Name "Asset"
 
     $result = [PSCustomObject]@{
         Integrity = "Failed"
@@ -433,13 +433,13 @@ function Save-WinForgeRelease {
         Error     = ""
     }
 
-    if ($null -eq $asset -or -not (Test-WinForgeReleaseDownloadUrl -Url ([string](Get-WinForgeJsonValue -Object $asset -Name "Url" -Default "")))) {
-        $result.Error = (Get-WinForgeText 'o release não tem um WinForge.zip num endereço confiável do repositório')
+    if ($null -eq $asset -or -not (Test-TFToolkitReleaseDownloadUrl -Url ([string](Get-TFToolkitJsonValue -Object $asset -Name "Url" -Default "")))) {
+        $result.Error = (Get-TFToolkitText 'o release não tem um TF-Toolkit.zip num endereço confiável do repositório')
         return $result
     }
 
     try {
-        $result.Expected = Get-WinForgeExpectedHash -Release $Release
+        $result.Expected = Get-TFToolkitExpectedHash -Release $Release
     }
     catch {
         $result.Error = $_.Exception.Message
@@ -451,13 +451,13 @@ function Save-WinForgeRelease {
         return $result
     }
 
-    $finalPath = Join-Path $DestinationFolder ("WinForge-{0}.zip" -f (Format-WinForgeVersion -Version $Release.Version))
+    $finalPath = Join-Path $DestinationFolder ("TF-Toolkit-{0}.zip" -f (Format-TFToolkitVersion -Version $Release.Version))
     $partialPath = "$finalPath.download"
 
     # A mesma versão já baixada e conferida não é baixada de novo.
     if (Test-Path -LiteralPath $finalPath -PathType Leaf) {
         try {
-            if ((Get-WinForgeFileSha256 -Path $finalPath) -eq $result.Expected) {
+            if ((Get-TFToolkitFileSha256 -Path $finalPath) -eq $result.Expected) {
                 $result.Hash = $result.Expected
                 $result.Path = $finalPath
                 $result.Reused = $true
@@ -475,7 +475,7 @@ function Save-WinForgeRelease {
             [void](New-Item -ItemType Directory -Path $DestinationFolder -Force)
         }
 
-        Enable-WinForgeTls12
+        Enable-TFToolkitTls12
 
         $previous = $ProgressPreference
         $ProgressPreference = "SilentlyContinue"
@@ -488,20 +488,20 @@ function Save-WinForgeRelease {
         }
 
         if (-not (Test-Path -LiteralPath $partialPath -PathType Leaf)) {
-            throw (Get-WinForgeText 'o download terminou sem gravar o arquivo')
+            throw (Get-TFToolkitText 'o download terminou sem gravar o arquivo')
         }
 
         $size = (Get-Item -LiteralPath $partialPath).Length
 
         if ($size -le 0) {
-            throw (Get-WinForgeText 'o arquivo baixado está vazio')
+            throw (Get-TFToolkitText 'o arquivo baixado está vazio')
         }
 
         if ([int64]$asset.Size -gt 0 -and $size -ne [int64]$asset.Size) {
-            throw (Get-WinForgeText 'o arquivo chegou incompleto ({0} de {1} bytes); tente de novo' "$size" "$($asset.Size)")
+            throw (Get-TFToolkitText 'o arquivo chegou incompleto ({0} de {1} bytes); tente de novo' "$size" "$($asset.Size)")
         }
 
-        $result.Hash = Get-WinForgeFileSha256 -Path $partialPath
+        $result.Hash = Get-TFToolkitFileSha256 -Path $partialPath
 
         if ($result.Hash -ne $result.Expected) {
             $result.Integrity = "Mismatch"
@@ -519,19 +519,19 @@ function Save-WinForgeRelease {
                 $moved = $true
             }
             catch {
-                $target = Join-Path $DestinationFolder ("WinForge-{0} ({1}).zip" -f (Format-WinForgeVersion -Version $Release.Version), ($attempt + 1))
+                $target = Join-Path $DestinationFolder ("TF-Toolkit-{0} ({1}).zip" -f (Format-TFToolkitVersion -Version $Release.Version), ($attempt + 1))
             }
         }
 
         if (-not $moved) {
-            throw (Get-WinForgeText 'o arquivo {0} já existe na pasta Downloads e está em uso; feche o programa que o abriu e tente de novo' "$(Split-Path -Leaf $finalPath)")
+            throw (Get-TFToolkitText 'o arquivo {0} já existe na pasta Downloads e está em uso; feche o programa que o abriu e tente de novo' "$(Split-Path -Leaf $finalPath)")
         }
 
         $result.Path = $target
         $result.Integrity = "Verified"
     }
     catch {
-        $friendly = ConvertTo-WinForgeWebErrorText -Exception $_.Exception
+        $friendly = ConvertTo-TFToolkitWebErrorText -Exception $_.Exception
         $result.Integrity = "Failed"
         $result.Error = $(if ($friendly) { $friendly } else { $_.Exception.Message })
     }
@@ -544,11 +544,11 @@ function Save-WinForgeRelease {
 }
 
 
-function Get-WinForgeReleasePackageInfo {
+function Get-TFToolkitReleasePackageInfo {
     <#
-    Confere que o zip é um pacote do WinForge e lê dele: Root (a pasta de dentro do zip que tem os arquivos, "WinForge"
+    Confere que o zip é um pacote do TF-Toolkit e lê dele: Root (a pasta de dentro do zip que tem os arquivos, "TF-Toolkit"
     no pacote publicado, ou "" quando os arquivos estão na raiz) e Build (a versão escrita no Core.psm1 do pacote, ou "").
-    $null quando o zip não abre ou não tem o WinForge.Gui.ps1.
+    $null quando o zip não abre ou não tem o TF-Toolkit.Gui.ps1.
     #>
     param (
         [Parameter(Mandatory)]
@@ -566,8 +566,8 @@ function Get-WinForgeReleasePackageInfo {
         foreach ($entry in $zip.Entries) {
             $name = ([string]$entry.FullName).Replace("\", "/")
 
-            if ($name -ieq "WinForge.Gui.ps1") { $root = ""; break }
-            if ($name -match '^([^/]+)/WinForge\.Gui\.ps1$') { $root = $Matches[1]; break }
+            if ($name -ieq "TF-Toolkit.Gui.ps1") { $root = ""; break }
+            if ($name -match '^([^/]+)/TF-Toolkit\.Gui\.ps1$') { $root = $Matches[1]; break }
         }
 
         if ($null -eq $root) { return $null }
@@ -580,7 +580,7 @@ function Get-WinForgeReleasePackageInfo {
             $reader = New-Object System.IO.StreamReader ($core.Open())
 
             try {
-                $match = [regex]::Match($reader.ReadToEnd(), '\$script:WinForgeBuild\s*=\s*"([0-9.]+)"')
+                $match = [regex]::Match($reader.ReadToEnd(), '\$script:TFToolkitBuild\s*=\s*"([0-9.]+)"')
                 if ($match.Success) { $build = $match.Groups[1].Value }
             }
             finally {
@@ -603,7 +603,7 @@ function Get-WinForgeReleasePackageInfo {
 # Tela
 # ---------------------------------------------------------------------------
 
-function Format-WinForgeReleaseNotes {
+function Format-TFToolkitReleaseNotes {
     <#
     As primeiras linhas úteis das notas do release, sem Markdown nem HTML, para caber na tela: um link vira o texto
     dele, tabelas, blocos de código, comentários e marcações HTML somem. Truncated diz se havia mais linhas.
@@ -645,7 +645,7 @@ function Format-WinForgeReleaseNotes {
 }
 
 
-function Show-WinForgeDownloadedRelease {
+function Show-TFToolkitDownloadedRelease {
     # Onde o arquivo ficou, como instalar (com a pasta de dentro do zip) e a oferta de mostrar o arquivo na pasta. O
     # Explorador abre a pasta na sessão da pessoa, sem o Administrador da janela.
     param (
@@ -653,29 +653,29 @@ function Show-WinForgeDownloadedRelease {
         $Package
     )
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Arquivo') -Value $Saved.Path
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Arquivo') -Value $Saved.Path
     Write-Host ""
 
-    $appRoot = Get-WinForgeAppRoot
-    $what = $(if ($null -ne $Package -and $Package.Root) { (Get-WinForgeText 'entre na pasta {0} dentro do zip e copie tudo o que está nela' "$($Package.Root)") } else { (Get-WinForgeText 'copie tudo o que está no zip') })
-    Write-WinForgeStatus -Type Info -Notice -Message (Get-WinForgeText 'Para instalar à mão: feche o WinForge, abra o zip, {0} para {1}, substituindo os arquivos, e abra o WinForge de novo.' "$what" "$appRoot")
+    $appRoot = Get-TFToolkitAppRoot
+    $what = $(if ($null -ne $Package -and $Package.Root) { (Get-TFToolkitText 'entre na pasta {0} dentro do zip e copie tudo o que está nela' "$($Package.Root)") } else { (Get-TFToolkitText 'copie tudo o que está no zip') })
+    Write-TFToolkitStatus -Type Info -Notice -Message (Get-TFToolkitText 'Para instalar à mão: feche o TF-Toolkit, abra o zip, {0} para {1}, substituindo os arquivos, e abra o TF-Toolkit de novo.' "$what" "$appRoot")
     Write-Host ""
 
-    if (Confirm-WinForgeAction -Message (Get-WinForgeText 'Mostrar o arquivo na pasta Downloads?') -DefaultKey S -YesLabel (Get-WinForgeText 'Mostrar') -NoLabel (Get-WinForgeText 'Agora não')) {
+    if (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Mostrar o arquivo na pasta Downloads?') -DefaultKey S -YesLabel (Get-TFToolkitText 'Mostrar') -NoLabel (Get-TFToolkitText 'Agora não')) {
         try {
             Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$($Saved.Path)`"" -ErrorAction Stop
         }
         catch {
-            Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Não foi possível abrir a pasta: {0}' "$($_.Exception.Message)")
+            Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Não foi possível abrir a pasta: {0}' "$($_.Exception.Message)")
         }
     }
 }
 
 
-function Invoke-WinForgeSelfUpdate {
+function Invoke-TFToolkitSelfUpdate {
     <#
     Oferece instalar agora a versão baixada e conferida. Started: a troca começou (o instalador da versão nova espera o
-    WinForge fechar) e Result é o resultado da ação; Reason: não deu para começar (a instalação à mão continua valendo);
+    TF-Toolkit fechar) e Result é o resultado da ação; Reason: não deu para começar (a instalação à mão continua valendo);
     os dois vazios: a pessoa preferiu instalar depois.
     #>
     param (
@@ -692,215 +692,215 @@ function Invoke-WinForgeSelfUpdate {
     # Com outra janela ou outro menu desta pasta aberto, o instalador recusaria a troca só depois de fechar este: o que
     # fechar fica dito agora, sem o fecha e abre à toa.
     $others = @()
-    try { $others = @(Get-WinForgeRunningCopies -Root (Get-WinForgeAppRoot) | Where-Object { $_.Kind -ne "Agent" }) } catch { $others = @() }
+    try { $others = @(Get-TFToolkitRunningCopies -Root (Get-TFToolkitAppRoot) | Where-Object { $_.Kind -ne "Agent" }) } catch { $others = @() }
 
     if ($others.Count -gt 0) {
-        $answer.Reason = (Get-WinForgeText 'outra janela do WinForge continua aberta')
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Outra janela ou outro menu do WinForge está aberto. Feche-o e verifique de novo para instalar com um clique.')
+        $answer.Reason = (Get-TFToolkitText 'outra janela do TF-Toolkit continua aberta')
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Outra janela ou outro menu do TF-Toolkit está aberto. Feche-o e verifique de novo para instalar com um clique.')
         return $answer
     }
 
-    if (-not (Confirm-WinForgeAction -Message (Get-WinForgeText 'Instalar a versão {0} agora? O WinForge fecha, troca os arquivos e abre de novo em alguns segundos.' "$Published") -DefaultKey S -YesLabel (Get-WinForgeText 'Instalar agora') -NoLabel (Get-WinForgeText 'Depois'))) {
+    if (-not (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Instalar a versão {0} agora? O TF-Toolkit fecha, troca os arquivos e abre de novo em alguns segundos.' "$Published") -DefaultKey S -YesLabel (Get-TFToolkitText 'Instalar agora') -NoLabel (Get-TFToolkitText 'Depois'))) {
         return $answer
     }
 
-    Write-WinForgeStatus -Type Running -Notice -Message (Get-WinForgeText 'Preparando a instalação...')
+    Write-TFToolkitStatus -Type Running -Notice -Message (Get-TFToolkitText 'Preparando a instalação...')
 
     try {
-        [void](Start-WinForgeUpdateInstall -ZipPath $Saved.Path -PackageRoot ([string]$Package.Root) -Reopen $(if (Test-WinForgeGuiMode) { "Gui" } else { "Console" }))
+        [void](Start-TFToolkitUpdateInstall -ZipPath $Saved.Path -PackageRoot ([string]$Package.Root) -Reopen $(if (Test-TFToolkitGuiMode) { "Gui" } else { "Console" }))
     }
     catch {
         $answer.Reason = ([string]$_.Exception.Message).TrimEnd('.')
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível instalar sozinho: {0}. A instalação à mão continua valendo.' "$($answer.Reason)")
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível instalar sozinho: {0}. A instalação à mão continua valendo.' "$($answer.Reason)")
         return $answer
     }
 
-    Request-WinForgeAppExit -Reason "update"
-    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'O WinForge vai fechar e abrir de novo na versão {0}.' "$Published")
+    Request-TFToolkitAppExit -Reason "update"
+    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'O TF-Toolkit vai fechar e abrir de novo na versão {0}.' "$Published")
 
     $answer.Started = $true
-    $answer.Result = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'instalando a versão {0}; o WinForge fecha e abre de novo' "$Published") -Title $Title) `
-        -Headline (Get-WinForgeText 'Instalando a versão {0}' "$Published") -Note (Get-WinForgeText 'O WinForge fecha agora e abre de novo na versão nova, em alguns segundos.')
+    $answer.Result = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'instalando a versão {0}; o TF-Toolkit fecha e abre de novo' "$Published") -Title $Title) `
+        -Headline (Get-TFToolkitText 'Instalando a versão {0}' "$Published") -Note (Get-TFToolkitText 'O TF-Toolkit fecha agora e abre de novo na versão nova, em alguns segundos.')
 
     return $answer
 }
 
 
-function Invoke-WinForgeUpdateFlow {
+function Invoke-TFToolkitUpdateFlow {
     # O roteiro de Verificar nova versão. Devolve o resultado; quem chama abre e fecha a ação uma vez só.
     param ([Parameter(Mandatory)][string]$Title)
 
-    Write-Host (Get-WinForgeText '  Consulta o GitHub para ver a última versão publicada.') -ForegroundColor DarkGray
+    Write-Host (Get-TFToolkitText '  Consulta o GitHub para ver a última versão publicada.') -ForegroundColor DarkGray
     Write-Host ""
 
-    $check = Get-WinForgeUpdateStatus
-    Save-WinForgeUpdateCheck -Check $check
-    $installed = $(if ($null -ne $check.Current) { "$(Format-WinForgeVersion -Version $check.Current)" } else { "$(Get-WinForgeBuild)" })
+    $check = Get-TFToolkitUpdateStatus
+    Save-TFToolkitUpdateCheck -Check $check
+    $installed = $(if ($null -ne $check.Current) { "$(Format-TFToolkitVersion -Version $check.Current)" } else { "$(Get-TFToolkitBuild)" })
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'Versões')
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Instalada') -Value $installed
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'Versões')
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Instalada') -Value $installed
 
     if ($check.Status -eq "Unreachable") {
         # A faixa: o que não deu no título; o motivo conhecido (sem internet, limite do GitHub...) na frase.
-        $unreachable = (Get-WinForgeText 'Não foi possível consultar o GitHub')
+        $unreachable = (Get-TFToolkitText 'Não foi possível consultar o GitHub')
 
         if ($check.Known) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível consultar o GitHub agora: {0}.' "$($check.Error)")
-            return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail $check.Error -Title $Title) -Headline $unreachable -Note (Format-WinForgeReasonNote -Text $check.Error))
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível consultar o GitHub agora: {0}.' "$($check.Error)")
+            return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail $check.Error -Title $Title) -Headline $unreachable -Note (Format-TFToolkitReasonNote -Text $check.Error))
         }
 
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível consultar o GitHub agora; tente de novo mais tarde.')
-        Write-WinForgeStatus -Type Info -Notice -Message (Get-WinForgeText 'Detalhe: {0}' "$($check.Error)")
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'não foi possível consultar o GitHub agora; tente de novo mais tarde') -Title $Title) `
-                -Headline $unreachable -Note (Get-WinForgeText 'Tente de novo mais tarde.'))
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível consultar o GitHub agora; tente de novo mais tarde.')
+        Write-TFToolkitStatus -Type Info -Notice -Message (Get-TFToolkitText 'Detalhe: {0}' "$($check.Error)")
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'não foi possível consultar o GitHub agora; tente de novo mais tarde') -Title $Title) `
+                -Headline $unreachable -Note (Get-TFToolkitText 'Tente de novo mais tarde.'))
     }
 
     $release = $check.Release
     # O número da versão; as frases dizem "a versão {0}" (no inglês, "version {0}").
-    $published = "$(Format-WinForgeVersion -Version $release.Version)"
+    $published = "$(Format-TFToolkitVersion -Version $release.Version)"
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última publicada') -Value $published
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última publicada') -Value $published
 
     if ($release.Published -is [datetime]) {
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Publicada em') -Value (Format-WinForgeDateTime -When $release.Published -Pattern "dd/MM/yyyy")
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Publicada em') -Value (Format-TFToolkitDateTime -When $release.Published -Pattern "dd/MM/yyyy")
     }
 
     Write-Host ""
 
     if ($check.Status -eq "UpToDate") {
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Você já está na versão mais recente.')
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'versão {0} em dia' "$published") -Title $Title) `
-                -Headline (Get-WinForgeText 'Você está na versão mais recente') -Note (Get-WinForgeText 'A versão {0} é a última publicada no GitHub.' "$published"))
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Você já está na versão mais recente.')
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'versão {0} em dia' "$published") -Title $Title) `
+                -Headline (Get-TFToolkitText 'Você está na versão mais recente') -Note (Get-TFToolkitText 'A versão {0} é a última publicada no GitHub.' "$published"))
     }
 
     if ($check.Status -eq "Ahead") {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'A versão instalada é mais nova que a última publicada; não há o que atualizar.')
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'esta cópia é mais nova que a última publicada ({0})' "$published") -Title $Title) `
-                -Headline (Get-WinForgeText 'Esta cópia é mais nova que a publicada') -Note (Get-WinForgeText 'A última publicada é a versão {0}; não há o que atualizar.' "$published"))
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'A versão instalada é mais nova que a última publicada; não há o que atualizar.')
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'esta cópia é mais nova que a última publicada ({0})' "$published") -Title $Title) `
+                -Headline (Get-TFToolkitText 'Esta cópia é mais nova que a publicada') -Note (Get-TFToolkitText 'A última publicada é a versão {0}; não há o que atualizar.' "$published"))
     }
 
-    Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Há uma versão mais nova: {0}.' "$published")
+    Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Há uma versão mais nova: {0}.' "$published")
 
     # Sem o endereço da página na resposta do GitHub, a lista de releases do projeto é o caminho seguro.
-    $pageUrl = $(if ([string]::IsNullOrWhiteSpace($release.PageUrl)) { "https://github.com/$(Get-WinForgeRepository)/releases" } else { [string]$release.PageUrl })
-    $notes = Format-WinForgeReleaseNotes -Notes $release.Notes
+    $pageUrl = $(if ([string]::IsNullOrWhiteSpace($release.PageUrl)) { "https://github.com/$(Get-TFToolkitRepository)/releases" } else { [string]$release.PageUrl })
+    $notes = Format-TFToolkitReleaseNotes -Notes $release.Notes
 
     if ($notes.Lines.Count -gt 0) {
-        Write-WinForgeSection -Title (Get-WinForgeText 'O que mudou')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'O que mudou')
 
         foreach ($note in $notes.Lines) {
-            Write-WinForgeStatus -Type Info -Notice -Message $note
+            Write-TFToolkitStatus -Type Info -Notice -Message $note
         }
 
-        if ($notes.Truncated) { Write-WinForgeStatus -Type Info -Notice -Message (Get-WinForgeText 'Notas completas: {0}' "$pageUrl") }
+        if ($notes.Truncated) { Write-TFToolkitStatus -Type Info -Notice -Message (Get-TFToolkitText 'Notas completas: {0}' "$pageUrl") }
     }
 
     # Os títulos da faixa: a versão nova que existe, ou a que não foi baixada.
-    $available = (Get-WinForgeText 'Versão {0} disponível' "$published")
-    $notDownloaded = (Get-WinForgeText 'A versão {0} não foi baixada' "$published")
+    $available = (Get-TFToolkitText 'Versão {0} disponível' "$published")
+    $notDownloaded = (Get-TFToolkitText 'A versão {0} não foi baixada' "$published")
 
     if ($null -eq $release.Asset) {
-        $why = (Get-WinForgeText 'Esse release não tem o WinForge.zip anexado; baixe pela página do projeto: {0}' "$pageUrl")
-        Write-WinForgeStatus -Type Warning -Message $why
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a versão {0} está publicada, mas sem o WinForge.zip' "$published") -Title $Title) -Headline $available -Note $why)
+        $why = (Get-TFToolkitText 'Esse release não tem o TF-Toolkit.zip anexado; baixe pela página do projeto: {0}' "$pageUrl")
+        Write-TFToolkitStatus -Type Warning -Message $why
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a versão {0} está publicada, mas sem o TF-Toolkit.zip' "$published") -Title $Title) -Headline $available -Note $why)
     }
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'Download')
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'Download')
 
     # Elevado com a conta de outro Administrador, a pasta Downloads seria a dessa conta, fora do alcance de quem usa o
     # PC. Sem elevação (o aviso do Windows recusado), o download vai para a pasta certa.
-    if (Test-WinForgeUserContextMismatch) {
-        $why = (Get-WinForgeText 'O WinForge está aberto com a conta de outro Administrador: o arquivo iria para a pasta Downloads dessa conta. Para baixar, {0}, ou baixe pela página do projeto: {1}' "$(Get-WinForgeUnelevatedHint)" "$pageUrl")
-        Write-WinForgeStatus -Type Warning -Message $why
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a versão {0} está disponível; com a conta de outro Administrador, o download não foi feito' "$published") -Title $Title) -Headline $available -Note $why)
+    if (Test-TFToolkitUserContextMismatch) {
+        $why = (Get-TFToolkitText 'O TF-Toolkit está aberto com a conta de outro Administrador: o arquivo iria para a pasta Downloads dessa conta. Para baixar, {0}, ou baixe pela página do projeto: {1}' "$(Get-TFToolkitUnelevatedHint)" "$pageUrl")
+        Write-TFToolkitStatus -Type Warning -Message $why
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a versão {0} está disponível; com a conta de outro Administrador, o download não foi feito' "$published") -Title $Title) -Headline $available -Note $why)
     }
 
-    if (-not (Confirm-WinForgeAction -Message (Get-WinForgeText 'Baixar o WinForge.zip da versão {0} para a pasta Downloads?' "$published") -DefaultKey S -YesLabel (Get-WinForgeText 'Baixar') -NoLabel (Get-WinForgeText 'Agora não'))) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nada foi baixado.')
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'a versão {0} está disponível, mas o download foi recusado' "$published") -Title $Title) `
-                -Headline $available -Note (Get-WinForgeText 'Nada foi baixado.'))
+    if (-not (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Baixar o TF-Toolkit.zip da versão {0} para a pasta Downloads?' "$published") -DefaultKey S -YesLabel (Get-TFToolkitText 'Baixar') -NoLabel (Get-TFToolkitText 'Agora não'))) {
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nada foi baixado.')
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'a versão {0} está disponível, mas o download foi recusado' "$published") -Title $Title) `
+                -Headline $available -Note (Get-TFToolkitText 'Nada foi baixado.'))
     }
 
-    Write-WinForgeStatus -Type Running -Notice -Message (Get-WinForgeText 'Baixando e conferindo o arquivo...')
-    $saved = Save-WinForgeRelease -Release $release -DestinationFolder (Get-WinForgeDownloadsPath)
+    Write-TFToolkitStatus -Type Running -Notice -Message (Get-TFToolkitText 'Baixando e conferindo o arquivo...')
+    $saved = Save-TFToolkitRelease -Release $release -DestinationFolder (Get-TFToolkitDownloadsPath)
 
     if ($saved.Integrity -eq "NoHash") {
-        $why = (Get-WinForgeText 'Esta versão não publica um SHA-256 para conferir o arquivo, então o WinForge não a baixou. Baixe pela página do projeto: {0}' "$pageUrl")
-        Write-WinForgeStatus -Type Error -Message $why
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'a versão {0} não publica um hash para conferir; nada foi baixado' "$published") -Title $Title) -Headline $notDownloaded -Note $why)
+        $why = (Get-TFToolkitText 'Esta versão não publica um SHA-256 para conferir o arquivo, então o TF-Toolkit não a baixou. Baixe pela página do projeto: {0}' "$pageUrl")
+        Write-TFToolkitStatus -Type Error -Message $why
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'a versão {0} não publica um hash para conferir; nada foi baixado' "$published") -Title $Title) -Headline $notDownloaded -Note $why)
     }
 
     if ($saved.Integrity -eq "Mismatch") {
-        $why = (Get-WinForgeText 'O arquivo baixado chegou diferente do publicado (corrompido no caminho ou alterado) e foi apagado. Tente de novo; se repetir, baixe pela página do projeto: {0}' "$pageUrl")
-        Write-WinForgeStatus -Type Error -Message $why
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'o arquivo baixado não confere com o publicado e foi apagado') -Title $Title) -Headline $notDownloaded -Note $why)
+        $why = (Get-TFToolkitText 'O arquivo baixado chegou diferente do publicado (corrompido no caminho ou alterado) e foi apagado. Tente de novo; se repetir, baixe pela página do projeto: {0}' "$pageUrl")
+        Write-TFToolkitStatus -Type Error -Message $why
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'o arquivo baixado não confere com o publicado e foi apagado') -Title $Title) -Headline $notDownloaded -Note $why)
     }
 
     if ($saved.Integrity -ne "Verified") {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível baixar: {0}.' "$($saved.Error)")
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail $saved.Error -Title $Title) -Headline $notDownloaded -Note (Format-WinForgeReasonNote -Text $saved.Error))
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível baixar: {0}.' "$($saved.Error)")
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail $saved.Error -Title $Title) -Headline $notDownloaded -Note (Format-TFToolkitReasonNote -Text $saved.Error))
     }
 
-    $package = Get-WinForgeReleasePackageInfo -Path $saved.Path
+    $package = Get-TFToolkitReleasePackageInfo -Path $saved.Path
 
     if ($null -eq $package) {
-        # O arquivo é o publicado (o hash confere), mas não é um pacote do WinForge: erro do release.
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O arquivo baixado confere com o publicado, mas não é um pacote do WinForge; baixe pela página do projeto: {0}' "$pageUrl")
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Arquivo') -Value $saved.Path
-        return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a versão {0} foi baixada, mas o arquivo não é um pacote do WinForge' "$published") -Title $Title) `
-                -Headline (Get-WinForgeText 'O arquivo baixado não é um pacote do WinForge') -Note (Get-WinForgeText 'Ele é idêntico ao publicado, então o problema está no release. Baixe pela página do projeto: {0}' "$pageUrl"))
+        # O arquivo é o publicado (o hash confere), mas não é um pacote do TF-Toolkit: erro do release.
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O arquivo baixado confere com o publicado, mas não é um pacote do TF-Toolkit; baixe pela página do projeto: {0}' "$pageUrl")
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Arquivo') -Value $saved.Path
+        return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a versão {0} foi baixada, mas o arquivo não é um pacote do TF-Toolkit' "$published") -Title $Title) `
+                -Headline (Get-TFToolkitText 'O arquivo baixado não é um pacote do TF-Toolkit') -Note (Get-TFToolkitText 'Ele é idêntico ao publicado, então o problema está no release. Baixe pela página do projeto: {0}' "$pageUrl"))
     }
 
-    $how = $(if ($saved.Reused) { (Get-WinForgeText 'já estava na pasta Downloads e foi conferido') } else { (Get-WinForgeText 'foi baixado e conferido') })
-    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'O WinForge.zip da versão {0} {1}: é idêntico ao publicado no GitHub (SHA-256).' "$published" "$($how)")
+    $how = $(if ($saved.Reused) { (Get-TFToolkitText 'já estava na pasta Downloads e foi conferido') } else { (Get-TFToolkitText 'foi baixado e conferido') })
+    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'O TF-Toolkit.zip da versão {0} {1}: é idêntico ao publicado no GitHub (SHA-256).' "$published" "$($how)")
 
     # Atualizar com um clique: só um pacote que diz a mesma versão da página vira instalação.
-    if (-not $package.Build -or $package.Build -eq (Format-WinForgeVersion -Version $release.Version)) {
-        $installed = Invoke-WinForgeSelfUpdate -Saved $saved -Package $package -Published $published -Title $Title
+    if (-not $package.Build -or $package.Build -eq (Format-TFToolkitVersion -Version $release.Version)) {
+        $installed = Invoke-TFToolkitSelfUpdate -Saved $saved -Package $package -Published $published -Title $Title
 
         if ($installed.Started) { return $installed.Result }
 
         if ($installed.Reason) {
-            Show-WinForgeDownloadedRelease -Saved $saved -Package $package
-            return (Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a versão {0} foi baixada e conferida, mas não foi instalada sozinha: {1}' "$published" "$($installed.Reason)") -Title $Title) `
-                    -Headline (Get-WinForgeText 'Versão {0} baixada, mas não instalada' "$published") -Note (Get-WinForgeText 'Não foi possível instalar sozinho: {0}. A instalação à mão continua valendo.' "$($installed.Reason)"))
+            Show-TFToolkitDownloadedRelease -Saved $saved -Package $package
+            return (Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a versão {0} foi baixada e conferida, mas não foi instalada sozinha: {1}' "$published" "$($installed.Reason)") -Title $Title) `
+                    -Headline (Get-TFToolkitText 'Versão {0} baixada, mas não instalada' "$published") -Note (Get-TFToolkitText 'Não foi possível instalar sozinho: {0}. A instalação à mão continua valendo.' "$($installed.Reason)"))
         }
     }
 
     # A faixa da janela: a versão no título e, na frase, o passo que falta (a pessoa preferiu instalar depois).
-    $from = $(if ($package.Root) { (Get-WinForgeText 'o que está na pasta {0} do zip' "$($package.Root)") } else { (Get-WinForgeText 'o que está no zip') })
-    $result = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'versão {0} baixada e conferida; falta instalar' "$published") -Title $Title) `
-        -Headline $(if ($saved.Reused) { (Get-WinForgeText 'Versão {0} já baixada e conferida' "$published") } else { (Get-WinForgeText 'Versão {0} baixada e conferida' "$published") }) `
-        -Note (Get-WinForgeText 'Para instalar, feche o WinForge e copie {0} para {1}, substituindo os arquivos.' "$from" "$(Get-WinForgeAppRoot)")
+    $from = $(if ($package.Root) { (Get-TFToolkitText 'o que está na pasta {0} do zip' "$($package.Root)") } else { (Get-TFToolkitText 'o que está no zip') })
+    $result = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'versão {0} baixada e conferida; falta instalar' "$published") -Title $Title) `
+        -Headline $(if ($saved.Reused) { (Get-TFToolkitText 'Versão {0} já baixada e conferida' "$published") } else { (Get-TFToolkitText 'Versão {0} baixada e conferida' "$published") }) `
+        -Note (Get-TFToolkitText 'Para instalar, feche o TF-Toolkit e copie {0} para {1}, substituindo os arquivos.' "$from" "$(Get-TFToolkitAppRoot)")
 
-    if ($package.Build -and $package.Build -ne (Format-WinForgeVersion -Version $release.Version)) {
-        $why = (Get-WinForgeText 'O pacote é da versão {0}, diferente da {1} anunciada na página.' "$($package.Build)" "$published")
-        Write-WinForgeStatus -Type Warning -Message $why
-        $result = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'a versão {0} foi baixada, mas o pacote é da {1}' "$published" "$($package.Build)") -Title $Title) `
-            -Headline (Get-WinForgeText 'O pacote baixado não é da versão anunciada') -Note $why
+    if ($package.Build -and $package.Build -ne (Format-TFToolkitVersion -Version $release.Version)) {
+        $why = (Get-TFToolkitText 'O pacote é da versão {0}, diferente da {1} anunciada na página.' "$($package.Build)" "$published")
+        Write-TFToolkitStatus -Type Warning -Message $why
+        $result = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'a versão {0} foi baixada, mas o pacote é da {1}' "$published" "$($package.Build)") -Title $Title) `
+            -Headline (Get-TFToolkitText 'O pacote baixado não é da versão anunciada') -Note $why
     }
 
-    Show-WinForgeDownloadedRelease -Saved $saved -Package $package
+    Show-TFToolkitDownloadedRelease -Saved $saved -Package $package
 
     return $result
 }
 
 
-function Invoke-WinForgeUpdateCheck {
-    $title = (Get-WinForgeText 'Verificar nova versão')
+function Invoke-TFToolkitUpdateCheck {
+    $title = (Get-TFToolkitText 'Verificar nova versão')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
     try {
-        $final = Invoke-WinForgeUpdateFlow -Title $title
+        $final = Invoke-TFToolkitUpdateFlow -Title $title
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível verificar a versão: {0}' "$($_.Exception.Message)")
-        $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title $title) `
-            -Headline (Get-WinForgeText 'Não foi possível verificar a versão') -Note (Format-WinForgeReasonNote -Text $_.Exception.Message)
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível verificar a versão: {0}' "$($_.Exception.Message)")
+        $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title $title) `
+            -Headline (Get-TFToolkitText 'Não foi possível verificar a versão') -Note (Format-TFToolkitReasonNote -Text $_.Exception.Message)
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 

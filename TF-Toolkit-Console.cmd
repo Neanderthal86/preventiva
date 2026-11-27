@@ -1,6 +1,6 @@
 @echo off
-rem WinForge - menu de texto no terminal. Aceita os parametros do script, por exemplo:
-rem   WinForge-Console.cmd -Action Report -ReportDirectory "D:\Relatorios"
+rem TF-Toolkit - menu de texto no terminal. Aceita os parametros do script, por exemplo:
+rem   TF-Toolkit-Console.cmd -Action Report -ReportDirectory "D:\Relatorios"
 setlocal
 rem A pasta de onde o comando foi digitado: um -ReportDirectory relativo vale a partir dela.
 set "WINFORGE_CALLER_DIR=%CD%"
@@ -14,7 +14,7 @@ if /i "%~1"=="-Action" if /i "%~2"=="Check" set "WINFORGE_QUIET=1"
 if /i "%~1"=="-Action:Check" set "WINFORGE_QUIET=1"
 
 rem Aberto de dentro do zip (o Explorador extrai so este arquivo) ou com a pasta extraida pela metade: avisa e para.
-if not exist "%~dp0WinForge.Console.ps1" goto faltam
+if not exist "%~dp0TF-Toolkit.Console.ps1" goto faltam
 if not exist "%~dp0modules\Modules.psd1" goto faltam
 
 rem Remove a marca de "baixado da internet" dos arquivos extraidos (evita avisos de seguranca).
@@ -29,7 +29,7 @@ if exist "%SystemRoot%\Sysnative\WindowsPowerShell\v1.0\powershell.exe" set "WIN
 
 rem WINFORGE_FROM_CMD: quem pausa no fim, quando algo da errado, e este arquivo (o script nao pausa de novo).
 set "WINFORGE_FROM_CMD=1"
-"%WINFORGE_PS%" -NoProfile -ExecutionPolicy Bypass -File "%~dp0WinForge.Console.ps1" %*
+"%WINFORGE_PS%" -NoProfile -ExecutionPolicy Bypass -File "%~dp0TF-Toolkit.Console.ps1" %*
 
 set "EXIT_CODE=%ERRORLEVEL%"
 
@@ -39,9 +39,9 @@ if defined WINFORGE_QUIET (
 
 if not "%EXIT_CODE%"=="0" (
     echo.
-    echo   O WinForge terminou com o codigo %EXIT_CODE%: a mensagem acima diz o motivo.
-    echo   WinForge ended with code %EXIT_CODE%: the message above says why.
-    echo   WinForge termino con el codigo %EXIT_CODE%: el mensaje de arriba dice el motivo.
+    echo   O TF-Toolkit terminou com o codigo %EXIT_CODE%: a mensagem acima diz o motivo.
+    echo   TF-Toolkit ended with code %EXIT_CODE%: the message above says why.
+    echo   TF-Toolkit termino con el codigo %EXIT_CODE%: el mensaje de arriba dice el motivo.
     pause
 )
 
@@ -49,19 +49,19 @@ rem "endlocal & exit" na mesma linha: o valor e lido antes de a variavel ser des
 endlocal & exit /b %EXIT_CODE%
 
 :faltam
-rem Ainda sem o PowerShell, o aviso sai nos tres idiomas do WinForge.
+rem Ainda sem o PowerShell, o aviso sai nos tres idiomas do TF-Toolkit.
 echo.
-echo   Faltam arquivos do WinForge nesta pasta.
-echo   Abra o WinForge.zip, clique em "Extrair tudo" e depois abra
-echo   o WinForge-Console.cmd que estiver na pasta nova.
+echo   Faltam arquivos do TF-Toolkit nesta pasta.
+echo   Abra o TF-Toolkit.zip, clique em "Extrair tudo" e depois abra
+echo   o TF-Toolkit-Console.cmd que estiver na pasta nova.
 echo.
-echo   Some WinForge files are missing from this folder.
-echo   Open WinForge.zip, click "Extract all" and then open
-echo   WinForge-Console.cmd from the new folder.
+echo   Some TF-Toolkit files are missing from this folder.
+echo   Open TF-Toolkit.zip, click "Extract all" and then open
+echo   TF-Toolkit-Console.cmd from the new folder.
 echo.
-echo   Faltan archivos de WinForge en esta carpeta.
-echo   Abre WinForge.zip, haz clic en "Extraer todo" y luego abre
-echo   WinForge-Console.cmd en la carpeta nueva.
+echo   Faltan archivos de TF-Toolkit en esta carpeta.
+echo   Abre TF-Toolkit.zip, haz clic en "Extraer todo" y luego abre
+echo   TF-Toolkit-Console.cmd en la carpeta nueva.
 echo.
 rem Numa tarefa ou script (-Action Check), sem pausa: o codigo 3 e "nao foi possivel avaliar".
 if defined WINFORGE_QUIET (

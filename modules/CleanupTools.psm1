@@ -7,16 +7,16 @@
 # Atalhos quebrados
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeShortcutFolders {
+function Get-TFToolkitShortcutFolders {
     # Onde ficam os atalhos que a pessoa vê: a Área de Trabalho e o Menu Iniciar, dela e de todos os usuários (estes pedem
     # Administrador para remover).
     $folders = @()
 
     foreach ($entry in @(
-            @{ Name = "Desktop"; Label = (Get-WinForgeText 'Área de Trabalho'); Admin = $false; Recurse = $false },
-            @{ Name = "CommonDesktopDirectory"; Label = (Get-WinForgeText 'Área de Trabalho (todos os usuários)'); Admin = $true; Recurse = $false },
-            @{ Name = "Programs"; Label = (Get-WinForgeText 'Menu Iniciar'); Admin = $false; Recurse = $true },
-            @{ Name = "CommonPrograms"; Label = (Get-WinForgeText 'Menu Iniciar (todos os usuários)'); Admin = $true; Recurse = $true }
+            @{ Name = "Desktop"; Label = (Get-TFToolkitText 'Área de Trabalho'); Admin = $false; Recurse = $false },
+            @{ Name = "CommonDesktopDirectory"; Label = (Get-TFToolkitText 'Área de Trabalho (todos os usuários)'); Admin = $true; Recurse = $false },
+            @{ Name = "Programs"; Label = (Get-TFToolkitText 'Menu Iniciar'); Admin = $false; Recurse = $true },
+            @{ Name = "CommonPrograms"; Label = (Get-TFToolkitText 'Menu Iniciar (todos os usuários)'); Admin = $true; Recurse = $true }
         )) {
         $path = ""
         try { $path = [string][Environment]::GetFolderPath($entry.Name) } catch { $path = "" }
@@ -30,10 +30,10 @@ function Get-WinForgeShortcutFolders {
 }
 
 
-function Find-WinForgeBrokenShortcuts {
+function Find-TFToolkitBrokenShortcuts {
     # Atalhos (.lnk) cujo destino é um caminho num disco fixo do PC que não existe mais (pendrive, HD externo e unidade de
-    # rede não contam: Test-WinForgeLocalPathMissing). Atalhos sem destino de arquivo (aplicativos da Store) e os
-    # anunciados do Windows Installer (Test-WinForgeAdvertisedShortcut) ficam de fora. Devolve Path, Name, Target,
+    # rede não contam: Test-TFToolkitLocalPathMissing). Atalhos sem destino de arquivo (aplicativos da Store) e os
+    # anunciados do Windows Installer (Test-TFToolkitAdvertisedShortcut) ficam de fora. Devolve Path, Name, Target,
     # Location, Admin e Synced: o atalho está numa pasta do OneDrive, que vai para todos os PCs da pessoa; o programa
     # pode estar instalado só no outro PC, e mandar o atalho para a Lixeira aqui o apagaria lá também.
     # O atalho guarda o destino relativo a %ProgramFiles% de quem o criou, e o Windows o devolve com o %ProgramFiles% de
@@ -41,7 +41,7 @@ function Find-WinForgeBrokenShortcuts {
     # como "Program Files". Por isso o destino só falta quando não existe nem na tradução de 32 bits (-Wow64), como no
     # registro; sem isso, atalhos que funcionam iriam para a Lixeira.
     param (
-        [object[]]$Folders = @(Get-WinForgeShortcutFolders)
+        [object[]]$Folders = @(Get-TFToolkitShortcutFolders)
     )
 
     $found = @()
@@ -52,13 +52,13 @@ function Find-WinForgeBrokenShortcuts {
         $files = @(Get-ChildItem -LiteralPath $folder.Path -Filter "*.lnk" -File -Recurse:([bool]$folder.Recurse) -Force -ErrorAction SilentlyContinue)
 
         foreach ($file in $files) {
-            if (Test-WinForgeAdvertisedShortcut -Path $file.FullName) { continue }
+            if (Test-TFToolkitAdvertisedShortcut -Path $file.FullName) { continue }
 
-            $link = Get-WinForgeShortcutTarget -Path $file.FullName
+            $link = Get-TFToolkitShortcutTarget -Path $file.FullName
 
             if ($null -eq $link -or [string]::IsNullOrWhiteSpace($link.TargetPath)) { continue }
             if ($installerCache -and ([string]$link.TargetPath).StartsWith($installerCache + "\", [StringComparison]::OrdinalIgnoreCase)) { continue }
-            if (-not (Test-WinForgeLocalPathMissing -Path $link.TargetPath -Wow64)) { continue }
+            if (-not (Test-TFToolkitLocalPathMissing -Path $link.TargetPath -Wow64)) { continue }
 
             $found += [PSCustomObject]@{
                 Path     = $file.FullName
@@ -66,7 +66,7 @@ function Find-WinForgeBrokenShortcuts {
                 Target   = [string]$link.TargetPath
                 Location = $folder.Label
                 Admin    = [bool]$folder.Admin
-                Synced   = (Test-WinForgeOneDrivePath -Path $file.FullName)
+                Synced   = (Test-TFToolkitOneDrivePath -Path $file.FullName)
             }
         }
     }
@@ -75,72 +75,72 @@ function Find-WinForgeBrokenShortcuts {
 }
 
 
-function Remove-WinForgeBrokenShortcuts {
-    $title = (Get-WinForgeText 'Remover atalhos quebrados')
+function Remove-TFToolkitBrokenShortcuts {
+    $title = (Get-TFToolkitText 'Remover atalhos quebrados')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'conferindo os atalhos da Área de Trabalho e do Menu Iniciar')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'conferindo os atalhos da Área de Trabalho e do Menu Iniciar')
 
         try {
-            $broken = @(Find-WinForgeBrokenShortcuts)
+            $broken = @(Find-TFToolkitBrokenShortcuts)
         }
         finally {
             Write-Progress -Activity $title -Completed
         }
 
         if ($broken.Count -eq 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum atalho quebrado na Área de Trabalho nem no Menu Iniciar.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum atalho quebrado') -Title $title)
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum atalho quebrado na Área de Trabalho nem no Menu Iniciar.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum atalho quebrado') -Title $title)
             return
         }
 
-        $isAdmin = Test-WinForgeAdministrator
+        $isAdmin = Test-TFToolkitAdministrator
         $usable = @($broken | Where-Object { $isAdmin -or -not $_.Admin })
         $locked = $broken.Count - $usable.Count
 
         foreach ($group in @($broken | Group-Object -Property Location)) {
-            Write-WinForgeKeyValue -Label $group.Name -Value (Format-WinForgeCount -Count $group.Count -One (Get-WinForgeText 'atalho quebrado') -Many (Get-WinForgeText 'atalhos quebrados')) -LabelWidth 36
+            Write-TFToolkitKeyValue -Label $group.Name -Value (Format-TFToolkitCount -Count $group.Count -One (Get-TFToolkitText 'atalho quebrado') -Many (Get-TFToolkitText 'atalhos quebrados')) -LabelWidth 36
         }
 
         Write-Host ""
 
         if ($locked -gt 0) {
-            Write-WinForgeStatus -Type Info -Message $(if ($locked -eq 1) { (Get-WinForgeText '1 atalho é de todos os usuários: para removê-lo, feche o WinForge, abra de novo e aceite o aviso do Windows.') } else { (Get-WinForgeText '{0} atalhos são de todos os usuários: para removê-los, feche o WinForge, abra de novo e aceite o aviso do Windows.' "$locked") })
+            Write-TFToolkitStatus -Type Info -Message $(if ($locked -eq 1) { (Get-TFToolkitText '1 atalho é de todos os usuários: para removê-lo, feche o TF-Toolkit, abra de novo e aceite o aviso do Windows.') } else { (Get-TFToolkitText '{0} atalhos são de todos os usuários: para removê-los, feche o TF-Toolkit, abra de novo e aceite o aviso do Windows.' "$locked") })
         }
 
         if ($usable.Count -eq 0) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'os atalhos quebrados exigem Administrador') -Title $title)
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'os atalhos quebrados exigem Administrador') -Title $title)
             return
         }
 
         # Os atalhos vão para a Lixeira (a pergunta já diz), e dá para devolver qualquer um por lá.
-        [void](Write-WinForgeOtherAccountNotice -What 'os atalhos pessoais da Área de Trabalho e do Menu Iniciar')
+        [void](Write-TFToolkitOtherAccountNotice -What 'os atalhos pessoais da Área de Trabalho e do Menu Iniciar')
 
         $synced = @($usable | Where-Object { $_.Synced }).Count
 
         # Um atalho do OneDrive pode ser de um programa instalado em outro PC da pessoa.
         if ($synced -gt 0) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText '{0}: o que sai daqui sai dos seus outros PCs.' "$(Format-WinForgeCount -Count $synced -One (Get-WinForgeText 'atalho fica no OneDrive e vem desmarcado') -Many (Get-WinForgeText 'atalhos ficam no OneDrive e vêm desmarcados'))")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText '{0}: o que sai daqui sai dos seus outros PCs.' "$(Format-TFToolkitCount -Count $synced -One (Get-TFToolkitText 'atalho fica no OneDrive e vem desmarcado') -Many (Get-TFToolkitText 'atalhos ficam no OneDrive e vêm desmarcados'))")
         }
 
         Write-Host ""
 
         $options = @(
             for ($i = 0; $i -lt $usable.Count; $i++) {
-                $where = $(if ($usable[$i].Synced) { (Get-WinForgeText '{0}, no OneDrive' "$($usable[$i].Location)") } else { $usable[$i].Location })
-                @{ Key = [string]$i; Label = $usable[$i].Name; Description = (Get-WinForgeText '{0} · apontava para {1}' "$where" "$($usable[$i].Target)"); Selected = (-not $usable[$i].Synced) }
+                $where = $(if ($usable[$i].Synced) { (Get-TFToolkitText '{0}, no OneDrive' "$($usable[$i].Location)") } else { $usable[$i].Location })
+                @{ Key = [string]$i; Label = $usable[$i].Name; Description = (Get-TFToolkitText '{0} · apontava para {1}' "$where" "$($usable[$i].Target)"); Selected = (-not $usable[$i].Synced) }
             }
         )
 
-        $picked = Read-WinForgeMultiSelect -Message (Get-WinForgeText 'Marque os atalhos que devem ir para a Lixeira') -Options $options
+        $picked = Read-TFToolkitMultiSelect -Message (Get-TFToolkitText 'Marque os atalhos que devem ir para a Lixeira') -Options $options
 
         if ($null -eq $picked -or @($picked).Count -eq 0) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
@@ -152,39 +152,39 @@ function Remove-WinForgeBrokenShortcuts {
             foreach ($shortcut in $chosen) {
                 try {
                     # Um item aberto por outro programa faria o Windows mostrar a janela "Arquivo em uso", que pararia a
-                    # ação esperando resposta (às vezes atrás da janela do WinForge): ele fica de fora antes disso.
-                    if (Test-WinForgeItemInUse -Path $shortcut.Path) { throw (Get-WinForgeText 'está aberto em outro programa; feche-o e tente de novo') }
+                    # ação esperando resposta (às vezes atrás da janela do TF-Toolkit): ele fica de fora antes disso.
+                    if (Test-TFToolkitItemInUse -Path $shortcut.Path) { throw (Get-TFToolkitText 'está aberto em outro programa; feche-o e tente de novo') }
 
-                    Move-WinForgeItemToRecycleBin -Path $shortcut.Path
+                    Move-TFToolkitItemToRecycleBin -Path $shortcut.Path
                     $removed += $shortcut.Name
                 }
                 catch {
                     $failed += $shortcut.Name
-                    Write-WinForgeStatus -Type Error -Message "$($shortcut.Name): $($_.Exception.Message.TrimEnd('.'))."
+                    Write-TFToolkitStatus -Type Error -Message "$($shortcut.Name): $($_.Exception.Message.TrimEnd('.'))."
                 }
             }
         }
         finally {
             # No finally: parar a ação no meio não deixa sem anotação o que já foi para a Lixeira.
             if ($removed.Count -gt 0) {
-                [void](Add-WinForgeChange -Action (Get-WinForgeText 'Atalhos quebrados') -Text $(if ($removed.Count -eq 1) { (Get-WinForgeText '{0} foi para a Lixeira' "$(Join-WinForgeList -Items $removed)") } else { (Get-WinForgeText '{0} foram para a Lixeira' "$(Join-WinForgeList -Items $removed)") }))
+                [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Atalhos quebrados') -Text $(if ($removed.Count -eq 1) { (Get-TFToolkitText '{0} foi para a Lixeira' "$(Join-TFToolkitList -Items $removed)") } else { (Get-TFToolkitText '{0} foram para a Lixeira' "$(Join-TFToolkitList -Items $removed)") }))
             }
         }
 
         if ($removed.Count -gt 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText '{0} para a Lixeira.' "$(Format-WinForgeCount -Count $removed.Count -One (Get-WinForgeText 'atalho foi') -Many (Get-WinForgeText 'atalhos foram'))")
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText '{0} para a Lixeira.' "$(Format-TFToolkitCount -Count $removed.Count -One (Get-TFToolkitText 'atalho foi') -Many (Get-TFToolkitText 'atalhos foram'))")
         }
 
-        if ($failed.Count -eq 0) { $final = New-WinForgeResult -Kind Ok -Detail (Format-WinForgeCount -Count $removed.Count -One (Get-WinForgeText 'atalho removido') -Many (Get-WinForgeText 'atalhos removidos')) -Title $title }
-        elseif ($removed.Count -eq 0) { $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhum atalho foi removido: {0}' "$(Join-WinForgeList -Items $failed)") -Title $title }
-        else { $final = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} de {1} não foram removidos: {2}' "$($failed.Count)" "$($chosen.Count)" "$(Join-WinForgeList -Items $failed)") -Title $title }
+        if ($failed.Count -eq 0) { $final = New-TFToolkitResult -Kind Ok -Detail (Format-TFToolkitCount -Count $removed.Count -One (Get-TFToolkitText 'atalho removido') -Many (Get-TFToolkitText 'atalhos removidos')) -Title $title }
+        elseif ($removed.Count -eq 0) { $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhum atalho foi removido: {0}' "$(Join-TFToolkitList -Items $failed)") -Title $title }
+        else { $final = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} de {1} não foram removidos: {2}' "$($failed.Count)" "$($chosen.Count)" "$(Join-TFToolkitList -Items $failed)") -Title $title }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível conferir os atalhos: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível conferir os atalhos: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -192,7 +192,7 @@ function Remove-WinForgeBrokenShortcuts {
 # Arquivos duplicados
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeProgramFolderNames {
+function Get-TFToolkitProgramFolderNames {
     # Nomes de pasta que guardam programas e jogos em qualquer unidade (D:\Program Files, a biblioteca da Steam...): ali um
     # arquivo repetido é de propósito, e tirar uma das cópias quebra o programa.
     return @("Program Files", "Program Files (x86)", "ProgramData", "WindowsApps", "ModifiableWindowsApps", "XboxGames",
@@ -200,7 +200,7 @@ function Get-WinForgeProgramFolderNames {
 }
 
 
-function Get-WinForgeFileDigest {
+function Get-TFToolkitFileDigest {
     <#
     O SHA-256 de um arquivo, lido em blocos de 1 MB: entre um bloco e outro o botão Parar funciona (o Get-FileHash, num
     arquivo de 50 GB, só devolve no fim). -Sample: só os primeiros e os últimos 64 KB, para separar depressa arquivos do
@@ -254,7 +254,7 @@ function Get-WinForgeFileDigest {
 }
 
 
-function Find-WinForgeDuplicateGroups {
+function Find-TFToolkitDuplicateGroups {
     <#
     Arquivos com o mesmo conteúdo numa pasta (e subpastas): primeiro pelo tamanho, depois por uma amostra (o começo e o
     fim) e, por último, pelo SHA-256 do arquivo inteiro, só dos que empatam até ali. Arquivos menores que MinBytes, ocultos ou do sistema ficam de fora. Cada grupo: Size, Hash, Keep (o que
@@ -264,7 +264,7 @@ function Find-WinForgeDuplicateGroups {
     pasta ou arquivos do OneDrive (os que estão só na nuvem seriam baixados um a um para comparar).
     O percurso não entra em atalhos de pasta (junções e links simbólicos): o Get-ChildItem -Recurse do Windows PowerShell
     5.1 entra, e o mesmo arquivo apareceria duas vezes, por dois caminhos; a "cópia" enviada à Lixeira seria o próprio
-    original. Pastas ocultas e do sistema, e as de programas e jogos (Get-WinForgeProgramFolderNames), também ficam de
+    original. Pastas ocultas e do sistema, e as de programas e jogos (Get-TFToolkitProgramFolderNames), também ficam de
     fora, e a contagem para assim que chega ao limite (sem listar a árvore inteira antes).
     #>
     param (
@@ -275,7 +275,7 @@ function Find-WinForgeDuplicateGroups {
 
     $hidden = [IO.FileAttributes]::Hidden -bor [IO.FileAttributes]::System
     $link = [IO.FileAttributes]::ReparsePoint
-    $programFolders = @(Get-WinForgeProgramFolderNames)
+    $programFolders = @(Get-TFToolkitProgramFolderNames)
     $bySize = New-Object "System.Collections.Generic.Dictionary[long, System.Collections.Generic.List[object]]"
     $pending = New-Object "System.Collections.Generic.Stack[string]"
     $scanned = 0
@@ -346,11 +346,11 @@ function Find-WinForgeDuplicateGroups {
             $hashed++
 
             if ($hashed % 10 -eq 1) {
-                Write-Progress -Activity (Get-WinForgeText 'Procurando arquivos duplicados') -Status (Get-WinForgeText 'comparando {0} de {1}' "$(Format-WinForgeNumber -Value $hashed)" "$(Format-WinForgeNumber -Value $toHash)") -PercentComplete ([int](($hashed - 1) * 100 / [Math]::Max(1, $toHash)))
+                Write-Progress -Activity (Get-TFToolkitText 'Procurando arquivos duplicados') -Status (Get-TFToolkitText 'comparando {0} de {1}' "$(Format-TFToolkitNumber -Value $hashed)" "$(Format-TFToolkitNumber -Value $toHash)") -PercentComplete ([int](($hashed - 1) * 100 / [Math]::Max(1, $toHash)))
             }
 
             try {
-                $sample = Get-WinForgeFileDigest -Path $file.FullName -Sample
+                $sample = Get-TFToolkitFileDigest -Path $file.FullName -Sample
             }
             catch {
                 continue
@@ -364,10 +364,10 @@ function Find-WinForgeDuplicateGroups {
 
         foreach ($candidates in @($samples.Values | Where-Object { $_.Count -gt 1 })) {
             foreach ($file in $candidates) {
-                Write-Progress -Activity (Get-WinForgeText 'Procurando arquivos duplicados') -Status (Get-WinForgeText 'conferindo o conteúdo de {0}' "$($file.Name)") -PercentComplete ([int](($hashed - 1) * 100 / [Math]::Max(1, $toHash)))
+                Write-Progress -Activity (Get-TFToolkitText 'Procurando arquivos duplicados') -Status (Get-TFToolkitText 'conferindo o conteúdo de {0}' "$($file.Name)") -PercentComplete ([int](($hashed - 1) * 100 / [Math]::Max(1, $toHash)))
 
                 try {
-                    $hash = Get-WinForgeFileDigest -Path $file.FullName
+                    $hash = Get-TFToolkitFileDigest -Path $file.FullName
                 }
                 catch {
                     continue
@@ -395,7 +395,7 @@ function Find-WinForgeDuplicateGroups {
         }
     }
 
-    Write-Progress -Activity (Get-WinForgeText 'Procurando arquivos duplicados') -Completed
+    Write-Progress -Activity (Get-TFToolkitText 'Procurando arquivos duplicados') -Completed
 
     return [PSCustomObject]@{
         Groups    = @($groups | Sort-Object -Property @{ Expression = { [int64]$_.Size * $_.Copies.Count }; Descending = $true })
@@ -406,29 +406,29 @@ function Find-WinForgeDuplicateGroups {
 }
 
 
-function Test-WinForgeDuplicateFolderSafe {
+function Test-TFToolkitDuplicateFolderSafe {
     <#
     Onde a busca de duplicados pode acontecer: a trava geral (raiz do disco, o perfil inteiro, as pastas que contêm o
     Windows ou os programas) e, além dela, nada que seja, contenha ou fique dentro do Windows, de Arquivos de Programas,
     de ProgramData ou dos dados dos programas (AppData Local e Roaming), nem dentro de uma pasta de programas ou jogos
-    de outra unidade (Get-WinForgeProgramFolderNames). Ali um arquivo repetido costuma ser de propósito (cada programa
+    de outra unidade (Get-TFToolkitProgramFolderNames). Ali um arquivo repetido costuma ser de propósito (cada programa
     com a sua cópia), e tirar um deles quebra o programa.
     #>
     param (
         [string]$Path
     )
 
-    if (-not (Test-WinForgeCleanupTargetSafe -Path $Path)) {
+    if (-not (Test-TFToolkitCleanupTargetSafe -Path $Path)) {
         return $false
     }
 
     foreach ($protected in @($env:WINDIR, $env:ProgramFiles, ${env:ProgramFiles(x86)}, $env:ProgramW6432, $env:ProgramData, $env:LOCALAPPDATA, $env:APPDATA)) {
-        if ((Get-WinForgePathRelation -Path $Path -Other $protected) -ne "None") {
+        if ((Get-TFToolkitPathRelation -Path $Path -Other $protected) -ne "None") {
             return $false
         }
     }
 
-    $names = @(Get-WinForgeProgramFolderNames)
+    $names = @(Get-TFToolkitProgramFolderNames)
 
     foreach ($segment in ([string]$Path).Split([char[]]@('\', '/'), [StringSplitOptions]::RemoveEmptyEntries)) {
         if ($names -contains $segment) { return $false }
@@ -438,7 +438,7 @@ function Test-WinForgeDuplicateFolderSafe {
 }
 
 
-function Get-WinForgeFolderLinkTarget {
+function Get-TFToolkitFolderLinkTarget {
     <#
     Para onde aponta a pasta, quando ela (ou uma pasta acima dela) é um atalho de pasta (junção ou link simbólico): a
     trava de cima olha o texto do caminho, e D:\Fotos apontando para C:\Program Files passaria por ela. "" quando nenhuma
@@ -467,15 +467,15 @@ function Get-WinForgeFolderLinkTarget {
 }
 
 
-function Select-WinForgeDuplicateFolder {
+function Select-TFToolkitDuplicateFolder {
     # A pasta onde procurar: as mais comuns em botões, ou um caminho digitado (devolvido como foi digitado, mesmo que não
     # exista: quem chama diz que não encontrou, em vez de tratar como cancelado). "" = cancelou.
     $options = @()
     $known = @(
-        @{ Key = "D"; Label = (Get-WinForgeText 'Downloads'); Path = $(try { [string](Get-WinForgeDownloadsPath) } catch { "" }) },
-        @{ Key = "I"; Label = (Get-WinForgeText 'Imagens'); Path = $(try { [string][Environment]::GetFolderPath("MyPictures") } catch { "" }) },
-        @{ Key = "M"; Label = (Get-WinForgeText 'Documentos'); Path = $(try { [string][Environment]::GetFolderPath("MyDocuments") } catch { "" }) },
-        @{ Key = "A"; Label = (Get-WinForgeText 'Área de Trabalho'); Path = $(try { [string][Environment]::GetFolderPath("Desktop") } catch { "" }) }
+        @{ Key = "D"; Label = (Get-TFToolkitText 'Downloads'); Path = $(try { [string](Get-TFToolkitDownloadsPath) } catch { "" }) },
+        @{ Key = "I"; Label = (Get-TFToolkitText 'Imagens'); Path = $(try { [string][Environment]::GetFolderPath("MyPictures") } catch { "" }) },
+        @{ Key = "M"; Label = (Get-TFToolkitText 'Documentos'); Path = $(try { [string][Environment]::GetFolderPath("MyDocuments") } catch { "" }) },
+        @{ Key = "A"; Label = (Get-TFToolkitText 'Área de Trabalho'); Path = $(try { [string][Environment]::GetFolderPath("Desktop") } catch { "" }) }
     )
 
     foreach ($entry in $known) {
@@ -484,15 +484,15 @@ function Select-WinForgeDuplicateFolder {
         }
     }
 
-    $options += @{ Key = "O"; Label = (Get-WinForgeText 'Outra pasta'); Description = (Get-WinForgeText 'por exemplo D:\Fotos') }
-    $options += @{ Key = "C"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+    $options += @{ Key = "O"; Label = (Get-TFToolkitText 'Outra pasta'); Description = (Get-TFToolkitText 'por exemplo D:\Fotos') }
+    $options += @{ Key = "C"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
 
-    [void](Write-WinForgeOtherAccountNotice -What 'as pastas pessoais (Downloads, Imagens, Documentos, Área de Trabalho)')
+    [void](Write-TFToolkitOtherAccountNotice -What 'as pastas pessoais (Downloads, Imagens, Documentos, Área de Trabalho)')
 
-    $choice = Read-WinForgeChoice -Message (Get-WinForgeText 'Onde procurar?') -Options $options -DefaultKey "C" -ShowMenu
+    $choice = Read-TFToolkitChoice -Message (Get-TFToolkitText 'Onde procurar?') -Options $options -DefaultKey "C" -ShowMenu
 
     if ($choice -eq "O") {
-        return [string](ConvertTo-WinForgeScanPath -Text (Read-WinForgeText -Message (Get-WinForgeText 'Cole o caminho da pasta (ENTER cancela)')))
+        return [string](ConvertTo-TFToolkitScanPath -Text (Read-TFToolkitText -Message (Get-TFToolkitText 'Cole o caminho da pasta (ENTER cancela)')))
     }
 
     $match = @($known | Where-Object { $_.Key -eq $choice }) | Select-Object -First 1
@@ -501,81 +501,81 @@ function Select-WinForgeDuplicateFolder {
 }
 
 
-function Find-WinForgeDuplicateFiles {
+function Find-TFToolkitDuplicateFiles {
     # -Path: a pasta já escolhida (a etapa das pastas pessoais do Otimizar); sem ele, a tela pergunta onde procurar.
     param (
         [string]$Path = ""
     )
 
-    $title = (Get-WinForgeText 'Encontrar arquivos duplicados')
+    $title = (Get-TFToolkitText 'Encontrar arquivos duplicados')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        $path = $(if ([string]::IsNullOrWhiteSpace($Path)) { Select-WinForgeDuplicateFolder } else { $Path })
+        $path = $(if ([string]::IsNullOrWhiteSpace($Path)) { Select-TFToolkitDuplicateFolder } else { $Path })
 
         if ([string]::IsNullOrWhiteSpace($path)) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
         # Um caminho digitado que não existe não é desistência: a faixa diz que a pasta não foi encontrada.
         if (-not (Test-Path -LiteralPath $path -PathType Container)) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Pasta não encontrada: {0}' "$path")
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'pasta não encontrada') -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Pasta não encontrada: {0}' "$path")
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'pasta não encontrada') -Title $title)
             return
         }
 
-        if (-not (Test-WinForgeDuplicateFolderSafe -Path $path)) {
+        if (-not (Test-TFToolkitDuplicateFolderSafe -Path $path)) {
             # Ficam de fora a raiz do disco, o perfil inteiro e as pastas do Windows, dos programas e jogos e dos dados dos
             # programas (AppData e ProgramData).
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Por segurança, o WinForge não procura duplicados nesta pasta: escolha uma pasta sua, como Downloads ou Imagens.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'pasta recusada por segurança') -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Por segurança, o TF-Toolkit não procura duplicados nesta pasta: escolha uma pasta sua, como Downloads ou Imagens.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'pasta recusada por segurança') -Title $title)
             return
         }
 
-        $linkTarget = Get-WinForgeFolderLinkTarget -Path $path
+        $linkTarget = Get-TFToolkitFolderLinkTarget -Path $path
 
         if ($linkTarget) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'A pasta {0} é um atalho para {1} (ou fica dentro de um): escolha a pasta de verdade.' "$path" "$linkTarget")
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'a pasta é um atalho para outra pasta') -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'A pasta {0} é um atalho para {1} (ou fica dentro de um): escolha a pasta de verdade.' "$path" "$linkTarget")
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'a pasta é um atalho para outra pasta') -Title $title)
             return
         }
 
         # As cópias vão para a Lixeira; numa unidade sem Lixeira o Windows as apagaria em definitivo. Melhor avisar antes
         # de comparar tudo do que recusar cada cópia no fim.
-        $binProblem = Get-WinForgeRecycleBinProblem -Path $path
+        $binProblem = Get-TFToolkitRecycleBinProblem -Path $path
 
         if ($binProblem) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'A pasta {0} {1}: o Windows apagaria as cópias em definitivo, sem passar pela Lixeira.' "$path" "${binProblem}")
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Procure os duplicados numa pasta do disco do PC, ou apague as cópias à mão sabendo que não terão volta.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'a pasta {0}' "$binProblem") -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'A pasta {0} {1}: o Windows apagaria as cópias em definitivo, sem passar pela Lixeira.' "$path" "${binProblem}")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Procure os duplicados numa pasta do disco do PC, ou apague as cópias à mão sabendo que não terão volta.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'a pasta {0}' "$binProblem") -Title $title)
             return
         }
 
-        Write-Progress -Activity (Get-WinForgeText 'Procurando arquivos duplicados') -Status (Get-WinForgeText 'listando os arquivos de {0}' "$path")
-        $scan = Find-WinForgeDuplicateGroups -Path $path
+        Write-Progress -Activity (Get-TFToolkitText 'Procurando arquivos duplicados') -Status (Get-TFToolkitText 'listando os arquivos de {0}' "$path")
+        $scan = Find-TFToolkitDuplicateGroups -Path $path
 
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Pasta') -Value $path
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Arquivos de 1 MB ou mais') -Value (Format-WinForgeNumber -Value $scan.Scanned)
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Pasta') -Value $path
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Arquivos de 1 MB ou mais') -Value (Format-TFToolkitNumber -Value $scan.Scanned)
 
         if ($scan.Truncated) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'A pasta tem arquivos demais; só os primeiros {0} foram comparados. Escolha uma pasta menor para ver o resto.' "$(Format-WinForgeNumber -Value $scan.Scanned)")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'A pasta tem arquivos demais; só os primeiros {0} foram comparados. Escolha uma pasta menor para ver o resto.' "$(Format-TFToolkitNumber -Value $scan.Scanned)")
         }
 
         $groups = @($scan.Groups)
 
         if ($scan.Links -gt 0) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText '{0} de fora (atalhos de pasta e arquivos do OneDrive).' "$(Format-WinForgeCount -Count $scan.Links -One (Get-WinForgeText 'item ficou') -Many (Get-WinForgeText 'itens ficaram'))")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText '{0} de fora (atalhos de pasta e arquivos do OneDrive).' "$(Format-TFToolkitCount -Count $scan.Links -One (Get-TFToolkitText 'item ficou') -Many (Get-TFToolkitText 'itens ficaram'))")
         }
 
         if ($groups.Count -eq 0) {
             Write-Host ""
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum arquivo duplicado{0}.' "$(if ($scan.Links -gt 0) { (Get-WinForgeText ' no que foi comparado') })")
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum duplicado') -Title $title)
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum arquivo duplicado{0}.' "$(if ($scan.Links -gt 0) { (Get-TFToolkitText ' no que foi comparado') })")
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum duplicado') -Title $title)
             return
         }
 
@@ -583,12 +583,12 @@ function Find-WinForgeDuplicateFiles {
         $copies = 0
         foreach ($group in $groups) { $wasted += [int64]$group.Size * $group.Copies.Count; $copies += $group.Copies.Count }
 
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Cópias repetidas') -Value (Format-WinForgeNumber -Value $copies)
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Espaço ocupado por elas') -Value (Format-WinForgeBytes -Bytes $wasted)
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Cópias repetidas') -Value (Format-TFToolkitNumber -Value $copies)
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Espaço ocupado por elas') -Value (Format-TFToolkitBytes -Bytes $wasted)
         Write-Host ""
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O arquivo mais antigo de cada grupo fica de fora da lista; nada vem marcado.')
-        if (Test-WinForgeRecycleBinLimitExceeded -Items @($groups | ForEach-Object { [PSCustomObject]@{ Path = [string]$_.Keep; Size = [int64]$_.Size } }) -SizeProperty "Size") {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Uma cópia maior que o limite da Lixeira fica onde está: o Windows a apagaria em definitivo.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O arquivo mais antigo de cada grupo fica de fora da lista; nada vem marcado.')
+        if (Test-TFToolkitRecycleBinLimitExceeded -Items @($groups | ForEach-Object { [PSCustomObject]@{ Path = [string]$_.Keep; Size = [int64]$_.Size } }) -SizeProperty "Size") {
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Uma cópia maior que o limite da Lixeira fica onde está: o Windows a apagaria em definitivo.')
         }
 
         Write-Host ""
@@ -604,32 +604,32 @@ function Find-WinForgeDuplicateFiles {
 
         if ($entries.Count -gt $shown.Count) {
             # Os grupos vêm dos que mais ocupam: a lista mostra as maiores cópias, e a pessoa precisa saber que há mais.
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Só as {0} maiores de {1} cópias aparecem; depois de limpar, procure de novo.' "$($shown.Count)" "$(Format-WinForgeNumber -Value $entries.Count)")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Só as {0} maiores de {1} cópias aparecem; depois de limpar, procure de novo.' "$($shown.Count)" "$(Format-TFToolkitNumber -Value $entries.Count)")
         }
         $base = $path.TrimEnd('\') + '\'
         $relative = { param ($Full) $(if ($Full.StartsWith($base, [StringComparison]::OrdinalIgnoreCase)) { $Full.Substring($base.Length) } else { $Full }) }
 
         $options = @(
             for ($i = 0; $i -lt $shown.Count; $i++) {
-                @{ Key = [string]$i; Label = (& $relative $shown[$i].Path); Description = (Get-WinForgeText '{0} · igual a {1}' "$(Format-WinForgeBytes -Bytes $shown[$i].Size)" "$(& $relative $shown[$i].Keep)"); Selected = $false }
+                @{ Key = [string]$i; Label = (& $relative $shown[$i].Path); Description = (Get-TFToolkitText '{0} · igual a {1}' "$(Format-TFToolkitBytes -Bytes $shown[$i].Size)" "$(& $relative $shown[$i].Keep)"); Selected = $false }
             }
         )
 
-        $picked = Read-WinForgeMultiSelect -Message (Get-WinForgeText 'Marque as cópias que devem ir para a Lixeira') -Options $options
+        $picked = Read-TFToolkitMultiSelect -Message (Get-TFToolkitText 'Marque as cópias que devem ir para a Lixeira') -Options $options
 
         if ($null -eq $picked -or @($picked).Count -eq 0) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
         $chosen = @(foreach ($key in @($picked)) { $shown[[int]$key] })
-        $question = (Get-WinForgeText 'Enviar {0} para a Lixeira?' "$(Format-WinForgeCount -Count $chosen.Count -One (Get-WinForgeText 'cópia') -Many (Get-WinForgeText 'cópias'))")
+        $question = (Get-TFToolkitText 'Enviar {0} para a Lixeira?' "$(Format-TFToolkitCount -Count $chosen.Count -One (Get-TFToolkitText 'cópia') -Many (Get-TFToolkitText 'cópias'))")
 
         # São arquivos pessoais (fotos, documentos): Não como padrão, como nos restos de programas.
-        if (-not (Confirm-WinForgeAction -Message $question -DefaultKey "N" -YesLabel (Get-WinForgeText 'Enviar para a Lixeira') -NoLabel (Get-WinForgeText 'Cancelar'))) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+        if (-not (Confirm-TFToolkitAction -Message $question -DefaultKey "N" -YesLabel (Get-TFToolkitText 'Enviar para a Lixeira') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
@@ -650,55 +650,55 @@ function Find-WinForgeDuplicateFiles {
                     if ([string]::Equals([string]$entry.Keep, [string]$entry.Path, [StringComparison]::OrdinalIgnoreCase) -or
                         $null -eq $kept -or $kept.PSIsContainer -or [int64]$kept.Length -ne [int64]$entry.Size -or
                         [int64]$kept.LastWriteTimeUtc.Ticks -ne [int64]$entry.KeepStamp) {
-                        throw (Get-WinForgeText 'o arquivo que ficaria ({0}) sumiu ou mudou; esta cópia ficou onde estava' "$(& $relative $entry.Keep)")
+                        throw (Get-TFToolkitText 'o arquivo que ficaria ({0}) sumiu ou mudou; esta cópia ficou onde estava' "$(& $relative $entry.Keep)")
                     }
 
                     if ($null -eq $copy -or [int64]$copy.Length -ne [int64]$entry.Size -or [int64]$copy.LastWriteTimeUtc.Ticks -ne [int64]$entry.Stamp) {
-                        throw (Get-WinForgeText 'mudou depois da busca e pode não ser mais igual; ficou onde estava')
+                        throw (Get-TFToolkitText 'mudou depois da busca e pode não ser mais igual; ficou onde estava')
                     }
 
-                    if (Test-WinForgeItemInUse -Path $entry.Path) { throw (Get-WinForgeText 'está aberto em outro programa; feche-o e tente de novo') }
+                    if (Test-TFToolkitItemInUse -Path $entry.Path) { throw (Get-TFToolkitText 'está aberto em outro programa; feche-o e tente de novo') }
 
-                    Move-WinForgeItemToRecycleBin -Path $entry.Path -SizeBytes ([int64]$entry.Size)
+                    Move-TFToolkitItemToRecycleBin -Path $entry.Path -SizeBytes ([int64]$entry.Size)
                     $freed += [int64]$entry.Size
                     $moved++
                 }
                 catch {
                     $failed += [IO.Path]::GetFileName($entry.Path)
-                    Write-WinForgeStatus -Type Error -Message "$([IO.Path]::GetFileName($entry.Path)): $($_.Exception.Message.TrimEnd('.'))."
+                    Write-TFToolkitStatus -Type Error -Message "$([IO.Path]::GetFileName($entry.Path)): $($_.Exception.Message.TrimEnd('.'))."
                 }
             }
         }
         finally {
             # No finally: parar a ação no meio não deixa sem anotação o que já foi para a Lixeira.
             if ($moved -gt 0) {
-                [void](Add-WinForgeChange -Action (Get-WinForgeText 'Arquivos duplicados') -Text $(if ($moved -eq 1) { (Get-WinForgeText '1 cópia de {0} foi para a Lixeira' "$path") } else { (Get-WinForgeText '{0} cópias de {1} foram para a Lixeira' "$moved" "$path") }))
+                [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Arquivos duplicados') -Text $(if ($moved -eq 1) { (Get-TFToolkitText '1 cópia de {0} foi para a Lixeira' "$path") } else { (Get-TFToolkitText '{0} cópias de {1} foram para a Lixeira' "$moved" "$path") }))
             }
         }
 
         if ($moved -gt 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText '{0} para a Lixeira ({1}). O espaço só volta ao esvaziar a Lixeira (Limpeza > Esvaziar a Lixeira).' "$(Format-WinForgeCount -Count $moved -One (Get-WinForgeText 'cópia foi') -Many (Get-WinForgeText 'cópias foram'))" "$(Format-WinForgeBytes -Bytes $freed)")
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText '{0} para a Lixeira ({1}). O espaço só volta ao esvaziar a Lixeira (Limpeza > Esvaziar a Lixeira).' "$(Format-TFToolkitCount -Count $moved -One (Get-TFToolkitText 'cópia foi') -Many (Get-TFToolkitText 'cópias foram'))" "$(Format-TFToolkitBytes -Bytes $freed)")
         }
 
         $data = @{ FreedBytes = $freed }
 
         if ($failed.Count -eq 0) {
-            $final = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText '{0} para a Lixeira' "$(Format-WinForgeCount -Count $moved -One (Get-WinForgeText 'cópia enviada') -Many (Get-WinForgeText 'cópias enviadas'))") -Title $title -Data $data
-            [void](Set-WinForgeRecycleBinNext -Result $final -Count $moved -Bytes $freed -One (Get-WinForgeText 'cópia') -Many (Get-WinForgeText 'cópias'))
+            $final = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText '{0} para a Lixeira' "$(Format-TFToolkitCount -Count $moved -One (Get-TFToolkitText 'cópia enviada') -Many (Get-TFToolkitText 'cópias enviadas'))") -Title $title -Data $data
+            [void](Set-TFToolkitRecycleBinNext -Result $final -Count $moved -Bytes $freed -One (Get-TFToolkitText 'cópia') -Many (Get-TFToolkitText 'cópias'))
         }
-        elseif ($moved -eq 0) { $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhuma cópia foi para a Lixeira') -Title $title }
+        elseif ($moved -eq 0) { $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhuma cópia foi para a Lixeira') -Title $title }
         else {
-            $final = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} de {1} não foram para a Lixeira' "$($failed.Count)" "$($chosen.Count)") -Title $title -Data $data
-            [void](Set-WinForgeRecycleBinNext -Result $final -Count $moved -Bytes $freed)
+            $final = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} de {1} não foram para a Lixeira' "$($failed.Count)" "$($chosen.Count)") -Title $title -Data $data
+            [void](Set-TFToolkitRecycleBinNext -Result $final -Count $moved -Bytes $freed)
         }
     }
     catch {
-        Write-Progress -Activity (Get-WinForgeText 'Procurando arquivos duplicados') -Completed
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível procurar duplicados: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-Progress -Activity (Get-TFToolkitText 'Procurando arquivos duplicados') -Completed
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível procurar duplicados: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -706,7 +706,7 @@ function Find-WinForgeDuplicateFiles {
 # Restos de programas desinstalados
 # ---------------------------------------------------------------------------
 
-function Test-WinForgeGenericLeftoverName {
+function Test-TFToolkitGenericLeftoverName {
     <#
     Verdadeiro para um nome que não identifica um programa: pastas do Windows e de fabricantes (Windows, Microsoft...,
     Common Files, Intel, NVIDIA), nomes de uso geral (Update, Programs, Packages), idiomas (pt-BR), arquiteturas (x64),
@@ -746,7 +746,7 @@ function Test-WinForgeGenericLeftoverName {
 }
 
 
-function Test-WinForgeProtectedLeftoverParent {
+function Test-TFToolkitProtectedLeftoverParent {
     # Pastas de primeiro nível em que nada vira "resto": as do Windows e da Microsoft (Microsoft, Windows Defender,
     # Microsoft Office...), Common Files, WindowsApps e Packages. Lá dentro, uma subpasta com o nome de um programa
     # removido costuma ser de um componente do sistema ou compartilhada por vários programas.
@@ -762,14 +762,14 @@ function Test-WinForgeProtectedLeftoverParent {
 }
 
 
-function Get-WinForgeLeftoverNames {
+function Get-TFToolkitLeftoverNames {
     <#
     Os nomes de pasta que um programa desinstalado costuma deixar: o nome sem a versão e o que vem entre parênteses
     ("Mozilla Firefox (x64 pt-BR)" vira "Mozilla Firefox"; "Programa 2.4.1" vira "Programa") e a última parte do ID do
     winget que identifica o programa ("Mozilla.Firefox" e "Mozilla.Firefox.pt-BR" viram "Firefox").
     Só uma versão com ponto (2.4.1, v3.0) é cortada, e o que vem depois dela: "Windows 11 Installation Assistant" e
     "Microsoft 365 Apps" continuam inteiros (cortar no primeiro número deixaria "Windows" e "Microsoft"). Nomes genéricos
-    (Test-WinForgeGenericLeftoverName) ficam de fora: casariam com pastas do Windows e de outros programas.
+    (Test-TFToolkitGenericLeftoverName) ficam de fora: casariam com pastas do Windows e de outros programas.
     #>
     param (
         [string]$Name,
@@ -780,7 +780,7 @@ function Get-WinForgeLeftoverNames {
     $clean = ([regex]::Replace([string]$Name, '\([^)]*\)', '')).Trim()
     $clean = ([regex]::Replace($clean, '\s+v?[0-9]+([.][0-9]+)+([ -].*)?$', '')).Trim()
 
-    if (-not (Test-WinForgeGenericLeftoverName -Name $clean)) { $names += $clean }
+    if (-not (Test-TFToolkitGenericLeftoverName -Name $clean)) { $names += $clean }
 
     if (-not [string]::IsNullOrWhiteSpace($Id)) {
         # A última parte que não é idioma, número ou arquitetura ("Python.Python.3.12" -> "Python"); a primeira é o
@@ -789,7 +789,7 @@ function Get-WinForgeLeftoverNames {
         [array]::Reverse($parts)
 
         foreach ($part in $parts) {
-            if (-not (Test-WinForgeGenericLeftoverName -Name $part)) {
+            if (-not (Test-TFToolkitGenericLeftoverName -Name $part)) {
                 $names += $part.Trim()
                 break
             }
@@ -800,7 +800,7 @@ function Get-WinForgeLeftoverNames {
 }
 
 
-function Get-WinForgeLeftoverRoots {
+function Get-TFToolkitLeftoverRoots {
     # As pastas onde os programas se instalam e guardam dados. Admin = remover ali pede Administrador; Data = é onde os
     # programas guardam configurações, perfis e arquivos salvos (o AppData), e a tela avisa.
     $roots = @()
@@ -821,13 +821,13 @@ function Get-WinForgeLeftoverRoots {
 }
 
 
-function Get-WinForgeInstalledProgramNames {
+function Get-TFToolkitInstalledProgramNames {
     # Os nomes dos programas instalados (DisplayName nas chaves de desinstalação) e dos aplicativos da Store (também os
     # que o winget instala pela Store), para não apontar como resto a pasta de um programa que continua instalado (ou
     # foi instalado de novo, por outro caminho).
     $names = @()
 
-    foreach ($root in @(Get-WinForgeRegistryRoots -Category "uninstall")) {
+    foreach ($root in @(Get-TFToolkitRegistryRoots -Category "uninstall")) {
         foreach ($key in @(Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue)) {
             $value = [string](Get-ItemProperty -LiteralPath $key.PSPath -Name DisplayName -ErrorAction SilentlyContinue).DisplayName
             if ($value) { $names += $value }
@@ -845,20 +845,20 @@ function Get-WinForgeInstalledProgramNames {
 }
 
 
-function Find-WinForgeLeftoverFolders {
+function Find-TFToolkitLeftoverFolders {
     <#
-    Pastas que ficaram de programas desinstalados pelo WinForge: com o nome exato do programa (ou da parte do ID do winget
+    Pastas que ficaram de programas desinstalados pelo TF-Toolkit: com o nome exato do programa (ou da parte do ID do winget
     que o identifica), no primeiro ou no segundo nível das pastas de programas e de dados, desde que nenhum programa
-    instalado tenha esse nome. Nomes genéricos não entram (Get-WinForgeLeftoverNames), e nada dentro das pastas do
+    instalado tenha esse nome. Nomes genéricos não entram (Get-TFToolkitLeftoverNames), e nada dentro das pastas do
     Windows e da Microsoft, de Common Files, WindowsApps e Packages é proposto. No segundo nível, um nome tirado do ID
     só vale dentro da pasta do fabricante (a primeira parte do ID): "Firefox" em Mozilla\Firefox, mas não em
     OutraEmpresa\Firefox. Devolve Path, Program, Size, Admin e Data.
     Cada raiz é listada uma vez só (o primeiro e o segundo nível), e não uma vez por programa e por nome.
     #>
     param (
-        [object[]]$Programs = @(Get-WinForgeSetting -Name "UninstalledPrograms" -Default @()),
-        [object[]]$Roots = @(Get-WinForgeLeftoverRoots),
-        [string[]]$Installed = @(Get-WinForgeInstalledProgramNames)
+        [object[]]$Programs = @(Get-TFToolkitSetting -Name "UninstalledPrograms" -Default @()),
+        [object[]]$Roots = @(Get-TFToolkitLeftoverRoots),
+        [string[]]$Installed = @(Get-TFToolkitInstalledProgramNames)
     )
 
     $found = @()
@@ -879,7 +879,7 @@ function Find-WinForgeLeftoverFolders {
 
             $first[$folder.Name] = $folder.FullName
 
-            if (Test-WinForgeProtectedLeftoverParent -Name $folder.Name) { continue }
+            if (Test-TFToolkitProtectedLeftoverParent -Name $folder.Name) { continue }
 
             foreach ($child in @(Get-ChildItem -LiteralPath $folder.FullName -Directory -Force -ErrorAction SilentlyContinue)) {
                 if (($child.Attributes -band $link) -ne 0) { continue }
@@ -892,10 +892,10 @@ function Find-WinForgeLeftoverFolders {
     }
 
     foreach ($program in @($Programs | Where-Object { $null -ne $_ })) {
-        $programName = [string](Get-WinForgeJsonValue -Object $program -Name "Name" -Default "")
-        $programId = [string](Get-WinForgeJsonValue -Object $program -Name "Id" -Default "")
-        $candidates = @(Get-WinForgeLeftoverNames -Name $programName -Id $programId)
-        $fromName = @(Get-WinForgeLeftoverNames -Name $programName)
+        $programName = [string](Get-TFToolkitJsonValue -Object $program -Name "Name" -Default "")
+        $programId = [string](Get-TFToolkitJsonValue -Object $program -Name "Id" -Default "")
+        $candidates = @(Get-TFToolkitLeftoverNames -Name $programName -Id $programId)
+        $fromName = @(Get-TFToolkitLeftoverNames -Name $programName)
         $publisher = $(if ($programId.Contains('.')) { ($programId.Split('.')[0] -replace '[^A-Za-z0-9]', '') } else { "" })
 
         foreach ($candidate in $candidates) {
@@ -931,10 +931,10 @@ function Find-WinForgeLeftoverFolders {
 
                 foreach ($path in $paths) {
                     if ($seen.ContainsKey($path)) { continue }
-                    if (-not (Test-WinForgeCleanupTargetSafe -Path $path)) { continue }
+                    if (-not (Test-TFToolkitCleanupTargetSafe -Path $path)) { continue }
 
                     $seen[$path] = $true
-                    $found += [PSCustomObject]@{ Path = $path; Program = $programName; Size = [int64](Get-WinForgePathStats -Path $path).Size; Admin = [bool]$root.Admin; Data = [bool](Get-WinForgeJsonValue -Object $root -Name "Data" -Default $false) }
+                    $found += [PSCustomObject]@{ Path = $path; Program = $programName; Size = [int64](Get-TFToolkitPathStats -Path $path).Size; Admin = [bool]$root.Admin; Data = [bool](Get-TFToolkitJsonValue -Object $root -Name "Data" -Default $false) }
                 }
             }
         }
@@ -944,14 +944,14 @@ function Find-WinForgeLeftoverFolders {
 }
 
 
-function Select-WinForgeProgramLeftovers {
+function Select-TFToolkitProgramLeftovers {
     <#
-    Procura os restos dos programas desinstalados pelo WinForge e pergunta quais pastas vão para a Lixeira, sem mexer em
+    Procura os restos dos programas desinstalados pelo TF-Toolkit e pergunta quais pastas vão para a Lixeira, sem mexer em
     nada. Devolve Chosen (as pastas marcadas) e Result: quando não há o que escolher (nenhum programa, nenhum resto, só
-    pastas que pedem Administrador) ou a pessoa desistiu, o WinForge.Result com que a busca termina; senão, $null.
+    pastas que pedem Administrador) ou a pessoa desistiu, o TFToolkit.Result com que a busca termina; senão, $null.
     #>
     param (
-        [string]$Title = (Get-WinForgeText 'Restos de programas desinstalados')
+        [string]$Title = (Get-TFToolkitText 'Restos de programas desinstalados')
     )
 
     $end = {
@@ -959,95 +959,95 @@ function Select-WinForgeProgramLeftovers {
         return [PSCustomObject]@{ Chosen = @(); Result = $Result }
     }
 
-    $programs = @(Get-WinForgeSetting -Name "UninstalledPrograms" -Default @())
+    $programs = @(Get-TFToolkitSetting -Name "UninstalledPrograms" -Default @())
 
     # Num PowerShell de 32 bits, as entradas de Aplicativos instalados de 64 bits ficam invisíveis: a pasta de um
     # programa ainda instalado pareceria resto.
-    if (Test-WinForgeRegistryViewMismatch) {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não é possível procurar os restos agora: {0}.' "$(Get-WinForgeRegistryViewMismatchText)")
-        return (& $end (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'PowerShell de 32 bits') -Title $Title))
+    if (Test-TFToolkitRegistryViewMismatch) {
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não é possível procurar os restos agora: {0}.' "$(Get-TFToolkitRegistryViewMismatchText)")
+        return (& $end (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'PowerShell de 32 bits') -Title $Title))
     }
 
     if ($programs.Count -eq 0) {
         # Nada foi procurado: "Nada a fazer", e não "Tudo certo".
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O WinForge procura restos só dos programas desinstalados por ele, em Programas > Desinstalar programas; nenhum foi desinstalado por lá ainda.')
-        return (& $end (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'nenhum programa desinstalado pelo WinForge') -Title $Title))
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O TF-Toolkit procura restos só dos programas desinstalados por ele, em Programas > Desinstalar programas; nenhum foi desinstalado por lá ainda.')
+        return (& $end (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'nenhum programa desinstalado pelo TF-Toolkit') -Title $Title))
     }
 
-    Write-Progress -Activity $Title -Status (Get-WinForgeText 'procurando pastas com o nome dos programas desinstalados')
+    Write-Progress -Activity $Title -Status (Get-TFToolkitText 'procurando pastas com o nome dos programas desinstalados')
 
     try {
-        $leftovers = @(Find-WinForgeLeftoverFolders -Programs $programs)
+        $leftovers = @(Find-TFToolkitLeftoverFolders -Programs $programs)
     }
     finally {
         Write-Progress -Activity $Title -Completed
     }
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Programas conferidos') -Value $programs.Count
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Programas conferidos') -Value $programs.Count
 
     if ($leftovers.Count -eq 0) {
         Write-Host ""
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhuma pasta ficou para trás.')
-        return (& $end (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum resto encontrado') -Title $Title))
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhuma pasta ficou para trás.')
+        return (& $end (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum resto encontrado') -Title $Title))
     }
 
-    $isAdmin = Test-WinForgeAdministrator
+    $isAdmin = Test-TFToolkitAdministrator
     $usable = @($leftovers | Where-Object { $isAdmin -or -not $_.Admin })
     $total = [int64]0
     foreach ($item in $leftovers) { $total += [int64]$item.Size }
 
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Pastas encontradas') -Value $leftovers.Count
-    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Espaço') -Value (Format-WinForgeBytes -Bytes $total -ZeroText "0 B")
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Pastas encontradas') -Value $leftovers.Count
+    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Espaço') -Value (Format-TFToolkitBytes -Bytes $total -ZeroText "0 B")
     Write-Host ""
 
     if ($usable.Count -lt $leftovers.Count) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Pastas em Arquivos de Programas e ProgramData pedem Administrador: para incluí-las, feche o WinForge, abra de novo e aceite o aviso do Windows.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Pastas em Arquivos de Programas e ProgramData pedem Administrador: para incluí-las, feche o TF-Toolkit, abra de novo e aceite o aviso do Windows.')
     }
 
     if ($usable.Count -eq 0) {
-        return (& $end (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'as pastas encontradas exigem Administrador') -Title $Title))
+        return (& $end (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'as pastas encontradas exigem Administrador') -Title $Title))
     }
 
     # O que for marcado vai para a Lixeira (a pergunta diz).
-    Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Nada vem marcado: confira cada pasta.')
+    Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Nada vem marcado: confira cada pasta.')
 
-    if (Test-WinForgeRecycleBinLimitExceeded -Items $usable -SizeProperty "Size") {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Uma pasta maior que o limite da Lixeira fica onde está: o Windows a apagaria em definitivo.')
+    if (Test-TFToolkitRecycleBinLimitExceeded -Items $usable -SizeProperty "Size") {
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Uma pasta maior que o limite da Lixeira fica onde está: o Windows a apagaria em definitivo.')
     }
 
-    if (@($usable | Where-Object { [bool](Get-WinForgeJsonValue -Object $_ -Name "Data" -Default $false) }).Count -gt 0) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'As pastas do AppData guardam configurações e arquivos salvos do programa (perfis, partidas, conversas): confira antes de marcar.')
-        [void](Write-WinForgeOtherAccountNotice -What 'as pastas do AppData')
+    if (@($usable | Where-Object { [bool](Get-TFToolkitJsonValue -Object $_ -Name "Data" -Default $false) }).Count -gt 0) {
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'As pastas do AppData guardam configurações e arquivos salvos do programa (perfis, partidas, conversas): confira antes de marcar.')
+        [void](Write-TFToolkitOtherAccountNotice -What 'as pastas do AppData')
     }
 
     Write-Host ""
 
     $options = @(
         for ($i = 0; $i -lt $usable.Count; $i++) {
-            $kind = $(if ([bool](Get-WinForgeJsonValue -Object $usable[$i] -Name "Data" -Default $false)) { (Get-WinForgeText ' · dados do programa') } else { "" })
-            @{ Key = [string]$i; Label = $usable[$i].Path; Description = (Get-WinForgeText 'de {0} · {1}{2}' "$($usable[$i].Program)" "$(Format-WinForgeBytes -Bytes $usable[$i].Size -ZeroText '0 B')" "$kind"); Selected = $false }
+            $kind = $(if ([bool](Get-TFToolkitJsonValue -Object $usable[$i] -Name "Data" -Default $false)) { (Get-TFToolkitText ' · dados do programa') } else { "" })
+            @{ Key = [string]$i; Label = $usable[$i].Path; Description = (Get-TFToolkitText 'de {0} · {1}{2}' "$($usable[$i].Program)" "$(Format-TFToolkitBytes -Bytes $usable[$i].Size -ZeroText '0 B')" "$kind"); Selected = $false }
         }
     )
 
-    $picked = Read-WinForgeMultiSelect -Message (Get-WinForgeText 'Marque as pastas que devem ir para a Lixeira') -Options $options
+    $picked = Read-TFToolkitMultiSelect -Message (Get-TFToolkitText 'Marque as pastas que devem ir para a Lixeira') -Options $options
 
     if ($null -eq $picked -or @($picked).Count -eq 0) {
-        return (& $end (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $Title))
+        return (& $end (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $Title))
     }
 
     return [PSCustomObject]@{ Chosen = @(foreach ($key in @($picked)) { $usable[[int]$key] }); Result = $null }
 }
 
 
-function Remove-WinForgeProgramLeftovers {
-    # Manda para a Lixeira as pastas escolhidas em Select-WinForgeProgramLeftovers, anota no Histórico de mudanças e
-    # devolve o WinForge.Result.
+function Remove-TFToolkitProgramLeftovers {
+    # Manda para a Lixeira as pastas escolhidas em Select-TFToolkitProgramLeftovers, anota no Histórico de mudanças e
+    # devolve o TFToolkit.Result.
     param (
         [Parameter(Mandatory)]
         [AllowEmptyCollection()]
         [object[]]$Items,
 
-        [string]$Title = (Get-WinForgeText 'Restos de programas desinstalados')
+        [string]$Title = (Get-TFToolkitText 'Restos de programas desinstalados')
     )
 
     $moved = @()
@@ -1057,54 +1057,54 @@ function Remove-WinForgeProgramLeftovers {
         foreach ($item in $Items) {
             try {
                 # Sem isto, um arquivo aberto faria o Windows mostrar a janela "Arquivo em uso" e a ação ficaria parada.
-                if (Test-WinForgeItemInUse -Path $item.Path -IsDirectory) { throw (Get-WinForgeText 'há arquivos em uso nesta pasta; feche o programa que os usa e tente de novo') }
+                if (Test-TFToolkitItemInUse -Path $item.Path -IsDirectory) { throw (Get-TFToolkitText 'há arquivos em uso nesta pasta; feche o programa que os usa e tente de novo') }
 
-                Move-WinForgeItemToRecycleBin -Path $item.Path -IsDirectory -SizeBytes ([int64](Get-WinForgeJsonValue -Object $item -Name "Size" -Default 0))
+                Move-TFToolkitItemToRecycleBin -Path $item.Path -IsDirectory -SizeBytes ([int64](Get-TFToolkitJsonValue -Object $item -Name "Size" -Default 0))
                 $moved += $item
-                Write-WinForgeStatus -Type Success -Message (Get-WinForgeText '{0}: na Lixeira.' "$($item.Path)")
+                Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText '{0}: na Lixeira.' "$($item.Path)")
             }
             catch {
                 $failed += $item
-                Write-WinForgeStatus -Type Error -Message "$($item.Path): $($_.Exception.Message.TrimEnd('.'))."
+                Write-TFToolkitStatus -Type Error -Message "$($item.Path): $($_.Exception.Message.TrimEnd('.'))."
             }
         }
     }
     finally {
         # No finally: parar a ação no meio não deixa sem anotação o que já foi para a Lixeira.
         if ($moved.Count -gt 0) {
-            [void](Add-WinForgeChange -Action (Get-WinForgeText 'Restos de programas') -Text $(if ($moved.Count -eq 1) { (Get-WinForgeText '{0} foi para a Lixeira' "$(Join-WinForgeList -Items @($moved | ForEach-Object { $_.Path }))") } else { (Get-WinForgeText '{0} foram para a Lixeira' "$(Join-WinForgeList -Items @($moved | ForEach-Object { $_.Path }))") }))
+            [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Restos de programas') -Text $(if ($moved.Count -eq 1) { (Get-TFToolkitText '{0} foi para a Lixeira' "$(Join-TFToolkitList -Items @($moved | ForEach-Object { $_.Path }))") } else { (Get-TFToolkitText '{0} foram para a Lixeira' "$(Join-TFToolkitList -Items @($moved | ForEach-Object { $_.Path }))") }))
         }
     }
 
     if ($moved.Count -gt 0) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O espaço só volta ao esvaziar a Lixeira (Limpeza > Esvaziar a Lixeira).')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O espaço só volta ao esvaziar a Lixeira (Limpeza > Esvaziar a Lixeira).')
     }
 
     if ($failed.Count -eq 0) {
         $movedBytes = [int64]0
-        foreach ($item in $moved) { $movedBytes += [int64](Get-WinForgeJsonValue -Object $item -Name "Size" -Default 0) }
+        foreach ($item in $moved) { $movedBytes += [int64](Get-TFToolkitJsonValue -Object $item -Name "Size" -Default 0) }
 
-        return (Set-WinForgeRecycleBinNext -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText '{0} para a Lixeira' "$(Format-WinForgeCount -Count $moved.Count -One (Get-WinForgeText 'pasta enviada') -Many (Get-WinForgeText 'pastas enviadas'))") -Title $Title) -Count $moved.Count -Bytes $movedBytes -One (Get-WinForgeText 'pasta') -Many (Get-WinForgeText 'pastas'))
+        return (Set-TFToolkitRecycleBinNext -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText '{0} para a Lixeira' "$(Format-TFToolkitCount -Count $moved.Count -One (Get-TFToolkitText 'pasta enviada') -Many (Get-TFToolkitText 'pastas enviadas'))") -Title $Title) -Count $moved.Count -Bytes $movedBytes -One (Get-TFToolkitText 'pasta') -Many (Get-TFToolkitText 'pastas'))
     }
-    if ($moved.Count -eq 0) { return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhuma pasta foi para a Lixeira (talvez estejam em uso)') -Title $Title) }
+    if ($moved.Count -eq 0) { return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhuma pasta foi para a Lixeira (talvez estejam em uso)') -Title $Title) }
 
-    return (Set-WinForgeRecycleBinNext -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} de {1} não foram para a Lixeira' "$($failed.Count)" "$(@($Items).Count)") -Title $Title) -Count $moved.Count)
+    return (Set-TFToolkitRecycleBinNext -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} de {1} não foram para a Lixeira' "$($failed.Count)" "$(@($Items).Count)") -Title $Title) -Count $moved.Count)
 }
 
 
-function Find-WinForgeProgramLeftovers {
-    $title = (Get-WinForgeText 'Restos de programas desinstalados')
+function Find-TFToolkitProgramLeftovers {
+    $title = (Get-TFToolkitText 'Restos de programas desinstalados')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        $selection = Select-WinForgeProgramLeftovers -Title $title
+        $selection = Select-TFToolkitProgramLeftovers -Title $title
 
         if ($null -ne $selection.Result) {
-            if ([string]$selection.Result.Detail -eq (Get-WinForgeText 'cancelado pelo usuário')) { Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.') }
-            Exit-WinForgeAction -Result $selection.Result
+            if ([string]$selection.Result.Detail -eq (Get-TFToolkitText 'cancelado pelo usuário')) { Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.') }
+            Exit-TFToolkitAction -Result $selection.Result
             return
         }
 
@@ -1112,22 +1112,22 @@ function Find-WinForgeProgramLeftovers {
         # e só o nome repetiria "Firefox e Firefox" (a pasta do Local e a do Roaming). Antes, a frase de lista marcada
         # (masculina) dizia "os 3 pastas marcados".
         $chosen = @($selection.Chosen)
-        $question = (Get-WinForgeText 'Enviar {0} para a Lixeira?' "$(Format-WinForgeCount -Count $chosen.Count -One (Get-WinForgeText 'pasta') -Many (Get-WinForgeText 'pastas'))")
+        $question = (Get-TFToolkitText 'Enviar {0} para a Lixeira?' "$(Format-TFToolkitCount -Count $chosen.Count -One (Get-TFToolkitText 'pasta') -Many (Get-TFToolkitText 'pastas'))")
 
-        if (-not (Confirm-WinForgeAction -Message $question -DefaultKey "N" -YesLabel (Get-WinForgeText 'Enviar para a Lixeira') -NoLabel (Get-WinForgeText 'Cancelar'))) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+        if (-not (Confirm-TFToolkitAction -Message $question -DefaultKey "N" -YesLabel (Get-TFToolkitText 'Enviar para a Lixeira') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
-        $final = Remove-WinForgeProgramLeftovers -Items $chosen -Title $title
+        $final = Remove-TFToolkitProgramLeftovers -Items $chosen -Title $title
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível procurar os restos: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível procurar os restos: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -1135,7 +1135,7 @@ function Find-WinForgeProgramLeftovers {
 # Apagar o espaço livre
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeCipherLeftoverPath {
+function Get-TFToolkitCipherLeftoverPath {
     # A pasta que o cipher /w cria na raiz da unidade ("C:" -> "C:\EFSTMPWP") e enche até ocupar todo o espaço livre.
     param ([Parameter(Mandatory)][string]$Drive)
 
@@ -1143,7 +1143,7 @@ function Get-WinForgeCipherLeftoverPath {
 }
 
 
-function Remove-WinForgeCipherLeftover {
+function Remove-TFToolkitCipherLeftover {
     <#
     Apaga a pasta EFSTMPWP que um cipher /w interrompido (botão Parar, erro) deixa na unidade: os arquivos dela ocupam o
     espaço livre inteiro e só o cipher, se terminasse, os tiraria. Devolve $true quando a pasta não existe mais.
@@ -1153,7 +1153,7 @@ function Remove-WinForgeCipherLeftover {
     if (-not (Test-Path -LiteralPath $Path)) { return $true }
 
     try {
-        Remove-WinForgeItem -Path $Path
+        Remove-TFToolkitItem -Path $Path
     }
     catch {
         Write-Verbose "EFSTMPWP: $($_.Exception.Message)"
@@ -1163,10 +1163,10 @@ function Remove-WinForgeCipherLeftover {
 }
 
 
-function Get-WinForgeWipeDriveText {
+function Get-TFToolkitWipeDriveText {
     <#
     A descrição de uma unidade na escolha de Apagar o espaço livre: "a do Windows · SSD · 120 GB livres de 476 GB". O tipo
-    do disco vem como o Diagnóstico mostra (Get-WinForgeDriveMediaText); sem ele, a descrição fica sem o tipo.
+    do disco vem como o Diagnóstico mostra (Get-TFToolkitDriveMediaText); sem ele, a descrição fica sem o tipo.
     #>
     param ([Parameter(Mandatory)]$Drive)
 
@@ -1174,14 +1174,14 @@ function Get-WinForgeWipeDriveText {
     $parts = @()
 
     try {
-        if ($id -ieq (Get-WinForgeSystemDriveLetter)) { $parts += (Get-WinForgeText 'a do Windows') }
+        if ($id -ieq (Get-TFToolkitSystemDriveLetter)) { $parts += (Get-TFToolkitText 'a do Windows') }
     }
     catch {
         Write-Verbose "Unidade do Windows: $($_.Exception.Message)"
     }
 
     try {
-        $media = Get-WinForgeDriveMediaText -Drive $id
+        $media = Get-TFToolkitDriveMediaText -Drive $id
         if ($media -in @("SSD", "NVMe")) { $parts += "SSD" }
         elseif ($media -eq "HDD") { $parts += "HD" }
     }
@@ -1189,46 +1189,46 @@ function Get-WinForgeWipeDriveText {
         Write-Verbose "Tipo do disco de ${id}: $($_.Exception.Message)"
     }
 
-    $parts += (Get-WinForgeText '{0} livres de {1}' "$(Format-WinForgeBytes -Bytes ([int64]$Drive.FreeSpace))" "$(Format-WinForgeBytes -Bytes ([int64]$Drive.Size))")
+    $parts += (Get-TFToolkitText '{0} livres de {1}' "$(Format-TFToolkitBytes -Bytes ([int64]$Drive.FreeSpace))" "$(Format-TFToolkitBytes -Bytes ([int64]$Drive.Size))")
 
     return ($parts -join " · ")
 }
 
 
-function Clear-WinForgeFreeSpace {
-    $title = (Get-WinForgeText 'Apagar o espaço livre')
+function Clear-TFToolkitFreeSpace {
+    $title = (Get-TFToolkitText 'Apagar o espaço livre')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Apagar o espaço livre exige privilégios de Administrador.'))) {
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador') -Title $title)
+        if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Apagar o espaço livre exige privilégios de Administrador.'))) {
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador') -Title $title)
             return
         }
 
         $drives = @(Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType=3" -OperationTimeoutSec 15 -ErrorAction Stop | Where-Object { $_.DeviceID } | Sort-Object -Property DeviceID)
 
         if ($drives.Count -eq 0) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Nenhuma unidade local foi encontrada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhuma unidade local') -Title $title)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Nenhuma unidade local foi encontrada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhuma unidade local') -Title $title)
             return
         }
 
         # Uma gravação anterior interrompida deixa a pasta EFSTMPWP enchendo o disco: oferece tirá-la antes de tudo. Não
         # é apagada sem perguntar: pode ser de um cipher que a pessoa está rodando agora em outra janela.
-        foreach ($leftover in @($drives | ForEach-Object { Get-WinForgeCipherLeftoverPath -Drive ([string]$_.DeviceID) } | Where-Object { Test-Path -LiteralPath $_ -PathType Container })) {
-            $leftoverSize = [int64](Get-WinForgePathStats -Path $leftover).Size
+        foreach ($leftover in @($drives | ForEach-Object { Get-TFToolkitCipherLeftoverPath -Drive ([string]$_.DeviceID) } | Where-Object { Test-Path -LiteralPath $_ -PathType Container })) {
+            $leftoverSize = [int64](Get-TFToolkitPathStats -Path $leftover).Size
 
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Uma gravação do espaço livre que não terminou deixou a pasta {0} ocupando {1}.' "$leftover" "$(Format-WinForgeBytes -Bytes $leftoverSize -ZeroText '0 B')")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Uma gravação do espaço livre que não terminou deixou a pasta {0} ocupando {1}.' "$leftover" "$(Format-TFToolkitBytes -Bytes $leftoverSize -ZeroText '0 B')")
 
-            if (Confirm-WinForgeAction -Message (Get-WinForgeText 'Apagar a pasta {0} agora?' "$leftover") -DefaultKey "S" -YesLabel (Get-WinForgeText 'Apagar') -NoLabel (Get-WinForgeText 'Manter')) {
-                if (Remove-WinForgeCipherLeftover -Path $leftover) {
-                    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Pasta {0} apagada; o espaço voltou.' "$leftover")
+            if (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Apagar a pasta {0} agora?' "$leftover") -DefaultKey "S" -YesLabel (Get-TFToolkitText 'Apagar') -NoLabel (Get-TFToolkitText 'Manter')) {
+                if (Remove-TFToolkitCipherLeftover -Path $leftover) {
+                    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Pasta {0} apagada; o espaço voltou.' "$leftover")
                 }
                 else {
-                    Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'A pasta {0} não saiu inteira (algum arquivo em uso). Feche outras janelas que estejam apagando o espaço livre e tente de novo.' "$leftover")
+                    Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'A pasta {0} não saiu inteira (algum arquivo em uso). Feche outras janelas que estejam apagando o espaço livre e tente de novo.' "$leftover")
                 }
             }
 
@@ -1237,17 +1237,17 @@ function Clear-WinForgeFreeSpace {
 
         # Serve antes de vender ou doar o PC. O disco é preenchido por inteiro e depois liberado. Num SSD, o próprio Windows
         # já descarta o que foi apagado, e a gravação extra só desgasta o disco.
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Grava por cima do espaço livre para que o que já foi apagado não possa ser recuperado; nenhum arquivo é apagado.')
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Leva horas e enche o disco até o fim: feche os outros programas. Num SSD, use só se precisar (desgasta o disco).')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Grava por cima do espaço livre para que o que já foi apagado não possa ser recuperado; nenhum arquivo é apagado.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Leva horas e enche o disco até o fim: feche os outros programas. Num SSD, use só se precisar (desgasta o disco).')
         Write-Host ""
 
         # Cada unidade diz se é a do Windows e se é SSD ou HD: o aviso acima vale diferente para cada uma.
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'lendo o tipo dos discos')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'lendo o tipo dos discos')
 
         try {
             $options = @(
                 foreach ($drive in $drives) {
-                    @{ Key = [string]$drive.DeviceID; Label = [string]$drive.DeviceID; Description = (Get-WinForgeWipeDriveText -Drive $drive) }
+                    @{ Key = [string]$drive.DeviceID; Label = [string]$drive.DeviceID; Description = (Get-TFToolkitWipeDriveText -Drive $drive) }
                 }
             )
         }
@@ -1255,65 +1255,65 @@ function Clear-WinForgeFreeSpace {
             Write-Progress -Activity $title -Completed
         }
 
-        $options += @{ Key = "X"; Label = (Get-WinForgeText 'Cancelar'); Exit = $true }
+        $options += @{ Key = "X"; Label = (Get-TFToolkitText 'Cancelar'); Exit = $true }
 
-        $answer = [string](Read-WinForgeChoice -Message (Get-WinForgeText 'Qual unidade?') -Options $options -DefaultKey "X" -ShowMenu)
+        $answer = [string](Read-TFToolkitChoice -Message (Get-TFToolkitText 'Qual unidade?') -Options $options -DefaultKey "X" -ShowMenu)
         $drive = @($drives | Where-Object { [string]$_.DeviceID -eq $answer }) | Select-Object -First 1
 
         if ($null -eq $drive) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
-        if (-not (Confirm-WinForgeAction -Message (Get-WinForgeText 'Apagar o espaço livre de {0} agora? O disco fica cheio até terminar.' "$($drive.DeviceID)") -DefaultKey "N" -Danger -YesLabel (Get-WinForgeText 'Apagar o espaço livre') -NoLabel (Get-WinForgeText 'Cancelar'))) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+        if (-not (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Apagar o espaço livre de {0} agora? O disco fica cheio até terminar.' "$($drive.DeviceID)") -DefaultKey "N" -Danger -YesLabel (Get-TFToolkitText 'Apagar o espaço livre') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'gravando por cima do espaço livre de {0} (pode levar horas)' "$($drive.DeviceID)")
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'gravando por cima do espaço livre de {0} (pode levar horas)' "$($drive.DeviceID)")
 
-        $leftover = Get-WinForgeCipherLeftoverPath -Drive ([string]$drive.DeviceID)
+        $leftover = Get-TFToolkitCipherLeftoverPath -Drive ([string]$drive.DeviceID)
         $exitCode = $null
 
         # São horas gravando: com o PC suspenso no meio, o cipher para e o disco fica cheio até ele voltar.
         $keepAwake = $false
 
         try {
-            $keepAwake = [bool](Set-WinForgeKeepAwake -Enabled $true)
-            $exitCode = Invoke-WinForgeNative -FilePath "cipher.exe" -Arguments @("/w:$($drive.DeviceID)\") -IgnoreExitCode -PassThru
+            $keepAwake = [bool](Set-TFToolkitKeepAwake -Enabled $true)
+            $exitCode = Invoke-TFToolkitNative -FilePath "cipher.exe" -Arguments @("/w:$($drive.DeviceID)\") -IgnoreExitCode -PassThru
         }
         finally {
-            if ($keepAwake) { [void](Set-WinForgeKeepAwake -Enabled $false) }
+            if ($keepAwake) { [void](Set-TFToolkitKeepAwake -Enabled $false) }
             Write-Progress -Activity $title -Completed
 
             # Interrompido (botão Parar) ou com erro, o cipher não chega a tirar a pasta de preenchimento, e o disco fica
             # cheio. Isto roda também quando a ação é parada; se algum arquivo ainda estiver preso, a próxima abertura
             # desta tela oferece apagar o que sobrou.
-            if ($exitCode -ne 0) { [void](Remove-WinForgeCipherLeftover -Path $leftover) }
+            if ($exitCode -ne 0) { [void](Remove-TFToolkitCipherLeftover -Path $leftover) }
         }
 
         if ($exitCode -eq 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Espaço livre de {0} apagado.' "$($drive.DeviceID)")
-            $final = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'espaço livre de {0} apagado' "$($drive.DeviceID)") -Title $title
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Espaço livre de {0} apagado.' "$($drive.DeviceID)")
+            $final = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'espaço livre de {0} apagado' "$($drive.DeviceID)") -Title $title
         }
         else {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'A gravação terminou com erro (código {0}).' "$exitCode")
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'A gravação terminou com erro (código {0}).' "$exitCode")
 
             if (Test-Path -LiteralPath $leftover) {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'A pasta {0} ficou para trás ocupando espaço; abra esta tela de novo para apagá-la.' "$leftover")
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'A pasta {0} ficou para trás ocupando espaço; abra esta tela de novo para apagá-la.' "$leftover")
             }
 
-            $final = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'a gravação terminou com erro (código {0})' "$exitCode") -Title $title
+            $final = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'a gravação terminou com erro (código {0})' "$exitCode") -Title $title
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível apagar o espaço livre: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível apagar o espaço livre: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 

@@ -1,7 +1,7 @@
 ﻿#requires -Version 5.1
 <#
 .SYNOPSIS
-    Assina digitalmente (Authenticode) todos os scripts do WinForge.
+    Assina digitalmente (Authenticode) todos os scripts do TF-Toolkit.
 
 .DESCRIPTION
     Use com um certificado de assinatura de código emitido por uma autoridade confiável
@@ -9,13 +9,13 @@
     e permitem usar ExecutionPolicy AllSigned. Certificado autoassinado só funciona nos PCs
     onde ele for instalado como confiável.
 
-    Depois de assinar, monte o zip com o tools\New-WinForgePackage.ps1: é ele que grava o SHA256SUMS.txt, a partir dos
+    Depois de assinar, monte o zip com o tools\New-TFToolkitPackage.ps1: é ele que grava o SHA256SUMS.txt, a partir dos
     arquivos como eles ficam no zip (com o CHANGELOG curto). Um SHA256SUMS.txt feito da pasta listaria também as
     ferramentas e os documentos, que não vão para o PC, e o CHANGELOG inteiro.
 
 .EXAMPLE
     $cert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1
-    .\tools\Sign-WinForge.ps1 -Certificate $cert
+    .\tools\Sign-TFToolkit.ps1 -Certificate $cert
 #>
 [CmdletBinding()]
 param (
@@ -40,4 +40,4 @@ foreach ($file in $files) {
     }
 }
 
-Write-Host "Agora monte o zip: .\tools\New-WinForgePackage.ps1 (ele grava o SHA256SUMS.txt)." -ForegroundColor Cyan
+Write-Host "Agora monte o zip: .\tools\New-TFToolkitPackage.ps1 (ele grava o SHA256SUMS.txt)." -ForegroundColor Cyan

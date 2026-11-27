@@ -3,7 +3,7 @@
 # teste de memória ficam com as ferramentas do Windows, quando a pessoa pede.
 
 
-function Get-WinForgeUptimeText {
+function Get-TFToolkitUptimeText {
     # Nullable: o CIM devolve $null quando não sabe a data do boot, e um parâmetro [datetime] comum transformaria isso
     # em "0001-01-01" (ou recusaria o valor), o que gerava um tempo ligado absurdo ou derrubava o relatório.
     param (
@@ -11,7 +11,7 @@ function Get-WinForgeUptimeText {
     )
 
     if ($null -eq $LastBootTime -or $LastBootTime.Year -lt 2000) {
-        return (Get-WinForgeText 'Desconhecido')
+        return (Get-TFToolkitText 'Desconhecido')
     }
 
     # Em UTC: a conta com a hora local erra uma hora quando o horário de verão começa ou termina no meio.
@@ -19,36 +19,36 @@ function Get-WinForgeUptimeText {
 
     # Um boot "no futuro" (relógio atrasado depois de ligar) não tem tempo ligado que se possa dizer.
     if ($uptime.TotalMinutes -lt -5) {
-        return (Get-WinForgeText 'Desconhecido')
+        return (Get-TFToolkitText 'Desconhecido')
     }
 
     if ($uptime.TotalMinutes -lt 1) {
-        return (Get-WinForgeText 'menos de 1 minuto')
+        return (Get-TFToolkitText 'menos de 1 minuto')
     }
 
     $parts = @()
 
     if ($uptime.Days -gt 0) {
-        if ($uptime.Days -eq 1) { $parts += (Get-WinForgeText '1 dia') } else { $parts += (Get-WinForgeText '{0} dias' "$($uptime.Days)") }
+        if ($uptime.Days -eq 1) { $parts += (Get-TFToolkitText '1 dia') } else { $parts += (Get-TFToolkitText '{0} dias' "$($uptime.Days)") }
     }
 
     if ($uptime.Hours -gt 0) {
-        if ($uptime.Hours -eq 1) { $parts += (Get-WinForgeText '1 hora') } else { $parts += (Get-WinForgeText '{0} horas' "$($uptime.Hours)") }
+        if ($uptime.Hours -eq 1) { $parts += (Get-TFToolkitText '1 hora') } else { $parts += (Get-TFToolkitText '{0} horas' "$($uptime.Hours)") }
     }
 
     if ($uptime.Minutes -gt 0 -or $parts.Count -eq 0) {
-        if ($uptime.Minutes -eq 1) { $parts += (Get-WinForgeText '1 minuto') } else { $parts += (Get-WinForgeText '{0} minutos' "$($uptime.Minutes)") }
+        if ($uptime.Minutes -eq 1) { $parts += (Get-TFToolkitText '1 minuto') } else { $parts += (Get-TFToolkitText '{0} minutos' "$($uptime.Minutes)") }
     }
 
     # "2 dias, 3 horas e 5 minutos".
-    return (Join-WinForgeList -Items $parts)
+    return (Join-TFToolkitList -Items $parts)
 }
 
 
-function Test-WinForgeLongUptime {
+function Test-TFToolkitLongUptime {
     <#
     Se o PC está ligado há uma semana ou mais desde o último início: o Desempenho mostra a linha em amarelo, e Tempo ligado e
-    energia oferece reiniciar. Em UTC, como Get-WinForgeUptimeText (a hora local erra uma hora na troca do horário de
+    energia oferece reiniciar. Em UTC, como Get-TFToolkitUptimeText (a hora local erra uma hora na troca do horário de
     verão). Sem a hora do início, ou com um início "no futuro", $false.
     #>
     param ([Nullable[datetime]]$LastBootTime)
@@ -61,13 +61,13 @@ function Test-WinForgeLongUptime {
 }
 
 
-function Get-WinForgeDiskTypeText {
+function Get-TFToolkitDiskTypeText {
     param (
         [object]$Disk
     )
 
     if ($null -eq $Disk) {
-        return (Get-WinForgeText 'Não disponível')
+        return (Get-TFToolkitText 'Não disponível')
     }
 
     $busType = ""
@@ -107,22 +107,22 @@ function Get-WinForgeDiskTypeText {
         return $busType
     }
 
-    return (Get-WinForgeText 'Não disponível')
+    return (Get-TFToolkitText 'Não disponível')
 }
 
 
-function Get-WinForgePartitionLetters {
+function Get-TFToolkitPartitionLetters {
     <#
     As unidades com letra e o disco de cada uma, de uma leitura só das partições (Get-Partition, com prazo): Drive ("C:") e
     Disk (o número do disco, como texto). As partições sem letra (a de recuperação, a do boot) ficam de fora; a letra vem
     como um caractere, e "sem letra" é o caractere zero. Um erro do Windows, inclusive o tempo esgotado
     (TimeoutException), sobe para quem chama. Usada por Discos e espaço livre, Saúde dos discos e a lista do CHKDSK.
     #>
-    foreach ($partition in @(Invoke-WinForgeCimCommand -Name "Get-Partition")) {
+    foreach ($partition in @(Invoke-TFToolkitCimCommand -Name "Get-Partition")) {
         if ($null -eq $partition) { continue }
 
-        $letter = ([string](Get-WinForgeJsonValue -Object $partition -Name "DriveLetter" -Default "")).Trim([char]0).Trim()
-        $disk = [string](Get-WinForgeJsonValue -Object $partition -Name "DiskNumber" -Default "")
+        $letter = ([string](Get-TFToolkitJsonValue -Object $partition -Name "DriveLetter" -Default "")).Trim([char]0).Trim()
+        $disk = [string](Get-TFToolkitJsonValue -Object $partition -Name "DiskNumber" -Default "")
 
         if ($letter -match '^[A-Za-z]$' -and $disk -match '^[0-9]+$') {
             [PSCustomObject]@{ Drive = "$($letter.ToUpperInvariant()):"; Disk = $disk }
@@ -131,7 +131,7 @@ function Get-WinForgePartitionLetters {
 }
 
 
-function Get-WinForgeDiskSummary {
+function Get-TFToolkitDiskSummary {
     # Só a consulta fica no try: uma falha na conta de uma unidade não pode virar "não foi possível detectar" para todas.
     try {
         $logicalDisks = @(
@@ -149,7 +149,7 @@ function Get-WinForgeDiskSummary {
     $physicalByNumber = @{}
 
     try {
-        foreach ($partition in @(Get-WinForgePartitionLetters)) {
+        foreach ($partition in @(Get-TFToolkitPartitionLetters)) {
             $diskNumberByLetter[$partition.Drive.TrimEnd(":")] = $partition.Disk
         }
     }
@@ -159,7 +159,7 @@ function Get-WinForgeDiskSummary {
 
     if ($diskNumberByLetter.Count -gt 0) {
         try {
-            # MSFT_PhysicalDisk, o que o Get-PhysicalDisk devolve, mas com prazo (veja Get-WinForgeDiskHealth).
+            # MSFT_PhysicalDisk, o que o Get-PhysicalDisk devolve, mas com prazo (veja Get-TFToolkitDiskHealth).
             foreach ($physicalDisk in @(Get-CimInstance -Namespace "root/Microsoft/Windows/Storage" -ClassName "MSFT_PhysicalDisk" -OperationTimeoutSec 60 -ErrorAction Stop)) {
                 $physicalByNumber[[string]$physicalDisk.DeviceId] = $physicalDisk
             }
@@ -185,8 +185,8 @@ function Get-WinForgeDiskSummary {
         $driveLetter = $driveId.TrimEnd(":").ToUpperInvariant()
         $isSystem = ($driveId -eq $systemDrive)
         $disk = $null
-        $diskModel = (Get-WinForgeText 'Não disponível')
-        $diskType = (Get-WinForgeText 'Não disponível')
+        $diskModel = (Get-TFToolkitText 'Não disponível')
+        $diskType = (Get-TFToolkitText 'Não disponível')
 
         # Só o disco desta unidade: associar o primeiro disco físico a todas daria dados errados com vários discos.
         if ($diskNumberByLetter.ContainsKey($driveLetter) -and $physicalByNumber.ContainsKey($diskNumberByLetter[$driveLetter])) {
@@ -198,7 +198,7 @@ function Get-WinForgeDiskSummary {
                 $diskModel = ([string]$disk.FriendlyName).Trim()
             }
 
-            $diskType = Get-WinForgeDiskTypeText -Disk $disk
+            $diskType = Get-TFToolkitDiskTypeText -Disk $disk
         }
 
         $totalBytes = $logicalDisk.Size
@@ -222,17 +222,17 @@ function Get-WinForgeDiskSummary {
 
             # Nível ("Ok", "Low", "Critical" ou "Unknown") segue a mesma regra da tela inicial e da Manutenção; numa
             # unidade que não é a do sistema, só a porcentagem conta.
-            $level = Get-WinForgeDiskSpaceLevel -FreeBytes $freeBytes -TotalBytes $totalBytes -System $isSystem
+            $level = Get-TFToolkitDiskSpaceLevel -FreeBytes $freeBytes -TotalBytes $totalBytes -System $isSystem
         }
 
         $diskSummary += [PSCustomObject]@{
             Unidade    = $driveId
             Tipo       = $diskType
             Modelo     = $diskModel
-            Total      = Format-WinForgeBytes -Bytes $totalBytes -ZeroText (Get-WinForgeText 'Não disponível')
-            Livre      = $(if ($known) { Format-WinForgeBytes -Bytes $freeBytes -ZeroText "0 B" } else { (Get-WinForgeText 'Não disponível') })
-            Usado      = $(if ($known) { Format-WinForgeBytes -Bytes $usedBytes -ZeroText "0 B" } else { (Get-WinForgeText 'Não disponível') })
-            Uso        = $(if ($null -ne $usedPercent) { "$usedPercent%" } else { (Get-WinForgeText 'Não disponível') })
+            Total      = Format-TFToolkitBytes -Bytes $totalBytes -ZeroText (Get-TFToolkitText 'Não disponível')
+            Livre      = $(if ($known) { Format-TFToolkitBytes -Bytes $freeBytes -ZeroText "0 B" } else { (Get-TFToolkitText 'Não disponível') })
+            Usado      = $(if ($known) { Format-TFToolkitBytes -Bytes $usedBytes -ZeroText "0 B" } else { (Get-TFToolkitText 'Não disponível') })
+            Uso        = $(if ($null -ne $usedPercent) { "$usedPercent%" } else { (Get-TFToolkitText 'Não disponível') })
             UsoPercent = $usedPercent
             LivrePercent = $freePercent
             Nivel      = $level
@@ -244,7 +244,7 @@ function Get-WinForgeDiskSummary {
 }
 
 
-function Get-WinForgeDiskSummaryText {
+function Get-TFToolkitDiskSummaryText {
     # Uma unidade numa linha, igual na tela e no relatório: "477 GB livres de 931 GB (49% usado) · NVMe · Samsung SSD 980".
     # Tipo e modelo que o Windows não informou ficam de fora.
     param (
@@ -252,10 +252,10 @@ function Get-WinForgeDiskSummaryText {
         $Disk
     )
 
-    $text = $(if ($null -ne $Disk.UsoPercent) { (Get-WinForgeText '{0} livres de {1} ({2}% usado)' "$($Disk.Livre)" "$($Disk.Total)" "$($Disk.UsoPercent)") } else { (Get-WinForgeText 'espaço livre desconhecido') })
+    $text = $(if ($null -ne $Disk.UsoPercent) { (Get-TFToolkitText '{0} livres de {1} ({2}% usado)' "$($Disk.Livre)" "$($Disk.Total)" "$($Disk.UsoPercent)") } else { (Get-TFToolkitText 'espaço livre desconhecido') })
 
     foreach ($part in @($Disk.Tipo, $Disk.Modelo)) {
-        if (-not [string]::IsNullOrWhiteSpace([string]$part) -and [string]$part -ne (Get-WinForgeText 'Não disponível')) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$part) -and [string]$part -ne (Get-TFToolkitText 'Não disponível')) {
             $text += " · $part"
         }
     }
@@ -264,37 +264,37 @@ function Get-WinForgeDiskSummaryText {
 }
 
 
-function Get-WinForgeLowDiskText {
+function Get-TFToolkitLowDiskText {
     # A frase de uma unidade com pouco espaço, a mesma na tela e na faixa: "A unidade C: está quase cheia: só 6 GB livres de
     # 476 GB." ou "A unidade D: está com pouco espaço: 40 GB livres de 931 GB (4% livre)."
     param ([Parameter(Mandatory)]$Disk)
 
     if ($Disk.Nivel -eq "Critical") {
-        return (Get-WinForgeText 'A unidade {0} está quase cheia: só {1} livres de {2}.' "$($Disk.Unidade)" "$($Disk.Livre)" "$($Disk.Total)")
+        return (Get-TFToolkitText 'A unidade {0} está quase cheia: só {1} livres de {2}.' "$($Disk.Unidade)" "$($Disk.Livre)" "$($Disk.Total)")
     }
 
-    $freePercent = Get-WinForgeJsonValue -Object $Disk -Name "LivrePercent" -Default (100 - [int]$Disk.UsoPercent)
+    $freePercent = Get-TFToolkitJsonValue -Object $Disk -Name "LivrePercent" -Default (100 - [int]$Disk.UsoPercent)
 
-    return (Get-WinForgeText 'A unidade {0} está com pouco espaço: {1} livres de {2} ({3} livre).' "$($Disk.Unidade)" "$($Disk.Livre)" "$($Disk.Total)" "$(if ([int]$freePercent -lt 1) { (Get-WinForgeText 'menos de 1%') } else { "$freePercent%" })")
+    return (Get-TFToolkitText 'A unidade {0} está com pouco espaço: {1} livres de {2} ({3} livre).' "$($Disk.Unidade)" "$($Disk.Livre)" "$($Disk.Total)" "$(if ([int]$freePercent -lt 1) { (Get-TFToolkitText 'menos de 1%') } else { "$freePercent%" })")
 }
 
 
-function Show-WinForgeDiskSummary {
+function Show-TFToolkitDiskSummary {
     # Cada unidade é uma linha "rótulo : valor", que a janela mostra também no resumo (uma tabela ficaria só nos detalhes).
-    # -PassThru devolve as unidades com pouco espaço (como Get-WinForgeDiskSummary), para a faixa de resultado de quem chama.
+    # -PassThru devolve as unidades com pouco espaço (como Get-TFToolkitDiskSummary), para a faixa de resultado de quem chama.
     param (
         [switch]$PassThru
     )
 
-    $disks = @(Get-WinForgeDiskSummary)
+    $disks = @(Get-TFToolkitDiskSummary)
 
     if ($disks.Count -eq 0) {
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível detectar informações de disco.')
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível detectar informações de disco.')
         return
     }
 
     foreach ($disk in $disks) {
-        Write-WinForgeKeyValue -Label $disk.Unidade -Value (Get-WinForgeDiskSummaryText -Disk $disk)
+        Write-TFToolkitKeyValue -Label $disk.Unidade -Value (Get-TFToolkitDiskSummaryText -Disk $disk)
     }
 
     $lowDisks = @($disks | Where-Object { $_.Nivel -in @("Low", "Critical") })
@@ -312,27 +312,27 @@ function Show-WinForgeDiskSummary {
     # As mesmas palavras da tela inicial. No disco do Windows, "quase cheia" abaixo de 10 GB livres e "pouco espaço" abaixo
     # de 20 GB; nas outras unidades, abaixo de 5% e de 10% livres.
     foreach ($disk in $lowDisks) {
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeLowDiskText -Disk $disk)
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitLowDiskText -Disk $disk)
     }
 
     # A Limpeza trabalha no disco do Windows (temporários, caches); numa unidade de dados ela libera pouco (a Lixeira, a
     # pasta Downloads se ela estiver lá). A marca vem da lista (Sistema), com a mesma regra que decidiu o nível. O conselho é
     # o mesmo do Início, da Verificação do PC e da faixa da Limpeza: a Limpeza personalizada, que mede tudo o que dá para
     # tirar.
-    $systemLow = @($lowDisks | Where-Object { [bool](Get-WinForgeJsonValue -Object $_ -Name "Sistema" -Default $false) })
-    $otherLow = @($lowDisks | Where-Object { -not [bool](Get-WinForgeJsonValue -Object $_ -Name "Sistema" -Default $false) })
+    $systemLow = @($lowDisks | Where-Object { [bool](Get-TFToolkitJsonValue -Object $_ -Name "Sistema" -Default $false) })
+    $otherLow = @($lowDisks | Where-Object { -not [bool](Get-TFToolkitJsonValue -Object $_ -Name "Sistema" -Default $false) })
 
     if ($systemLow.Count -gt 0) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para liberar espaço no disco do Windows, use Limpeza > Limpeza personalizada.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para liberar espaço no disco do Windows, use Limpeza > Limpeza personalizada.')
     }
 
     if ($otherLow.Count -gt 0) {
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Em {0}, a Limpeza do WinForge libera pouco (ela cuida do disco do Windows): mova ou apague arquivos grandes que você não usa.' "$(Join-WinForgeList -Items @($otherLow | ForEach-Object { $_.Unidade }))")
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Em {0}, a Limpeza do TF-Toolkit libera pouco (ela cuida do disco do Windows): mova ou apague arquivos grandes que você não usa.' "$(Join-TFToolkitList -Items @($otherLow | ForEach-Object { $_.Unidade }))")
     }
 }
 
 
-function Get-WinForgeCimOrNull {
+function Get-TFToolkitCimOrNull {
     # Consulta CIM tolerante: uma classe indisponível (máquina virtual, WMI com defeito) não derruba a tela inteira.
     param (
         [Parameter(Mandatory)]
@@ -348,10 +348,10 @@ function Get-WinForgeCimOrNull {
 }
 
 
-function Get-WinForgeSecureBootState {
+function Get-TFToolkitSecureBootState {
     <#
     O estado do Secure Boot: "On", "Off", "Legacy" (o Windows iniciou no modo BIOS legado), "NoAdmin" (a consulta pediu
-    Administrador) ou "Unknown". A tela (Get-WinForgeSecureBootText) e a auditoria de segurança partem daqui.
+    Administrador) ou "Unknown". A tela (Get-TFToolkitSecureBootText) e a auditoria de segurança partem daqui.
     O Registro (SecureBoot\State) é legível sem Administrador; Confirm-SecureBootUEFI fica de reserva e, sem
     Administrador, recusa a consulta (acesso negado), o que antes aparecia como "não suportado" num PC com o Secure Boot
     ligado. Num PC com BIOS legado (sem UEFI) o cmdlet responde que a plataforma não tem suporte.
@@ -359,13 +359,13 @@ function Get-WinForgeSecureBootState {
     # O tipo de firmware vem antes: com o Windows iniciado no modo BIOS legado, o valor do Secure Boot pode existir (em 0)
     # e "desligado" sugeriria uma opção que não está ao alcance. PEFirmwareType: 1 = BIOS legado, 2 = UEFI. É o modo em
     # que o Windows iniciou, e não o que a placa suporta: muitos PCs têm UEFI desligado (CSM).
-    $firmware = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "PEFirmwareType"
+    $firmware = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "PEFirmwareType"
 
     if ($null -ne $firmware -and [string]$firmware -eq "1") {
         return "Legacy"
     }
 
-    $state = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\State" -Name "UEFISecureBootEnabled"
+    $state = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\State" -Name "UEFISecureBootEnabled"
 
     if ($null -ne $state -and [string]$state -in @("0", "1")) {
         return $(if ([int]$state -eq 1) { "On" } else { "Off" })
@@ -383,19 +383,19 @@ function Get-WinForgeSecureBootState {
 }
 
 
-function Get-WinForgeSecureBootText {
-    # O estado do Secure Boot como a tela Sobre este PC o mostra (Get-WinForgeSecureBootState).
-    switch (Get-WinForgeSecureBootState) {
-        "On" { return (Get-WinForgeText 'Ativado') }
-        "Off" { return (Get-WinForgeText 'Desativado') }
-        "Legacy" { return (Get-WinForgeText 'Indisponível (o Windows iniciou no modo BIOS legado)') }
-        "NoAdmin" { return (Get-WinForgeText 'Não verificado (requer Administrador)') }
-        default { return (Get-WinForgeText 'Desconhecido') }
+function Get-TFToolkitSecureBootText {
+    # O estado do Secure Boot como a tela Sobre este PC o mostra (Get-TFToolkitSecureBootState).
+    switch (Get-TFToolkitSecureBootState) {
+        "On" { return (Get-TFToolkitText 'Ativado') }
+        "Off" { return (Get-TFToolkitText 'Desativado') }
+        "Legacy" { return (Get-TFToolkitText 'Indisponível (o Windows iniciou no modo BIOS legado)') }
+        "NoAdmin" { return (Get-TFToolkitText 'Não verificado (requer Administrador)') }
+        default { return (Get-TFToolkitText 'Desconhecido') }
     }
 }
 
 
-function Get-WinForgeWindowsActivation {
+function Get-TFToolkitWindowsActivation {
     <#
     A ativação do Windows, lida no licenciamento do próprio Windows (SoftwareLicensingProduct): o produto do Windows
     (ApplicationID 55c92734-d682-4d71-983e-d6ec3f16059f) com uma chave instalada (PartialProductKey). "Licensed"
@@ -410,7 +410,7 @@ function Get-WinForgeWindowsActivation {
         return "Unknown"
     }
 
-    $statuses = @($products | Where-Object { $null -ne $_ } | ForEach-Object { [string](Get-WinForgeJsonValue -Object $_ -Name "LicenseStatus" -Default "") })
+    $statuses = @($products | Where-Object { $null -ne $_ } | ForEach-Object { [string](Get-TFToolkitJsonValue -Object $_ -Name "LicenseStatus" -Default "") })
 
     if ($statuses -contains "1") { return "Licensed" }
     if (@($statuses | Where-Object { $_ -in @("2", "3", "4", "6") }).Count -gt 0) { return "Grace" }
@@ -420,20 +420,20 @@ function Get-WinForgeWindowsActivation {
 }
 
 
-function Get-WinForgeWindowsActivationText {
-    # A ativação como Sobre este PC e o relatório a mostram (Get-WinForgeWindowsActivation).
+function Get-TFToolkitWindowsActivationText {
+    # A ativação como Sobre este PC e o relatório a mostram (Get-TFToolkitWindowsActivation).
     param ([string]$State)
 
     switch ($State) {
-        "Licensed" { return (Get-WinForgeText 'Ativado') }
-        "Grace" { return (Get-WinForgeText 'Não ativado (ainda no prazo para ativar)') }
-        "Unlicensed" { return (Get-WinForgeText 'Não ativado') }
-        default { return (Get-WinForgeText 'Não foi possível conferir') }
+        "Licensed" { return (Get-TFToolkitText 'Ativado') }
+        "Grace" { return (Get-TFToolkitText 'Não ativado (ainda no prazo para ativar)') }
+        "Unlicensed" { return (Get-TFToolkitText 'Não ativado') }
+        default { return (Get-TFToolkitText 'Não foi possível conferir') }
     }
 }
 
 
-function Get-WinForgeMemoryModulesText {
+function Get-TFToolkitMemoryModulesText {
     # "2 × 16 GB" quando os módulos são iguais; "8 GB + 16 GB" quando não são. Sem capacidade informada = $null.
     param (
         [object[]]$Modules = @()
@@ -441,8 +441,8 @@ function Get-WinForgeMemoryModulesText {
 
     $sizes = @(
         foreach ($module in @($Modules)) {
-            $capacity = [double](Get-WinForgeJsonValue -Object $module -Name "Capacity" -Default 0)
-            if ($capacity -gt 0) { Format-WinForgeBytes -Bytes $capacity }
+            $capacity = [double](Get-TFToolkitJsonValue -Object $module -Name "Capacity" -Default 0)
+            if ($capacity -gt 0) { Format-TFToolkitBytes -Bytes $capacity }
         }
     )
 
@@ -458,7 +458,7 @@ function Get-WinForgeMemoryModulesText {
 }
 
 
-function Get-WinForgeMachineModelText {
+function Get-TFToolkitMachineModelText {
     <#
     Fabricante e modelo do PC ("Dell Inc. Inspiron 15 3520"), o que um técnico pergunta primeiro (drivers, BIOS,
     garantia), a partir do Win32_ComputerSystem. Os textos de fábrica vazios ("System Product Name", "To Be Filled By
@@ -473,9 +473,9 @@ function Get-WinForgeMachineModelText {
     $placeholder = '^(To Be Filled By O\.E\.M\.|System manufacturer|System Product Name|System Version|Default string|O\.E\.M\.|OEM|Not Applicable|Not Specified|None|Unknown|Undefined|All Series|Type1ProductConfigId|Base Board Product Name|x\.x)$'
     $clean = { param ($value) $text = ([string]$value -replace '\s+', ' ').Trim(); $(if ($text -and $text -notmatch $placeholder) { $text } else { "" }) }
 
-    $maker = & $clean (Get-WinForgeJsonValue -Object $System -Name "Manufacturer" -Default "")
-    $model = & $clean (Get-WinForgeJsonValue -Object $System -Name "Model" -Default "")
-    $family = & $clean (Get-WinForgeJsonValue -Object $System -Name "SystemFamily" -Default "")
+    $maker = & $clean (Get-TFToolkitJsonValue -Object $System -Name "Manufacturer" -Default "")
+    $model = & $clean (Get-TFToolkitJsonValue -Object $System -Name "Model" -Default "")
+    $family = & $clean (Get-TFToolkitJsonValue -Object $System -Name "SystemFamily" -Default "")
 
     if ($maker -match '^lenovo$') {
         $maker = "Lenovo"
@@ -489,15 +489,15 @@ function Get-WinForgeMachineModelText {
 }
 
 
-function Show-WinForgeSystemInfo {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Sobre este PC')
+function Show-TFToolkitSystemInfo {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Sobre este PC')
 
     try {
         # O Win32_OperatingSystem e o Win32_Processor existem em todo Windows: sem resposta dos dois, o WMI não está
         # respondendo, e as outras leituras (cada uma com o seu prazo, mais a ativação e os discos) só atrasariam o aviso em
         # minutos. A tela fica com o que não depende dele.
-        $os = Get-WinForgeCimOrNull -ClassName "Win32_OperatingSystem" | Select-Object -First 1
-        $processors = @(Get-WinForgeCimOrNull -ClassName "Win32_Processor")
+        $os = Get-TFToolkitCimOrNull -ClassName "Win32_OperatingSystem" | Select-Object -First 1
+        $processors = @(Get-TFToolkitCimOrNull -ClassName "Win32_Processor")
         $wmiDown = ($null -eq $os -and $processors.Count -eq 0)
         $cpu = $processors | Select-Object -First 1
         $baseBoard = $null
@@ -507,11 +507,11 @@ function Show-WinForgeSystemInfo {
         $computerSystem = $null
 
         if (-not $wmiDown) {
-            $baseBoard = Get-WinForgeCimOrNull -ClassName "Win32_BaseBoard" | Select-Object -First 1
-            $bios = Get-WinForgeCimOrNull -ClassName "Win32_BIOS" | Select-Object -First 1
-            $memoryModules = @(Get-WinForgeCimOrNull -ClassName "Win32_PhysicalMemory")
-            $gpuList = @(Get-WinForgeCimOrNull -ClassName "Win32_VideoController")
-            $computerSystem = Get-WinForgeCimOrNull -ClassName "Win32_ComputerSystem" | Select-Object -First 1
+            $baseBoard = Get-TFToolkitCimOrNull -ClassName "Win32_BaseBoard" | Select-Object -First 1
+            $bios = Get-TFToolkitCimOrNull -ClassName "Win32_BIOS" | Select-Object -First 1
+            $memoryModules = @(Get-TFToolkitCimOrNull -ClassName "Win32_PhysicalMemory")
+            $gpuList = @(Get-TFToolkitCimOrNull -ClassName "Win32_VideoController")
+            $computerSystem = Get-TFToolkitCimOrNull -ClassName "Win32_ComputerSystem" | Select-Object -First 1
         }
 
         # RAM: a soma dos módulos; em máquinas virtuais a lista de módulos vem vazia e vale o total do sistema.
@@ -522,13 +522,13 @@ function Show-WinForgeSystemInfo {
         }
 
         if ($null -eq $totalRamBytes -or $totalRamBytes -le 0) {
-            $totalRamBytes = $(if ($computerSystem) { Get-WinForgeJsonValue -Object $computerSystem -Name "TotalPhysicalMemory" -Default $null } else { $null })
+            $totalRamBytes = $(if ($computerSystem) { Get-TFToolkitJsonValue -Object $computerSystem -Name "TotalPhysicalMemory" -Default $null } else { $null })
         }
 
-        $memoryType = (Get-WinForgeText 'Não disponível')
+        $memoryType = (Get-TFToolkitText 'Não disponível')
 
         if ($memoryModules.Count -gt 0) {
-            $memoryType = Convert-WinForgeMemoryType -Type ([int]$memoryModules[0].SMBIOSMemoryType)
+            $memoryType = Convert-TFToolkitMemoryType -Type ([int]$memoryModules[0].SMBIOSMemoryType)
         }
 
         # ForEach-Object em vez de Select-Object -ExpandProperty: se a propriedade não existir nesta versão do Windows,
@@ -542,22 +542,22 @@ function Show-WinForgeSystemInfo {
 
         # MT/s, a unidade que o Gerenciador de Tarefas do Windows 11 passou a usar: é a taxa do nome do módulo (DDR4-3200),
         # não o clock em MHz (a metade dela).
-        $ramClockText = $(if ($configuredSpeeds.Count -gt 0) { ($configuredSpeeds -join " / ") + " MT/s" } else { (Get-WinForgeText 'Desconhecido') })
-        $xmpText = Get-WinForgeExpoXmpStatus -MemoryModules $memoryModules
+        $ramClockText = $(if ($configuredSpeeds.Count -gt 0) { ($configuredSpeeds -join " / ") + " MT/s" } else { (Get-TFToolkitText 'Desconhecido') })
+        $xmpText = Get-TFToolkitExpoXmpStatus -MemoryModules $memoryModules
 
         # Núcleos e processadores lógicos de todos os processadores (placas com dois soquetes). MaxClockSpeed é a
         # frequência base: o WMI não informa o turbo, e o "clock atual" dele costuma repetir a base, por isso não aparece.
-        $coreCount = [int](($processors | ForEach-Object { [int](Get-WinForgeJsonValue -Object $_ -Name "NumberOfCores" -Default 0) } | Measure-Object -Sum).Sum)
-        $threadCount = [int](($processors | ForEach-Object { [int](Get-WinForgeJsonValue -Object $_ -Name "NumberOfLogicalProcessors" -Default 0) } | Measure-Object -Sum).Sum)
+        $coreCount = [int](($processors | ForEach-Object { [int](Get-TFToolkitJsonValue -Object $_ -Name "NumberOfCores" -Default 0) } | Measure-Object -Sum).Sum)
+        $threadCount = [int](($processors | ForEach-Object { [int](Get-TFToolkitJsonValue -Object $_ -Name "NumberOfLogicalProcessors" -Default 0) } | Measure-Object -Sum).Sum)
         $coresText = $null
 
         if ($coreCount -gt 0) {
-            $coresText = Format-WinForgeCount -Count $coreCount -One (Get-WinForgeText 'núcleo') -Many (Get-WinForgeText 'núcleos')
-            if ($threadCount -gt 0) { $coresText += ", " + (Format-WinForgeCount -Count $threadCount -One (Get-WinForgeText 'processador lógico') -Many (Get-WinForgeText 'processadores lógicos')) }
+            $coresText = Format-TFToolkitCount -Count $coreCount -One (Get-TFToolkitText 'núcleo') -Many (Get-TFToolkitText 'núcleos')
+            if ($threadCount -gt 0) { $coresText += ", " + (Format-TFToolkitCount -Count $threadCount -One (Get-TFToolkitText 'processador lógico') -Many (Get-TFToolkitText 'processadores lógicos')) }
         }
 
-        $baseClock = $(if ($cpu) { [double](Get-WinForgeJsonValue -Object $cpu -Name "MaxClockSpeed" -Default 0) } else { 0 })
-        $baseClockText = $(if ($baseClock -gt 0) { "$(Format-WinForgeNumber -Value ($baseClock / 1000) -Decimals 2) GHz" } else { $null })
+        $baseClock = $(if ($cpu) { [double](Get-TFToolkitJsonValue -Object $cpu -Name "MaxClockSpeed" -Default 0) } else { 0 })
+        $baseClockText = $(if ($baseClock -gt 0) { "$(Format-TFToolkitNumber -Value ($baseClock / 1000) -Decimals 2) GHz" } else { $null })
 
         $validGpus = @(
             $gpuList | Where-Object {
@@ -573,95 +573,95 @@ function Show-WinForgeSystemInfo {
         }
 
         $lastBootTime = $(if ($os) { $os.LastBootUpTime } else { $null })
-        $pcUptimeText = (Get-WinForgeText 'Desconhecido')
-        $lastBootText = (Get-WinForgeText 'Desconhecido')
+        $pcUptimeText = (Get-TFToolkitText 'Desconhecido')
+        $lastBootText = (Get-TFToolkitText 'Desconhecido')
 
         if ($null -ne $lastBootTime) {
-            $pcUptimeText = Get-WinForgeUptimeText -LastBootTime $lastBootTime
-            $lastBootText = Format-WinForgeDateTime -When $lastBootTime
+            $pcUptimeText = Get-TFToolkitUptimeText -LastBootTime $lastBootTime
+            $lastBootText = Format-TFToolkitDateTime -When $lastBootTime
         }
 
         # Sem nenhuma resposta do WMI, todos os campos viriam "Não disponível" e a tela pareceria só incompleta.
         if ($wmiDown) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O Windows não respondeu às consultas de hardware (WMI): os dados abaixo estão incompletos. Reiniciar o serviço Instrumentação de Gerenciamento do Windows pode resolver.')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O Windows não respondeu às consultas de hardware (WMI): os dados abaixo estão incompletos. Reiniciar o serviço Instrumentação de Gerenciamento do Windows pode resolver.')
         }
 
         # O mesmo nome e a mesma versão da tela inicial ("Windows 11 Pro", 24H2), e não a legenda do WMI com "Microsoft"
         # nem a versão do núcleo (10.0.26100), que não diz nada a quem usa.
-        $build = $(if ($os) { [int](Get-WinForgeJsonValue -Object $os -Name "BuildNumber" -Default 0) } else { 0 })
-        $windowsName = $(if ($os) { Get-WinForgeWindowsName -Caption ([string](Get-WinForgeJsonValue -Object $os -Name "Caption" -Default "")) -Build $build } else { "" })
+        $build = $(if ($os) { [int](Get-TFToolkitJsonValue -Object $os -Name "BuildNumber" -Default 0) } else { 0 })
+        $windowsName = $(if ($os) { Get-TFToolkitWindowsName -Caption ([string](Get-TFToolkitJsonValue -Object $os -Name "Caption" -Default "")) -Build $build } else { "" })
         $computer = $(if ([string]::IsNullOrWhiteSpace($env:COMPUTERNAME)) { [Environment]::MachineName } else { $env:COMPUTERNAME })
         $user = $(if ([string]::IsNullOrWhiteSpace($env:USERNAME)) { [Environment]::UserName } else { $env:USERNAME })
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Sistema')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Computador') -Value $computer
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Usuário') -Value $user
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Sistema')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Computador') -Value $computer
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Usuário') -Value $user
 
         # Num PC montado, os textos de fábrica ficam vazios e a seção Placa-mãe identifica o PC: a linha não aparece.
-        $machine = Get-WinForgeMachineModelText -System $computerSystem
-        if ($machine) { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Fabricante e modelo') -Value $machine }
+        $machine = Get-TFToolkitMachineModelText -System $computerSystem
+        if ($machine) { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Fabricante e modelo') -Value $machine }
 
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Windows') -Value $windowsName
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Versão') -Value (Get-WinForgeWindowsDisplayVersion)
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Build') -Value $(if ($build -gt 0) { $build } else { $null })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Windows') -Value $windowsName
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Versão') -Value (Get-TFToolkitWindowsDisplayVersion)
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Build') -Value $(if ($build -gt 0) { $build } else { $null })
 
         # Com o Windows não ativado, a linha seguinte diz onde ativar.
-        $activation = $(if ($wmiDown) { "Unknown" } else { Get-WinForgeWindowsActivation })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Ativação') -Value (Get-WinForgeWindowsActivationText -State $activation) -Level $(if ($activation -in @("Grace", "Unlicensed")) { "Warn" } else { "Normal" })
-        if ($activation -in @("Grace", "Unlicensed")) { Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para ativar, abra Configurações e procure por Ativação.') }
+        $activation = $(if ($wmiDown) { "Unknown" } else { Get-TFToolkitWindowsActivation })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Ativação') -Value (Get-TFToolkitWindowsActivationText -State $activation) -Level $(if ($activation -in @("Grace", "Unlicensed")) { "Warn" } else { "Normal" })
+        if ($activation -in @("Grace", "Unlicensed")) { Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para ativar, abra Configurações e procure por Ativação.') }
 
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Tempo ligado') -Value $pcUptimeText
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última inicialização') -Value $lastBootText
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Tempo ligado') -Value $pcUptimeText
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última inicialização') -Value $lastBootText
 
         # Um tempo ligado de dias num PC que a pessoa desliga toda noite parece erro: é a Inicialização Rápida. A frase é a
         # mesma de Tempo ligado e energia.
-        if ($null -ne $lastBootTime -and ((Get-Date).ToUniversalTime() - ([datetime]$lastBootTime).ToUniversalTime()).TotalDays -ge 1 -and (Get-WinForgeFastStartupText) -eq (Get-WinForgeText 'Ativada')) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Com a Inicialização Rápida ligada, desligar o PC não zera o tempo ligado: só Reiniciar faz o Windows começar do zero.')
+        if ($null -ne $lastBootTime -and ((Get-Date).ToUniversalTime() - ([datetime]$lastBootTime).ToUniversalTime()).TotalDays -ge 1 -and (Get-TFToolkitFastStartupText) -eq (Get-TFToolkitText 'Ativada')) {
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Com a Inicialização Rápida ligada, desligar o PC não zera o tempo ligado: só Reiniciar faz o Windows começar do zero.')
         }
 
-        $rebootPending = Test-WinForgePendingReboot
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Reinício pendente') -Value $(if ($rebootPending) { (Get-WinForgeText 'Sim') } else { (Get-WinForgeText 'Não') }) -Level $(if ($rebootPending) { "Warn" } else { "Normal" })
+        $rebootPending = Test-TFToolkitPendingReboot
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Reinício pendente') -Value $(if ($rebootPending) { (Get-TFToolkitText 'Sim') } else { (Get-TFToolkitText 'Não') }) -Level $(if ($rebootPending) { "Warn" } else { "Normal" })
 
         # Sem o WMI, só o que vem do Registro: as seções de hardware seriam uma lista de "Não disponível".
         if ($wmiDown) {
-            Write-WinForgeSection -Title (Get-WinForgeText 'BIOS e segurança')
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Secure Boot') -Value (Get-WinForgeSecureBootText)
-            Exit-WinForgeAction
+            Write-TFToolkitSection -Title (Get-TFToolkitText 'BIOS e segurança')
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Secure Boot') -Value (Get-TFToolkitSecureBootText)
+            Exit-TFToolkitAction
             return
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Placa-mãe')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Fabricante') -Value $(if ($baseBoard) { $baseBoard.Manufacturer } else { $null })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Modelo') -Value $(if ($baseBoard) { $baseBoard.Product } else { $null })
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Placa-mãe')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Fabricante') -Value $(if ($baseBoard) { $baseBoard.Manufacturer } else { $null })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Modelo') -Value $(if ($baseBoard) { $baseBoard.Product } else { $null })
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'BIOS e segurança')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Versão da BIOS') -Value $(if ($bios) { $bios.SMBIOSBIOSVersion } else { $null })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Secure Boot') -Value (Get-WinForgeSecureBootText)
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'BIOS e segurança')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Versão da BIOS') -Value $(if ($bios) { $bios.SMBIOSBIOSVersion } else { $null })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Secure Boot') -Value (Get-TFToolkitSecureBootText)
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Processador')
-        Write-WinForgeKeyValue -Label "CPU" -Value $(if ($cpu) { ([string]$cpu.Name).Trim() } else { $null })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Núcleos') -Value $coresText
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Frequência base') -Value $baseClockText
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Processador')
+        Write-TFToolkitKeyValue -Label "CPU" -Value $(if ($cpu) { ([string]$cpu.Name).Trim() } else { $null })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Núcleos') -Value $coresText
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Frequência base') -Value $baseClockText
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Memória')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'RAM total') -Value (Format-WinForgeBytes -Bytes $totalRamBytes -ZeroText (Get-WinForgeText 'Não disponível'))
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Módulos') -Value (Get-WinForgeMemoryModulesText -Modules $memoryModules)
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Tipo') -Value $memoryType
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Velocidade configurada') -Value $ramClockText
-        Write-WinForgeKeyValue -Label "XMP/EXPO" -Value $xmpText
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Memória')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'RAM total') -Value (Format-TFToolkitBytes -Bytes $totalRamBytes -ZeroText (Get-TFToolkitText 'Não disponível'))
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Módulos') -Value (Get-TFToolkitMemoryModulesText -Modules $memoryModules)
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Tipo') -Value $memoryType
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Velocidade configurada') -Value $ramClockText
+        Write-TFToolkitKeyValue -Label "XMP/EXPO" -Value $xmpText
 
         # A nota fica junto do valor que ela explica (antes ia para o fim da tela, depois dos discos).
-        # Os textos de Get-WinForgeExpoXmpStatus que são dedução (no idioma da tela): o começo de cada um, antes do número.
+        # Os textos de Get-TFToolkitExpoXmpStatus que são dedução (no idioma da tela): o começo de cada um, antes do número.
         $deduced = @('Indicativo: ativado ({0} MT/s, acima dos {1} MT/s do módulo)', 'Indicativo: ativado ({0} MT/s, acima da velocidade padrão)', 'Velocidade padrão ({0} MT/s)') |
-            ForEach-Object { (Get-WinForgeText $_).Split('{')[0] }
+            ForEach-Object { (Get-TFToolkitText $_).Split('{')[0] }
         if (@($deduced | Where-Object { $_ -and $xmpText.StartsWith($_, [System.StringComparison]::Ordinal) }).Count -gt 0) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'XMP/EXPO é deduzido da velocidade em uso; o Windows não informa o perfil escolhido na BIOS.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'XMP/EXPO é deduzido da velocidade em uso; o Windows não informa o perfil escolhido na BIOS.')
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Vídeo')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Vídeo')
 
         if ($validGpus.Count -eq 0) {
-            Write-WinForgeKeyValue -Label "GPU" -Value $null
+            Write-TFToolkitKeyValue -Label "GPU" -Value $null
         }
 
         $gpuNumber = 0
@@ -673,47 +673,47 @@ function Show-WinForgeSystemInfo {
 
             $gpuName = ([string]$gpu.Name).Trim()
 
-            if (Test-WinForgeIntegratedGpu -GpuName $gpuName) {
-                $vramText = (Get-WinForgeText 'Memória compartilhada / GPU integrada')
+            if (Test-TFToolkitIntegratedGpu -GpuName $gpuName) {
+                $vramText = (Get-TFToolkitText 'Memória compartilhada / GPU integrada')
             }
             else {
-                $registryVramBytes = Get-WinForgeGpuMemoryBytes -GpuName $gpuName
+                $registryVramBytes = Get-TFToolkitGpuMemoryBytes -GpuName $gpuName
 
                 # AdapterRAM é um valor de 32 bits e satura em 4 GB; o Registro só é consultado primeiro por isso.
                 if ($null -ne $registryVramBytes -and $registryVramBytes -gt 0) {
-                    $vramText = Format-WinForgeBytes -Bytes $registryVramBytes -ZeroText (Get-WinForgeText 'Desconhecido')
+                    $vramText = Format-TFToolkitBytes -Bytes $registryVramBytes -ZeroText (Get-TFToolkitText 'Desconhecido')
                 }
                 elseif ($null -ne $gpu.AdapterRAM -and [double]$gpu.AdapterRAM -ge 4293918720) {
                     # O valor de 32 bits do WMI para em 4 GB: uma placa de 8 ou 12 GB também aparece assim.
-                    $vramText = (Get-WinForgeText '4 GB ou mais')
+                    $vramText = (Get-TFToolkitText '4 GB ou mais')
                 }
                 else {
-                    $vramText = Format-WinForgeBytes -Bytes $gpu.AdapterRAM -ZeroText (Get-WinForgeText 'Desconhecido')
+                    $vramText = Format-TFToolkitBytes -Bytes $gpu.AdapterRAM -ZeroText (Get-TFToolkitText 'Desconhecido')
                 }
             }
 
-            Write-WinForgeKeyValue -Label "GPU" -Value $gpuName
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Memória de vídeo') -Value $vramText
+            Write-TFToolkitKeyValue -Label "GPU" -Value $gpuName
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Memória de vídeo') -Value $vramText
         }
 
         # O adaptador básico só sobra na lista quando não há outra placa: a de verdade está sem o driver do fabricante
         # (imagem sem aceleração, resolução errada, um monitor só). Um aviso só, mesmo com duas placas sem driver.
         if (@($validGpus | Where-Object { [string]$_.Name -match "Microsoft Basic Display" }).Count -gt 0) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'A placa de vídeo está sem o driver do fabricante (o Windows usa o driver básico). Instale-o em Atualizações > Atualizar drivers.')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'A placa de vídeo está sem o driver do fabricante (o Windows usa o driver básico). Instale-o em Atualizações > Atualizar drivers.')
         }
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Discos')
-        Show-WinForgeDiskSummary
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Discos')
+        Show-TFToolkitDiskSummary
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Ocorreu um erro ao ler as informações do sistema: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Ocorreu um erro ao ler as informações do sistema: {0}' "$($_.Exception.Message)")
     }
 
-    Exit-WinForgeAction
+    Exit-TFToolkitAction
 }
 
 
-function Test-WinForgePnpDeviceHasProblem {
+function Test-TFToolkitPnpDeviceHasProblem {
     # Um dispositivo tem problema quando o Windows registrou um código de problema ou o estado é Error/Degraded.
     # Status "Unknown" sem código de problema é comum em dispositivos de software e não indica defeito.
     param (
@@ -724,16 +724,16 @@ function Test-WinForgePnpDeviceHasProblem {
     # O mesmo código que a tela mostra (ConfigManagerErrorCode, com Problem de reserva): duas leituras diferentes
     # deixariam um dispositivo na lista com "sem código".
     # Um nome de problema que a tabela não conhece (de uma versão mais nova do Windows) também conta.
-    $code = Get-WinForgeDeviceProblemCode -Device $Device
-    $problem = [string](Get-WinForgeJsonValue -Object $Device -Name "Problem" -Default "")
+    $code = Get-TFToolkitDeviceProblemCode -Device $Device
+    $problem = [string](Get-TFToolkitJsonValue -Object $Device -Name "Problem" -Default "")
     $unknownProblem = (-not [string]::IsNullOrWhiteSpace($problem)) -and ($problem -notin @("0", "CM_PROB_NONE"))
-    $hasBadStatus = ([string](Get-WinForgeJsonValue -Object $Device -Name "Status" -Default "")) -in @("Error", "Degraded")
+    $hasBadStatus = ([string](Get-TFToolkitJsonValue -Object $Device -Name "Status" -Default "")) -in @("Error", "Degraded")
 
     return (([int]$code -gt 0) -or $unknownProblem -or $hasBadStatus)
 }
 
 
-function Get-WinForgeDeviceProblemCode {
+function Get-TFToolkitDeviceProblemCode {
     # O código do Gerenciador de Dispositivos (28 = driver não instalado...). Get-PnpDevice traz o número em
     # ConfigManagerErrorCode e o nome (CM_PROB_FAILED_INSTALL) em Problem; vale o que vier. Sem código = 0.
     param (
@@ -742,13 +742,13 @@ function Get-WinForgeDeviceProblemCode {
     )
 
     $number = 0
-    $raw = [string](Get-WinForgeJsonValue -Object $Device -Name "ConfigManagerErrorCode" -Default "")
+    $raw = [string](Get-TFToolkitJsonValue -Object $Device -Name "ConfigManagerErrorCode" -Default "")
 
     if ([int]::TryParse($raw, [ref]$number) -and $number -gt 0) {
         return $number
     }
 
-    $problem = [string](Get-WinForgeJsonValue -Object $Device -Name "Problem" -Default "")
+    $problem = [string](Get-TFToolkitJsonValue -Object $Device -Name "Problem" -Default "")
 
     if ([int]::TryParse($problem, [ref]$number)) {
         return [Math]::Max(0, $number)
@@ -773,7 +773,7 @@ function Get-WinForgeDeviceProblemCode {
 }
 
 
-function Get-WinForgeDeviceProblemText {
+function Get-TFToolkitDeviceProblemText {
     # O problema de um dispositivo em português, com o código que o Gerenciador de Dispositivos mostra (para quem vai
     # procurar ajuda): "o driver não está instalado (código 28)".
     param (
@@ -781,37 +781,37 @@ function Get-WinForgeDeviceProblemText {
         $Device
     )
 
-    $code = Get-WinForgeDeviceProblemCode -Device $Device
+    $code = Get-TFToolkitDeviceProblemCode -Device $Device
 
     $texts = @{
-        1 = (Get-WinForgeText 'o dispositivo não está configurado corretamente'); 3 = (Get-WinForgeText 'faltou memória ou o driver está corrompido')
-        10 = (Get-WinForgeText 'o dispositivo não consegue iniciar'); 12 = (Get-WinForgeText 'falta de recursos livres (conflito com outro dispositivo)')
-        14 = (Get-WinForgeText 'o dispositivo só funciona depois de reiniciar o PC'); 18 = (Get-WinForgeText 'os drivers precisam ser reinstalados')
-        19 = (Get-WinForgeText 'a configuração no Registro está incompleta ou danificada'); 21 = (Get-WinForgeText 'o Windows está removendo o dispositivo')
-        22 = (Get-WinForgeText 'desativado'); 24 = (Get-WinForgeText 'ausente, com defeito ou sem todos os drivers'); 28 = (Get-WinForgeText 'o driver não está instalado')
-        29 = (Get-WinForgeText 'desativado pelo firmware (BIOS/UEFI)'); 31 = (Get-WinForgeText 'o Windows não consegue carregar o driver')
-        32 = (Get-WinForgeText 'o serviço do driver está desativado'); 37 = (Get-WinForgeText 'o driver não conseguiu iniciar')
-        38 = (Get-WinForgeText 'uma cópia anterior do driver ainda está na memória'); 39 = (Get-WinForgeText 'o driver está corrompido ou ausente')
-        40 = (Get-WinForgeText 'a configuração do driver no Registro está errada'); 41 = (Get-WinForgeText 'o driver carregou, mas não encontrou o hardware')
-        42 = (Get-WinForgeText 'há um dispositivo duplicado em uso'); 43 = (Get-WinForgeText 'o Windows parou o dispositivo porque ele informou um problema')
-        44 = (Get-WinForgeText 'um programa ou serviço desligou o dispositivo'); 45 = (Get-WinForgeText 'o dispositivo não está conectado')
-        47 = (Get-WinForgeText 'preparado para remoção segura e ainda conectado'); 48 = (Get-WinForgeText 'o driver foi bloqueado por ter problemas conhecidos com o Windows')
-        52 = (Get-WinForgeText 'o Windows não consegue verificar a assinatura digital do driver')
+        1 = (Get-TFToolkitText 'o dispositivo não está configurado corretamente'); 3 = (Get-TFToolkitText 'faltou memória ou o driver está corrompido')
+        10 = (Get-TFToolkitText 'o dispositivo não consegue iniciar'); 12 = (Get-TFToolkitText 'falta de recursos livres (conflito com outro dispositivo)')
+        14 = (Get-TFToolkitText 'o dispositivo só funciona depois de reiniciar o PC'); 18 = (Get-TFToolkitText 'os drivers precisam ser reinstalados')
+        19 = (Get-TFToolkitText 'a configuração no Registro está incompleta ou danificada'); 21 = (Get-TFToolkitText 'o Windows está removendo o dispositivo')
+        22 = (Get-TFToolkitText 'desativado'); 24 = (Get-TFToolkitText 'ausente, com defeito ou sem todos os drivers'); 28 = (Get-TFToolkitText 'o driver não está instalado')
+        29 = (Get-TFToolkitText 'desativado pelo firmware (BIOS/UEFI)'); 31 = (Get-TFToolkitText 'o Windows não consegue carregar o driver')
+        32 = (Get-TFToolkitText 'o serviço do driver está desativado'); 37 = (Get-TFToolkitText 'o driver não conseguiu iniciar')
+        38 = (Get-TFToolkitText 'uma cópia anterior do driver ainda está na memória'); 39 = (Get-TFToolkitText 'o driver está corrompido ou ausente')
+        40 = (Get-TFToolkitText 'a configuração do driver no Registro está errada'); 41 = (Get-TFToolkitText 'o driver carregou, mas não encontrou o hardware')
+        42 = (Get-TFToolkitText 'há um dispositivo duplicado em uso'); 43 = (Get-TFToolkitText 'o Windows parou o dispositivo porque ele informou um problema')
+        44 = (Get-TFToolkitText 'um programa ou serviço desligou o dispositivo'); 45 = (Get-TFToolkitText 'o dispositivo não está conectado')
+        47 = (Get-TFToolkitText 'preparado para remoção segura e ainda conectado'); 48 = (Get-TFToolkitText 'o driver foi bloqueado por ter problemas conhecidos com o Windows')
+        52 = (Get-TFToolkitText 'o Windows não consegue verificar a assinatura digital do driver')
     }
 
     if ($code -gt 0) {
-        $text = $(if ($texts.ContainsKey($code)) { $texts[$code] } else { (Get-WinForgeText 'problema informado pelo Windows') })
-        return (Get-WinForgeText '{0} (código {1})' "$text" "$code")
+        $text = $(if ($texts.ContainsKey($code)) { $texts[$code] } else { (Get-TFToolkitText 'problema informado pelo Windows') })
+        return (Get-TFToolkitText '{0} (código {1})' "$text" "$code")
     }
 
-    switch ([string](Get-WinForgeJsonValue -Object $Device -Name "Status" -Default "")) {
-        "Degraded" { return (Get-WinForgeText 'funcionando com problemas (estado degradado)') }
-        default { return (Get-WinForgeText 'o Windows marca o dispositivo com erro') }
+    switch ([string](Get-TFToolkitJsonValue -Object $Device -Name "Status" -Default "")) {
+        "Degraded" { return (Get-TFToolkitText 'funcionando com problemas (estado degradado)') }
+        default { return (Get-TFToolkitText 'o Windows marca o dispositivo com erro') }
     }
 }
 
 
-function Get-WinForgeDeviceName {
+function Get-TFToolkitDeviceName {
     # Nome para a pessoa: o nome amigável e, entre parênteses, a categoria em português ("Rede", "Vídeo"...).
     param (
         [Parameter(Mandatory)]
@@ -821,21 +821,21 @@ function Get-WinForgeDeviceName {
     $name = ""
 
     foreach ($field in @("FriendlyName", "Name", "InstanceId")) {
-        $name = ([string](Get-WinForgeJsonValue -Object $Device -Name $field -Default "")).Trim()
+        $name = ([string](Get-TFToolkitJsonValue -Object $Device -Name $field -Default "")).Trim()
         if ($name) { break }
     }
 
-    if (-not $name) { $name = (Get-WinForgeText 'Dispositivo sem nome') }
+    if (-not $name) { $name = (Get-TFToolkitText 'Dispositivo sem nome') }
 
     $classes = @{
-        Net = (Get-WinForgeText 'Rede'); Display = (Get-WinForgeText 'Vídeo'); MEDIA = (Get-WinForgeText 'Som e vídeo'); AudioEndpoint = (Get-WinForgeText 'Áudio'); Bluetooth = (Get-WinForgeText 'Bluetooth')
-        Camera = (Get-WinForgeText 'Câmera'); Image = (Get-WinForgeText 'Câmera ou scanner'); USB = "USB"; HIDClass = (Get-WinForgeText 'Dispositivo de entrada'); Keyboard = (Get-WinForgeText 'Teclado')
-        Mouse = (Get-WinForgeText 'Mouse'); Monitor = (Get-WinForgeText 'Monitor'); Printer = (Get-WinForgeText 'Impressora'); DiskDrive = (Get-WinForgeText 'Disco'); HDC = (Get-WinForgeText 'Controladora de disco')
-        SCSIAdapter = (Get-WinForgeText 'Controladora de armazenamento'); System = (Get-WinForgeText 'Sistema'); Battery = (Get-WinForgeText 'Bateria'); Biometric = (Get-WinForgeText 'Biometria')
-        SoftwareDevice = (Get-WinForgeText 'Dispositivo virtual'); Ports = (Get-WinForgeText 'Portas'); SmartCardReader = (Get-WinForgeText 'Leitor de cartão')
+        Net = (Get-TFToolkitText 'Rede'); Display = (Get-TFToolkitText 'Vídeo'); MEDIA = (Get-TFToolkitText 'Som e vídeo'); AudioEndpoint = (Get-TFToolkitText 'Áudio'); Bluetooth = (Get-TFToolkitText 'Bluetooth')
+        Camera = (Get-TFToolkitText 'Câmera'); Image = (Get-TFToolkitText 'Câmera ou scanner'); USB = "USB"; HIDClass = (Get-TFToolkitText 'Dispositivo de entrada'); Keyboard = (Get-TFToolkitText 'Teclado')
+        Mouse = (Get-TFToolkitText 'Mouse'); Monitor = (Get-TFToolkitText 'Monitor'); Printer = (Get-TFToolkitText 'Impressora'); DiskDrive = (Get-TFToolkitText 'Disco'); HDC = (Get-TFToolkitText 'Controladora de disco')
+        SCSIAdapter = (Get-TFToolkitText 'Controladora de armazenamento'); System = (Get-TFToolkitText 'Sistema'); Battery = (Get-TFToolkitText 'Bateria'); Biometric = (Get-TFToolkitText 'Biometria')
+        SoftwareDevice = (Get-TFToolkitText 'Dispositivo virtual'); Ports = (Get-TFToolkitText 'Portas'); SmartCardReader = (Get-TFToolkitText 'Leitor de cartão')
     }
 
-    $class = ([string](Get-WinForgeJsonValue -Object $Device -Name "Class" -Default "")).Trim()
+    $class = ([string](Get-TFToolkitJsonValue -Object $Device -Name "Class" -Default "")).Trim()
 
     if (-not $class) { return $name }
 
@@ -845,220 +845,220 @@ function Get-WinForgeDeviceName {
 }
 
 
-function Show-WinForgeProblemDevices {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Dispositivos com problema')
+function Show-TFToolkitProblemDevices {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Dispositivos com problema')
 
     try {
         # -ErrorAction Stop: na janela, um erro comum da consulta (o serviço do WMI parado) só seria escrito, a lista
         # viria vazia e a tela diria "nenhum dispositivo com problema" sem ter olhado.
         $problemDevices = @(
-            Invoke-WinForgeCimCommand -Name "Get-PnpDevice" -Parameters @{ PresentOnly = $true } |
-            Where-Object { Test-WinForgePnpDeviceHasProblem -Device $_ }
+            Invoke-TFToolkitCimCommand -Name "Get-PnpDevice" -Parameters @{ PresentOnly = $true } |
+            Where-Object { Test-TFToolkitPnpDeviceHasProblem -Device $_ }
         )
 
         # Desativado (código 22, pelo Gerenciador; 29, pelo firmware ou pela BIOS) é uma escolha de alguém, não um defeito:
         # fica numa seção à parte, sem alarme.
-        $realProblems = @($problemDevices | Where-Object { (Get-WinForgeDeviceProblemCode -Device $_) -notin @(22, 29) })
-        $disabledDevices = @($problemDevices | Where-Object { (Get-WinForgeDeviceProblemCode -Device $_) -in @(22, 29) })
+        $realProblems = @($problemDevices | Where-Object { (Get-TFToolkitDeviceProblemCode -Device $_) -notin @(22, 29) })
+        $disabledDevices = @($problemDevices | Where-Object { (Get-TFToolkitDeviceProblemCode -Device $_) -in @(22, 29) })
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Problemas ativos')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Problemas ativos')
 
         if ($realProblems.Count -eq 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum dispositivo com problema.')
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum dispositivo com problema.')
         }
         else {
             # Cada dispositivo numa linha de aviso: a janela as mostra no resumo (uma tabela ficaria só nos detalhes). O
             # identificador do Windows vai embaixo, em cinza, para quem precisar pesquisar.
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0} com problema ativo:' "$(Format-WinForgeCount -Count $realProblems.Count -One (Get-WinForgeText 'dispositivo') -Many (Get-WinForgeText 'dispositivos'))")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0} com problema ativo:' "$(Format-TFToolkitCount -Count $realProblems.Count -One (Get-TFToolkitText 'dispositivo') -Many (Get-TFToolkitText 'dispositivos'))")
 
             foreach ($device in $realProblems) {
-                Write-WinForgeStatus -Type Warning -Message "$(Get-WinForgeDeviceName -Device $device): $(Get-WinForgeDeviceProblemText -Device $device)."
+                Write-TFToolkitStatus -Type Warning -Message "$(Get-TFToolkitDeviceName -Device $device): $(Get-TFToolkitDeviceProblemText -Device $device)."
 
-                $instance = [string](Get-WinForgeJsonValue -Object $device -Name "InstanceId" -Default "")
+                $instance = [string](Get-TFToolkitJsonValue -Object $device -Name "InstanceId" -Default "")
                 if ($instance) { Write-Host "      $instance" -ForegroundColor DarkGray }
             }
 
             Write-Host ""
 
             # Código 14: o dispositivo só volta a funcionar depois de reiniciar (o Gerenciador não resolve).
-            if (@($realProblems | Where-Object { (Get-WinForgeDeviceProblemCode -Device $_) -eq 14 }).Count -gt 0) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Reinicie o PC: o Windows pede o reinício para terminar de preparar um dispositivo.')
+            if (@($realProblems | Where-Object { (Get-TFToolkitDeviceProblemCode -Device $_) -eq 14 }).Count -gt 0) {
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Reinicie o PC: o Windows pede o reinício para terminar de preparar um dispositivo.')
             }
 
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para tentar resolver, use Reparo > Detectar dispositivos e drivers e depois Atualizações > Atualizar drivers.')
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Se continuar, abra Diagnóstico > Gerenciador de Dispositivos, clique com o botão direito no dispositivo e escolha Atualizar driver. Se ele não aparecer lá, ligue Mostrar dispositivos ocultos, no menu Exibir.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para tentar resolver, use Reparo > Detectar dispositivos e drivers e depois Atualizações > Atualizar drivers.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Se continuar, abra Diagnóstico > Gerenciador de Dispositivos, clique com o botão direito no dispositivo e escolha Atualizar driver. Se ele não aparecer lá, ligue Mostrar dispositivos ocultos, no menu Exibir.')
         }
 
         if ($disabledDevices.Count -gt 0) {
-            Write-WinForgeSection -Title (Get-WinForgeText 'Dispositivos desativados')
+            Write-TFToolkitSection -Title (Get-TFToolkitText 'Dispositivos desativados')
 
             foreach ($device in $disabledDevices) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeDeviceName -Device $device)
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitDeviceName -Device $device)
             }
 
             Write-Host ""
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Dispositivos desativados podem ser intencionais, como uma placa de vídeo integrada desligada de propósito; para religar, use Diagnóstico > Gerenciador de Dispositivos.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Dispositivos desativados podem ser intencionais, como uma placa de vídeo integrada desligada de propósito; para religar, use Diagnóstico > Gerenciador de Dispositivos.')
         }
 
         # Sem problema ativo, a dica de onde procurar drivers mais novos (com problema, ela já está no que fazer acima).
         if ($realProblems.Count -eq 0) {
             Write-Host ""
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Isto mostra os dispositivos com erro agora; para procurar drivers mais novos, use Atualizações > Atualizar drivers.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Isto mostra os dispositivos com erro agora; para procurar drivers mais novos, use Atualizações > Atualizar drivers.')
         }
 
         # A faixa de resultado diz a contagem (a última linha de aviso seria a de um dispositivo qualquer) e leva ao primeiro
         # passo que a tela dá, a busca de dispositivos. Com só o código 14 (reinício pendente), o que resolve é reiniciar.
         $result = $(if ($realProblems.Count -gt 0) {
-                New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} com problema ativo' "$(Format-WinForgeCount -Count $realProblems.Count -One (Get-WinForgeText 'dispositivo') -Many (Get-WinForgeText 'dispositivos'))")
+                New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} com problema ativo' "$(Format-TFToolkitCount -Count $realProblems.Count -One (Get-TFToolkitText 'dispositivo') -Many (Get-TFToolkitText 'dispositivos'))")
             }
             else {
-                New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum dispositivo com problema ativo')
+                New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum dispositivo com problema ativo')
             })
 
-        if (@($realProblems | Where-Object { (Get-WinForgeDeviceProblemCode -Device $_) -ne 14 }).Count -gt 0) {
-            [void](Set-WinForgeResultView -Result $result -Next "repair.device-scan" -NextLabel (Get-WinForgeText 'Detectar dispositivos'))
+        if (@($realProblems | Where-Object { (Get-TFToolkitDeviceProblemCode -Device $_) -ne 14 }).Count -gt 0) {
+            [void](Set-TFToolkitResultView -Result $result -Next "repair.device-scan" -NextLabel (Get-TFToolkitText 'Detectar dispositivos'))
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível consultar os dispositivos: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível consultar os dispositivos: {0}' "$($_.Exception.Message)")
         $result = $null
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
-function Show-WinForgeDisks {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Discos e espaço livre')
+function Show-TFToolkitDisks {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Discos e espaço livre')
 
     $result = $null
 
     try {
-        Write-WinForgeSection -Title (Get-WinForgeText 'Volumes e discos')
-        $lowDisks = @(Show-WinForgeDiskSummary -PassThru)
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Volumes e discos')
+        $lowDisks = @(Show-TFToolkitDiskSummary -PassThru)
 
         # Com uma unidade só, a frase dela é a da faixa; com várias, a faixa cita todas (e não só a última). Com o disco do
         # Windows entre elas, o botão da faixa abre a Limpeza personalizada, como o "Liberar espaço" do Início.
         if ($lowDisks.Count -gt 0) {
-            $detail = $(if ($lowDisks.Count -eq 1) { (Get-WinForgeLowDiskText -Disk $lowDisks[0]).TrimEnd(".") } else { (Get-WinForgeText 'pouco espaço em {0}' "$(Join-WinForgeList -Items @($lowDisks | ForEach-Object { [string]$_.Unidade }))") })
-            $result = New-WinForgeResult -Kind Warning -Detail $detail
+            $detail = $(if ($lowDisks.Count -eq 1) { (Get-TFToolkitLowDiskText -Disk $lowDisks[0]).TrimEnd(".") } else { (Get-TFToolkitText 'pouco espaço em {0}' "$(Join-TFToolkitList -Items @($lowDisks | ForEach-Object { [string]$_.Unidade }))") })
+            $result = New-TFToolkitResult -Kind Warning -Detail $detail
 
-            if (@($lowDisks | Where-Object { [bool](Get-WinForgeJsonValue -Object $_ -Name "Sistema" -Default $false) }).Count -gt 0) {
-                [void](Set-WinForgeResultView -Result $result -Next "cleanup.custom" -NextLabel (Get-WinForgeText 'Liberar espaço'))
+            if (@($lowDisks | Where-Object { [bool](Get-TFToolkitJsonValue -Object $_ -Name "Sistema" -Default $false) }).Count -gt 0) {
+                [void](Set-TFToolkitResultView -Result $result -Next "cleanup.custom" -NextLabel (Get-TFToolkitText 'Liberar espaço'))
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Ocorreu um erro ao consultar informações de disco: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Ocorreu um erro ao consultar informações de disco: {0}' "$($_.Exception.Message)")
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
-function Get-WinForgeFastStartupText {
+function Get-TFToolkitFastStartupText {
     # A Inicialização Rápida guarda o estado em HiberbootEnabled, que continua em 1 mesmo depois de desligar a
     # hibernação; mas ela usa o arquivo de hibernação, então sem a hibernação não tem efeito.
-    $fast = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power" -Name "HiberbootEnabled"
+    $fast = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power" -Name "HiberbootEnabled"
 
     if ($null -eq $fast -or ([string]$fast -notin @("0", "1"))) {
-        return (Get-WinForgeText 'Desconhecido')
+        return (Get-TFToolkitText 'Desconhecido')
     }
 
     if ([int]$fast -eq 0) {
-        return (Get-WinForgeText 'Desativada')
+        return (Get-TFToolkitText 'Desativada')
     }
 
-    if ((Get-WinForgeHibernationText) -eq (Get-WinForgeText 'Desativada')) {
-        return (Get-WinForgeText 'Sem efeito: a hibernação está desligada, e a Inicialização Rápida depende dela')
+    if ((Get-TFToolkitHibernationText) -eq (Get-TFToolkitText 'Desativada')) {
+        return (Get-TFToolkitText 'Sem efeito: a hibernação está desligada, e a Inicialização Rápida depende dela')
     }
 
-    return (Get-WinForgeText 'Ativada')
+    return (Get-TFToolkitText 'Ativada')
 }
 
 
-function Get-WinForgeHibernationText {
+function Get-TFToolkitHibernationText {
     # A hibernação (HibernateEnabled): é dela que a Inicialização Rápida depende.
-    $hibernate = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "HibernateEnabled"
+    $hibernate = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "HibernateEnabled"
 
     switch ([string]$hibernate) {
-        "1" { return (Get-WinForgeText 'Ativada') }
-        "0" { return (Get-WinForgeText 'Desativada') }
-        default { return (Get-WinForgeText 'Desconhecido') }
+        "1" { return (Get-TFToolkitText 'Ativada') }
+        "0" { return (Get-TFToolkitText 'Desativada') }
+        default { return (Get-TFToolkitText 'Desconhecido') }
     }
 }
 
 
-function Show-WinForgeStartupInfo {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Tempo ligado e energia')
+function Show-TFToolkitStartupInfo {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Tempo ligado e energia')
 
     $result = $null
 
     try {
-        $os = Get-WinForgeCimOrNull -ClassName "Win32_OperatingSystem" | Select-Object -First 1
+        $os = Get-TFToolkitCimOrNull -ClassName "Win32_OperatingSystem" | Select-Object -First 1
         $lastBootTime = $(if ($os) { $os.LastBootUpTime } else { $null })
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Inicialização')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Inicialização')
 
         if ($null -ne $lastBootTime) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Tempo ligado') -Value (Get-WinForgeUptimeText -LastBootTime $lastBootTime)
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última inicialização') -Value (Format-WinForgeDateTime -When $lastBootTime)
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Tempo ligado') -Value (Get-TFToolkitUptimeText -LastBootTime $lastBootTime)
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última inicialização') -Value (Format-TFToolkitDateTime -When $lastBootTime)
         }
         else {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Inicialização: desconhecida (o Windows não informou quando o PC foi ligado).')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Inicialização: desconhecida (o Windows não informou quando o PC foi ligado).')
         }
 
-        $fastStartup = Get-WinForgeFastStartupText
+        $fastStartup = Get-TFToolkitFastStartupText
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Inicialização Rápida')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Situação') -Value $fastStartup
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Inicialização Rápida')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Situação') -Value $fastStartup
 
-        if ($fastStartup -eq (Get-WinForgeText 'Ativada')) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Com a Inicialização Rápida ligada, desligar o PC não zera o tempo ligado: só Reiniciar faz o Windows começar do zero.')
+        if ($fastStartup -eq (Get-TFToolkitText 'Ativada')) {
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Com a Inicialização Rápida ligada, desligar o PC não zera o tempo ligado: só Reiniciar faz o Windows começar do zero.')
         }
 
         # O que a pessoa costuma procurar aqui ("o PC demora para ligar"): a causa mais comum são os programas que abrem
         # junto com o Windows.
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Se o PC demora para ligar, veja o que abre junto com o Windows em Desempenho > Gerenciar inicialização.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Se o PC demora para ligar, veja o que abre junto com o Windows em Desempenho > Gerenciar inicialização.')
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Hibernação e modos de energia')
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Hibernação') -Value (Get-WinForgeHibernationText)
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Hibernação e modos de energia')
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Hibernação') -Value (Get-TFToolkitHibernationText)
 
         # A lista de modos de energia (suspensão, hibernação...) é a do powercfg, no idioma do Windows.
         if (Get-Command "powercfg.exe" -ErrorAction SilentlyContinue) {
             Write-Host ""
-            $exitCode = Invoke-WinForgeNative -FilePath "powercfg.exe" -Arguments @("/a") -IgnoreExitCode -PassThru
+            $exitCode = Invoke-TFToolkitNative -FilePath "powercfg.exe" -Arguments @("/a") -IgnoreExitCode -PassThru
 
             if ($exitCode -ne 0) {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível listar os modos de energia (powercfg finalizou com código {0}).' "$exitCode")
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível listar os modos de energia (powercfg finalizou com código {0}).' "$exitCode")
             }
         }
         else {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível listar os modos de energia: powercfg.exe não foi encontrado.')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível listar os modos de energia: powercfg.exe não foi encontrado.')
         }
 
         # Ligado há uma semana ou mais, a faixa do Desempenho traz a pessoa para cá: o que resolve é reiniciar, e a tela
         # oferece (com Não como padrão, e sem fechar nada à força), como Reinício pendente.
-        if (Test-WinForgeLongUptime -LastBootTime $lastBootTime) {
+        if (Test-TFToolkitLongUptime -LastBootTime $lastBootTime) {
             try {
-                if (Request-WinForgeRestart -Reason (Get-WinForgeText 'O PC está ligado há {0}: reiniciar deixa o Windows mais leve.' "$(Get-WinForgeUptimeText -LastBootTime $lastBootTime)") -Comment (Get-WinForgeText 'Reinicialização solicitada pelo WinForge (PC ligado há uma semana ou mais).') -DeclinedMessage (Get-WinForgeText 'O PC não foi reiniciado. Reinicie quando puder.')) {
-                    $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'o Windows está reiniciando')
+                if (Request-TFToolkitRestart -Reason (Get-TFToolkitText 'O PC está ligado há {0}: reiniciar deixa o Windows mais leve.' "$(Get-TFToolkitUptimeText -LastBootTime $lastBootTime)") -Comment (Get-TFToolkitText 'Reinicialização solicitada pelo TF-Toolkit (PC ligado há uma semana ou mais).') -DeclinedMessage (Get-TFToolkitText 'O PC não foi reiniciado. Reinicie quando puder.')) {
+                    $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'o Windows está reiniciando')
                 }
             }
             catch {
-                Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível pedir o reinício: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+                Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível pedir o reinício: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler o tempo ligado e a energia: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler o tempo ligado e a energia: {0}' "$($_.Exception.Message)")
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
-function Test-WinForgeStartupTargetMissing {
+function Test-TFToolkitStartupTargetMissing {
     <#
     Se um item de inicialização abre um arquivo que com certeza não existe mais (num disco fixo): aí nada abre com o
     Windows, e o item não entra na lista (a Limpeza do registro remove as entradas Run quebradas). -Shortcut: Command é
@@ -1072,18 +1072,18 @@ function Test-WinForgeStartupTargetMissing {
 
     try {
         if ($Shortcut) {
-            $link = Get-WinForgeShortcutTarget -Path $Command
+            $link = Get-TFToolkitShortcutTarget -Path $Command
             $target = $(if ($null -ne $link) { [string]$link.TargetPath } else { "" })
         }
         else {
             # Sem aspas, um caminho com espaços sem extensão no fim não é reconhecido: fica como "não sei".
-            $target = Get-WinForgeCommandTargetPath -Command $Command
+            $target = Get-TFToolkitCommandTargetPath -Command $Command
         }
 
         if ([string]::IsNullOrWhiteSpace($target)) { return $false }
 
         # -Wow64: um programa de 32 bits pode ter gravado o caminho de System32 que, para ele, é o SysWOW64.
-        return [bool](Test-WinForgeLocalPathMissing -Path $target -Wow64)
+        return [bool](Test-TFToolkitLocalPathMissing -Path $target -Wow64)
     }
     catch {
         return $false
@@ -1091,7 +1091,7 @@ function Test-WinForgeStartupTargetMissing {
 }
 
 
-function Test-WinForgeStartupLauncherOrphan {
+function Test-TFToolkitStartupLauncherOrphan {
     <#
     Se um item de inicialização abre o Update.exe de um programa instalado pelo Squirrel (o instalador de muitos programas
     feitos em Electron, como o Discord, o Slack e o FACEIT) e o programa não está mais na pasta. O item abre
@@ -1106,7 +1106,7 @@ function Test-WinForgeStartupLauncherOrphan {
     )
 
     try {
-        $target = Get-WinForgeCommandTargetPath -Command $Command
+        $target = Get-TFToolkitCommandTargetPath -Command $Command
 
         if ([string]::IsNullOrWhiteSpace($target)) { return $false }
         if ((($target.Trim().Trim('"')) -split '[\\/]')[-1] -ine "Update.exe") { return $false }
@@ -1123,7 +1123,7 @@ function Test-WinForgeStartupLauncherOrphan {
         $updater = [Environment]::ExpandEnvironmentVariables($target.Trim().Trim('"'))
 
         if ($updater -notmatch '^[A-Za-z]:\\' -or $updater -match '[%"<>|*?]') { return $false }
-        if ((Get-WinForgeDriveType -Root $updater.Substring(0, 3)) -ne "Fixed") { return $false }
+        if ((Get-TFToolkitDriveType -Root $updater.Substring(0, 3)) -ne "Fixed") { return $false }
         if (-not (Test-Path -LiteralPath $updater -PathType Leaf)) { return $false }
 
         $folder = $updater.Substring(0, $updater.LastIndexOf('\'))
@@ -1147,11 +1147,11 @@ function Test-WinForgeStartupLauncherOrphan {
 }
 
 
-function Get-WinForgeStartupLeftoverReason {
+function Get-TFToolkitStartupLeftoverReason {
     <#
     Por que um item de inicialização não abre mais nada: "missing" (o arquivo que ele abre não existe mais,
-    Test-WinForgeStartupTargetMissing) ou "launcher" (sobrou só o Update.exe do Squirrel,
-    Test-WinForgeStartupLauncherOrphan). "" quando abre, e na dúvida. -Shortcut: Command é um atalho (.lnk), e o que conta
+    Test-TFToolkitStartupTargetMissing) ou "launcher" (sobrou só o Update.exe do Squirrel,
+    Test-TFToolkitStartupLauncherOrphan). "" quando abre, e na dúvida. -Shortcut: Command é um atalho (.lnk), e o que conta
     é o destino dele, com os argumentos.
     #>
     param (
@@ -1159,27 +1159,27 @@ function Get-WinForgeStartupLeftoverReason {
         [switch]$Shortcut
     )
 
-    if (Test-WinForgeStartupTargetMissing -Command $Command -Shortcut:$Shortcut) { return "missing" }
+    if (Test-TFToolkitStartupTargetMissing -Command $Command -Shortcut:$Shortcut) { return "missing" }
 
     if ($Shortcut) {
-        $link = Get-WinForgeShortcutTarget -Path $Command
+        $link = Get-TFToolkitShortcutTarget -Path $Command
 
         if ($null -eq $link -or [string]::IsNullOrWhiteSpace([string]$link.TargetPath)) { return "" }
-        if (Test-WinForgeStartupLauncherOrphan -Command ('"' + ([string]$link.TargetPath).Trim().Trim('"') + '"') -Arguments ([string]$link.Arguments)) { return "launcher" }
+        if (Test-TFToolkitStartupLauncherOrphan -Command ('"' + ([string]$link.TargetPath).Trim().Trim('"') + '"') -Arguments ([string]$link.Arguments)) { return "launcher" }
 
         return ""
     }
 
-    if (Test-WinForgeStartupLauncherOrphan -Command $Command) { return "launcher" }
+    if (Test-TFToolkitStartupLauncherOrphan -Command $Command) { return "launcher" }
 
     return ""
 }
 
 
-function Test-WinForgeStartupUserVariable {
+function Test-TFToolkitStartupUserVariable {
     <#
     Se o comando de um valor Run, como está gravado (sem expandir), usa uma pasta da conta (%LOCALAPPDATA%, %APPDATA%,
-    %USERPROFILE%...): numa chave de todos os usuários, cada conta tem a sua, e a que o WinForge vê é só a da conta dele.
+    %USERPROFILE%...): numa chave de todos os usuários, cada conta tem a sua, e a que o TF-Toolkit vê é só a da conta dele.
     Sem conseguir ler, verdadeiro: na dúvida, o item não é dado como sobra.
     #>
     param (
@@ -1199,7 +1199,7 @@ function Test-WinForgeStartupUserVariable {
 }
 
 
-function Get-WinForgeStartupAppStates {
+function Get-TFToolkitStartupAppStates {
     <#
     O liga/desliga das tarefas de inicialização de aplicativos empacotados (Store, MSIX) que o Windows já registrou na
     conta: HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\
@@ -1264,10 +1264,10 @@ function Get-WinForgeStartupAppStates {
 }
 
 
-function Get-WinForgeStartupPackagedApps {
+function Get-TFToolkitStartupPackagedApps {
     <#
     Os aplicativos empacotados (Store, MSIX: Teams, Spotify, WhatsApp...) que têm tarefa de inicialização, no formato dos
-    itens de Get-WinForgeStartupItems, com Publisher. ApprovedPath é a chave da tarefa, onde o Windows guarda o State.
+    itens de Get-TFToolkitStartupItems, com Publisher. ApprovedPath é a chave da tarefa, onde o Windows guarda o State.
 
     Só entra o que dá para ligar e desligar como as Configurações fazem: a tarefa que o Windows já registrou na conta,
     com State 0, 1 ou 2, de um pacote instalado para a conta que declara essa tarefa no manifesto (uma chave que sobrou
@@ -1278,7 +1278,7 @@ function Get-WinForgeStartupPackagedApps {
     $items = @()
     $startNames = $null
 
-    foreach ($state in @(Get-WinForgeStartupAppStates)) {
+    foreach ($state in @(Get-TFToolkitStartupAppStates)) {
         if (@(0, 1, 2) -notcontains [int]$state.State) { continue }
 
         $family = [string]$state.Family
@@ -1349,7 +1349,7 @@ function Get-WinForgeStartupPackagedApps {
 }
 
 
-function Get-WinForgeStartupItems {
+function Get-TFToolkitStartupItems {
     <#
     Os programas que abrem junto com o Windows, os mesmos do Gerenciador de Tarefas (Aplicativos de inicialização) e de
     Configurações, Aplicativos, Inicialização: as chaves Run (usuário, todos os usuários e 32 bits), as pastas
@@ -1363,14 +1363,14 @@ function Get-WinForgeStartupItems {
       estraga a instalação. O Gerenciador de Tarefas também não mostra.
     - As chaves Run de Policies\Explorer: são de política; o Windows não deixa desativar.
     - Valores vazios ou que não são texto.
-    - O que sobrou de um programa desinstalado (Get-WinForgeStartupLeftoverReason): o arquivo não existe mais, ou só
+    - O que sobrou de um programa desinstalado (Get-TFToolkitStartupLeftoverReason): o arquivo não existe mais, ou só
       sobrou o Update.exe do Squirrel. Não abre nada; o Gerenciador de Tarefas mostra, mas ligar ou desligar não muda nada.
     - Num PowerShell de 32 bits num Windows de 64 bits, as chaves Run de todos os usuários: o Windows troca a de 64 bits
       pela de 32 por baixo, e a lista sairia repetida, com o liga/desliga gravado no lugar errado.
 
     -Leftovers: o contrário, só o que sobrou (das chaves Run e das pastas Inicializar), com Leftover ("missing" ou
     "launcher"), para Gerenciar inicialização tirar. Numa chave de todos os usuários, só o que não usa uma pasta da conta
-    (Test-WinForgeStartupUserVariable). Os aplicativos da Store não entram: o de um pacote desinstalado já fica de fora.
+    (Test-TFToolkitStartupUserVariable). Os aplicativos da Store não entram: o de um pacote desinstalado já fica de fora.
     Cada item traz também RunKey, a chave Run de onde veio (vazia nos da pasta Inicializar).
     #>
     param (
@@ -1399,7 +1399,7 @@ function Get-WinForgeStartupItems {
         @{ Source = "Registro (usuário)"; Scope = "User"; Path = "HKCU:\Software\$runKey"; Approved = "HKCU:\Software\$approvedRoot\Run" }
     )
 
-    if (-not (Test-WinForgeRegistryViewMismatch)) {
+    if (-not (Test-TFToolkitRegistryViewMismatch)) {
         $registrySources += @(
             @{ Source = "Registro (todos os usuários)"; Scope = "Machine"; Path = "HKLM:\SOFTWARE\$runKey"; Approved = "HKLM:\SOFTWARE\$approvedRoot\Run" },
             @{ Source = "Registro (32 bits)"; Scope = "Machine"; Path = "HKLM:\SOFTWARE\WOW6432Node\$runKey"; Approved = "HKLM:\SOFTWARE\$approvedRoot\Run32" }
@@ -1407,18 +1407,18 @@ function Get-WinForgeStartupItems {
     }
 
     foreach ($source in $registrySources) {
-        $approved = Get-WinForgeRegistryValues -Path $source.Approved
-        $commands = Get-WinForgeRegistryValues -Path $source.Path
+        $approved = Get-TFToolkitRegistryValues -Path $source.Approved
+        $commands = Get-TFToolkitRegistryValues -Path $source.Path
 
         foreach ($name in @($commands.Keys)) {
             $command = $commands[$name]
 
             if (-not ($command -is [string]) -or [string]::IsNullOrWhiteSpace($command)) { continue }
 
-            $leftover = Get-WinForgeStartupLeftoverReason -Command $command
+            $leftover = Get-TFToolkitStartupLeftoverReason -Command $command
 
             if ([bool]$leftover -ne [bool]$Leftovers) { continue }
-            if ($Leftovers -and $source.Scope -eq "Machine" -and (Test-WinForgeStartupUserVariable -Path $source.Path -Name $name)) { continue }
+            if ($Leftovers -and $source.Scope -eq "Machine" -and (Test-TFToolkitStartupUserVariable -Path $source.Path -Name $name)) { continue }
 
             # Command: o que o Windows executa; Scope e ApprovedPath dizem onde o Windows guarda o liga/desliga do item.
             $items += [PSCustomObject]@{
@@ -1445,10 +1445,10 @@ function Get-WinForgeStartupItems {
         if ($seenFolders -contains $folderKey) { continue }
 
         $seenFolders += $folderKey
-        $approved = Get-WinForgeRegistryValues -Path $folder.Approved
+        $approved = Get-TFToolkitRegistryValues -Path $folder.Approved
 
         foreach ($file in @(Get-ChildItem -LiteralPath $folder.Path -File -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "desktop.ini" })) {
-            $leftover = $(if ($file.Extension -ieq ".lnk") { Get-WinForgeStartupLeftoverReason -Command $file.FullName -Shortcut } else { "" })
+            $leftover = $(if ($file.Extension -ieq ".lnk") { Get-TFToolkitStartupLeftoverReason -Command $file.FullName -Shortcut } else { "" })
 
             if ([bool]$leftover -ne [bool]$Leftovers) { continue }
 
@@ -1459,77 +1459,77 @@ function Get-WinForgeStartupItems {
         }
     }
 
-    if (-not $Leftovers) { $items += @(Get-WinForgeStartupPackagedApps) }
+    if (-not $Leftovers) { $items += @(Get-TFToolkitStartupPackagedApps) }
 
     return @($items)
 }
 
 
-function Get-WinForgePendingReboot {
+function Get-TFToolkitPendingReboot {
     # Retorna uma lista de motivos. Strong = sinal confiável; PendingFileRenameOperations
     # aparece em muitas máquinas sem reinício realmente necessário.
     $reasons = @()
 
     # A manutenção dos componentes (CBS) esperando o reinício: as chaves dela e o pending.xml, a mesma leitura que segura o
-    # DISM e o SFC (Test-WinForgeServicingRebootPending). Com o pending.xml lido só lá, esta tela dizia "nenhum reinício
+    # DISM e o SFC (Test-TFToolkitServicingRebootPending). Com o pending.xml lido só lá, esta tela dizia "nenhum reinício
     # pendente" enquanto o Reparo pedia para reiniciar antes de reparar.
-    if (Test-WinForgeServicingRebootPending) {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Uma atualização do Windows termina de instalar no reinício'); Strong = $true }
+    if (Test-TFToolkitServicingRebootPending) {
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Uma atualização do Windows termina de instalar no reinício'); Strong = $true }
     }
 
     if (Test-Path -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired") {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Windows Update: uma atualização instalada espera o reinício'); Strong = $true }
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Windows Update: uma atualização instalada espera o reinício'); Strong = $true }
     }
 
     # Um serviço do Windows Update esperando o reinício para se registrar: sinal fraco (a chave pode sobrar vazia, ou com
     # um item antigo, e um reinício não a limpa sempre). Só com algo dentro.
     if (@(Get-ChildItem -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Services\Pending" -ErrorAction SilentlyContinue).Count -gt 0) {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Windows Update: um serviço de atualização espera o reinício para se registrar (sinal fraco)'); Strong = $false }
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Windows Update: um serviço de atualização espera o reinício para se registrar (sinal fraco)'); Strong = $false }
     }
 
     # Um instalador de atualização que marcou o volume para terminar no reinício (UpdateExeVolatile com Flags diferente de 0).
-    $volatile = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SOFTWARE\Microsoft\Updates" -Name "UpdateExeVolatile"
+    $volatile = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SOFTWARE\Microsoft\Updates" -Name "UpdateExeVolatile"
 
     if ($null -ne $volatile -and [string]$volatile -match '^[0-9]+$' -and [int64]$volatile -ne 0) {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Um instalador de atualização termina o trabalho no reinício'); Strong = $true }
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Um instalador de atualização termina o trabalho no reinício'); Strong = $true }
     }
 
-    $activeName = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ActiveComputerName" -Name "ComputerName"
-    $pendingName = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName" -Name "ComputerName"
+    $activeName = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ActiveComputerName" -Name "ComputerName"
+    $pendingName = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName" -Name "ComputerName"
 
     if (-not [string]::IsNullOrWhiteSpace($activeName) -and -not [string]::IsNullOrWhiteSpace($pendingName) -and $activeName -ne $pendingName) {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Renomeação do computador: o nome {0} vale depois do reinício' "$pendingName"); Strong = $true }
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Renomeação do computador: o nome {0} vale depois do reinício' "$pendingName"); Strong = $true }
     }
 
     # Entrar num domínio (ou trocar de domínio) só vale depois do reinício.
     $netlogon = "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 
     if ((Test-Path -LiteralPath "$netlogon\JoinDomain") -or (Test-Path -LiteralPath "$netlogon\AvoidSpnSet")) {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Entrada num domínio: vale depois do reinício'); Strong = $true }
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Entrada num domínio: vale depois do reinício'); Strong = $true }
     }
 
-    $fileRename = Get-WinForgeRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Name "PendingFileRenameOperations"
+    $fileRename = Get-TFToolkitRegistryValueOrNull -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Name "PendingFileRenameOperations"
 
     if ($null -ne $fileRename -and @($fileRename).Count -gt 0) {
-        $reasons += [PSCustomObject]@{ Reason = (Get-WinForgeText 'Arquivos aguardando substituição no próximo reinício (sinal fraco: aparece em muitos PCs sem que o reinício seja necessário)'); Strong = $false }
+        $reasons += [PSCustomObject]@{ Reason = (Get-TFToolkitText 'Arquivos aguardando substituição no próximo reinício (sinal fraco: aparece em muitos PCs sem que o reinício seja necessário)'); Strong = $false }
     }
 
     return @($reasons)
 }
 
 
-function Test-WinForgePendingReboot {
-    return (@(Get-WinForgePendingReboot | Where-Object { $_.Strong }).Count -gt 0)
+function Test-TFToolkitPendingReboot {
+    return (@(Get-TFToolkitPendingReboot | Where-Object { $_.Strong }).Count -gt 0)
 }
 
 
-function Test-WinForgeServicingRebootPending {
+function Test-TFToolkitServicingRebootPending {
     <#
     Se a manutenção dos componentes do Windows (CBS) espera um reinício: só aí o DISM recusa a limpeza e o reparo
     (0x800F0806) e o SFC também. Um driver do Windows Update esperando o reinício, um nome novo do PC ou a entrada num
     domínio não atrapalham o DISM e o SFC, e não seguram essas etapas. Pelas chaves da CBS e pelo pending.xml, em que a
     instalação de uma atualização deixa o que o Windows termina ao desligar ou reiniciar. Reinício pendente
-    (Get-WinForgePendingReboot) parte daqui, com os outros motivos.
+    (Get-TFToolkitPendingReboot) parte daqui, com os outros motivos.
     #>
     $cbs = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing"
 
@@ -1545,9 +1545,9 @@ function Test-WinForgeServicingRebootPending {
 }
 
 
-# A procura das atualizações pendentes (Get-WinForgePendingWindowsUpdates), que roda num runspace à parte: não enxerga as
-# funções do WinForge.
-$script:WinForgePendingUpdatesSearch = {
+# A procura das atualizações pendentes (Get-TFToolkitPendingWindowsUpdates), que roda num runspace à parte: não enxerga as
+# funções do TF-Toolkit.
+$script:TFToolkitPendingUpdatesSearch = {
     $session = New-Object -ComObject "Microsoft.Update.Session"
     $searcher = $session.CreateUpdateSearcher()
 
@@ -1569,15 +1569,15 @@ $script:WinForgePendingUpdatesSearch = {
 }
 
 
-function Start-WinForgePendingUpdatesSearch {
+function Start-TFToolkitPendingUpdatesSearch {
     <#
     Começa a procurar as atualizações pendentes em segundo plano, sem esperar: a consulta ao Windows Update é a mais
     demorada do Estado da proteção e da auditoria, e as outras leituras correm enquanto ela anda. A resposta vem por
-    Get-WinForgePendingWindowsUpdates -Search; quem não chegar a pedi-la larga a procura (Stop-WinForgeInBackground).
+    Get-TFToolkitPendingWindowsUpdates -Search; quem não chegar a pedi-la larga a procura (Stop-TFToolkitInBackground).
     $null quando não deu para começar.
     #>
     try {
-        return (Start-WinForgeInBackground -ScriptBlock $script:WinForgePendingUpdatesSearch)
+        return (Start-TFToolkitInBackground -ScriptBlock $script:TFToolkitPendingUpdatesSearch)
     }
     catch {
         return $null
@@ -1585,13 +1585,13 @@ function Start-WinForgePendingUpdatesSearch {
 }
 
 
-function Get-WinForgePendingWindowsUpdates {
+function Get-TFToolkitPendingWindowsUpdates {
     <#
     Atualizações do Windows ainda não instaladas, pela API do Windows Update. Não conta as opcionais (drivers e
     prévias que o Windows só oferece na página de atualizações opcionais): essas não deixam o PC desprotegido.
     A consulta vai até o serviço, então roda em segundo plano com tempo limite, para que o botão Parar continue
     funcionando. Devolve Count e Titles, ou $null quando não foi possível consultar (inclusive por tempo esgotado).
-    -Search recebe a procura já começada (Start-WinForgePendingUpdatesSearch), e o prazo conta desde o começo dela; sem
+    -Search recebe a procura já começada (Start-TFToolkitPendingUpdatesSearch), e o prazo conta desde o começo dela; sem
     ele, a procura começa aqui.
     #>
     param (
@@ -1600,11 +1600,11 @@ function Get-WinForgePendingWindowsUpdates {
         $Search = $null
     )
 
-    if ($null -eq $Search) { $Search = Start-WinForgePendingUpdatesSearch }
+    if ($null -eq $Search) { $Search = Start-TFToolkitPendingUpdatesSearch }
     if ($null -eq $Search) { return $null }
 
     try {
-        $run = Receive-WinForgeInBackground -Task $Search -TimeoutSeconds $TimeoutSeconds
+        $run = Receive-TFToolkitInBackground -Task $Search -TimeoutSeconds $TimeoutSeconds
     }
     catch {
         return $null
@@ -1620,15 +1620,15 @@ function Get-WinForgePendingWindowsUpdates {
 }
 
 
-function Show-WinForgePendingReboot {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Reinício pendente')
+function Show-TFToolkitPendingReboot {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Reinício pendente')
 
-    $reasons = @(Get-WinForgePendingReboot)
+    $reasons = @(Get-TFToolkitPendingReboot)
     $result = $null
 
     if ($reasons.Count -eq 0) {
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum reinício pendente foi detectado.')
-        $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum reinício pendente')
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum reinício pendente foi detectado.')
+        $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum reinício pendente')
     }
     else {
         # Os sinais fracos (arquivos esperando substituição, um serviço do Windows Update por registrar) aparecem em quase
@@ -1637,61 +1637,61 @@ function Show-WinForgePendingReboot {
         $weak = @($reasons | Where-Object { -not $_.Strong })
 
         foreach ($reason in $strong) {
-            Write-WinForgeStatus -Type Warning -Message "$($reason.Reason)."
+            Write-TFToolkitStatus -Type Warning -Message "$($reason.Reason)."
         }
 
         if ($weak.Count -gt 0 -and $strong.Count -gt 0) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Também há sinais que aparecem em quase todo PC; sozinhos, eles não pedem reinício.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Também há sinais que aparecem em quase todo PC; sozinhos, eles não pedem reinício.')
         }
 
         Write-Host ""
 
-        # Os mesmos motivos já lidos acima: Test-WinForgePendingReboot leria o Registro de novo.
+        # Os mesmos motivos já lidos acima: Test-TFToolkitPendingReboot leria o Registro de novo.
         if (@($reasons | Where-Object { $_.Strong }).Count -gt 0) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Reinicie o Windows antes de reparos, CHKDSK e instalações grandes.')
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Reinicie o Windows antes de reparos, CHKDSK e instalações grandes.')
 
             # O ponto de atenção do Início e o aviso do monitor trazem a pessoa aqui: o que resolve é reiniciar, então a
             # tela oferece (com Não como padrão, e sem fechar nada à força), em vez de só explicar.
             try {
-                if (Request-WinForgeRestart -Reason (Get-WinForgeText 'Reiniciar agora conclui o que está esperando o reinício.') -Comment (Get-WinForgeText 'Reinicialização solicitada pelo WinForge (reinício pendente).') -DeclinedMessage (Get-WinForgeText 'O PC não foi reiniciado. Reinicie quando puder.')) {
-                    $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'o Windows está reiniciando')
+                if (Request-TFToolkitRestart -Reason (Get-TFToolkitText 'Reiniciar agora conclui o que está esperando o reinício.') -Comment (Get-TFToolkitText 'Reinicialização solicitada pelo TF-Toolkit (reinício pendente).') -DeclinedMessage (Get-TFToolkitText 'O PC não foi reiniciado. Reinicie quando puder.')) {
+                    $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'o Windows está reiniciando')
                 }
                 else {
-                    $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'reinício pendente; reinicie quando puder')
+                    $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'reinício pendente; reinicie quando puder')
                 }
             }
             catch {
-                Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível pedir o reinício: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-                $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'reinício pendente; reinicie pelo menu Iniciar')
+                Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível pedir o reinício: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+                $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'reinício pendente; reinicie pelo menu Iniciar')
             }
         }
         else {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Há só sinais que aparecem em quase todo PC: reiniciar não é obrigatório agora.')
-            $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum reinício necessário')
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Há só sinais que aparecem em quase todo PC: reiniciar não é obrigatório agora.')
+            $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum reinício necessário')
         }
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
-function Get-WinForgeDiskHealthStatusText {
+function Get-TFToolkitDiskHealthStatusText {
     # O estado geral que o Windows dá ao disco (HealthStatus), em português. Vem como nome (Healthy) ou como número (0).
     param (
         $Status
     )
 
     switch ([string]$Status) {
-        { $_ -in @("Healthy", "0") } { return (Get-WinForgeText 'Saudável') }
-        { $_ -in @("Warning", "1") } { return (Get-WinForgeText 'Atenção') }
-        { $_ -in @("Unhealthy", "2") } { return (Get-WinForgeText 'Com defeito') }
-        { $_ -in @("Unknown", "5", "") } { return (Get-WinForgeText 'Desconhecido') }
+        { $_ -in @("Healthy", "0") } { return (Get-TFToolkitText 'Saudável') }
+        { $_ -in @("Warning", "1") } { return (Get-TFToolkitText 'Atenção') }
+        { $_ -in @("Unhealthy", "2") } { return (Get-TFToolkitText 'Com defeito') }
+        { $_ -in @("Unknown", "5", "") } { return (Get-TFToolkitText 'Desconhecido') }
         default { return [string]$Status }
     }
 }
 
 
-function Get-WinForgeDiskHealthNotes {
+function Get-TFToolkitDiskHealthNotes {
     # Os alertas de um disco. Temperatura alta: 70 °C num SSD, 55 °C num HD (que trabalha mais frio) e 60 °C quando o
     # Windows não diz o tipo (um HD atrás de um controlador RAID, por exemplo). Desgaste só vale para SSD: num HD o
     # contador fica em zero.
@@ -1702,50 +1702,50 @@ function Get-WinForgeDiskHealthNotes {
 
     # Cada campo pelo nome, com padrão: um disco montado por outra parte (o relatório, um teste) pode não trazer todos.
     $notes = @()
-    $type = [string](Get-WinForgeJsonValue -Object $Disk -Name "Type" -Default "")
-    $healthStatus = Get-WinForgeJsonValue -Object $Disk -Name "HealthStatus" -Default ""
-    $wear = Get-WinForgeJsonValue -Object $Disk -Name "Wear" -Default $null
-    $temperature = Get-WinForgeJsonValue -Object $Disk -Name "Temperature" -Default $null
-    $readErrors = Get-WinForgeJsonValue -Object $Disk -Name "ReadErrorsUncorrected" -Default $null
-    $writeErrors = Get-WinForgeJsonValue -Object $Disk -Name "WriteErrorsUncorrected" -Default $null
+    $type = [string](Get-TFToolkitJsonValue -Object $Disk -Name "Type" -Default "")
+    $healthStatus = Get-TFToolkitJsonValue -Object $Disk -Name "HealthStatus" -Default ""
+    $wear = Get-TFToolkitJsonValue -Object $Disk -Name "Wear" -Default $null
+    $temperature = Get-TFToolkitJsonValue -Object $Disk -Name "Temperature" -Default $null
+    $readErrors = Get-TFToolkitJsonValue -Object $Disk -Name "ReadErrorsUncorrected" -Default $null
+    $writeErrors = Get-TFToolkitJsonValue -Object $Disk -Name "WriteErrorsUncorrected" -Default $null
     $isHdd = ($type -eq "HDD")
     $isSsd = ($type -in @("SSD", "NVMe"))
 
     # A previsão de falha do próprio disco (SMART), que o Windows mostra em OperationalStatus: "Predictive Failure", ou 5
     # quando vem como número. É o aviso mais direto de que o disco está no fim, e diz mais que o estado de atenção.
-    $predictive = (@(@(Get-WinForgeJsonValue -Object $Disk -Name "OperationalStatus" -Default @()) | Where-Object { ([string]$_).Trim() -in @("Predictive Failure", "5") }).Count -gt 0)
+    $predictive = (@(@(Get-TFToolkitJsonValue -Object $Disk -Name "OperationalStatus" -Default @()) | Where-Object { ([string]$_).Trim() -in @("Predictive Failure", "5") }).Count -gt 0)
 
-    if ($predictive) { $notes += (Get-WinForgeText 'O próprio disco avisa que pode falhar em breve (SMART)') }
+    if ($predictive) { $notes += (Get-TFToolkitText 'O próprio disco avisa que pode falhar em breve (SMART)') }
 
-    switch (Get-WinForgeDiskHealthStatusText -Status $healthStatus) {
-        (Get-WinForgeText 'Saudável') { }
-        (Get-WinForgeText 'Desconhecido') { }
-        (Get-WinForgeText 'Atenção') { if (-not $predictive) { $notes += (Get-WinForgeText 'O Windows marca este disco com estado de atenção') } }
-        (Get-WinForgeText 'Com defeito') { $notes += (Get-WinForgeText 'O Windows marca este disco como com defeito') }
-        default { $notes += (Get-WinForgeText 'Estado do disco: {0}' "$healthStatus") }
+    switch (Get-TFToolkitDiskHealthStatusText -Status $healthStatus) {
+        (Get-TFToolkitText 'Saudável') { }
+        (Get-TFToolkitText 'Desconhecido') { }
+        (Get-TFToolkitText 'Atenção') { if (-not $predictive) { $notes += (Get-TFToolkitText 'O Windows marca este disco com estado de atenção') } }
+        (Get-TFToolkitText 'Com defeito') { $notes += (Get-TFToolkitText 'O Windows marca este disco como com defeito') }
+        default { $notes += (Get-TFToolkitText 'Estado do disco: {0}' "$healthStatus") }
     }
 
     if (-not $isHdd -and $null -ne $wear -and [int]$wear -ge 80) {
-        $notes += (Get-WinForgeText 'Desgaste {0} em {1}% da vida útil estimada' "$(if ($isSsd) { (Get-WinForgeText 'do SSD') } else { (Get-WinForgeText 'do disco') })" "$wear")
+        $notes += (Get-TFToolkitText 'Desgaste {0} em {1}% da vida útil estimada' "$(if ($isSsd) { (Get-TFToolkitText 'do SSD') } else { (Get-TFToolkitText 'do disco') })" "$wear")
     }
 
     if ($null -ne $temperature -and [int]$temperature -ge $(if ($isHdd) { 55 } elseif ($isSsd) { 70 } else { 60 })) {
-        $notes += (Get-WinForgeText 'Temperatura alta ({0} °C)' "$temperature")
+        $notes += (Get-TFToolkitText 'Temperatura alta ({0} °C)' "$temperature")
     }
 
     if ($null -ne $readErrors -and [int64]$readErrors -gt 0) {
-        $notes += (Get-WinForgeText 'Erros de leitura não corrigidos: {0}' "$readErrors")
+        $notes += (Get-TFToolkitText 'Erros de leitura não corrigidos: {0}' "$readErrors")
     }
 
     if ($null -ne $writeErrors -and [int64]$writeErrors -gt 0) {
-        $notes += (Get-WinForgeText 'Erros de escrita não corrigidos: {0}' "$writeErrors")
+        $notes += (Get-TFToolkitText 'Erros de escrita não corrigidos: {0}' "$writeErrors")
     }
 
     return @($notes)
 }
 
 
-function Test-WinForgeDiskFailing {
+function Test-TFToolkitDiskFailing {
     <#
     Se o disco dá sinais de que pode falhar (o que o monitor na bandeja avisa): a previsão de falha do próprio disco
     (SMART), o estado de atenção ou de defeito que o Windows dá a ele, erros de leitura ou de escrita não corrigidos e, num
@@ -1753,40 +1753,40 @@ function Test-WinForgeDiskFailing {
     #>
     param ([Parameter(Mandatory)]$Disk)
 
-    return ((Get-WinForgeDiskFailingText -Disk $Disk) -ne "")
+    return ((Get-TFToolkitDiskFailingText -Disk $Disk) -ne "")
 }
 
 
-function Get-WinForgeDiskFailingText {
-    # O sinal de falha mais forte do disco, numa frase curta ("" quando não há; veja Test-WinForgeDiskFailing).
+function Get-TFToolkitDiskFailingText {
+    # O sinal de falha mais forte do disco, numa frase curta ("" quando não há; veja Test-TFToolkitDiskFailing).
     param ([Parameter(Mandatory)]$Disk)
 
-    $status = [string](Get-WinForgeJsonValue -Object $Disk -Name "HealthStatus" -Default "")
-    $type = [string](Get-WinForgeJsonValue -Object $Disk -Name "Type" -Default "")
-    $wear = Get-WinForgeJsonValue -Object $Disk -Name "Wear" -Default $null
-    $readErrors = Get-WinForgeJsonValue -Object $Disk -Name "ReadErrorsUncorrected" -Default $null
-    $writeErrors = Get-WinForgeJsonValue -Object $Disk -Name "WriteErrorsUncorrected" -Default $null
+    $status = [string](Get-TFToolkitJsonValue -Object $Disk -Name "HealthStatus" -Default "")
+    $type = [string](Get-TFToolkitJsonValue -Object $Disk -Name "Type" -Default "")
+    $wear = Get-TFToolkitJsonValue -Object $Disk -Name "Wear" -Default $null
+    $readErrors = Get-TFToolkitJsonValue -Object $Disk -Name "ReadErrorsUncorrected" -Default $null
+    $writeErrors = Get-TFToolkitJsonValue -Object $Disk -Name "WriteErrorsUncorrected" -Default $null
 
-    if (@(@(Get-WinForgeJsonValue -Object $Disk -Name "OperationalStatus" -Default @()) | Where-Object { ([string]$_).Trim() -in @("Predictive Failure", "5") }).Count -gt 0) {
-        return (Get-WinForgeText 'o próprio disco avisa que pode falhar em breve')
+    if (@(@(Get-TFToolkitJsonValue -Object $Disk -Name "OperationalStatus" -Default @()) | Where-Object { ([string]$_).Trim() -in @("Predictive Failure", "5") }).Count -gt 0) {
+        return (Get-TFToolkitText 'o próprio disco avisa que pode falhar em breve')
     }
 
-    if ($status -in @("Unhealthy", "2", "Warning", "1")) { return (Get-WinForgeText 'o Windows marca o disco com problema') }
-    if (($null -ne $readErrors -and [int64]$readErrors -gt 0) -or ($null -ne $writeErrors -and [int64]$writeErrors -gt 0)) { return (Get-WinForgeText 'o disco teve erros de leitura ou de escrita') }
-    if ($type -in @("SSD", "NVMe") -and $null -ne $wear -and [int]$wear -ge 90) { return (Get-WinForgeText 'o SSD está no fim da vida útil') }
+    if ($status -in @("Unhealthy", "2", "Warning", "1")) { return (Get-TFToolkitText 'o Windows marca o disco com problema') }
+    if (($null -ne $readErrors -and [int64]$readErrors -gt 0) -or ($null -ne $writeErrors -and [int64]$writeErrors -gt 0)) { return (Get-TFToolkitText 'o disco teve erros de leitura ou de escrita') }
+    if ($type -in @("SSD", "NVMe") -and $null -ne $wear -and [int]$wear -ge 90) { return (Get-TFToolkitText 'o SSD está no fim da vida útil') }
 
     return ""
 }
 
 
-function Get-WinForgeDiskHealth {
+function Get-TFToolkitDiskHealth {
     $result = @()
 
     try {
         # Os discos físicos: as instâncias de MSFT_PhysicalDisk, as mesmas que o Get-PhysicalDisk devolve, lidas com prazo,
         # como as outras leituras do WMI. O Get-PhysicalDisk é um script do módulo de armazenamento sem prazo nem -AsJob, e
         # um disco morrendo o deixava parado sem fim. Sem o módulo de armazenamento carregado, MediaType, BusType e
-        # HealthStatus vêm como número: Get-WinForgeDiskTypeText e Get-WinForgeDiskHealthStatusText leem os dois jeitos.
+        # HealthStatus vêm como número: Get-TFToolkitDiskTypeText e Get-TFToolkitDiskHealthStatusText leem os dois jeitos.
         $physicalDisks = @(Get-CimInstance -Namespace "root/Microsoft/Windows/Storage" -ClassName "MSFT_PhysicalDisk" -OperationTimeoutSec 60 -ErrorAction Stop)
     }
     catch {
@@ -1795,7 +1795,7 @@ function Get-WinForgeDiskHealth {
 
     # Na ordem do Gerenciamento de Disco (disco 0, 1, 2...): o Windows devolve os discos em qualquer ordem, e a tela
     # mudava de uma vez para outra. Sem número, no fim.
-    $physicalDisks = @($physicalDisks | Sort-Object -Property @{ Expression = { $number = 0; if ([int]::TryParse([string](Get-WinForgeJsonValue -Object $_ -Name "DeviceId" -Default ""), [ref]$number)) { $number } else { [int]::MaxValue } } })
+    $physicalDisks = @($physicalDisks | Sort-Object -Property @{ Expression = { $number = 0; if ([int]::TryParse([string](Get-TFToolkitJsonValue -Object $_ -Name "DeviceId" -Default ""), [ref]$number)) { $number } else { [int]::MaxValue } } })
 
     # As letras de cada disco, numa consulta só (uma por disco custava uma ida ao serviço de armazenamento cada).
     $lettersByDisk = @{}
@@ -1805,7 +1805,7 @@ function Get-WinForgeDiskHealth {
     $silent = $false
 
     try {
-        foreach ($partition in @(Get-WinForgePartitionLetters)) {
+        foreach ($partition in @(Get-TFToolkitPartitionLetters)) {
             if (-not $lettersByDisk.ContainsKey($partition.Disk)) { $lettersByDisk[$partition.Disk] = @() }
             $lettersByDisk[$partition.Disk] += $partition.Drive
         }
@@ -1821,7 +1821,7 @@ function Get-WinForgeDiskHealth {
 
         if (-not $silent) {
             try {
-                $counter = @(Invoke-WinForgeCimCommand -Name "Get-StorageReliabilityCounter" -Parameters @{ PhysicalDisk = $physicalDisk })[0]
+                $counter = @(Invoke-TFToolkitCimCommand -Name "Get-StorageReliabilityCounter" -Parameters @{ PhysicalDisk = $physicalDisk })[0]
             }
             catch {
                 # Alguns discos (USB, virtuais) não expõem contadores de confiabilidade; o tempo esgotado é outra coisa.
@@ -1844,7 +1844,7 @@ function Get-WinForgeDiskHealth {
         $wear = $(if ($null -ne $rawWear -and [double]$rawWear -ge 0 -and [double]$rawWear -le 100) { [int]$rawWear } else { $null })
         $readErrors = & $field "ReadErrorsUncorrected"
         $writeErrors = & $field "WriteErrorsUncorrected"
-        $type = Get-WinForgeDiskTypeText -Disk $physicalDisk
+        $type = Get-TFToolkitDiskTypeText -Disk $physicalDisk
 
         # Só num SSD o desgaste em zero quer dizer "novo"; num disco de tipo desconhecido, zero é o que um HD informa.
         if ($type -notin @("SSD", "NVMe") -and $wear -eq 0) { $wear = $null }
@@ -1855,15 +1855,15 @@ function Get-WinForgeDiskHealth {
 
         # As letras das unidades deste disco: "faça backup deste disco" precisa dizer qual é (C:, D:). Sem o número do
         # disco, nada: um valor vazio não pode virar o disco 0.
-        $deviceId = [string](Get-WinForgeJsonValue -Object $physicalDisk -Name "DeviceId" -Default "")
+        $deviceId = [string](Get-TFToolkitJsonValue -Object $physicalDisk -Name "DeviceId" -Default "")
         $drives = $(if ($deviceId -match '^[0-9]+$' -and $lettersByDisk.ContainsKey($deviceId)) { @($lettersByDisk[$deviceId] | Sort-Object -Unique) } else { @() })
 
         $disk = [PSCustomObject]@{
-            Name                   = $(if ($name) { $name } else { (Get-WinForgeText 'Disco sem nome') })
+            Name                   = $(if ($name) { $name } else { (Get-TFToolkitText 'Disco sem nome') })
             Type                   = $type
             SizeBytes              = $physicalDisk.Size
             HealthStatus           = $physicalDisk.HealthStatus
-            OperationalStatus      = @(@(Get-WinForgeJsonValue -Object $physicalDisk -Name "OperationalStatus" -Default @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
+            OperationalStatus      = @(@(Get-TFToolkitJsonValue -Object $physicalDisk -Name "OperationalStatus" -Default @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
             Drives                 = @($drives)
             CountersAvailable      = $reported
             CountersTimedOut       = ($timedOut -and -not $reported)
@@ -1874,7 +1874,7 @@ function Get-WinForgeDiskHealth {
             WriteErrorsUncorrected = $writeErrors
         }
 
-        $disk | Add-Member -NotePropertyName Notes -NotePropertyValue @(Get-WinForgeDiskHealthNotes -Disk $disk)
+        $disk | Add-Member -NotePropertyName Notes -NotePropertyValue @(Get-TFToolkitDiskHealthNotes -Disk $disk)
         $result += $disk
     }
 
@@ -1882,79 +1882,79 @@ function Get-WinForgeDiskHealth {
 }
 
 
-function Show-WinForgeDiskHealth {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Saúde dos discos')
+function Show-TFToolkitDiskHealth {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Saúde dos discos')
 
-    $disks = @(Get-WinForgeDiskHealth)
+    $disks = @(Get-TFToolkitDiskHealth)
 
     if ($disks.Count -eq 0) {
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível ler a saúde dos discos: o Windows não respondeu. Tente de novo; se continuar, reinicie o PC.')
-        Exit-WinForgeAction
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível ler a saúde dos discos: o Windows não respondeu. Tente de novo; se continuar, reinicie o PC.')
+        Exit-TFToolkitAction
         return
     }
 
-    $isAdmin = Test-WinForgeAdministrator
+    $isAdmin = Test-TFToolkitAdministrator
 
     foreach ($disk in $disks) {
         $isHdd = ($disk.Type -eq "HDD")
-        $status = Get-WinForgeDiskHealthStatusText -Status $disk.HealthStatus
-        $drives = @(Get-WinForgeJsonValue -Object $disk -Name "Drives" -Default @())
-        $errorText = { param ($value) if ($null -ne $value) { [string][int64]$value } else { (Get-WinForgeText 'não informado') } }
+        $status = Get-TFToolkitDiskHealthStatusText -Status $disk.HealthStatus
+        $drives = @(Get-TFToolkitJsonValue -Object $disk -Name "Drives" -Default @())
+        $errorText = { param ($value) if ($null -ne $value) { [string][int64]$value } else { (Get-TFToolkitText 'não informado') } }
 
-        Write-WinForgeSection -Title "$($disk.Name) ($($disk.Type), $(Format-WinForgeBytes -Bytes $disk.SizeBytes -ZeroText (Get-WinForgeText 'tamanho desconhecido')))"
-        if ($drives.Count -gt 0) { Write-WinForgeKeyValue -Label (Get-WinForgeText 'Unidades') -Value ($drives -join ", ") }
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Estado') -Value $status -Level $(switch ($status) { (Get-WinForgeText 'Saudável') { "Ok" } (Get-WinForgeText 'Atenção') { "Warn" } (Get-WinForgeText 'Com defeito') { "Bad" } default { "Normal" } })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Temperatura') -Value $(if ($null -ne $disk.Temperature) { "$($disk.Temperature) °C" } else { $null })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Desgaste') -Value $(if ($isHdd) { (Get-WinForgeText 'Não se aplica (HDD)') } elseif ($null -ne $disk.Wear) { (Get-WinForgeText '{0}% da vida útil estimada' "$($disk.Wear)") } else { $null })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Horas ligado') -Value $(if ($null -eq $disk.PowerOnHours) { $null } elseif ([double]$disk.PowerOnHours -eq 1) { (Get-WinForgeText '1 hora') } else { (Get-WinForgeText '{0} horas' "$(Format-WinForgeNumber -Value ([double]$disk.PowerOnHours))") })
-        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Erros não corrigidos') -Value $(if ($null -ne $disk.ReadErrorsUncorrected -or $null -ne $disk.WriteErrorsUncorrected) { (Get-WinForgeText '{0} de leitura, {1} de escrita' "$(& $errorText $disk.ReadErrorsUncorrected)" "$(& $errorText $disk.WriteErrorsUncorrected)") } else { $null })
+        Write-TFToolkitSection -Title "$($disk.Name) ($($disk.Type), $(Format-TFToolkitBytes -Bytes $disk.SizeBytes -ZeroText (Get-TFToolkitText 'tamanho desconhecido')))"
+        if ($drives.Count -gt 0) { Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Unidades') -Value ($drives -join ", ") }
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Estado') -Value $status -Level $(switch ($status) { (Get-TFToolkitText 'Saudável') { "Ok" } (Get-TFToolkitText 'Atenção') { "Warn" } (Get-TFToolkitText 'Com defeito') { "Bad" } default { "Normal" } })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Temperatura') -Value $(if ($null -ne $disk.Temperature) { "$($disk.Temperature) °C" } else { $null })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Desgaste') -Value $(if ($isHdd) { (Get-TFToolkitText 'Não se aplica (HDD)') } elseif ($null -ne $disk.Wear) { (Get-TFToolkitText '{0}% da vida útil estimada' "$($disk.Wear)") } else { $null })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Horas ligado') -Value $(if ($null -eq $disk.PowerOnHours) { $null } elseif ([double]$disk.PowerOnHours -eq 1) { (Get-TFToolkitText '1 hora') } else { (Get-TFToolkitText '{0} horas' "$(Format-TFToolkitNumber -Value ([double]$disk.PowerOnHours))") })
+        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Erros não corrigidos') -Value $(if ($null -ne $disk.ReadErrorsUncorrected -or $null -ne $disk.WriteErrorsUncorrected) { (Get-TFToolkitText '{0} de leitura, {1} de escrita' "$(& $errorText $disk.ReadErrorsUncorrected)" "$(& $errorText $disk.WriteErrorsUncorrected)") } else { $null })
 
         Write-Host ""
 
         if ($disk.Notes.Count -gt 0) {
             foreach ($note in $disk.Notes) {
-                Write-WinForgeStatus -Type Warning -Message "$note."
+                Write-TFToolkitStatus -Type Warning -Message "$note."
             }
 
             # Estado ruim, erros ou desgaste: o que fazer antes de qualquer outra coisa é guardar os arquivos. A nota da
             # temperatura é comparada inteira, no idioma da tela (o começo "Temperatura" só existe em português).
-            $heatNote = $(if ($null -ne $disk.Temperature) { (Get-WinForgeText 'Temperatura alta ({0} °C)' "$($disk.Temperature)") } else { "" })
+            $heatNote = $(if ($null -ne $disk.Temperature) { (Get-TFToolkitText 'Temperatura alta ({0} °C)' "$($disk.Temperature)") } else { "" })
 
             if (@($disk.Notes | Where-Object { [string]$_ -ne $heatNote }).Count -gt 0) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Faça backup dos arquivos importantes deste disco{0}.' "$(if ($drives.Count -gt 0) { " ($(Join-WinForgeList -Items $drives))" })")
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Faça backup dos arquivos importantes deste disco{0}.' "$(if ($drives.Count -gt 0) { " ($(Join-TFToolkitList -Items $drives))" })")
             }
             else {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Confira a ventilação do gabinete ou do notebook.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Confira a ventilação do gabinete ou do notebook.')
             }
         }
         elseif ($disk.CountersAvailable) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum alerta para este disco.')
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum alerta para este disco.')
         }
-        elseif ([bool](Get-WinForgeJsonValue -Object $disk -Name "CountersTimedOut" -Default $false)) {
+        elseif ([bool](Get-TFToolkitJsonValue -Object $disk -Name "CountersTimedOut" -Default $false)) {
             # O Windows não respondeu: dizer que o disco "não expõe contadores" (como num USB) seria um palpite errado. A
             # frase vem uma vez, no fim, para todos os discos nessa situação.
         }
-        elseif ($status -eq (Get-WinForgeText 'Desconhecido')) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Este disco não informou o estado nem os contadores de confiabilidade; não há como avaliá-lo por aqui.')
+        elseif ($status -eq (Get-TFToolkitText 'Desconhecido')) {
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Este disco não informou o estado nem os contadores de confiabilidade; não há como avaliá-lo por aqui.')
         }
         elseif ($isAdmin) {
             # Sem contadores só o estado geral foi avaliado; "nenhum alerta" prometeria mais do que a leitura fez.
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Este disco não expõe contadores de confiabilidade (comum em discos USB e virtuais); só o estado geral foi avaliado.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Este disco não expõe contadores de confiabilidade (comum em discos USB e virtuais); só o estado geral foi avaliado.')
         }
         else {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Os contadores deste disco não puderam ser lidos (exigem Administrador, e discos USB e virtuais nem sempre os têm); só o estado geral foi avaliado.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Os contadores deste disco não puderam ser lidos (exigem Administrador, e discos USB e virtuais nem sempre os têm); só o estado geral foi avaliado.')
         }
     }
 
     Write-Host ""
 
-    $late = @($disks | Where-Object { $_.Notes.Count -eq 0 -and [bool](Get-WinForgeJsonValue -Object $_ -Name "CountersTimedOut" -Default $false) })
+    $late = @($disks | Where-Object { $_.Notes.Count -eq 0 -and [bool](Get-TFToolkitJsonValue -Object $_ -Name "CountersTimedOut" -Default $false) })
 
     if ($late.Count -gt 0) {
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O Windows não respondeu a tempo sobre os contadores de {0}: só o estado geral foi avaliado. Tente de novo; se continuar, reinicie o PC.' "$(Join-WinForgeList -Items @($late | ForEach-Object { $_.Name }))")
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O Windows não respondeu a tempo sobre os contadores de {0}: só o estado geral foi avaliado. Tente de novo; se continuar, reinicie o PC.' "$(Join-TFToolkitList -Items @($late | ForEach-Object { $_.Name }))")
     }
 
-    Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Isto lê o que o próprio Windows sabe do disco; o programa do fabricante do disco faz um teste mais completo.')
+    Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Isto lê o que o próprio Windows sabe do disco; o programa do fabricante do disco faz um teste mais completo.')
 
     # A faixa de resultado: quantos discos têm alerta, ou que nenhum tem (e se algum foi avaliado só pelo estado geral).
     $alerted = @($disks | Where-Object { $_.Notes.Count -gt 0 })
@@ -1962,17 +1962,17 @@ function Show-WinForgeDiskHealth {
     $result = $null
 
     if ($alerted.Count -gt 0) {
-        $names = @($alerted | ForEach-Object { $letters = @(Get-WinForgeJsonValue -Object $_ -Name "Drives" -Default @()); if ($letters.Count -gt 0) { "$($_.Name) ($($letters -join ', '))" } else { $_.Name } })
-        $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} com alerta: {1}' "$(Format-WinForgeCount -Count $alerted.Count -One (Get-WinForgeText 'disco') -Many (Get-WinForgeText 'discos'))" "$(Join-WinForgeList -Items $names)")
+        $names = @($alerted | ForEach-Object { $letters = @(Get-TFToolkitJsonValue -Object $_ -Name "Drives" -Default @()); if ($letters.Count -gt 0) { "$($_.Name) ($($letters -join ', '))" } else { $_.Name } })
+        $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} com alerta: {1}' "$(Format-TFToolkitCount -Count $alerted.Count -One (Get-TFToolkitText 'disco') -Many (Get-TFToolkitText 'discos'))" "$(Join-TFToolkitList -Items $names)")
     }
     elseif ($partial.Count -eq 0) {
-        $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum alerta {0}' "$(if ($disks.Count -eq 1) { (Get-WinForgeText 'no disco') } else { (Get-WinForgeText 'nos {0} discos' "$($disks.Count)") })")
+        $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum alerta {0}' "$(if ($disks.Count -eq 1) { (Get-TFToolkitText 'no disco') } else { (Get-TFToolkitText 'nos {0} discos' "$($disks.Count)") })")
     }
     elseif ($partial.Count -lt $disks.Count) {
-        $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum alerta; {0} só pelo estado geral' "$(Format-WinForgeCount -Count $partial.Count -One (Get-WinForgeText 'disco foi avaliado') -Many (Get-WinForgeText 'discos foram avaliados'))")
+        $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum alerta; {0} só pelo estado geral' "$(Format-TFToolkitCount -Count $partial.Count -One (Get-TFToolkitText 'disco foi avaliado') -Many (Get-TFToolkitText 'discos foram avaliados'))")
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
@@ -1980,7 +1980,7 @@ function Show-WinForgeDiskHealth {
 # Saúde da bateria
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeXmlChildNumber {
+function Get-TFToolkitXmlChildNumber {
     # Número de um elemento filho, ignorando o namespace do XML (o relatório do powercfg usa um). Ausente ou texto = $null.
     param (
         [Parameter(Mandatory)]
@@ -2006,7 +2006,7 @@ function Get-WinForgeXmlChildNumber {
 }
 
 
-function Get-WinForgeXmlChildText {
+function Get-TFToolkitXmlChildText {
     param (
         [Parameter(Mandatory)]
         $Node,
@@ -2025,7 +2025,7 @@ function Get-WinForgeXmlChildText {
 }
 
 
-function New-WinForgeBatteryReading {
+function New-TFToolkitBatteryReading {
     # Capacidades em mWh, como o Windows informa. Saúde = capacidade atual / capacidade de projeto (no máximo 100%).
     param (
         [string]$Name = "",
@@ -2071,7 +2071,7 @@ function New-WinForgeBatteryReading {
 }
 
 
-function ConvertFrom-WinForgeBatteryReport {
+function ConvertFrom-TFToolkitBatteryReport {
     <#
     Lê o XML de "powercfg /batteryreport /xml" e devolve uma leitura por bateria. Os nomes dos elementos são os do
     relatório (DesignCapacity, FullChargeCapacity, CycleCount) e a busca ignora o namespace. XML inválido lança erro;
@@ -2094,8 +2094,8 @@ function ConvertFrom-WinForgeBatteryReport {
     $readings = @()
 
     foreach ($node in @($document.SelectNodes("//*[local-name()='Batteries']/*[local-name()='Battery']"))) {
-        $name = (Get-WinForgeXmlChildText -Node $node -Name "Manufacturer")
-        $id = (Get-WinForgeXmlChildText -Node $node -Name "Id")
+        $name = (Get-TFToolkitXmlChildText -Node $node -Name "Manufacturer")
+        $id = (Get-TFToolkitXmlChildText -Node $node -Name "Id")
 
         # O identificador sozinho já diz o fabricante quando o contém ("SMP-1234"); com duas baterias do mesmo fabricante,
         # ficar só com o fabricante as deixaria iguais. IndexOf em vez de -like: [ ] e * no nome seriam curingas.
@@ -2105,19 +2105,19 @@ function ConvertFrom-WinForgeBatteryReport {
         }
         elseif (-not $name) { $name = $id }
 
-        $readings += New-WinForgeBatteryReading `
+        $readings += New-TFToolkitBatteryReading `
             -Name $name `
-            -DesignMwh (Get-WinForgeXmlChildNumber -Node $node -Name "DesignCapacity") `
-            -FullMwh (Get-WinForgeXmlChildNumber -Node $node -Name "FullChargeCapacity") `
-            -Cycles (Get-WinForgeXmlChildNumber -Node $node -Name "CycleCount") `
-            -Relative ([string](Get-WinForgeXmlChildText -Node $node -Name "RelativeCapacity") -in @("1", "true"))
+            -DesignMwh (Get-TFToolkitXmlChildNumber -Node $node -Name "DesignCapacity") `
+            -FullMwh (Get-TFToolkitXmlChildNumber -Node $node -Name "FullChargeCapacity") `
+            -Cycles (Get-TFToolkitXmlChildNumber -Node $node -Name "CycleCount") `
+            -Relative ([string](Get-TFToolkitXmlChildText -Node $node -Name "RelativeCapacity") -in @("1", "true"))
     }
 
     return @($readings)
 }
 
 
-function Get-WinForgeBatteryWmiReadings {
+function Get-TFToolkitBatteryWmiReadings {
     # Plano B quando o relatório do powercfg não está disponível: as classes de bateria do WMI (root\wmi).
     $static = @()
     $full = @()
@@ -2138,7 +2138,7 @@ function Get-WinForgeBatteryWmiReadings {
         $fullEntry = $full | Where-Object { $_.InstanceName -eq $entry.InstanceName } | Select-Object -First 1
         $cycleEntry = $cycles | Where-Object { $_.InstanceName -eq $entry.InstanceName } | Select-Object -First 1
 
-        $readings += New-WinForgeBatteryReading `
+        $readings += New-TFToolkitBatteryReading `
             -Name ([string]$entry.DeviceName) `
             -DesignMwh $entry.DesignedCapacity `
             -FullMwh $(if ($fullEntry) { $fullEntry.FullChargedCapacity } else { $null }) `
@@ -2149,7 +2149,7 @@ function Get-WinForgeBatteryWmiReadings {
 }
 
 
-function Get-WinForgeBatteryReadings {
+function Get-TFToolkitBatteryReadings {
     <#
     Capacidades das baterias do notebook. Primeiro tenta o relatório do powercfg (arquivo temporário, apagado ao final)
     e, se ele não trouxer baterias, o WMI. Devolve Readings e Source ("powercfg", "wmi" ou "").
@@ -2157,13 +2157,13 @@ function Get-WinForgeBatteryReadings {
     $readings = @()
     $source = ""
 
-    $reportPath = Join-Path ([System.IO.Path]::GetTempPath()) ("winforge-bateria-" + [guid]::NewGuid().ToString("N") + ".xml")
+    $reportPath = Join-Path ([System.IO.Path]::GetTempPath()) ("tf-toolkit-bateria-" + [guid]::NewGuid().ToString("N") + ".xml")
 
     try {
-        $run = Invoke-WinForgeCapture -FilePath "powercfg.exe" -Arguments @("/batteryreport", "/xml", "/output", $reportPath)
+        $run = Invoke-TFToolkitCapture -FilePath "powercfg.exe" -Arguments @("/batteryreport", "/xml", "/output", $reportPath)
 
         if ($run.ExitCode -eq 0 -and (Test-Path -LiteralPath $reportPath)) {
-            $readings = @(ConvertFrom-WinForgeBatteryReport -Path $reportPath)
+            $readings = @(ConvertFrom-TFToolkitBatteryReport -Path $reportPath)
             if ($readings.Count -gt 0) { $source = "powercfg" }
         }
     }
@@ -2176,7 +2176,7 @@ function Get-WinForgeBatteryReadings {
     }
 
     if ($readings.Count -eq 0) {
-        $readings = @(Get-WinForgeBatteryWmiReadings)
+        $readings = @(Get-TFToolkitBatteryWmiReadings)
         if ($readings.Count -gt 0) { $source = "wmi" }
     }
 
@@ -2184,9 +2184,9 @@ function Get-WinForgeBatteryReadings {
 }
 
 
-function Get-WinForgeBatteryAssessment {
+function Get-TFToolkitBatteryAssessment {
     # Regra prática sobre o desgaste: 80% ou mais está bom; de 60% a 79% a autonomia já caiu; abaixo de 60%, vale pensar
-    # na troca. Level = Success | Info | Warning (o vocabulário de Write-WinForgeStatus).
+    # na troca. Level = Success | Info | Warning (o vocabulário de Write-TFToolkitStatus).
     param (
         $HealthPercent,
 
@@ -2195,23 +2195,23 @@ function Get-WinForgeBatteryAssessment {
     )
 
     if ($null -eq $HealthPercent) {
-        $what = $(if ($Missing -eq "full") { (Get-WinForgeText 'a capacidade de hoje') } else { (Get-WinForgeText 'a capacidade de fábrica') })
-        return [PSCustomObject]@{ Level = "Info"; Text = (Get-WinForgeText 'O Windows não informou {0}; não dá para calcular o desgaste.' "$what") }
+        $what = $(if ($Missing -eq "full") { (Get-TFToolkitText 'a capacidade de hoje') } else { (Get-TFToolkitText 'a capacidade de fábrica') })
+        return [PSCustomObject]@{ Level = "Info"; Text = (Get-TFToolkitText 'O Windows não informou {0}; não dá para calcular o desgaste.' "$what") }
     }
 
     if ([int]$HealthPercent -ge 80) {
-        return [PSCustomObject]@{ Level = "Success"; Text = (Get-WinForgeText 'Bateria em bom estado: segura {0}% da carga de quando era nova.' "$HealthPercent") }
+        return [PSCustomObject]@{ Level = "Success"; Text = (Get-TFToolkitText 'Bateria em bom estado: segura {0}% da carga de quando era nova.' "$HealthPercent") }
     }
 
     if ([int]$HealthPercent -ge 60) {
-        return [PSCustomObject]@{ Level = "Info"; Text = (Get-WinForgeText 'Desgaste moderado: segura {0}% da carga original, então a autonomia já caiu.' "$HealthPercent") }
+        return [PSCustomObject]@{ Level = "Info"; Text = (Get-TFToolkitText 'Desgaste moderado: segura {0}% da carga original, então a autonomia já caiu.' "$HealthPercent") }
     }
 
-    return [PSCustomObject]@{ Level = "Warning"; Text = (Get-WinForgeText 'Desgaste alto: segura só {0}% da carga original. Vale considerar a troca da bateria.' "$HealthPercent") }
+    return [PSCustomObject]@{ Level = "Warning"; Text = (Get-TFToolkitText 'Desgaste alto: segura só {0}% da carga original. Vale considerar a troca da bateria.' "$HealthPercent") }
 }
 
 
-function ConvertTo-WinForgeBatteryPercent {
+function ConvertTo-TFToolkitBatteryPercent {
     # A carga, de 0 a 100. Alguns drivers informam 255 (ou outro valor fora da faixa) quando não sabem: vira $null.
     param (
         $Value
@@ -2227,7 +2227,7 @@ function ConvertTo-WinForgeBatteryPercent {
 }
 
 
-function Get-WinForgeBatteryState {
+function Get-TFToolkitBatteryState {
     # Carga e situação atuais, do Win32_Battery (código BatteryStatus: 1 descarregando, 2 na tomada, 3 cheia, 4 baixa,
     # 5 crítica, 6 a 9 carregando, 11 parcialmente carregada). Com duas baterias (alguns ThinkPad), a carga é a média das
     # duas e a situação é a de quem trabalha: carregando ou usando a bateria vence "na tomada". State é o texto e Code a
@@ -2247,11 +2247,11 @@ function Get-WinForgeBatteryState {
     $state = ""
     $code = ""
 
-    if (@($codes | Where-Object { $_ -in 6, 7, 8, 9 }).Count -gt 0) { $state = (Get-WinForgeText 'Carregando'); $code = "Charging" }
-    elseif (@($codes | Where-Object { $_ -in 1, 4, 5 }).Count -gt 0) { $state = (Get-WinForgeText 'Usando a bateria'); $code = "Battery" }
-    elseif (@($codes | Where-Object { $_ -in 2, 3, 11 }).Count -gt 0) { $state = (Get-WinForgeText 'Na tomada'); $code = "AC" }
+    if (@($codes | Where-Object { $_ -in 6, 7, 8, 9 }).Count -gt 0) { $state = (Get-TFToolkitText 'Carregando'); $code = "Charging" }
+    elseif (@($codes | Where-Object { $_ -in 1, 4, 5 }).Count -gt 0) { $state = (Get-TFToolkitText 'Usando a bateria'); $code = "Battery" }
+    elseif (@($codes | Where-Object { $_ -in 2, 3, 11 }).Count -gt 0) { $state = (Get-TFToolkitText 'Na tomada'); $code = "AC" }
 
-    $charges = @($batteries | ForEach-Object { ConvertTo-WinForgeBatteryPercent -Value $_.EstimatedChargeRemaining } | Where-Object { $null -ne $_ })
+    $charges = @($batteries | ForEach-Object { ConvertTo-TFToolkitBatteryPercent -Value $_.EstimatedChargeRemaining } | Where-Object { $null -ne $_ })
     $charge = $(if ($charges.Count -gt 0) { [int][math]::Round((($charges | Measure-Object -Average).Average)) } else { $null })
 
     # Com duas baterias de tamanhos diferentes, a média simples erra (uma de 23 Wh cheia e uma de 72 Wh em 20% não são
@@ -2260,8 +2260,8 @@ function Get-WinForgeBatteryState {
         try {
             $remaining = [double]0
             $full = [double]0
-            foreach ($item in @(Get-CimInstance -Namespace "root\wmi" -ClassName "BatteryStatus" -OperationTimeoutSec 15 -ErrorAction Stop)) { $remaining += [double](Get-WinForgeJsonValue -Object $item -Name "RemainingCapacity" -Default 0) }
-            foreach ($item in @(Get-CimInstance -Namespace "root\wmi" -ClassName "BatteryFullChargedCapacity" -OperationTimeoutSec 15 -ErrorAction Stop)) { $full += [double](Get-WinForgeJsonValue -Object $item -Name "FullChargedCapacity" -Default 0) }
+            foreach ($item in @(Get-CimInstance -Namespace "root\wmi" -ClassName "BatteryStatus" -OperationTimeoutSec 15 -ErrorAction Stop)) { $remaining += [double](Get-TFToolkitJsonValue -Object $item -Name "RemainingCapacity" -Default 0) }
+            foreach ($item in @(Get-CimInstance -Namespace "root\wmi" -ClassName "BatteryFullChargedCapacity" -OperationTimeoutSec 15 -ErrorAction Stop)) { $full += [double](Get-TFToolkitJsonValue -Object $item -Name "FullChargedCapacity" -Default 0) }
 
             if ($remaining -ge 0 -and $full -gt 0 -and $remaining -le $full * 1.05) {
                 $charge = [int][math]::Min(100, [math]::Round(($remaining / $full) * 100))
@@ -2276,26 +2276,26 @@ function Get-WinForgeBatteryState {
 }
 
 
-function Get-WinForgeBatteryInfo {
+function Get-TFToolkitBatteryInfo {
     # Tudo o que a tela e o relatório mostram. Present = $false em desktops e máquinas sem bateria; Ups = $true num
     # computador de mesa em que o Windows vê uma bateria (um nobreak USB): ela não é a bateria de um notebook.
-    $state = Get-WinForgeBatteryState
+    $state = Get-TFToolkitBatteryState
 
     if ($null -eq $state) {
         return [PSCustomObject]@{ Present = $false; Ups = $false; State = $null; Readings = @(); Source = "" }
     }
 
-    if (-not (Test-WinForgeLaptop)) {
+    if (-not (Test-TFToolkitLaptop)) {
         return [PSCustomObject]@{ Present = $false; Ups = $true; State = $null; Readings = @(); Source = "" }
     }
 
-    $found = Get-WinForgeBatteryReadings
+    $found = Get-TFToolkitBatteryReadings
 
     return [PSCustomObject]@{ Present = $true; Ups = $false; State = $state; Readings = @($found.Readings); Source = $found.Source }
 }
 
 
-function Format-WinForgeWattHours {
+function Format-TFToolkitWattHours {
     # mWh em Wh, com uma casa ("45,6 Wh"): uma bateria de 50 Wh perdendo 0,4 Wh não pode parecer igual.
     param ($MilliwattHours)
 
@@ -2303,86 +2303,86 @@ function Format-WinForgeWattHours {
         return $null
     }
 
-    return "$(Format-WinForgeNumber -Value ([math]::Round([double]$MilliwattHours / 1000, 1)) -Decimals 1) Wh"
+    return "$(Format-TFToolkitNumber -Value ([math]::Round([double]$MilliwattHours / 1000, 1)) -Decimals 1) Wh"
 }
 
 
-function Show-WinForgeBatteryHealth {
-    Enter-WinForgeAction -Title (Get-WinForgeText 'Saúde da bateria')
+function Show-TFToolkitBatteryHealth {
+    Enter-TFToolkitAction -Title (Get-TFToolkitText 'Saúde da bateria')
 
-    # Uma saída só (Exit-WinForgeAction no fim): sair de dentro do try faria um erro na espera da tecla ser tratado
+    # Uma saída só (Exit-TFToolkitAction no fim): sair de dentro do try faria um erro na espera da tecla ser tratado
     # como erro da bateria, com uma segunda espera.
     $result = $null
 
     try {
-        $info = Get-WinForgeBatteryInfo
+        $info = Get-TFToolkitBatteryInfo
 
-        if (-not $info.Present -and [bool](Get-WinForgeJsonValue -Object $info -Name "Ups" -Default $false)) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Este PC se identifica como um computador de mesa: a bateria que o Windows enxerga deve ser a de um nobreak (UPS). O estado dela fica no programa do fabricante do nobreak.')
+        if (-not $info.Present -and [bool](Get-TFToolkitJsonValue -Object $info -Name "Ups" -Default $false)) {
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Este PC se identifica como um computador de mesa: a bateria que o Windows enxerga deve ser a de um nobreak (UPS). O estado dela fica no programa do fabricante do nobreak.')
         }
         elseif (-not $info.Present) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Este computador não tem bateria (ou o Windows não consegue enxergá-la).')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Este computador não tem bateria (ou o Windows não consegue enxergá-la).')
         }
         else {
-            Write-WinForgeSection -Title (Get-WinForgeText 'Agora')
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Carga') -Value $(if ($null -ne $info.State.ChargePercent) { "$($info.State.ChargePercent)%" } else { $null })
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Situação') -Value $info.State.State
+            Write-TFToolkitSection -Title (Get-TFToolkitText 'Agora')
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Carga') -Value $(if ($null -ne $info.State.ChargePercent) { "$($info.State.ChargePercent)%" } else { $null })
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Situação') -Value $info.State.State
 
             $readings = @($info.Readings)
 
             if ($readings.Count -eq 0) {
                 Write-Host ""
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'O Windows não informou a capacidade da bateria. Alguns notebooks não expõem esses dados.')
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'O Windows não informou a capacidade da bateria. Alguns notebooks não expõem esses dados.')
             }
             else {
                 $levels = @()
 
                 foreach ($reading in $readings) {
-                    $title = (Get-WinForgeText 'Capacidade')
+                    $title = (Get-TFToolkitText 'Capacidade')
                     if (-not [string]::IsNullOrWhiteSpace($reading.Name)) { $title += ": $($reading.Name)" }
 
-                    Write-WinForgeSection -Title $title
+                    Write-TFToolkitSection -Title $title
 
-                    if (-not [bool](Get-WinForgeJsonValue -Object $reading -Name "Relative" -Default $false)) {
-                        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Capacidade de fábrica') -Value (Format-WinForgeWattHours -MilliwattHours $reading.DesignMwh)
-                        Write-WinForgeKeyValue -Label (Get-WinForgeText 'Capacidade hoje') -Value (Format-WinForgeWattHours -MilliwattHours $reading.FullMwh)
+                    if (-not [bool](Get-TFToolkitJsonValue -Object $reading -Name "Relative" -Default $false)) {
+                        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Capacidade de fábrica') -Value (Format-TFToolkitWattHours -MilliwattHours $reading.DesignMwh)
+                        Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Capacidade hoje') -Value (Format-TFToolkitWattHours -MilliwattHours $reading.FullMwh)
                     }
 
-                    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Saúde') -Value $(if ($null -ne $reading.HealthPercent) { "$($reading.HealthPercent)%" } else { $null })
-                    Write-WinForgeKeyValue -Label (Get-WinForgeText 'Ciclos de carga') -Value $(if ($null -ne $reading.Cycles) { Format-WinForgeNumber -Value ([double]$reading.Cycles) } else { $null })
+                    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Saúde') -Value $(if ($null -ne $reading.HealthPercent) { "$($reading.HealthPercent)%" } else { $null })
+                    Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Ciclos de carga') -Value $(if ($null -ne $reading.Cycles) { Format-TFToolkitNumber -Value ([double]$reading.Cycles) } else { $null })
 
-                    $assessment = Get-WinForgeBatteryAssessment -HealthPercent $reading.HealthPercent -Missing $(if ($null -ne $reading.DesignMwh -and $null -eq $reading.FullMwh) { "full" } else { "design" })
+                    $assessment = Get-TFToolkitBatteryAssessment -HealthPercent $reading.HealthPercent -Missing $(if ($null -ne $reading.DesignMwh -and $null -eq $reading.FullMwh) { "full" } else { "design" })
                     $levels += $assessment.Level
 
                     Write-Host ""
-                    Write-WinForgeStatus -Type $assessment.Level -Message $assessment.Text
+                    Write-TFToolkitStatus -Type $assessment.Level -Message $assessment.Text
                 }
 
                 Write-Host ""
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'A bateria perde capacidade com o uso e com o calor; isso é normal. O valor é uma estimativa do próprio Windows.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'A bateria perde capacidade com o uso e com o calor; isso é normal. O valor é uma estimativa do próprio Windows.')
 
                 # A faixa: o pior veredito entre as baterias. Desgaste moderado ou desconhecido não tem veredito.
                 $worst = @($readings | Where-Object { $null -ne $_.HealthPercent } | Sort-Object { [int]$_.HealthPercent } | Select-Object -First 1)
 
                 if ($levels -contains "Warning") {
-                    $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'desgaste alto: a bateria segura só {0}% da carga original' "$($worst[0].HealthPercent)")
+                    $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'desgaste alto: a bateria segura só {0}% da carga original' "$($worst[0].HealthPercent)")
                 }
                 elseif (@($levels | Where-Object { $_ -ne "Success" }).Count -eq 0) {
-                    $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'bateria em bom estado ({0}% da carga de quando era nova)' "$($worst[0].HealthPercent)")
+                    $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'bateria em bom estado ({0}% da carga de quando era nova)' "$($worst[0].HealthPercent)")
                 }
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Ocorreu um erro ao consultar a bateria: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Ocorreu um erro ao consultar a bateria: {0}' "$($_.Exception.Message)")
         $result = $null
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
-function Get-WinForgeEventHint {
+function Get-TFToolkitEventHint {
     param (
         [string]$Provider,
         [int]$Id
@@ -2392,44 +2392,44 @@ function Get-WinForgeEventHint {
     $key = "$(([string]$Provider) -replace '^Microsoft-Windows-Ntfs$', 'Ntfs')|$Id"
 
     switch -Wildcard ($key) {
-        "Microsoft-Windows-Kernel-Power|41"          { return (Get-WinForgeText 'Reinício inesperado: o PC desligou sem passar pelo Windows (botão de ligar segurado, queda de energia, travamento ou superaquecimento).') }
-        "EventLog|6008"                               { return (Get-WinForgeText 'Reinício inesperado: o Windows não foi desligado direito da última vez (queda de energia, travamento ou botão de ligar segurado).') }
-        "Microsoft-Windows-WHEA-Logger|*"             { return (Get-WinForgeText 'O processador, a memória ou uma placa informou um erro de hardware. Se voltar a acontecer, pode ser calor, uma peça com defeito ou uma configuração acelerada (overclock).') }
-        "disk|7"                                      { return (Get-WinForgeText 'O disco tem uma parte com defeito (setor danificado). Faça backup e veja Diagnóstico > Saúde dos discos.') }
-        "disk|11"                                     { return (Get-WinForgeText 'Falha na ligação com o disco (cabo ou controladora). Veja Diagnóstico > Saúde dos discos.') }
-        "disk|51"                                     { return (Get-WinForgeText 'O disco demorou a responder. Veja Diagnóstico > Saúde dos discos.') }
-        "disk|153"                                    { return (Get-WinForgeText 'O disco precisou repetir uma leitura. Veja Diagnóstico > Saúde dos discos.') }
-        "Ntfs|55"                                     { return (Get-WinForgeText 'Corrupção no sistema de arquivos: o Windows achou dados danificados no disco. Use Reparo > Verificar o sistema de arquivos (CHKDSK).') }
-        "Ntfs|98"                                     { return (Get-WinForgeText 'O Windows achou erro na organização do disco. Use Reparo > Verificar o sistema de arquivos (CHKDSK).') }
-        "Microsoft-Windows-WER-SystemErrorReporting|1001" { return (Get-WinForgeText 'Tela azul registrada (o Windows parou com um erro grave e reiniciou). A causa provável está em Diagnóstico > Telas azuis.') }
-        "Display|4101"                                { return (Get-WinForgeText 'O driver de vídeo parou de responder e foi recuperado.') }
-        "Service Control Manager|700?"                { return (Get-WinForgeText 'Falha ao iniciar um serviço do Windows.') }
-        "Service Control Manager|7023"                { return (Get-WinForgeText 'Um serviço terminou com erro.') }
-        "Service Control Manager|7031"                { return (Get-WinForgeText 'Um serviço terminou inesperadamente.') }
-        "Service Control Manager|7034"                { return (Get-WinForgeText 'Um serviço terminou inesperadamente.') }
+        "Microsoft-Windows-Kernel-Power|41"          { return (Get-TFToolkitText 'Reinício inesperado: o PC desligou sem passar pelo Windows (botão de ligar segurado, queda de energia, travamento ou superaquecimento).') }
+        "EventLog|6008"                               { return (Get-TFToolkitText 'Reinício inesperado: o Windows não foi desligado direito da última vez (queda de energia, travamento ou botão de ligar segurado).') }
+        "Microsoft-Windows-WHEA-Logger|*"             { return (Get-TFToolkitText 'O processador, a memória ou uma placa informou um erro de hardware. Se voltar a acontecer, pode ser calor, uma peça com defeito ou uma configuração acelerada (overclock).') }
+        "disk|7"                                      { return (Get-TFToolkitText 'O disco tem uma parte com defeito (setor danificado). Faça backup e veja Diagnóstico > Saúde dos discos.') }
+        "disk|11"                                     { return (Get-TFToolkitText 'Falha na ligação com o disco (cabo ou controladora). Veja Diagnóstico > Saúde dos discos.') }
+        "disk|51"                                     { return (Get-TFToolkitText 'O disco demorou a responder. Veja Diagnóstico > Saúde dos discos.') }
+        "disk|153"                                    { return (Get-TFToolkitText 'O disco precisou repetir uma leitura. Veja Diagnóstico > Saúde dos discos.') }
+        "Ntfs|55"                                     { return (Get-TFToolkitText 'Corrupção no sistema de arquivos: o Windows achou dados danificados no disco. Use Reparo > Verificar o sistema de arquivos (CHKDSK).') }
+        "Ntfs|98"                                     { return (Get-TFToolkitText 'O Windows achou erro na organização do disco. Use Reparo > Verificar o sistema de arquivos (CHKDSK).') }
+        "Microsoft-Windows-WER-SystemErrorReporting|1001" { return (Get-TFToolkitText 'Tela azul registrada (o Windows parou com um erro grave e reiniciou). A causa provável está em Diagnóstico > Telas azuis.') }
+        "Display|4101"                                { return (Get-TFToolkitText 'O driver de vídeo parou de responder e foi recuperado.') }
+        "Service Control Manager|700?"                { return (Get-TFToolkitText 'Falha ao iniciar um serviço do Windows.') }
+        "Service Control Manager|7023"                { return (Get-TFToolkitText 'Um serviço terminou com erro.') }
+        "Service Control Manager|7031"                { return (Get-TFToolkitText 'Um serviço terminou inesperadamente.') }
+        "Service Control Manager|7034"                { return (Get-TFToolkitText 'Um serviço terminou inesperadamente.') }
         # Erros que quase todo PC registra e que, sem explicação, pareciam defeito: um componente do Windows que demorou
         # a responder (DCOM), uma conexão segura recusada por um site ou serviço (Schannel) e uma atualização que falhou
         # (o Windows Update tenta de novo sozinho).
-        "Microsoft-Windows-DistributedCOM|*"          { return (Get-WinForgeText 'Um componente do Windows (DCOM) não respondeu a tempo ou não pôde iniciar.') }
-        "Schannel|*"                                  { return (Get-WinForgeText 'Uma conexão segura (TLS) com um site ou serviço foi recusada.') }
-        "Microsoft-Windows-WindowsUpdateClient|20"    { return (Get-WinForgeText 'Uma atualização do Windows não foi instalada.') }
+        "Microsoft-Windows-DistributedCOM|*"          { return (Get-TFToolkitText 'Um componente do Windows (DCOM) não respondeu a tempo ou não pôde iniciar.') }
+        "Schannel|*"                                  { return (Get-TFToolkitText 'Uma conexão segura (TLS) com um site ou serviço foi recusada.') }
+        "Microsoft-Windows-WindowsUpdateClient|20"    { return (Get-TFToolkitText 'Uma atualização do Windows não foi instalada.') }
         default                                       { return "" }
     }
 }
 
 
-function Get-WinForgeEventNote {
+function Get-TFToolkitEventNote {
     # O que vem depois de uma causa conhecida que não pede atenção: quase sempre, que ela é comum e não tem consequência;
     # na atualização que falhou, o que fazer se ela continuar falhando.
     param ([string]$Provider, [int]$Id)
 
-    if ("$Provider|$Id" -eq "Microsoft-Windows-WindowsUpdateClient|20") { return (Get-WinForgeText 'o Windows tenta de novo; se continuar, use Atualizações > Corrigir o Windows Update') }
+    if ("$Provider|$Id" -eq "Microsoft-Windows-WindowsUpdateClient|20") { return (Get-TFToolkitText 'o Windows tenta de novo; se continuar, use Atualizações > Corrigir o Windows Update') }
 
-    return (Get-WinForgeText 'comum e quase sempre sem consequência')
+    return (Get-TFToolkitText 'comum e quase sempre sem consequência')
 }
 
 
-function Test-WinForgeEventHintSerious {
+function Test-TFToolkitEventHintSerious {
     <#
     Se a causa conhecida de um grupo de eventos pede atenção. Serviços que falham ao iniciar ou param (7000 a 7034), o
     driver de vídeo que se recuperou sozinho (4101), o DCOM, as conexões seguras recusadas (Schannel) e a atualização que
@@ -2443,11 +2443,11 @@ function Test-WinForgeEventHintSerious {
     if ([string]$Provider -in @("Service Control Manager", "Microsoft-Windows-DistributedCOM", "Schannel", "Microsoft-Windows-WindowsUpdateClient")) { return $false }
     if ([string]$Provider -eq "Display" -and $Id -eq 4101) { return $false }
 
-    return [bool](Get-WinForgeEventHint -Provider $Provider -Id $Id)
+    return [bool](Get-TFToolkitEventHint -Provider $Provider -Id $Id)
 }
 
 
-function Get-WinForgeEventCause {
+function Get-TFToolkitEventCause {
     # O que um grupo de eventos conta como causa, para não contar duas vezes o mesmo acontecimento: um desligamento
     # inesperado registra o Kernel-Power 41 e o EventLog 6008 juntos.
     param ([string]$Provider, [int]$Id)
@@ -2458,7 +2458,7 @@ function Get-WinForgeEventCause {
 }
 
 
-function Get-WinForgeEventCauseName {
+function Get-TFToolkitEventCauseName {
     # O nome curto de uma causa séria, para a frase do veredito ("2 problemas sérios: reinício inesperado e tela azul").
     # Os eventos do mesmo assunto têm o mesmo nome (os quatro do disco são "erro de disco") e contam uma vez.
     param ([string]$Provider, [int]$Id)
@@ -2466,19 +2466,19 @@ function Get-WinForgeEventCauseName {
     $key = "$(([string]$Provider) -replace '^Microsoft-Windows-Ntfs$', 'Ntfs')|$Id"
 
     switch -Wildcard ($key) {
-        "Microsoft-Windows-Kernel-Power|41" { return (Get-WinForgeText 'reinício inesperado') }
-        "EventLog|6008" { return (Get-WinForgeText 'reinício inesperado') }
-        "Microsoft-Windows-WHEA-Logger|*" { return (Get-WinForgeText 'erro de hardware') }
-        "disk|*" { return (Get-WinForgeText 'erro de disco') }
-        "Ntfs|*" { return (Get-WinForgeText 'erro no sistema de arquivos') }
-        "Microsoft-Windows-WER-SystemErrorReporting|1001" { return (Get-WinForgeText 'tela azul') }
+        "Microsoft-Windows-Kernel-Power|41" { return (Get-TFToolkitText 'reinício inesperado') }
+        "EventLog|6008" { return (Get-TFToolkitText 'reinício inesperado') }
+        "Microsoft-Windows-WHEA-Logger|*" { return (Get-TFToolkitText 'erro de hardware') }
+        "disk|*" { return (Get-TFToolkitText 'erro de disco') }
+        "Ntfs|*" { return (Get-TFToolkitText 'erro no sistema de arquivos') }
+        "Microsoft-Windows-WER-SystemErrorReporting|1001" { return (Get-TFToolkitText 'tela azul') }
     }
 
-    return (Get-WinForgeEventCause -Provider $Provider -Id $Id)
+    return (Get-TFToolkitEventCause -Provider $Provider -Id $Id)
 }
 
 
-function Get-WinForgeEventProviderText {
+function Get-TFToolkitEventProviderText {
     # A origem de um evento sem o prefixo "Microsoft-Windows-", que só alonga a linha ("Kernel-Power", "DistributedCOM").
     param (
         [AllowEmptyString()][string]$Provider = ""
@@ -2486,11 +2486,11 @@ function Get-WinForgeEventProviderText {
 
     $text = ($Provider -replace '^Microsoft-Windows-', '').Trim()
 
-    return $(if ($text) { $text } else { (Get-WinForgeText 'Origem desconhecida') })
+    return $(if ($text) { $text } else { (Get-TFToolkitText 'Origem desconhecida') })
 }
 
 
-function Format-WinForgeEventOccurrences {
+function Format-TFToolkitEventOccurrences {
     # "1 vez, em 23/10 05:37" ou "3 vezes, a última em 23/10 05:37" (a tela e o relatório usam a mesma frase).
     param (
         [Parameter(Mandatory)]
@@ -2498,19 +2498,19 @@ function Format-WinForgeEventOccurrences {
     )
 
     $count = [int]$Entry.Count
-    $times = $(if ($count -eq 1) { (Get-WinForgeText '1 vez') } else { (Get-WinForgeText '{0} vezes' "$(Format-WinForgeNumber -Value $count)") })
+    $times = $(if ($count -eq 1) { (Get-TFToolkitText '1 vez') } else { (Get-TFToolkitText '{0} vezes' "$(Format-TFToolkitNumber -Value $count)") })
 
     if (-not ($Entry.Last -is [datetime])) {
         return $times
     }
 
-    $when = Format-WinForgeDateTime -When $Entry.Last -Pattern (Get-WinForgeText 'dd/MM HH:mm')
+    $when = Format-TFToolkitDateTime -When $Entry.Last -Pattern (Get-TFToolkitText 'dd/MM HH:mm')
 
-    return $(if ($count -eq 1) { (Get-WinForgeText '{0}, em {1}' "$times" "$when") } else { (Get-WinForgeText '{0}, a última em {1}' "$times" "$when") })
+    return $(if ($count -eq 1) { (Get-TFToolkitText '{0}, em {1}' "$times" "$when") } else { (Get-TFToolkitText '{0}, a última em {1}' "$times" "$when") })
 }
 
 
-function ConvertTo-WinForgeEventSummary {
+function ConvertTo-TFToolkitEventSummary {
     <#
     Agrupa os eventos por origem e ID numa passada só: contagem, horário do mais recente e dica. Primeiro vêm os grupos
     com dica (causa conhecida), depois os mais frequentes e, no empate, os mais recentes.
@@ -2547,8 +2547,8 @@ function ConvertTo-WinForgeEventSummary {
     $summary = @($byKey.Values)
 
     foreach ($entry in $summary) {
-        $entry.Hint = Get-WinForgeEventHint -Provider $entry.Provider -Id $entry.Id
-        Add-Member -InputObject $entry -NotePropertyName Serious -NotePropertyValue (Test-WinForgeEventHintSerious -Provider $entry.Provider -Id $entry.Id) -Force
+        $entry.Hint = Get-TFToolkitEventHint -Provider $entry.Provider -Id $entry.Id
+        Add-Member -InputObject $entry -NotePropertyName Serious -NotePropertyValue (Test-TFToolkitEventHintSerious -Provider $entry.Provider -Id $entry.Id) -Force
     }
 
     # Primeiro o que pede atenção, depois o que tem explicação, depois o resto; em cada parte, os mais frequentes.
@@ -2558,7 +2558,7 @@ function ConvertTo-WinForgeEventSummary {
 }
 
 
-function Read-WinForgeEventLog {
+function Read-TFToolkitEventLog {
     <#
     Lê um log do Windows com uma consulta XPath, do mais novo para o mais antigo, até MaxEvents registros. Devolve só
     ProviderName, Id e TimeCreated: o Get-WinEvent monta o texto de cada evento (a parte lenta, que consulta as DLLs de
@@ -2601,7 +2601,7 @@ function Read-WinForgeEventLog {
 }
 
 
-function Get-WinForgeRecentCriticalEvents {
+function Get-TFToolkitRecentCriticalEvents {
     <#
     Eventos de nível Crítico e Erro do log do Sistema nos últimos dias. Log sem eventos devolve lista vazia; qualquer
     outra falha de leitura (serviço do log parado, acesso negado, RPC) é lançada, para quem chama não confundir "não consegui
@@ -2622,7 +2622,7 @@ function Get-WinForgeRecentCriticalEvents {
     $xpath = "*[System[((Level=1 or Level=2) or $warnings) and TimeCreated[timediff(@SystemTime) <= $window]]]"
 
     # Desembrulha uma lista que chegue dentro de outra (um item só que é a lista inteira).
-    $events = @(Read-WinForgeEventLog -LogName "System" -XPath $xpath -MaxEvents $MaxEvents | ForEach-Object { $_ })
+    $events = @(Read-TFToolkitEventLog -LogName "System" -XPath $xpath -MaxEvents $MaxEvents | ForEach-Object { $_ })
 
     # Um serviço com defeito pode encher o limite de leitura em poucas horas e empurrar para fora o desligamento
     # inesperado de ontem: com o limite cheio, uma segunda leitura, curta, só das origens que têm causa conhecida.
@@ -2632,12 +2632,12 @@ function Get-WinForgeRecentCriticalEvents {
         $seen = @{}
 
         foreach ($event in $events) {
-            $recordId = Get-WinForgeJsonValue -Object $event -Name "RecordId" -Default $null
+            $recordId = Get-TFToolkitJsonValue -Object $event -Name "RecordId" -Default $null
             if ($null -ne $recordId) { $seen[[string]$recordId] = $true }
         }
 
-        $extra = @(Read-WinForgeEventLog -LogName "System" -XPath $knownXPath -MaxEvents 500 | ForEach-Object { $_ } | Where-Object {
-                $recordId = Get-WinForgeJsonValue -Object $_ -Name "RecordId" -Default $null
+        $extra = @(Read-TFToolkitEventLog -LogName "System" -XPath $knownXPath -MaxEvents 500 | ForEach-Object { $_ } | Where-Object {
+                $recordId = Get-TFToolkitJsonValue -Object $_ -Name "RecordId" -Default $null
                 $null -eq $recordId -or -not $seen.ContainsKey([string]$recordId)
             })
 
@@ -2648,130 +2648,130 @@ function Get-WinForgeRecentCriticalEvents {
 }
 
 
-function Show-WinForgeCriticalEvents {
-    $title = (Get-WinForgeText 'Eventos críticos (7 dias)')
-    Enter-WinForgeAction -Title $title
+function Show-TFToolkitCriticalEvents {
+    $title = (Get-TFToolkitText 'Eventos críticos (7 dias)')
+    Enter-TFToolkitAction -Title $title
 
     $maxEvents = 3000
     $shownGroups = 12
 
     # O andamento vai na barra: uma linha "Lendo..." ficaria no resumo depois do fim.
-    Write-Progress -Activity $title -Status (Get-WinForgeText 'lendo os registros de erro do Windows')
+    Write-Progress -Activity $title -Status (Get-TFToolkitText 'lendo os registros de erro do Windows')
 
     try {
-        $events = @(Get-WinForgeRecentCriticalEvents -Days 7 -MaxEvents $maxEvents | ForEach-Object { $_ })
+        $events = @(Get-TFToolkitRecentCriticalEvents -Days 7 -MaxEvents $maxEvents | ForEach-Object { $_ })
     }
     catch {
         Write-Progress -Activity $title -Completed
         Write-Host ""
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível ler o log do Sistema: {0}' "$($_.Exception.Message)")
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Isto não quer dizer que não haja eventos. Abra o Visualizador de Eventos (eventvwr.msc) para conferir.')
-        Exit-WinForgeAction
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível ler o log do Sistema: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Isto não quer dizer que não haja eventos. Abra o Visualizador de Eventos (eventvwr.msc) para conferir.')
+        Exit-TFToolkitAction
         return
     }
 
     Write-Progress -Activity $title -Completed
 
-    $groups = @(ConvertTo-WinForgeEventSummary -Events $events -Top ([int]::MaxValue))
+    $groups = @(ConvertTo-TFToolkitEventSummary -Events $events -Top ([int]::MaxValue))
     $summary = @($groups | Select-Object -First $shownGroups)
     $result = $null
 
     Write-Host ""
 
     if ($summary.Count -eq 0) {
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum evento crítico ou de erro nos últimos 7 dias.')
-        $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum evento crítico ou de erro nos últimos 7 dias')
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum evento crítico ou de erro nos últimos 7 dias.')
+        $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum evento crítico ou de erro nos últimos 7 dias')
     }
     else {
         # Os avisos lidos (disco 51 e 153, vídeo 4101) contam à parte: não são erros.
         $warningCount = @($events | Where-Object { ("$($_.ProviderName)|$($_.Id)") -in @("disk|51", "disk|153", "Display|4101") }).Count
         $errorCount = $events.Count - $warningCount
         $parts = @()
-        if ($errorCount -gt 0) { $parts += $(if ($errorCount -eq 1) { (Get-WinForgeText '1 evento de erro ou crítico') } else { (Get-WinForgeText '{0} eventos de erro ou críticos' "$(Format-WinForgeNumber -Value $errorCount)") }) }
-        if ($warningCount -gt 0) { $parts += $(if ($warningCount -eq 1) { (Get-WinForgeText '1 aviso do disco ou do vídeo') } else { (Get-WinForgeText '{0} avisos do disco ou do vídeo' "$(Format-WinForgeNumber -Value $warningCount)") }) }
-        $total = Join-WinForgeList -Items $parts
-        if ($events.Count -ge $maxEvents) { $total = (Get-WinForgeText 'Pelo menos {0} (limite de leitura)' "$total") }
+        if ($errorCount -gt 0) { $parts += $(if ($errorCount -eq 1) { (Get-TFToolkitText '1 evento de erro ou crítico') } else { (Get-TFToolkitText '{0} eventos de erro ou críticos' "$(Format-TFToolkitNumber -Value $errorCount)") }) }
+        if ($warningCount -gt 0) { $parts += $(if ($warningCount -eq 1) { (Get-TFToolkitText '1 aviso do disco ou do vídeo') } else { (Get-TFToolkitText '{0} avisos do disco ou do vídeo' "$(Format-TFToolkitNumber -Value $warningCount)") }) }
+        $total = Join-TFToolkitList -Items $parts
+        if ($events.Count -ge $maxEvents) { $total = (Get-TFToolkitText 'Pelo menos {0} (limite de leitura)' "$total") }
 
         # O que pede atenção, contado e dito por causa: o desligamento inesperado (41 e 6008 juntos) conta uma vez, e os
         # erros do disco também.
-        $causes = @($groups | Where-Object { $_.Serious } | ForEach-Object { Get-WinForgeEventCauseName -Provider $_.Provider -Id $_.Id } | Select-Object -Unique)
+        $causes = @($groups | Where-Object { $_.Serious } | ForEach-Object { Get-TFToolkitEventCauseName -Provider $_.Provider -Id $_.Id } | Select-Object -Unique)
 
         if ($causes.Count -gt 0) {
-            $knownText = "$(Format-WinForgeCount -Count $causes.Count -One (Get-WinForgeText 'problema sério') -Many (Get-WinForgeText 'problemas sérios')): $(Join-WinForgeList -Items $causes)"
-            Write-WinForgeStatus -Type Warning -Message "${knownText}."
-            $result = New-WinForgeResult -Kind Warning -Detail $knownText
+            $knownText = "$(Format-TFToolkitCount -Count $causes.Count -One (Get-TFToolkitText 'problema sério') -Many (Get-TFToolkitText 'problemas sérios')): $(Join-TFToolkitList -Items $causes)"
+            Write-TFToolkitStatus -Type Warning -Message "${knownText}."
+            $result = New-TFToolkitResult -Kind Warning -Detail $knownText
 
             # O botão da faixa leva ao que a explicação manda ver, pela ordem do mais grave: a tela azul (a causa provável
             # dela), os erros do disco (a saúde dele), o sistema de arquivos (o CHKDSK) e o erro de hardware (o teste de
             # memória). O desligamento inesperado não tem tela que resolva: sem botão.
             $serious = @($groups | Where-Object { $_.Serious } | ForEach-Object { "$(([string]$_.Provider) -replace '^Microsoft-Windows-Ntfs$', 'Ntfs')|$($_.Id)" })
             $next = $(
-                if ($serious -contains "Microsoft-Windows-WER-SystemErrorReporting|1001") { @("diagnostics.blue-screens", (Get-WinForgeText 'Ver as telas azuis')) }
-                elseif (@($serious | Where-Object { $_ -like "disk|*" }).Count -gt 0) { @("diagnostics.disk-health", (Get-WinForgeText 'Ver a saúde dos discos')) }
-                elseif (@($serious | Where-Object { $_ -like "Ntfs|*" }).Count -gt 0) { @("repair.chkdsk", (Get-WinForgeText 'Verificar o disco')) }
-                elseif (@($serious | Where-Object { $_ -like "Microsoft-Windows-WHEA-Logger|*" }).Count -gt 0) { @("diagnostics.memory-test", (Get-WinForgeText 'Testar a memória')) }
+                if ($serious -contains "Microsoft-Windows-WER-SystemErrorReporting|1001") { @("diagnostics.blue-screens", (Get-TFToolkitText 'Ver as telas azuis')) }
+                elseif (@($serious | Where-Object { $_ -like "disk|*" }).Count -gt 0) { @("diagnostics.disk-health", (Get-TFToolkitText 'Ver a saúde dos discos')) }
+                elseif (@($serious | Where-Object { $_ -like "Ntfs|*" }).Count -gt 0) { @("repair.chkdsk", (Get-TFToolkitText 'Verificar o disco')) }
+                elseif (@($serious | Where-Object { $_ -like "Microsoft-Windows-WHEA-Logger|*" }).Count -gt 0) { @("diagnostics.memory-test", (Get-TFToolkitText 'Testar a memória')) }
                 else { @() }
             )
 
             if ($next.Count -eq 2) {
-                [void](Set-WinForgeResultView -Result $result -Next $next[0] -NextLabel $next[1])
+                [void](Set-TFToolkitResultView -Result $result -Next $next[0] -NextLabel $next[1])
             }
         }
         else {
             # Quase todo PC registra erros assim toda semana: sem uma conclusão, "120 erros" faria a pessoa achar que o PC
             # está quebrado.
-            $count = Format-WinForgeNumber -Value $events.Count
+            $count = Format-TFToolkitNumber -Value $events.Count
             $common = $(
-                if ($events.Count -ge $maxEvents) { (Get-WinForgeText 'pelo menos {0} erros comuns do Windows' "$count") }
-                elseif ($events.Count -eq 1) { (Get-WinForgeText '1 erro comum do Windows') }
-                else { (Get-WinForgeText '{0} erros comuns do Windows' "$count") }
+                if ($events.Count -ge $maxEvents) { (Get-TFToolkitText 'pelo menos {0} erros comuns do Windows' "$count") }
+                elseif ($events.Count -eq 1) { (Get-TFToolkitText '1 erro comum do Windows') }
+                else { (Get-TFToolkitText '{0} erros comuns do Windows' "$count") }
             )
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhum problema sério nos últimos 7 dias. Os erros abaixo aparecem em quase todo PC e não pedem nada.')
-            $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhum problema sério; {0}' "$common")
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhum problema sério nos últimos 7 dias. Os erros abaixo aparecem em quase todo PC e não pedem nada.')
+            $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhum problema sério; {0}' "$common")
         }
 
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText '{0} nos últimos 7 dias, em {1}.' "$total" "$(Format-WinForgeCount -Count $groups.Count -One (Get-WinForgeText 'grupo') -Many (Get-WinForgeText 'grupos'))")
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText '{0} nos últimos 7 dias, em {1}.' "$total" "$(Format-TFToolkitCount -Count $groups.Count -One (Get-TFToolkitText 'grupo') -Many (Get-TFToolkitText 'grupos'))")
 
         # Cada grupo numa linha que a janela também mostra no resumo: o de causa conhecida vira um aviso com a explicação;
         # os outros, uma linha "origem (ID) : quantas vezes". O desligamento inesperado registra dois eventos (Kernel-Power
         # 41 e EventLog 6008): os dois viram uma linha só, com a contagem do que tiver mais registros.
-        Write-WinForgeSection -Title (Get-WinForgeText 'Eventos por origem')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Eventos por origem')
 
-        $shutdown = @($summary | Where-Object { (Get-WinForgeEventCause -Provider $_.Provider -Id $_.Id) -eq "desligamento-inesperado" })
+        $shutdown = @($summary | Where-Object { (Get-TFToolkitEventCause -Provider $_.Provider -Id $_.Id) -eq "desligamento-inesperado" })
         $shutdownShown = $false
 
         foreach ($item in $summary) {
-            $provider = Get-WinForgeEventProviderText -Provider $item.Provider
-            $times = Format-WinForgeEventOccurrences -Entry $item
+            $provider = Get-TFToolkitEventProviderText -Provider $item.Provider
+            $times = Format-TFToolkitEventOccurrences -Entry $item
 
             if ($shutdown.Count -gt 1 -and @($shutdown) -contains $item) {
                 if ($shutdownShown) { continue }
                 $shutdownShown = $true
 
                 $main = @($shutdown | Sort-Object -Property @{ Expression = { [int]$_.Count }; Descending = $true }, @{ Expression = { [int]$_.Id -ne 41 } })[0]
-                $ids = @($shutdown | Sort-Object -Property @{ Expression = { [int]$_.Id -ne 41 } } | ForEach-Object { "$(Get-WinForgeEventProviderText -Provider $_.Provider), ID $($_.Id)" }) -join "; "
-                Write-WinForgeStatus -Type Warning -Message "$((Get-WinForgeEventHint -Provider 'Microsoft-Windows-Kernel-Power' -Id 41)) $(Format-WinForgeEventOccurrences -Entry $main) ($ids)."
+                $ids = @($shutdown | Sort-Object -Property @{ Expression = { [int]$_.Id -ne 41 } } | ForEach-Object { "$(Get-TFToolkitEventProviderText -Provider $_.Provider), ID $($_.Id)" }) -join "; "
+                Write-TFToolkitStatus -Type Warning -Message "$((Get-TFToolkitEventHint -Provider 'Microsoft-Windows-Kernel-Power' -Id 41)) $(Format-TFToolkitEventOccurrences -Entry $main) ($ids)."
                 continue
             }
 
-            if ($item.Hint -and [bool](Get-WinForgeJsonValue -Object $item -Name "Serious" -Default $true)) {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0} {1} ({2}, ID {3}).' "$($item.Hint)" "$times" "$provider" "$($item.Id)")
+            if ($item.Hint -and [bool](Get-TFToolkitJsonValue -Object $item -Name "Serious" -Default $true)) {
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0} {1} ({2}, ID {3}).' "$($item.Hint)" "$times" "$provider" "$($item.Id)")
             }
             elseif ($item.Hint) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText '{0} {1} ({2}, ID {3}); {4}.' "$($item.Hint)" "$times" "$provider" "$($item.Id)" "$(Get-WinForgeEventNote -Provider $item.Provider -Id $item.Id)")
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText '{0} {1} ({2}, ID {3}); {4}.' "$($item.Hint)" "$times" "$provider" "$($item.Id)" "$(Get-TFToolkitEventNote -Provider $item.Provider -Id $item.Id)")
             }
             else {
-                Write-WinForgeKeyValue -Label (Get-WinForgeText '{0} (ID {1})' "$provider" "$($item.Id)") -Value $times
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText '{0} (ID {1})' "$provider" "$($item.Id)") -Value $times
             }
         }
 
         if ($groups.Count -gt $summary.Count) {
             Write-Host ""
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Mais {0}; o Visualizador de Eventos (eventvwr.msc) mostra a lista completa.' "$(Format-WinForgeCount -Count ($groups.Count - $summary.Count) -One (Get-WinForgeText 'grupo menos relevante') -Many (Get-WinForgeText 'grupos menos relevantes'))")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Mais {0}; o Visualizador de Eventos (eventvwr.msc) mostra a lista completa.' "$(Format-TFToolkitCount -Count ($groups.Count - $summary.Count) -One (Get-TFToolkitText 'grupo menos relevante') -Many (Get-TFToolkitText 'grupos menos relevantes'))")
         }
     }
 
-    Exit-WinForgeAction -Result $result
+    Exit-TFToolkitAction -Result $result
 }
 
 
@@ -2779,8 +2779,8 @@ function Show-WinForgeCriticalEvents {
 # Telas azuis (Diagnóstico > Telas azuis) e teste de memória (Diagnóstico > Teste de memória)
 # ---------------------------------------------------------------------------
 
-function Read-WinForgeEventRecords {
-    # Como Read-WinForgeEventLog, com o nível e os valores de cada registro (Values, como texto): o código de uma tela
+function Read-TFToolkitEventRecords {
+    # Como Read-TFToolkitEventLog, com o nível e os valores de cada registro (Values, como texto): o código de uma tela
     # azul vem nos valores, e não no texto do evento, que muda com o idioma do Windows.
     param (
         [Parameter(Mandatory)][string]$LogName,
@@ -2817,10 +2817,10 @@ function Read-WinForgeEventRecords {
 }
 
 
-function Get-WinForgeBugCheckInfo {
+function Get-TFToolkitBugCheckInfo {
     <#
     O que costuma causar uma tela azul, pelo código (o "stop code" do Windows): Name (o nome do código), Cause (memory,
-    driver, video, disk, system, hardware ou unknown) e Next (o item do WinForge que ajuda). Os códigos mais comuns em PCs
+    driver, video, disk, system, hardware ou unknown) e Next (o item do TF-Toolkit que ajuda). Os códigos mais comuns em PCs
     de casa; um código fora da lista fica com a causa desconhecida e o reparo do Windows como próximo passo.
     #>
     param ([Parameter(Mandatory)][uint32]$Code)
@@ -2881,26 +2881,26 @@ function Get-WinForgeBugCheckInfo {
 }
 
 
-function Get-WinForgeBugCheckCauseText {
+function Get-TFToolkitBugCheckCauseText {
     # A causa provável numa frase curta, e o que fazer.
     param ([Parameter(Mandatory)][string]$Cause)
 
     switch ($Cause) {
-        "memory" { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'a memória (RAM)'); Advice = (Get-WinForgeText 'Faça o teste de memória do Windows.') } }
-        "hardware" { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'o hardware: memória, processador ou superaquecimento'); Advice = (Get-WinForgeText 'Faça o teste de memória; se o PC estiver com overclock, desfaça.') } }
-        "driver" { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'um driver'); Advice = (Get-WinForgeText 'Atualize os drivers, principalmente os de rede, vídeo e chipset.') } }
-        "video" { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'o driver da placa de vídeo'); Advice = (Get-WinForgeText 'Atualize o driver de vídeo.') } }
-        "disk" { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'o disco ou a ligação com ele'); Advice = (Get-WinForgeText 'Confira a saúde dos discos e faça backup.') } }
-        "system" { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'arquivos do Windows danificados'); Advice = (Get-WinForgeText 'Repare os arquivos do Windows.') } }
-        default { return [PSCustomObject]@{ Cause = (Get-WinForgeText 'não identificada pelo código'); Advice = (Get-WinForgeText 'Repare os arquivos do Windows e atualize os drivers.') } }
+        "memory" { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'a memória (RAM)'); Advice = (Get-TFToolkitText 'Faça o teste de memória do Windows.') } }
+        "hardware" { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'o hardware: memória, processador ou superaquecimento'); Advice = (Get-TFToolkitText 'Faça o teste de memória; se o PC estiver com overclock, desfaça.') } }
+        "driver" { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'um driver'); Advice = (Get-TFToolkitText 'Atualize os drivers, principalmente os de rede, vídeo e chipset.') } }
+        "video" { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'o driver da placa de vídeo'); Advice = (Get-TFToolkitText 'Atualize o driver de vídeo.') } }
+        "disk" { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'o disco ou a ligação com ele'); Advice = (Get-TFToolkitText 'Confira a saúde dos discos e faça backup.') } }
+        "system" { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'arquivos do Windows danificados'); Advice = (Get-TFToolkitText 'Repare os arquivos do Windows.') } }
+        default { return [PSCustomObject]@{ Cause = (Get-TFToolkitText 'não identificada pelo código'); Advice = (Get-TFToolkitText 'Repare os arquivos do Windows e atualize os drivers.') } }
     }
 }
 
 
-function Get-WinForgeBlueScreens {
+function Get-TFToolkitBlueScreens {
     <#
     As telas azuis dos últimos Days dias, da mais nova para a mais antiga: When, Code (número) e Info
-    (Get-WinForgeBugCheckInfo). Vêm do registro que o Windows grava ao voltar de uma tela azul (WER, 1001) e, sem ele,
+    (Get-TFToolkitBugCheckInfo). Vêm do registro que o Windows grava ao voltar de uma tela azul (WER, 1001) e, sem ele,
     do reinício inesperado com o código da tela azul (Kernel-Power 41). As duas leituras do mesmo travamento contam uma
     vez: o 1001 sai depois do 41 daquele reinício e antes do próximo 41, com o mesmo código, mesmo que demore (dump
     grande, PC lento, a pessoa demorando a entrar).
@@ -2910,7 +2910,7 @@ function Get-WinForgeBlueScreens {
     $window = [int64]([TimeSpan]::FromDays($Days).TotalMilliseconds)
     $found = @()
 
-    $wer = @(Read-WinForgeEventRecords -LogName "System" -XPath "*[System[Provider[@Name='Microsoft-Windows-WER-SystemErrorReporting'] and EventID=1001 and TimeCreated[timediff(@SystemTime) <= $window]]]" | ForEach-Object { $_ })
+    $wer = @(Read-TFToolkitEventRecords -LogName "System" -XPath "*[System[Provider[@Name='Microsoft-Windows-WER-SystemErrorReporting'] and EventID=1001 and TimeCreated[timediff(@SystemTime) <= $window]]]" | ForEach-Object { $_ })
 
     foreach ($event in $wer) {
         # O primeiro valor é "0x0000009f (0x..., 0x..., ...)": o código vem antes do parêntese.
@@ -2920,7 +2920,7 @@ function Get-WinForgeBlueScreens {
         if ($match.Success) { $found += [PSCustomObject]@{ When = $event.TimeCreated; Code = [Convert]::ToUInt32($match.Groups[1].Value, 16) } }
     }
 
-    $power = @(Read-WinForgeEventRecords -LogName "System" -XPath "*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and EventID=41 and TimeCreated[timediff(@SystemTime) <= $window]]]" | ForEach-Object { $_ })
+    $power = @(Read-TFToolkitEventRecords -LogName "System" -XPath "*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and EventID=41 and TimeCreated[timediff(@SystemTime) <= $window]]]" | ForEach-Object { $_ })
 
     # Cada reinício inesperado (41), do mais antigo ao mais novo. BugcheckCode é o primeiro valor do evento; zero é um
     # desligamento sem tela azul (energia, botão), que só marca onde um reinício começa.
@@ -2956,12 +2956,12 @@ function Get-WinForgeBlueScreens {
         if ($match -ge 0) { [void]$used.Add($match) } else { $found += $boot }
     }
 
-    return @($found | Sort-Object When -Descending | ForEach-Object { [PSCustomObject]@{ When = $_.When; Code = $_.Code; Info = (Get-WinForgeBugCheckInfo -Code $_.Code) } })
+    return @($found | Sort-Object When -Descending | ForEach-Object { [PSCustomObject]@{ When = $_.When; Code = $_.Code; Info = (Get-TFToolkitBugCheckInfo -Code $_.Code) } })
 }
 
 
-function Get-WinForgeBlueScreenMainCause {
-    # A causa mais frequente das telas azuis (empate: a da mais recente), como Get-WinForgeBugCheckInfo. $null sem nenhuma.
+function Get-TFToolkitBlueScreenMainCause {
+    # A causa mais frequente das telas azuis (empate: a da mais recente), como Get-TFToolkitBugCheckInfo. $null sem nenhuma.
     param ([object[]]$Screens = @())
 
     if (@($Screens).Count -eq 0) { return $null }
@@ -2974,25 +2974,25 @@ function Get-WinForgeBlueScreenMainCause {
 }
 
 
-function Show-WinForgeBlueScreens {
-    $title = (Get-WinForgeText 'Telas azuis')
-    Enter-WinForgeAction -Title $title
+function Show-TFToolkitBlueScreens {
+    $title = (Get-TFToolkitText 'Telas azuis')
+    Enter-TFToolkitAction -Title $title
 
     $final = $null
 
     try {
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'lendo os registros de erro do Windows')
-        $screens = @(Get-WinForgeBlueScreens -Days 90)
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'lendo os registros de erro do Windows')
+        $screens = @(Get-TFToolkitBlueScreens -Days 90)
         Write-Progress -Activity $title -Completed
         Write-Host ""
 
         if ($screens.Count -eq 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhuma tela azul nos últimos 90 dias.')
-            $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhuma tela azul em 90 dias') -Title $title) `
-                -Headline (Get-WinForgeText 'Nenhuma tela azul em 90 dias') -Note (Get-WinForgeText 'O Windows não registrou nenhuma parada com erro grave nesse período.')
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhuma tela azul nos últimos 90 dias.')
+            $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhuma tela azul em 90 dias') -Title $title) `
+                -Headline (Get-TFToolkitText 'Nenhuma tela azul em 90 dias') -Note (Get-TFToolkitText 'O Windows não registrou nenhuma parada com erro grave nesse período.')
         }
         else {
-            Write-WinForgeSection -Title (Get-WinForgeText 'Últimos 90 dias')
+            Write-TFToolkitSection -Title (Get-TFToolkitText 'Últimos 90 dias')
 
             # Um código por linha, com quantas vezes e a última, como nos Eventos críticos: o mesmo travamento repetido
             # dez vezes eram dez linhas com a mesma causa e o mesmo conselho. A causa vem embaixo do primeiro código que a
@@ -3001,46 +3001,46 @@ function Show-WinForgeBlueScreens {
 
             foreach ($group in @($screens | Group-Object -Property { [uint32]$_.Code } | Sort-Object -Property @{ Expression = { @($_.Group | Sort-Object When -Descending)[0].When }; Descending = $true } | Select-Object -First 15)) {
                 $latest = @($group.Group | Sort-Object When -Descending)[0]
-                $about = Get-WinForgeBugCheckCauseText -Cause $latest.Info.Cause
-                $times = Format-WinForgeEventOccurrences -Entry ([PSCustomObject]@{ Count = $group.Count; Last = $latest.When })
+                $about = Get-TFToolkitBugCheckCauseText -Cause $latest.Info.Cause
+                $times = Format-TFToolkitEventOccurrences -Entry ([PSCustomObject]@{ Count = $group.Count; Last = $latest.When })
 
-                Write-WinForgeKeyValue -Label ("0x{0:X8}" -f [uint32]$latest.Code) -Value $(if ($latest.Info.Name) { "$($latest.Info.Name) · $times" } else { $times }) -LabelWidth 12
+                Write-TFToolkitKeyValue -Label ("0x{0:X8}" -f [uint32]$latest.Code) -Value $(if ($latest.Info.Name) { "$($latest.Info.Name) · $times" } else { $times }) -LabelWidth 12
 
                 if (-not $explained.ContainsKey([string]$latest.Info.Cause)) {
                     $explained[[string]$latest.Info.Cause] = $true
-                    Write-WinForgeStatus -Type Info -Notice -Message (Get-WinForgeText 'Causa provável: {0}. {1}' "$($about.Cause)" "$($about.Advice)")
+                    Write-TFToolkitStatus -Type Info -Notice -Message (Get-TFToolkitText 'Causa provável: {0}. {1}' "$($about.Cause)" "$($about.Advice)")
                 }
             }
 
             # A causa mais frequente decide o próximo passo da faixa (empate: a da tela azul mais recente).
-            $main = Get-WinForgeBlueScreenMainCause -Screens $screens
-            $about = Get-WinForgeBugCheckCauseText -Cause $main.Cause
-            $item = Get-WinForgeNavItem -Id $main.Next
-            $count = Format-WinForgeCount -Count $screens.Count -One (Get-WinForgeText 'tela azul') -Many (Get-WinForgeText 'telas azuis')
+            $main = Get-TFToolkitBlueScreenMainCause -Screens $screens
+            $about = Get-TFToolkitBugCheckCauseText -Cause $main.Cause
+            $item = Get-TFToolkitNavItem -Id $main.Next
+            $count = Format-TFToolkitCount -Count $screens.Count -One (Get-TFToolkitText 'tela azul') -Many (Get-TFToolkitText 'telas azuis')
 
             Write-Host ""
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText '{0} em 90 dias. Causa mais provável: {1}.' "$count" "$($about.Cause)")
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText '{0} em 90 dias. Causa mais provável: {1}.' "$count" "$($about.Cause)")
 
-            $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText '{0} em 90 dias; causa mais provável: {1}' "$count" "$($about.Cause)") -Title $title) `
-                -Headline (Get-WinForgeText '{0} em 90 dias' "$count") -Note (Get-WinForgeText 'Causa mais provável: {0}. {1}' "$($about.Cause)" "$($about.Advice)") `
+            $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText '{0} em 90 dias; causa mais provável: {1}' "$count" "$($about.Cause)") -Title $title) `
+                -Headline (Get-TFToolkitText '{0} em 90 dias' "$count") -Note (Get-TFToolkitText 'Causa mais provável: {0}. {1}' "$($about.Cause)" "$($about.Advice)") `
                 -Next $main.Next -NextLabel $(if ($null -ne $item) { [string]$item.Label } else { "" })
         }
     }
     catch {
         Write-Progress -Activity $title -Completed
         Write-Host ""
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível ler o log do Sistema: {0}' "$($_.Exception.Message)")
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Isto não quer dizer que não haja telas azuis. Abra o Visualizador de Eventos (eventvwr.msc) para conferir.')
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível ler o log do Sistema: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Isto não quer dizer que não haja telas azuis. Abra o Visualizador de Eventos (eventvwr.msc) para conferir.')
 
         # A faixa sai do aviso acima, como nos Eventos críticos: a frase inteira, e não só a mensagem crua do Windows.
         $final = $null
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
-function Get-WinForgeMemoryTestResult {
+function Get-TFToolkitMemoryTestResult {
     <#
     O resultado mais recente do Diagnóstico de Memória do Windows (o teste roda no reinício e o Windows grava o resultado
     no log do Sistema ao voltar): When e Errors (o teste achou erros: o evento 1202, ou um evento de erro ou de aviso), ou
@@ -3049,7 +3049,7 @@ function Get-WinForgeMemoryTestResult {
     param ([int]$Days = 365)
 
     $window = [int64]([TimeSpan]::FromDays($Days).TotalMilliseconds)
-    $record = @(Read-WinForgeEventRecords -LogName "System" -XPath "*[System[Provider[@Name='Microsoft-Windows-MemoryDiagnostics-Results'] and TimeCreated[timediff(@SystemTime) <= $window]]]" -MaxEvents 1 | ForEach-Object { $_ })[0]
+    $record = @(Read-TFToolkitEventRecords -LogName "System" -XPath "*[System[Provider[@Name='Microsoft-Windows-MemoryDiagnostics-Results'] and TimeCreated[timediff(@SystemTime) <= $window]]]" -MaxEvents 1 | ForEach-Object { $_ })[0]
 
     if ($null -eq $record) { return $null }
 
@@ -3057,11 +3057,11 @@ function Get-WinForgeMemoryTestResult {
 }
 
 
-function Get-WinForgeSettingDate {
+function Get-TFToolkitSettingDate {
     # Uma data guardada nas preferências (no formato "o"), ou $null.
     param ([Parameter(Mandatory)][string]$Name)
 
-    $value = Get-WinForgeSetting -Name $Name -Default ""
+    $value = Get-TFToolkitSetting -Name $Name -Default ""
     $when = [datetime]::MinValue
 
     if ($value -is [datetime]) { return $value }
@@ -3071,70 +3071,70 @@ function Get-WinForgeSettingDate {
 }
 
 
-function Get-WinForgeMemoryTestPendingSince {
-    # Quando o teste de memória foi pedido pelo WinForge e ainda não teve resultado, ou $null.
-    return (Get-WinForgeSettingDate -Name "MemoryTestRequestedAt")
+function Get-TFToolkitMemoryTestPendingSince {
+    # Quando o teste de memória foi pedido pelo TF-Toolkit e ainda não teve resultado, ou $null.
+    return (Get-TFToolkitSettingDate -Name "MemoryTestRequestedAt")
 }
 
 
-function Start-WinForgeMemoryTest {
-    $title = (Get-WinForgeText 'Teste de memória')
-    Enter-WinForgeAction -Title $title
+function Start-TFToolkitMemoryTest {
+    $title = (Get-TFToolkitText 'Teste de memória')
+    Enter-TFToolkitAction -Title $title
 
     $final = $null
 
     try {
         $last = $null
-        try { $last = Get-WinForgeMemoryTestResult } catch { $last = $null }
+        try { $last = Get-TFToolkitMemoryTestResult } catch { $last = $null }
 
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O Diagnóstico de Memória do Windows testa a memória (RAM) no reinício: leva uns 15 minutos, e o PC volta sozinho para o Windows no fim. O WinForge lê o resultado depois.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O Diagnóstico de Memória do Windows testa a memória (RAM) no reinício: leva uns 15 minutos, e o PC volta sozinho para o Windows no fim. O TF-Toolkit lê o resultado depois.')
         Write-Host ""
 
         if ($null -ne $last) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Último teste') -Value (Format-WinForgeDateTime -When $last.When)
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Resultado') -Value $(if ($last.Errors) { (Get-WinForgeText 'encontrou erros na memória') } else { (Get-WinForgeText 'nenhum erro') }) -Level $(if ($last.Errors) { "Bad" } else { "Ok" })
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Último teste') -Value (Format-TFToolkitDateTime -When $last.When)
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Resultado') -Value $(if ($last.Errors) { (Get-TFToolkitText 'encontrou erros na memória') } else { (Get-TFToolkitText 'nenhum erro') }) -Level $(if ($last.Errors) { "Bad" } else { "Ok" })
             Write-Host ""
 
             if ($last.Errors) {
-                Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Erros na memória causam telas azuis e travamentos. Leve o PC a um técnico ou troque o pente de memória com defeito (testando um pente de cada vez).')
+                Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Erros na memória causam telas azuis e travamentos. Leve o PC a um técnico ou troque o pente de memória com defeito (testando um pente de cada vez).')
                 Write-Host ""
             }
         }
 
-        $pending = Get-WinForgeMemoryTestPendingSince
+        $pending = Get-TFToolkitMemoryTestPendingSince
 
         if ($null -ne $pending -and ($null -eq $last -or $last.When -lt $pending)) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O teste foi pedido em {0} e ainda não rodou: ele roda no próximo reinício, se você escolheu reiniciar depois.' "$(Format-WinForgeDateTime -When $pending)")
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O teste foi pedido em {0} e ainda não rodou: ele roda no próximo reinício, se você escolheu reiniciar depois.' "$(Format-TFToolkitDateTime -When $pending)")
             Write-Host ""
         }
 
         # Com um teste recente sem erros (o aviso do monitor traz para cá), Enter não abre a ferramenta de novo.
         $recent = ($null -ne $last -and -not $last.Errors -and ((Get-Date) - $last.When).TotalDays -le 30)
 
-        if (-not (Confirm-WinForgeAction -Message (Get-WinForgeText 'Abrir o Diagnóstico de Memória do Windows?') -DefaultKey $(if ($recent) { "N" } else { "S" }) -YesLabel (Get-WinForgeText 'Abrir') -NoLabel (Get-WinForgeText 'Agora não'))) {
+        if (-not (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Abrir o Diagnóstico de Memória do Windows?') -DefaultKey $(if ($recent) { "N" } else { "S" }) -YesLabel (Get-TFToolkitText 'Abrir') -NoLabel (Get-TFToolkitText 'Agora não'))) {
             # Com um teste já lido, dizer "não" é ficar com o que a tela mostrou, e não uma desistência: a faixa sai do
             # que foi mostrado (os erros do último teste continuam como ressalva). Sem teste, é um cancelamento.
-            $final = $(if ($null -ne $last -and ($last.Errors -or $recent)) { $null } else { New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title })
+            $final = $(if ($null -ne $last -and ($last.Errors -or $recent)) { $null } else { New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title })
         }
         else {
             $tool = Join-Path $env:SystemRoot "System32\mdsched.exe"
 
-            if (-not (Test-Path -LiteralPath $tool -PathType Leaf)) { throw (Get-WinForgeText 'o Diagnóstico de Memória do Windows (mdsched.exe) não está neste Windows') }
+            if (-not (Test-Path -LiteralPath $tool -PathType Leaf)) { throw (Get-TFToolkitText 'o Diagnóstico de Memória do Windows (mdsched.exe) não está neste Windows') }
 
             Start-Process -FilePath $tool -ErrorAction Stop
-            [void](Set-WinForgeSetting -Name "MemoryTestRequestedAt" -Value ((Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)))
+            [void](Set-TFToolkitSetting -Name "MemoryTestRequestedAt" -Value ((Get-Date).ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)))
 
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Na janela do Windows, escolha Reiniciar agora e verificar (salve o que estiver aberto antes) ou Verificar na próxima vez que eu iniciar o computador.')
-            $final = Set-WinForgeResultView -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'Diagnóstico de Memória aberto; o resultado aparece depois do reinício') -Title $title) `
-                -Headline (Get-WinForgeText 'Escolha quando testar') -Note (Get-WinForgeText 'O teste roda no reinício. Com o monitor na bandeja ligado, o resultado aparece sozinho; senão, abra esta tela de novo.')
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Na janela do Windows, escolha Reiniciar agora e verificar (salve o que estiver aberto antes) ou Verificar na próxima vez que eu iniciar o computador.')
+            $final = Set-TFToolkitResultView -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'Diagnóstico de Memória aberto; o resultado aparece depois do reinício') -Title $title) `
+                -Headline (Get-TFToolkitText 'Escolha quando testar') -Note (Get-TFToolkitText 'O teste roda no reinício. Com o monitor na bandeja ligado, o resultado aparece sozinho; senão, abra esta tela de novo.')
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível abrir o teste de memória: {0}' "$(([string]$_.Exception.Message).TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail ([string]$_.Exception.Message).TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível abrir o teste de memória: {0}' "$(([string]$_.Exception.Message).TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail ([string]$_.Exception.Message).TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 

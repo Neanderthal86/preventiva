@@ -2,44 +2,44 @@
 
 ## Build 4.0
 
-A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar com um clique e a se desinstalar como um programa do Windows, e ganha um tema só para as novidades, **o WinForge avisa antes do problema**.
-- **Instalar com dois cliques:** o **WinForge-Setup.cmd** instala em Arquivos de Programas, cria o atalho e entra em **Configurações > Aplicativos**, de onde se desinstala.
-- **Atualizar com um clique:** **Sobre o WinForge > Verificar nova versão** instala a versão nova sozinho; se algo falhar no meio, os arquivos anteriores voltam.
-- **Avisa antes do problema:** o monitor avisa quando o disco dá sinais de falha, as telas azuis vêm com a causa provável, e o teste de memória do Windows é agendado e lido pelo WinForge.
+A 4.0 é a versão para divulgar: o TF-Toolkit passa a se instalar, a se atualizar com um clique e a se desinstalar como um programa do Windows, e ganha um tema só para as novidades, **o TF-Toolkit avisa antes do problema**.
+- **Instalar com dois cliques:** o **TF-Toolkit-Setup.cmd** instala em Arquivos de Programas, cria o atalho e entra em **Configurações > Aplicativos**, de onde se desinstala.
+- **Atualizar com um clique:** **Sobre o TF-Toolkit > Verificar nova versão** instala a versão nova sozinho; se algo falhar no meio, os arquivos anteriores voltam.
+- **Avisa antes do problema:** o monitor avisa quando o disco dá sinais de falha, as telas azuis vêm com a causa provável, e o teste de memória do Windows é agendado e lido pelo TF-Toolkit.
 - **Guarda o que importa:** a chave de recuperação do BitLocker e a senha do Wi-Fi, sem passar pelo log.
 - **Visual novo:** a fonte do Windows 11, o laranja da bigorna do ícone, títulos grandes em negrito, as páginas em listas e a barra lateral em grupos; o Início com a nota em destaque; a janela segue o contraste alto e o tamanho do texto do Windows.
 
 ### Mudou para quem usa
 
 **Instalar e desinstalar**
-- **WinForge-Setup.cmd:** na pasta extraída do zip, pede o Administrador, copia o WinForge para Arquivos de Programas\WinForge, tira a marca de "baixado da internet", cria o atalho no Menu Iniciar (e, se a pessoa quiser, na Área de Trabalho) e grava a entrada em Configurações > Aplicativos. Com o WinForge já instalado, atualiza a mesma pasta; uma versão mais velha por cima de uma mais nova pede confirmação.
-- **Da pasta extraída para a instalada:** os atalhos desta conta que abriam a pasta extraída passam a abrir a instalada (onde o instalador já pôs o atalho para todos os usuários, o desta conta sai, em vez de ficar repetido), e o monitor na bandeja e a manutenção mensal que abriam outra pasta do WinForge também (a marca de desativado do monitor e o dia da manutenção ficam como estavam). Assim as atualizações chegam a eles, e a pasta extraída pode ser apagada.
-- **Sem instalar continua valendo:** o WinForge.cmd abre direto da pasta extraída, como antes.
-- **Desinstalar:** por Configurações > Aplicativos (ou pelo WinForge-Setup.cmd da pasta instalada). Fecha o monitor e tira a entrada que o abre com o Windows, apaga a manutenção agendada, os atalhos que abrem esta pasta, a entrada em Aplicativos e os arquivos do WinForge; o que a pessoa pôs na pasta fica. Pergunta antes (padrão Não) e pergunta à parte se apaga também os dados (históricos, relatórios, logs e backups; padrão Não). Os ajustes do Windows aplicados continuam, e o aviso diz como desfazê-los antes.
-- **Arquivo preso na desinstalação:** cada arquivo ganha uma segunda tentativa; se algum ficar (preso pelo antivírus, por exemplo), o que o desinstalador precisa fica junto, e o WinForge continua em Configurações > Aplicativos para desinstalar de novo por lá.
+- **TF-Toolkit-Setup.cmd:** na pasta extraída do zip, pede o Administrador, copia o TF-Toolkit para Arquivos de Programas\TF-Toolkit, tira a marca de "baixado da internet", cria o atalho no Menu Iniciar (e, se a pessoa quiser, na Área de Trabalho) e grava a entrada em Configurações > Aplicativos. Com o TF-Toolkit já instalado, atualiza a mesma pasta; uma versão mais velha por cima de uma mais nova pede confirmação.
+- **Da pasta extraída para a instalada:** os atalhos desta conta que abriam a pasta extraída passam a abrir a instalada (onde o instalador já pôs o atalho para todos os usuários, o desta conta sai, em vez de ficar repetido), e o monitor na bandeja e a manutenção mensal que abriam outra pasta do TF-Toolkit também (a marca de desativado do monitor e o dia da manutenção ficam como estavam). Assim as atualizações chegam a eles, e a pasta extraída pode ser apagada.
+- **Sem instalar continua valendo:** o TF-Toolkit.cmd abre direto da pasta extraída, como antes.
+- **Desinstalar:** por Configurações > Aplicativos (ou pelo TF-Toolkit-Setup.cmd da pasta instalada). Fecha o monitor e tira a entrada que o abre com o Windows, apaga a manutenção agendada, os atalhos que abrem esta pasta, a entrada em Aplicativos e os arquivos do TF-Toolkit; o que a pessoa pôs na pasta fica. Pergunta antes (padrão Não) e pergunta à parte se apaga também os dados (históricos, relatórios, logs e backups; padrão Não). Os ajustes do Windows aplicados continuam, e o aviso diz como desfazê-los antes.
+- **Arquivo preso na desinstalação:** cada arquivo ganha uma segunda tentativa; se algum ficar (preso pelo antivírus, por exemplo), o que o desinstalador precisa fica junto, e o TF-Toolkit continua em Configurações > Aplicativos para desinstalar de novo por lá.
 - **Com a conta de outro Administrador:** desinstalar tira também o monitor e os atalhos da conta de quem usa o PC.
-- **Sobre o WinForge:** diz se o WinForge está instalado (e que se desinstala por Configurações > Aplicativos) ou aberto da pasta extraída (e que se instala pelo WinForge-Setup.cmd), e conta o atalho do instalador. **Criar atalho do WinForge** não repete um atalho que o instalador já pôs, e um atalho repetido desta conta sai.
+- **Sobre o TF-Toolkit:** diz se o TF-Toolkit está instalado (e que se desinstala por Configurações > Aplicativos) ou aberto da pasta extraída (e que se instala pelo TF-Toolkit-Setup.cmd), e conta o atalho do instalador. **Criar atalho do TF-Toolkit** não repete um atalho que o instalador já pôs, e um atalho repetido desta conta sai.
 
 **Atualizar com um clique**
-- **Sobre o WinForge > Verificar nova versão:** depois de baixar e conferir o SHA-256, pergunta "Instalar agora?" (padrão Sim). O WinForge fecha, o instalador da versão nova troca os arquivos e o WinForge abre de novo na página Sobre, dizendo como terminou.
-- **Nada fica pela metade:** antes de trocar, uma cópia de cada arquivo do WinForge vai para `%LOCALAPPDATA%\WinForge\update\anterior`; cada arquivo novo é conferido pelo SHA-256 depois de gravado, e qualquer falha devolve a versão anterior inteira. Se nem a volta der certo, a mensagem diz onde está a cópia.
-- **Com outra janela ou outro menu do WinForge aberto:** o WinForge diz isso antes de fechar, e nada muda. Se ele não fechar em 2 minutos, a troca não começa e ele abre de novo na mesma versão, com o motivo.
+- **Sobre o TF-Toolkit > Verificar nova versão:** depois de baixar e conferir o SHA-256, pergunta "Instalar agora?" (padrão Sim). O TF-Toolkit fecha, o instalador da versão nova troca os arquivos e o TF-Toolkit abre de novo na página Sobre, dizendo como terminou.
+- **Nada fica pela metade:** antes de trocar, uma cópia de cada arquivo do TF-Toolkit vai para `%LOCALAPPDATA%\TF-Toolkit\update\anterior`; cada arquivo novo é conferido pelo SHA-256 depois de gravado, e qualquer falha devolve a versão anterior inteira. Se nem a volta der certo, a mensagem diz onde está a cópia.
+- **Com outra janela ou outro menu do TF-Toolkit aberto:** o TF-Toolkit diz isso antes de fechar, e nada muda. Se ele não fechar em 2 minutos, a troca não começa e ele abre de novo na mesma versão, com o motivo.
 - **Pelo menu de texto:** o menu fecha sozinho, sem pedir tecla. Aberto de um Prompt de Comando já aberto, a troca não espera esse prompt fechar.
-- **Se o instalador da versão nova não carregar** (um arquivo bloqueado pelo antivírus, por exemplo) **ou parar com um erro antes de começar a troca:** nada é trocado, e o WinForge abre de novo na mesma versão, com o motivo.
-- **Quem está na 3.70:** o Verificar nova versão da 3.70 baixa e confere a 4.0, mas a instalação é à mão uma vez, pelo WinForge-Setup.cmd; da 4.0 em diante, ele instala sozinho.
+- **Se o instalador da versão nova não carregar** (um arquivo bloqueado pelo antivírus, por exemplo) **ou parar com um erro antes de começar a troca:** nada é trocado, e o TF-Toolkit abre de novo na mesma versão, com o motivo.
+- **Quem está na 3.70:** o Verificar nova versão da 3.70 baixa e confere a 4.0, mas a instalação é à mão uma vez, pelo TF-Toolkit-Setup.cmd; da 4.0 em diante, ele instala sozinho.
 - **O monitor na bandeja** fecha durante a troca e abre de novo na versão nova.
 - **Sem permissão na pasta:** numa pasta que pede o Administrador, o Windows pergunta; recusado, a instalação à mão continua explicada como antes.
-- **Pacote conferido:** o zip é extraído arquivo por arquivo, e um nome que sairia da pasta do WinForge faz o pacote ser recusado. Um pacote que diz uma versão diferente da página do GitHub não vira instalação.
+- **Pacote conferido:** o zip é extraído arquivo por arquivo, e um nome que sairia da pasta do TF-Toolkit faz o pacote ser recusado. Um pacote que diz uma versão diferente da página do GitHub não vira instalação.
 
 **Primeira abertura**
-- **Configuração inicial:** uma faixa no fim do Início com os três passos que fazem o WinForge cuidar do PC sozinho: o atalho, o monitor na bandeja e a manutenção mensal. Ela mostra o próximo passo, quantos já estão feitos ("Configuração inicial · 1 de 3 etapas concluídas") e o botão dele; a manutenção só conta quando roda o WinForge desta pasta. A faixa some quando os três ficam prontos ou com "Agora não", e não volta.
+- **Configuração inicial:** uma faixa no fim do Início com os três passos que fazem o TF-Toolkit cuidar do PC sozinho: o atalho, o monitor na bandeja e a manutenção mensal. Ela mostra o próximo passo, quantos já estão feitos ("Configuração inicial · 1 de 3 etapas concluídas") e o botão dele; a manutenção só conta quando roda o TF-Toolkit desta pasta. A faixa some quando os três ficam prontos ou com "Agora não", e não volta.
 - **Monitor de um clique:** pelo cartão, o monitor liga direto, sem a tela de escolha.
 
 **A janela, com a cara do Windows 11**
 - **Fonte e tamanhos:** a Segoe UI Variable no Windows 11 (no Windows 10, a Segoe UI) e a escala de tamanhos do Windows 11. Eram 13 tamanhos de letra; agora são os 7 da escala, mais o das letras dos detalhes técnicos, e os textos de várias linhas usam a entrelinha de cada tamanho. Os títulos vêm em negrito, na Segoe UI Variable Display quando o Windows tem o negrito dela (senão, na Segoe UI): o nome da página com 40, o de cada parte do Início com 20 e a nota do Início com 68.
 - **Cores:** cinzas neutros e, nos botões e destaques, o laranja da face da bigorna (antes era um azul da Apple). No tema claro, um laranja mais escuro, para o texto branco no botão e o texto laranja passarem de 4,5:1; os contornos dos botões e dos campos, o foco e as marcas da nota passam de 3:1 nos dois temas. O contorno dos cartões e os traços entre as linhas são translúcidos, como no Windows 11, e os detalhes técnicos trocaram as cores do macOS pelas do Windows 11. Cantos de 4 nos botões e campos e de 8 nos cartões.
-- **O ícone:** a bigorna branca com a face laranja, no arquivo do ícone (a barra de tarefas, o Alt+Tab e os atalhos), no desenho do ícone e no alto da barra lateral, ao lado do nome WinForge.
-- **Barra lateral em grupos:** Cuidar (Manutenção, Limpeza, Desempenho), Consertar (Reparo, Diagnóstico, Rede), Proteger (Segurança, Atualizações) e Configurar (Programas, Ajustes do Windows, Personalização). Nenhuma página mudou de nome nem de conteúdo; Ctrl+1 a Ctrl+0 seguem a ordem nova da barra. A barra tem um tom à parte, com uma linha fina à direita, e a versão fica embaixo de Sobre o WinForge.
+- **O ícone:** a bigorna branca com a face laranja, no arquivo do ícone (a barra de tarefas, o Alt+Tab e os atalhos), no desenho do ícone e no alto da barra lateral, ao lado do nome TF-Toolkit.
+- **Barra lateral em grupos:** Cuidar (Manutenção, Limpeza, Desempenho), Consertar (Reparo, Diagnóstico, Rede), Proteger (Segurança, Atualizações) e Configurar (Programas, Ajustes do Windows, Personalização). Nenhuma página mudou de nome nem de conteúdo; Ctrl+1 a Ctrl+0 seguem a ordem nova da barra. A barra tem um tom à parte, com uma linha fina à direita, e a versão fica embaixo de Sobre o TF-Toolkit.
 - **Páginas em lista:** o caminho recomendado da página vem em destaque no alto, com o botão que o faz ("Limpar agora", "Reparar"), e o resto em listas agrupadas, como nas Configurações do Windows. Cada linha tem o nome e uma frase curta; a frase inteira aparece ao passar o mouse e o leitor de tela a ouve. A busca continua achando as palavras da frase inteira.
 - **O escudo no lugar do aviso escrito:** o que pede Administrador mostra o escudo, como nos botões do Windows, em vez de "Pede Administrador ao executar" em cada cartão; a frase continua na dica e no leitor de tela.
 - **Ajustes do Windows:** eram oito botões no alto; agora são Aplicar ajustes recomendados, **Mais opções** (um menu com Perfis, ponto de restauração, Exportar, Importar e Desfazer, que abre com o teclado também) e Atualizar estado. As teclas que trocam o idioma e as notificações viraram linhas no grupo Notificações e teclado; em **Personalização**, a cor de destaque e a tela de bloqueio, nos grupos delas.
@@ -52,12 +52,12 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Tamanho do texto:** a opção **Acessibilidade > Tamanho do texto** do Windows aumenta as letras da janela, e os cartões crescem junto. A troca nas Configurações vale ao voltar para a janela.
 - **Movimento:** a página entra com um movimento curto (aparece e sobe 8 pixels), e a faixa de resultado também. Sob o mouse, os botões, as linhas das listas e os itens da barra lateral mudam de cor numa transição de 83 ms, e a bolinha da chave liga/desliga cresce um pouco. Com os efeitos de animação do Windows desligados, nada se move.
 - **Apagar sem volta, em vermelho:** o Sim de esvaziar a Lixeira, de excluir em definitivo da pasta Downloads, de apagar o espaço livre e da limpeza personalizada com a Lixeira ou os despejos de memória vem no botão de perigo, e as opções que apagam a Lixeira ou excluem em definitivo vêm com o título em vermelho. Essas perguntas continuam com Não como padrão.
-- **"Versão 4.0":** no lugar de "Build 4.0", na barra lateral, em Sobre o WinForge, no instalador, na atualização, no relatório e no menu de texto. O log técnico continua com "Build".
+- **"Versão 4.0":** no lugar de "Build 4.0", na barra lateral, em Sobre o TF-Toolkit, no instalador, na atualização, no relatório e no menu de texto. O log técnico continua com "Build".
 - **Histórico de manutenções:** ganha a linha **Liberado nas manutenções**, o que as etapas disseram ter liberado (a limpeza, os componentes do Windows, os restos de programas). É o mesmo número do Início e conta a partir desta versão.
-- **As mensagens da janela:** as perguntas e os avisos (fechar no meio de uma ação, o Parar, pedir o Administrador, o idioma, os erros) saem numa janela com o visual do WinForge: o tema claro ou escuro, o contraste alto e o tamanho do texto do Windows, a frase principal em destaque e os botões dizendo o que fazem ("Fechar mesmo assim" e "Continuar", em vez de Sim e Não), no idioma do WinForge. Antes, era a caixa de mensagem do Windows, sempre clara e com os botões no idioma do Windows ("Yes" e "No" ao lado do texto em português). O que interrompe uma ação vem no botão vermelho, e o foco começa na resposta segura; o Esc também é a resposta segura, e o Ctrl+C copia a mensagem. Com o WinForge minimizado, a janela volta antes da pergunta.
-- **O ícone na barra de tarefas:** cada pasta do WinForge tem a sua identidade na barra de tarefas. Antes, todas as cópias tinham a mesma, e o Windows podia mostrar a janela com o ícone de um atalho ou de um item fixado de outra pasta: o de uma pasta já apagada aparecia em branco, às vezes sim, às vezes não, conforme o Windows relia os ícones. Os atalhos que o WinForge cria (**Criar atalho do WinForge** e o instalador) levam a identidade da pasta deles. Um atalho desta pasta feito por uma versão anterior aparece em **Sobre o WinForge** como "precisa ser atualizado", com **Criar atalho do WinForge** em destaque. Se o WinForge estava fixado na barra de tarefas, desafixe e fixe de novo pela janela aberta, uma vez.
+- **As mensagens da janela:** as perguntas e os avisos (fechar no meio de uma ação, o Parar, pedir o Administrador, o idioma, os erros) saem numa janela com o visual do TF-Toolkit: o tema claro ou escuro, o contraste alto e o tamanho do texto do Windows, a frase principal em destaque e os botões dizendo o que fazem ("Fechar mesmo assim" e "Continuar", em vez de Sim e Não), no idioma do TF-Toolkit. Antes, era a caixa de mensagem do Windows, sempre clara e com os botões no idioma do Windows ("Yes" e "No" ao lado do texto em português). O que interrompe uma ação vem no botão vermelho, e o foco começa na resposta segura; o Esc também é a resposta segura, e o Ctrl+C copia a mensagem. Com o TF-Toolkit minimizado, a janela volta antes da pergunta.
+- **O ícone na barra de tarefas:** cada pasta do TF-Toolkit tem a sua identidade na barra de tarefas. Antes, todas as cópias tinham a mesma, e o Windows podia mostrar a janela com o ícone de um atalho ou de um item fixado de outra pasta: o de uma pasta já apagada aparecia em branco, às vezes sim, às vezes não, conforme o Windows relia os ícones. Os atalhos que o TF-Toolkit cria (**Criar atalho do TF-Toolkit** e o instalador) levam a identidade da pasta deles. Um atalho desta pasta feito por uma versão anterior aparece em **Sobre o TF-Toolkit** como "precisa ser atualizado", com **Criar atalho do TF-Toolkit** em destaque. Se o TF-Toolkit estava fixado na barra de tarefas, desafixe e fixe de novo pela janela aberta, uma vez.
 
-**O WinForge avisa antes do problema**
+**O TF-Toolkit avisa antes do problema**
 - **Disco com sinais de falha:** o monitor na bandeja passa a avisar quando o disco diz que pode falhar (a previsão do próprio disco) ou o Windows marca o disco com problema. O aviso leva a **Diagnóstico > Saúde dos discos**. Erros de leitura ou de escrita não corrigidos e o SSD com 90% ou mais da vida útil gasta só se leem com Administrador, e o monitor roda sem ele: esses aparecem no **Verificar o PC** e na Saúde dos discos. Temperatura alta não entra: ela passa e não quer dizer que o disco vai falhar.
 - **Verificar o PC:** um disco com sinais de falha e as telas azuis dos últimos 30 dias aparecem entre os pontos de atenção, com o caminho para a tela de cada um.
 - **Tela azul no monitor:** uma tela azul nova vira aviso, com a causa provável, e leva a **Diagnóstico > Telas azuis**.
@@ -73,7 +73,7 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Fora do log:** a senha e a chave aparecem na tela (na janela, no resumo, como os outros dados), e o log grava "[fora do log]" no lugar. Os arquivos que o Windows exporta com as senhas ficam numa pasta temporária só o tempo de ler.
 
 **Suporte**
-- **Sobre o WinForge > Pacote de suporte:** junta num zip, na pasta Downloads, as versões (WinForge, Windows, PowerShell, .NET, idioma), os 10 logs mais recentes, o tempo de abertura, o log da janela, a verificação rápida do PC, o último relatório, os históricos e as preferências. Não leva backups, senhas nem arquivos pessoais; o aviso lembra que os logs mostram o nome do PC e caminhos de pastas.
+- **Sobre o TF-Toolkit > Pacote de suporte:** junta num zip, na pasta Downloads, as versões (TF-Toolkit, Windows, PowerShell, .NET, idioma), os 10 logs mais recentes, o tempo de abertura, o log da janela, a verificação rápida do PC, o último relatório, os históricos e as preferências. Não leva backups, senhas nem arquivos pessoais; o aviso lembra que os logs mostram o nome do PC e caminhos de pastas.
 - **Verificação rápida** (`-Action Check -Json`, e o check.json do pacote de suporte): traz as telas azuis dos últimos 30 dias, sem mudar o resultado.
 - **Relatório:** uma seção **Telas azuis e memória**, com as telas azuis dos últimos 90 dias, a causa mais provável, a mais recente e o último teste de memória.
 - **Tempo de abertura:** cada abertura da janela e do menu anota quanto levou em `logs\abertura.log` (as 100 mais recentes), para medir num PC de verdade.
@@ -81,11 +81,11 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 
 **Seis funções novas**
 - **Diagnóstico > Sobre este PC, a ativação do Windows:** uma linha diz se o Windows está ativado, ainda no prazo para ativar ou não ativado e, quando não está, onde ativar. O relatório traz a mesma linha. A leitura é a do licenciamento do próprio Windows, que leva alguns segundos; por isso, não entra no Início.
-- **Auditoria de segurança, a integridade da memória:** o isolamento de núcleo da Segurança do Windows entra em "Só para saber", fora da nota: ligada, desligada ou ligada nas configurações e fora de uso, com o caminho para ligá-la (Segurança do Windows > Segurança do dispositivo > Detalhes de isolamento do núcleo). O WinForge não a liga: alguns drivers e programas antigos não funcionam com ela.
+- **Auditoria de segurança, a integridade da memória:** o isolamento de núcleo da Segurança do Windows entra em "Só para saber", fora da nota: ligada, desligada ou ligada nas configurações e fora de uso, com o caminho para ligá-la (Segurança do Windows > Segurança do dispositivo > Detalhes de isolamento do núcleo). O TF-Toolkit não a liga: alguns drivers e programas antigos não funcionam com ela.
 - **Reparar o Instalador de Aplicativo:** onde a faixa diz que falta o Instalador de Aplicativo (o winget), o botão **Reparar** registra o winget de novo para a conta, com o comando que a Microsoft indica. Se não resolver, oferece a página dele na Microsoft Store. Com o winget funcionando, não mexe em nada. A busca também chega nele.
 - **Atualizações > Manter programas na versão atual:** uma lista com os programas que têm versão nova no winget e os que já estão marcados para não atualizar. Marcado, o programa sai de **Atualizar programas**, do Otimizar, do monitor e do **Verificar o PC**; desmarcado, volta. É o marcador do próprio winget (`winget pin`), e um programa que se atualiza sozinho continua se atualizando. Entra no Histórico de mudanças, com desfazer. Em **Atualizar programas**, uma linha diz quantos ficaram de fora.
 - **Reparo > Destravar a impressão:** para o documento preso na fila, reinicia o Spooler de Impressão e, se a pessoa escolher, esvazia a fila antes, como a Microsoft indica. Só reiniciar vem em destaque; apagar a fila diz quantos documentos não serão impressos. Um Spooler desativado fica como está.
-- **Rede > Acertar a data e a hora:** pede ao Windows para sincronizar o relógio agora e confere a hora num servidor da Microsoft, com quanto o relógio estava adiantado ou atrasado. O Windows não acerta sozinho um relógio errado em mais de 15 horas, num PC fora de domínio; aí, com a pessoa concordando, o relógio vai para a hora do servidor e o Windows sincroniza de novo. Num PC de empresa, a hora vem do domínio, e o WinForge não a muda por fora.
+- **Rede > Acertar a data e a hora:** pede ao Windows para sincronizar o relógio agora e confere a hora num servidor da Microsoft, com quanto o relógio estava adiantado ou atrasado. O Windows não acerta sozinho um relógio errado em mais de 15 horas, num PC fora de domínio; aí, com a pessoa concordando, o relógio vai para a hora do servidor e o Windows sincroniza de novo. Num PC de empresa, a hora vem do domínio, e o TF-Toolkit não a muda por fora.
 
 **Histórico de mudanças**
 - **Mais mudanças anotadas:** as teclas que trocam o idioma do teclado, o reparo de rede, a manutenção agendada (criada ou removida), o CHKDSK que corrigiu erros ou agendou o reparo e o que voltou de um backup.
@@ -104,7 +104,7 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Início, o disco quase cheio:** o cartão diz "de 237 GB", sem " · quase cheio" (ou " · pouco espaço"), e os três cartões continuam lado a lado. O aviso continua no valor e na barra amarelos e no ponto da nota. Com pontos de atenção, a faixa inclinada fica só atrás da nota, sem atravessar a lista.
 - **Início, o teclado e o Narrador:** quando a nota é refeita no fim de uma leitura, o foco do teclado continua no mesmo botão, também no de ler de novo. **Agora não** fecha a configuração inicial no lugar, sem refazer a página, e o foco fica logo antes dela. O Narrador lê a frase da nota quando uma leitura termina, e não a cada volta ao Início.
 - **Configuração inicial sem esperar o Agendador:** o passo da manutenção mensal é lido junto com o Início, fora da janela, e a faixa aparece quando essa leitura chega. Antes, a janela perguntava ao Agendador de Tarefas a cada visita ao Início.
-- **WinForge aberto de outra pasta:** com uma janela aberta, abrir o WinForge de outra pasta traz a janela para a frente com "Esta janela é de outra pasta do WinForge", as duas pastas e os botões **Fechar esta janela** e **Continuar aqui**. Antes, ela só vinha para a frente, e a versão nova parecia não ter mudado nada.
+- **TF-Toolkit aberto de outra pasta:** com uma janela aberta, abrir o TF-Toolkit de outra pasta traz a janela para a frente com "Esta janela é de outra pasta do TF-Toolkit", as duas pastas e os botões **Fechar esta janela** e **Continuar aqui**. Antes, ela só vinha para a frente, e a versão nova parecia não ter mudado nada.
 - **Manutenção, o alto da página:** a faixa "Última manutenção", de largura inteira, como nas outras páginas, com a seta que abre o Histórico de manutenções. Antes, era um cartão de meia largura, do desenho antigo, colado no Otimizar.
 - **Manutenção agendada que falha:** quando a execução do mês não consegue fazer nada, o Início avisa "A última manutenção agendada falhou", com o botão para a tela. No Windows 11, o Agendador de Tarefas mostrava essa execução como concluída, e só a tela da manutenção agendada dizia que não funcionou.
 - **Manutenção agendada com tempo-limite:** a leitura, a criação e a remoção da tarefa param em até 60 segundos, e a tela diz que não foi possível consultar o Agendador de Tarefas. Antes, um Agendador travado deixava a tela, o Início, o instalador e a desinstalação esperando para sempre.
@@ -142,14 +142,14 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Estado da proteção e Auditoria de segurança mais rápidos:** a consulta ao Windows Update começa junto com as outras leituras, e não depois delas.
 - **Auditoria, a Área de Trabalho Remota:** com uma política (de grupo, ou da empresa) decidindo, a auditoria diz "Ligada por uma política" ou "Desligada por uma política", e o conselho fala da política, que trava o botão das Configurações. Assinaturas do antivírus nunca atualizadas entram como "Nunca atualizadas", e não como "não foi possível ler".
 - **Chave do BitLocker, a cópia que não grava** (o pendrive tirado, protegido contra gravação ou cheio): "Não foi possível salvar a cópia da chave", com o botão **Tentar de novo**, e não "Não foi possível ler o BitLocker".
-- **Unidade de rede mapeada** (Z:) em **Verificar uma pasta** e na pasta da chave do BitLocker: a tela explica que o WinForge, aberto como Administrador, não vê as unidades mapeadas, e pede o caminho da rede (`\\servidor\pasta`).
+- **Unidade de rede mapeada** (Z:) em **Verificar uma pasta** e na pasta da chave do BitLocker: a tela explica que o TF-Toolkit, aberto como Administrador, não vê as unidades mapeadas, e pede o caminho da rede (`\\servidor\pasta`).
 - **Segurança, os botões:** **Começar** e **Agora não** na Verificação completa; **Salvar mesmo assim** e **Cancelar** ao salvar a chave no próprio disco.
 - **Atualizações, a faixa do alto:** a versão do Windows e até quando ela recebe atualizações de segurança; com as atualizações pausadas nas Configurações ("pausado até 05/12/2026") ou atrasadas, uma segunda linha que abre o que resolve.
 - **Atualizações pausadas nas Configurações:** o **Otimizar** não procura nem instala nada até o fim da pausa, como o próprio Windows; **Instalar atualizações do Windows** e **Atualizar drivers** avisam e perguntam (**Procurar mesmo assim** ou **Cancelar**, com o Cancelar como padrão).
 - **Otimizar numa conexão limitada** (plano de dados): a etapa do Windows Update instala só o que já foi baixado e diz quantas ficaram para uma conexão sem limite, como o Windows faz. Com "Baixar atualizações em conexões limitadas" ligado no Windows Update, baixa tudo.
 - **Reinício pendente, uma escolha só:** **Instalar atualizações do Windows**, **Atualizar drivers** e **Corrigir o Windows Update** perguntam uma vez, como o Otimizar: **Reiniciar agora**, **Continuar sem reiniciar** ou **Cancelar**.
 - **Corrigir o Windows Update mais rápido:** os três serviços param juntos, e não um depois do outro.
-- **Atualizações, os resultados:** a instalação interrompida no meio diz "A instalação foi interrompida", com o motivo; os drivers mostram o resumo numa tabela, como as atualizações; uma falha sem código diz que o Windows Update não informou o motivo; e o histórico do Windows Update mostra o WinForge como quem instalou.
+- **Atualizações, os resultados:** a instalação interrompida no meio diz "A instalação foi interrompida", com o motivo; os drivers mostram o resumo numa tabela, como as atualizações; uma falha sem código diz que o Windows Update não informou o motivo; e o histórico do Windows Update mostra o TF-Toolkit como quem instalou.
 - **Atualizações em inglês e em espanhol:** o título do resumo, duas mensagens da instalação e os tipos de driver "biometria" e "sensores" apareciam em português.
 - **Atualizações, os botões:** **Instalar mesmo assim**, **Baixar e instalar**, **Instalar**, **Corrigir** e **Procurar mesmo assim**, com **Cancelar**; **Abrir** e **Agora não** quando falta o Instalador de Aplicativo.
 - **Restaurar acha o backup no pendrive:** **Programas > Restaurar a partir de um backup** procura também na raiz dos pendrives, HDs externos e outras partições, onde o **Backup antes de formatar** o grava, e diz onde cada backup está ("Pendrive (E:)"). Sem nenhum, pede para conectar o do backup e oferece **Procurar de novo**. Antes, só procurava em Documentos, que fica vazio depois de formatar. A raiz do pendrive digitada em **Outra pasta** leva ao backup que está nela.
@@ -162,26 +162,26 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Programas mais rápido:** **Buscar e instalar** e **Instalar programas essenciais**, logo depois de **Listar programas instalados** ou de **Desinstalar programas**, não leem de novo a lista do winget, que leva alguns segundos.
 - **Ajustes do Windows, a chave na própria linha:** ligar ou desligar uma chave, em Ajustes do Windows e na Personalização, muda o ajuste ali mesmo: a linha diz "Alterando…" e, no fim, mostra como o Windows ficou, sem abrir outra tela nem pedir Voltar. A tela do resultado só abre quando há algo a ler: uma pergunta, o que ficou como estava, o que foi feito junto, o reinício ou uma falha.
 - **Aplicar ajustes recomendados sem Administrador:** os quatro recomendados mudam só a sua conta, como as Configurações do Windows, e não pedem mais Administrador. Numa conta sem Administrador, são aplicados nela, sem o ponto de restauração (que precisa dele), e cada um continua se desfazendo pela chave. Antes, o pedido levava à senha de outra conta, e os ajustes iam para o perfil dela.
-- **Ajustes do Windows com outra conta:** com o WinForge aberto com a conta de outro Administrador, os ajustes da sua conta ficam de fora dos perfis, da importação, da exportação e do **Backup antes de formatar**, com um aviso; na página, essas linhas dizem "Outra conta", com a chave desligada, e o resumo do alto diz o motivo. Antes, eles liam e mudavam o perfil da outra conta.
-- **Ajustes do Windows, o resumo do alto:** no lugar do parágrafo, o resumo das outras páginas: quantos recomendados estão em uso (leva a **Aplicar ajustes recomendados**) e quantos ajustes da página o WinForge mudou (leva ao **Histórico de mudanças**). A Personalização mostra os mudados. Enquanto leem o Windows, as duas páginas mostram linhas cinza no lugar de "Lendo...".
+- **Ajustes do Windows com outra conta:** com o TF-Toolkit aberto com a conta de outro Administrador, os ajustes da sua conta ficam de fora dos perfis, da importação, da exportação e do **Backup antes de formatar**, com um aviso; na página, essas linhas dizem "Outra conta", com a chave desligada, e o resumo do alto diz o motivo. Antes, eles liam e mudavam o perfil da outra conta.
+- **Ajustes do Windows, o resumo do alto:** no lugar do parágrafo, o resumo das outras páginas: quantos recomendados estão em uso (leva a **Aplicar ajustes recomendados**) e quantos ajustes da página o TF-Toolkit mudou (leva ao **Histórico de mudanças**). A Personalização mostra os mudados. Enquanto leem o Windows, as duas páginas mostram linhas cinza no lugar de "Lendo...".
 - **Alto desempenho e o Modern Standby:** nos PCs com Modern Standby (a maioria dos notebooks recentes), que só permitem o plano Equilibrado, o ajuste **Plano de energia Alto desempenho** não aparece, nem no Otimizar e no perfil Jogos.
 - **Perfil Trabalho:** sem os segundos no relógio, que distraem e não deixam o processador descansar. A chave continua na Personalização.
 - **Web na busca do Iniciar:** a descrição diz que o ajuste também faz o Explorador deixar de sugerir as buscas recentes, como a Microsoft documenta.
 - **Inicialização Rápida:** ligar a chave com a hibernação desligada liga a hibernação junto, e agora a faixa diz isso.
 - **Ajustes do Windows, os botões:** dizem o que fazem: **Criar o ponto** e **Aplicar sem ele**, **Aplicar mesmo assim**, **Reiniciar agora** e **Depois**, **Mostrar**, **Ativar** e **Desativar**, **Abrir**, **Desfazer todos**, **Aplicar**, **Desfazer** e **Aplicar e desfazer**, com **Cancelar**, **Agora não** e **Deixar como está**, no lugar de Sim, Não e Confirmar.
-- **Personalização, a cor de destaque:** a linha Cor de destaque, no grupo Cores e transparência, abre as Cores do Windows, onde se escolhe a cor. O WinForge não troca mais a cor por conta própria: o Windows não tem um jeito documentado de um programa fazer isso, e a troca podia dar erro ou não aparecer na hora.
+- **Personalização, a cor de destaque:** a linha Cor de destaque, no grupo Cores e transparência, abre as Cores do Windows, onde se escolhe a cor. O TF-Toolkit não troca mais a cor por conta própria: o Windows não tem um jeito documentado de um programa fazer isso, e a troca podia dar erro ou não aparecer na hora.
 - **Desfazer as teclas do idioma:** o Histórico de mudanças passa a desfazer as teclas que trocam o idioma do teclado. Se as teclas foram trocadas depois, ficam como estão.
 - **Gerenciar inicialização, o que sobrou de programas desinstalados:** o que abre um programa que não existe mais, ou só o Update.exe que alguns programas deixam para trás ao desinstalar (o FACEIT, o Discord, o Slack e outros), aparece em **Remover o que sobrou**, já marcado. Cada item é conferido de novo antes de sair, os atalhos da pasta Inicializar vão para a Lixeira, e o Histórico de mudanças anota o que saiu. O item some também do Gerenciador de Tarefas.
 - **Valores grandes do registro:** gravar ou devolver um valor DWORD acima de 2.147.483.647, como as cores do Windows, não dá mais erro.
 - **Ajustes do Windows e Personalização, frases curtas:** cada chave mostra uma frase de uma linha; a inteira aparece ao passar o mouse, e o Narrador a lê. As linhas de ação dentro dos grupos (Cor de destaque, Tela de bloqueio do Windows, as teclas do idioma e as notificações) começam o texto no mesmo lugar das chaves.
 - **Widgets:** a chave diz que vale para todas as contas do PC, porque a política do Windows que ela grava é do computador.
-- **O Modo escuro na própria linha:** com a aparência do WinForge em Automático, a janela troca de tema, e a página continua no mesmo ponto, com o foco na chave e o Narrador dizendo como ela ficou. Antes, a página voltava ao alto e o foco se perdia. O mesmo vale quando o tema muda nas Configurações com uma página de ajustes aberta.
-- **Versão nova do WinForge:** o monitor na bandeja confere uma vez por dia se saiu uma versão nova (nunca numa conexão limitada ou na bateria) e avisa uma vez por versão; o clique abre **Verificar nova versão**. O aviso continua no menu do ícone até a atualização. No alto de **Sobre o WinForge**, a linha da versão diz se ela é a mais recente ou qual está disponível, e leva a **Verificar nova versão**.
-- **Monitor na bandeja, os avisos de uma vez:** o aviso de uma tela azul nova e o do resultado do teste de memória aparecem uma vez. Antes, o balão voltava a cada 15 segundos até a conferência seguinte (até uma hora). O título "Avisos pausados" aparece no idioma do WinForge.
-- **Sobre o WinForge, o resumo do alto:** sem a linha do Administrador quando a janela já está com ele (a barra lateral diz); aberto com a conta de outro Administrador, sem a linha do atalho, que seria o dessa conta. O subtítulo virou uma frase curta.
-- **Sobre o WinForge, a Aparência e o Idioma pelo teclado:** como as cores de destaque, um grupo de opções do Windows: o Tab entra na escolha marcada e sai de uma vez, e as setas andam pelas opções. Clicar na Aparência já marcada não refaz a página.
-- **Sobre o WinForge, os botões:** **Baixar** e **Agora não**, **Instalar agora** e **Depois**, **Mostrar** e **Agora não** (o arquivo baixado e o pacote de suporte), no lugar de Sim e Não.
-- **Busca, a ordem:** quem busca pelo nome de uma página vê a página e, logo depois, o caminho recomendado dela: "limpar" traz Limpeza e **Limpeza rápida**; "atualizar", Atualizações e **Instalar atualizações do Windows**; "programas", Programas e **Instalar programas essenciais**. "winforge" acha a página Sobre o WinForge, "atualizar winforge" acha **Verificar nova versão** (antes, Manter programas na versão atual), e "avisos do winforge", o **Monitor na bandeja**. Em inglês, "tweaks" acha a página Windows tweaks. Em espanhol, "programas" não põe mais o Programador de tareas à frente dos itens da página.
+- **O Modo escuro na própria linha:** com a aparência do TF-Toolkit em Automático, a janela troca de tema, e a página continua no mesmo ponto, com o foco na chave e o Narrador dizendo como ela ficou. Antes, a página voltava ao alto e o foco se perdia. O mesmo vale quando o tema muda nas Configurações com uma página de ajustes aberta.
+- **Versão nova do TF-Toolkit:** o monitor na bandeja confere uma vez por dia se saiu uma versão nova (nunca numa conexão limitada ou na bateria) e avisa uma vez por versão; o clique abre **Verificar nova versão**. O aviso continua no menu do ícone até a atualização. No alto de **Sobre o TF-Toolkit**, a linha da versão diz se ela é a mais recente ou qual está disponível, e leva a **Verificar nova versão**.
+- **Monitor na bandeja, os avisos de uma vez:** o aviso de uma tela azul nova e o do resultado do teste de memória aparecem uma vez. Antes, o balão voltava a cada 15 segundos até a conferência seguinte (até uma hora). O título "Avisos pausados" aparece no idioma do TF-Toolkit.
+- **Sobre o TF-Toolkit, o resumo do alto:** sem a linha do Administrador quando a janela já está com ele (a barra lateral diz); aberto com a conta de outro Administrador, sem a linha do atalho, que seria o dessa conta. O subtítulo virou uma frase curta.
+- **Sobre o TF-Toolkit, a Aparência e o Idioma pelo teclado:** como as cores de destaque, um grupo de opções do Windows: o Tab entra na escolha marcada e sai de uma vez, e as setas andam pelas opções. Clicar na Aparência já marcada não refaz a página.
+- **Sobre o TF-Toolkit, os botões:** **Baixar** e **Agora não**, **Instalar agora** e **Depois**, **Mostrar** e **Agora não** (o arquivo baixado e o pacote de suporte), no lugar de Sim e Não.
+- **Busca, a ordem:** quem busca pelo nome de uma página vê a página e, logo depois, o caminho recomendado dela: "limpar" traz Limpeza e **Limpeza rápida**; "atualizar", Atualizações e **Instalar atualizações do Windows**; "programas", Programas e **Instalar programas essenciais**. "tf-toolkit" acha a página Sobre o TF-Toolkit, "atualizar tf-toolkit" acha **Verificar nova versão** (antes, Manter programas na versão atual), e "avisos do tf-toolkit", o **Monitor na bandeja**. Em inglês, "tweaks" acha a página Windows tweaks. Em espanhol, "programas" não põe mais o Programador de tareas à frente dos itens da página.
 - **Busca, de onde vem cada ajuste:** a linha de cima diz a página e o grupo em que o ajuste está ("Ajustes do Windows > Explorador"), no lugar de "Ajustes do Windows > ajuste"; a Cor de destaque e as outras linhas de um grupo também. O Narrador ouve o caminho com vírgulas, sem o sinal ">". A caixa de busca diz o atalho dela (Ctrl+K) ao Narrador, e a dica ficou com duas frases.
 - **Verificar o PC, as atualizações pausadas:** com o Windows Update pausado nas Configurações e as atualizações de segurança atrasadas, a linha diz a pausa ("faltam atualizações de segurança; pausadas até 05/12/2026") e o botão leva ao **Windows Update**, para retomar; antes, levava a Instalar atualizações do Windows. Pausadas e em dia, a linha só informa.
 - **Verificar o PC, sem o Instalador de Aplicativo:** sem o winget, o ponto pede você e o botão leva a **Programas > Reparar o Instalador de Aplicativo**. Antes, era uma linha cinza, sem caminho, e a faixa dizia "Tudo certo".
@@ -201,15 +201,15 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Verificar o PC e o registro:** as referências quebradas do registro viram informação, e não um ponto de atenção. A correção continua na lista, desmarcada. Antes, aceitar o que vinha marcado terminava sempre em "ainda pede atenção: Registro".
 - **Histórico de manutenções:** dois números de espaço, o que as manutenções liberaram e o espaço livre da primeira à última, no lugar de três; uma etapa com problema repetido diz "rode de novo em …", como na última manutenção.
 - **Manutenção agendada:** sem resposta do Agendador de Tarefas, nenhum dia vem em destaque. Em espanhol, os estados concordam com "tarea" ("Activa", "Desactivada", "No programada").
-- **Busca:** "bsod" e "reinicia sozinho" levam às Telas azuis, e "desinstalar winforge" acha **Versão e pastas**. "Reverter ajustes" e "voltar ao normal" acham **Desfazer ajustes do WinForge**, "backup do sistema" acha o ponto de restauração, "anúncios" acha os ajustes recomendados e "logs", em espanhol, acha a pasta de logs. Todos os itens têm palavras de busca nos três idiomas.
-- **Abrir em inglês e em espanhol:** o arquivo de tradução é lido em uma fração do tempo, e o WinForge abre quase tão rápido quanto em português. Antes, levava cerca de meio segundo a mais.
+- **Busca:** "bsod" e "reinicia sozinho" levam às Telas azuis, e "desinstalar tf-toolkit" acha **Versão e pastas**. "Reverter ajustes" e "voltar ao normal" acham **Desfazer ajustes do TF-Toolkit**, "backup do sistema" acha o ponto de restauração, "anúncios" acha os ajustes recomendados e "logs", em espanhol, acha a pasta de logs. Todos os itens têm palavras de busca nos três idiomas.
+- **Abrir em inglês e em espanhol:** o arquivo de tradução é lido em uma fração do tempo, e o TF-Toolkit abre quase tão rápido quanto em português. Antes, levava cerca de meio segundo a mais.
 - **Descrições em inglês e em espanhol:** até 60 letras, como em português, para caber numa linha também com a janela estreita. Antes, 35 passavam disso, e uma terminava em reticências.
 - **Mais opções:** clicar de novo no botão fecha o menu. Antes, o menu fechava e abria de novo.
 - **Consultas ao Windows com tempo-limite:** uma consulta ao WMI que não responde (acontece num Windows com o WMI com defeito) para em até 15 segundos e vira "não deu para ler". Antes, a ação, o monitor na bandeja ou a atualização com um clique podiam ficar esperando para sempre.
 - **Discos e dispositivos com tempo-limite:** a leitura dos discos (Saúde dos discos, Discos e espaço livre, o relatório, o Verificar o PC e o monitor na bandeja) e a dos Dispositivos com problema param em até 60 segundos. Antes, um disco morrendo ou uma controladora travada podiam deixá-las esperando para sempre, justo no PC que mais precisa da leitura.
 - **Antivírus e firewall com tempo-limite:** o estado do Windows Defender, as ameaças e o firewall (no Estado da proteção, na auditoria, no Início, no Verificar o PC, no monitor e no relatório) param em até 60 segundos. Antes, um WMI com defeito ou o Defender travado podiam deixá-los esperando para sempre.
 - **Estado da proteção:** as ameaças ativas com o nome curto, como na verificação ("Wacatac (trojan)"); o nome completo fica nos detalhes técnicos. Com o antivírus sem leitura, a faixa diz "Antivírus sem leitura", em vez de "nenhum ponto de atenção no que foi lido"; com o firewall sem leitura, ela traz o botão para conferir.
-- **Auditoria de segurança:** o comando que desliga a conta Convidado usa o nome dela neste Windows (num Windows em português, "net user Guest" não acha a conta). Sem Administrador, o BitLocker, o SMB 1.0 e as ameaças dizem que pedem o WinForge aberto como Administrador, em vez de um motivo errado.
+- **Auditoria de segurança:** o comando que desliga a conta Convidado usa o nome dela neste Windows (num Windows em português, "net user Guest" não acha a conta). Sem Administrador, o BitLocker, o SMB 1.0 e as ameaças dizem que pedem o TF-Toolkit aberto como Administrador, em vez de um motivo errado.
 - **Verificar vírus:** numa ameaça que só espera reiniciar, o resumo diz para reiniciar, como a faixa, e não para escolher o que fazer na Segurança do Windows.
 - **Limpeza, quanto foi liberado:** **Esvaziar a Lixeira**, a **Limpeza personalizada**, a exclusão permanente da pasta Downloads e os componentes do Windows dizem no título quanto voltou ao disco ("6 MB liberados"), como a Limpeza rápida; sem nada para tirar, "Nada para limpar", com o porquê. Na Limpeza rápida, uma parte que não pôde ser limpa aparece pelo nome, em vez de "1 de 3 partes falhou", e a Lixeira vazia não vira uma seção no resumo.
 - **Limpar a pasta Downloads:** com a pasta num pendrive, numa unidade de rede ou com a Lixeira desligada, só aparece a exclusão permanente, com o porquê antes da pergunta. Antes, a Lixeira era oferecida e, escolhida, nada saía. O aviso dos itens maiores que o limite da Lixeira vem antes da escolha, e a linha "Itens ignorados" só aparece quando algum ficou.
@@ -228,11 +228,11 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **CHKDSK e dispositivos com tempo-limite:** a lista de unidades do CHKDSK e a leitura dos dispositivos depois de **Detectar dispositivos e drivers** param em até 60 segundos. Antes, um disco ou um WMI travados podiam deixá-las esperando para sempre.
 - **CHKDSK, código 2:** é uma limpeza interna do disco, e não um erro. A verificação termina em "Nenhum erro", e a etapa do disco no Otimizar não fica mais amarela por isso.
 - **Atualizações, a versão nova do Windows desmarcada:** em **Instalar atualizações do Windows**, uma versão nova do Windows vem desmarcada, com "versão nova do Windows" na linha; quem quer mudar de versão, marca. Antes, vinha marcada quando o Windows Update a oferecia como comum.
-- **Atualizações, faixas que dizem o que houve:** quando o WinForge para de acompanhar uma instalação longa, a faixa diz isso e abre o andamento no Windows Update; a falta de espaço no disco traz o botão **Liberar espaço**. No **Corrigir o Windows Update**, um serviço removido, sem responder, que continua desativado, que não parou ou que não ligou de novo, e o cache refeito só em parte, dizem o que houve. Nas **Ferramentas do fabricante**, a ferramenta instalada diz como abri-la, e o navegador ou a Store que não abrem dizem o que fazer. A Store que recusa o pedido também. Antes, "Não foi concluído" ou "Concluído com ressalvas".
+- **Atualizações, faixas que dizem o que houve:** quando o TF-Toolkit para de acompanhar uma instalação longa, a faixa diz isso e abre o andamento no Windows Update; a falta de espaço no disco traz o botão **Liberar espaço**. No **Corrigir o Windows Update**, um serviço removido, sem responder, que continua desativado, que não parou ou que não ligou de novo, e o cache refeito só em parte, dizem o que houve. Nas **Ferramentas do fabricante**, a ferramenta instalada diz como abri-la, e o navegador ou a Store que não abrem dizem o que fazer. A Store que recusa o pedido também. Antes, "Não foi concluído" ou "Concluído com ressalvas".
 - **Microsoft Store sem o modo Administrador:** **Atualizar aplicativos da Microsoft Store** abre direto a página de atualizações da Store, para clicar em Obter atualizações, sem o aviso de recusa. Com Administrador, o pedido vai como antes.
 - **Ferramentas do fabricante no idioma da tela:** em inglês, a frase de abrir a página de um fabricante saía quebrada ("Opening Open the NVIDIA App page"). A página do NVIDIA App abre no idioma da tela, e a de drivers da HP, no país e no idioma de quem abre. **Atualizar drivers** também tem o título traduzido.
 - **Corrigir o Windows Update, os nomes dos serviços:** "o serviço Transferência Inteligente de Plano de Fundo (BITS)", em vez de "o serviço Serviço de Transferência...", nos três idiomas.
-- **Desinstalar e atualizar programas instalados só para a sua conta:** com o WinForge aberto como Administrador, o winget recusa esses programas (erro 0x8A15007D) em **Programas > Desinstalar programas**, em **Atualizar programas (winget)** e no Otimizar, e o CapCut, o gallery-dl e o FFmpeg for yt-dlp, por exemplo, não saíam. Agora o WinForge diz isso e roda o mesmo comando de novo com a sua conta, sem Administrador, por uma tarefa de uma vez só do Agendador de Tarefas, apagada no fim; a saída aparece na tela como antes, e o Parar encerra também o que essa tarefa abriu. Quando não dá, a faixa diz por quê: com o WinForge aberto com a conta de outro Administrador, o programa é dessa conta, e é preciso entrar no Windows com ela; com o Controle de Conta de Usuário desligado, o Windows não tem a versão da conta sem Administrador.
+- **Desinstalar e atualizar programas instalados só para a sua conta:** com o TF-Toolkit aberto como Administrador, o winget recusa esses programas (erro 0x8A15007D) em **Programas > Desinstalar programas**, em **Atualizar programas (winget)** e no Otimizar, e o CapCut, o gallery-dl e o FFmpeg for yt-dlp, por exemplo, não saíam. Agora o TF-Toolkit diz isso e roda o mesmo comando de novo com a sua conta, sem Administrador, por uma tarefa de uma vez só do Agendador de Tarefas, apagada no fim; a saída aparece na tela como antes, e o Parar encerra também o que essa tarefa abriu. Quando não dá, a faixa diz por quê: com o TF-Toolkit aberto com a conta de outro Administrador, o programa é dessa conta, e é preciso entrar no Windows com ela; com o Controle de Conta de Usuário desligado, o Windows não tem a versão da conta sem Administrador.
 - **Programas, faixas que dizem o que houve:** quando nada é instalado, desinstalado, removido ou ligado, a faixa diz isso, com o nome e o motivo ("O programa não foi instalado", "O aplicativo não foi removido", "O recurso não mudou"). Sem o winget, "Falta o Instalador de Aplicativo", também em **Atualizar programas** e nas **Ferramentas do fabricante**; a busca sem resultado, "Nenhum programa encontrado". O backup com ressalvas diz onde a pasta ficou ("Backup salvo em parte"), e a restauração também tem as faixas dela. Antes, "Não foi concluído" ou "Concluído com ressalvas".
 - **Restaurar a partir de um backup:** o backup mais novo vem em destaque e como padrão, e os programas voltam sempre na versão atual (`--ignore-versions`).
 - **Recursos opcionais do Windows:** o reinício que uma mudança pede é oferecido ali mesmo, com Não como padrão. A pergunta de ligar ou desligar um recurso só sai no idioma da tela. O Windows Sandbox inclui a edição Education.
@@ -248,12 +248,12 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Ajustes do Windows, o Recall e o notebook:** a chave do Recall só aparece do Windows 11 24H2 em diante, onde o recurso existe. O aviso de bateria aparece uma vez só, sem "Atenção em notebook:" na frente, e no idioma da tela também na revisão do Otimizar; a faixa da exportação diz a pasta Documentos no idioma da tela.
 - **Ajustes do Windows, o estado na linha:** a linha das teclas que trocam o idioma do teclado diz as teclas de agora.
 - **Personalização, a cor no Iniciar e na barra de tarefas:** pede só o Windows no modo escuro, e a descrição agora diz isso.
-- **Sobre o WinForge, o destaque:** Criar atalho só fica em destaque quando falta o atalho (ou ele abre outra pasta do WinForge), logo abaixo do resumo; com o atalho pronto, é uma linha de Integração com o Windows. Versão e pastas diz "Pasta do WinForge", e não "Instalado em", numa cópia que não está instalada.
-- **Sobre o WinForge, as faixas:** Criar atalho, Verificar nova versão, o pacote de suporte, o monitor, os dados online e o idioma dizem no título o que aconteceu ("O atalho não foi criado", "Versão 4.1 disponível", "A versão 4.1 não foi baixada", "O monitor não foi ligado") e, na frase, o motivo ou o que fazer.
+- **Sobre o TF-Toolkit, o destaque:** Criar atalho só fica em destaque quando falta o atalho (ou ele abre outra pasta do TF-Toolkit), logo abaixo do resumo; com o atalho pronto, é uma linha de Integração com o Windows. Versão e pastas diz "Pasta do TF-Toolkit", e não "Instalado em", numa cópia que não está instalada.
+- **Sobre o TF-Toolkit, as faixas:** Criar atalho, Verificar nova versão, o pacote de suporte, o monitor, os dados online e o idioma dizem no título o que aconteceu ("O atalho não foi criado", "Versão 4.1 disponível", "A versão 4.1 não foi baixada", "O monitor não foi ligado") e, na frase, o motivo ou o que fazer.
 - **Pacote de suporte, a linha Leva:** diz só o que entrou no zip: os logs copiados, e os históricos e as preferências quando existem.
-- **Busca, o Idioma e o que a página tira:** achado na busca, o Idioma leva ao cartão Idioma de Sobre o WinForge, como a Aparência. A busca não mostra mais o que a página tira neste PC: a Saúde da bateria num PC sem bateria e as ações do Windows Defender com outro antivírus. O cartão Idioma mostra a escolha guardada, mesmo quando ela mudou pelo menu de texto.
+- **Busca, o Idioma e o que a página tira:** achado na busca, o Idioma leva ao cartão Idioma de Sobre o TF-Toolkit, como a Aparência. A busca não mostra mais o que a página tira neste PC: a Saúde da bateria num PC sem bateria e as ações do Windows Defender com outro antivírus. O cartão Idioma mostra a escolha guardada, mesmo quando ela mudou pelo menu de texto.
 - **Busca em inglês:** a correção de digitação volta a funcionar ("defnder" acha "defender").
-- **Busca, as palavras:** trazem a tela certa primeiro os comandos e os nomes do Windows (eventvwr, winver, Visualizador de Eventos, Restaurar PC), os aplicativos de Remover aplicativos do Windows (Office, Copilot, Outlook) e as buscas do jeito que a pessoa fala ("desligar a telemetria", "ligar o modo escuro", "desinstalar winforge", "sem espaço"; em espanhol, "pc lenta", "no hay sonido", "copia de seguridad"). "about this pc" traz Sobre este PC. A dica da caixa diz "seta para baixo vai aos resultados".
+- **Busca, as palavras:** trazem a tela certa primeiro os comandos e os nomes do Windows (eventvwr, winver, Visualizador de Eventos, Restaurar PC), os aplicativos de Remover aplicativos do Windows (Office, Copilot, Outlook) e as buscas do jeito que a pessoa fala ("desligar a telemetria", "ligar o modo escuro", "desinstalar tf-toolkit", "sem espaço"; em espanhol, "pc lenta", "no hay sonido", "copia de seguridad"). "about this pc" traz Sobre este PC. A dica da caixa diz "seta para baixo vai aos resultados".
 - **Verificar o PC, a faixa:** o título diz o que aconteceu também quando algo não foi lido ("Nada pedindo atenção no que foi lido"), quando nenhuma correção funcionou (com o motivo e o botão) e quando a maior parte do PC não pôde ser lida ("Não foi possível verificar o PC", com o que fazer). Uma correção que deu problema aparece na faixa, com o motivo. Com um ponto só, a frase diz o que ele é ("Proteção: 2 ameaças ativas…"); com muitos, os três mais importantes e "e mais N".
 - **Verificar o PC, a ordem:** os pontos vêm do mais grave ao menos (um disco falhando, a proteção e as atualizações de segurança antes do espaço e da inicialização), e o botão da faixa leva ao primeiro.
 - **Verificar o PC, as leituras e as correções:** a linha Proteção diz o mesmo que **Segurança > Estado da proteção** ("2 ameaças ativas", "firewall desligado (Rede pública)"). A linha dos temporários se chama Temporários, e a correção diz o que apaga; sem leitura, ela diz "não foi possível ler", e não "nada acumulado". Uma limpeza que não tirou nada (tudo em uso) não conta como correção feita. Depois de liberar espaço, o disco é lido de novo. Sem o winget, a linha fala do Instalador de Aplicativo. No menu de texto, a lista sem resposta é não corrigir nada, e não um erro.
@@ -264,31 +264,31 @@ A 4.0 é a versão para divulgar: o WinForge passa a se instalar, a se atualizar
 - **Telas azuis:** mais oito códigos com o nome e a causa provável (0xC000021A, 0x24, 0x9C, 0xC4, 0xFC, 0x10E, 0x113 e 0x12B); antes, caíam em "causa desconhecida". Sem conseguir ler o log do Sistema, a tela diz, como os Eventos críticos, que isso não quer dizer que não houve telas azuis e onde conferir.
 - **Teste de memória:** responder Não depois de ver o último resultado não termina mais em "Cancelado". Com erros no último teste, a faixa continua mostrando a ressalva; com um teste recente sem erros, termina como as telas que só mostram informação.
 - **Sobre este PC:** a explicação do tempo ligado com a Inicialização Rápida usa a mesma frase de **Tempo ligado e energia**.
-- **Pastas do próprio WinForge:** a pasta da atualização, a de dados (na desinstalação) e as temporárias são apagadas sem seguir atalhos de pasta: o que está do outro lado de um atalho fica intacto.
-- **README:** curto, nos três idiomas e com as mesmas seções: por que o WinForge, começar (instalar e os dois botões do Início), o que ele faz (os quatro grupos), requisitos, segurança e privacidade (como conferir o SHA-256 do zip e o que vai para a internet), atualizar e desinstalar, linha de comando (com os códigos de saída da verificação rápida), perguntas frequentes, onde pedir ajuda e, para quem desenvolve, a documentação.
-- **O site do WinForge:** **Sobre o WinForge > Site do WinForge** abre usewinforge.com.br no navegador, na página do idioma da janela, e o README leva a ele nos três idiomas. A entrada do WinForge em Aplicativos instalados passa a ter o endereço do site, o da ajuda (as issues do GitHub) e o das versões, e a atualização com um clique grava os três de novo. O download e a atualização continuam pelo GitHub.
+- **Pastas do próprio TF-Toolkit:** a pasta da atualização, a de dados (na desinstalação) e as temporárias são apagadas sem seguir atalhos de pasta: o que está do outro lado de um atalho fica intacto.
+- **README:** curto, nos três idiomas e com as mesmas seções: por que o TF-Toolkit, começar (instalar e os dois botões do Início), o que ele faz (os quatro grupos), requisitos, segurança e privacidade (como conferir o SHA-256 do zip e o que vai para a internet), atualizar e desinstalar, linha de comando (com os códigos de saída da verificação rápida), perguntas frequentes, onde pedir ajuda e, para quem desenvolve, a documentação.
+- **O site do TF-Toolkit:** **Sobre o TF-Toolkit > Site do TF-Toolkit** abre usewinforge.com.br no navegador, na página do idioma da janela, e o README leva a ele nos três idiomas. A entrada do TF-Toolkit em Aplicativos instalados passa a ter o endereço do site, o da ajuda (as issues do GitHub) e o das versões, e a atualização com um clique grava os três de novo. O download e a atualização continuam pelo GitHub.
 - **CHANGELOG do zip:** traz as cinco builds mais recentes e o link para o histórico completo, no GitHub.
 - **Wi-Fi em espanhol:** as informações de rede passam a ler o nome da interface e o sinal no Windows em espanhol.
 - **"AVISO:"** das mensagens de aviso da janela sai no idioma da tela.
 - **Ajuste que falha no meio:** quando aplicar um ajuste dá erro e nem desfazer a tentativa funciona, o valor de antes continua guardado (desfazer o ajuste volta a ele), e a tela avisa que parte dele pode ter ficado aplicada. Antes, esse valor era descartado.
-- **Pasta de dados:** sem a variável LOCALAPPDATA (alguns acessos remotos abrem o PowerShell sem ela), o WinForge usa a pasta da conta que o Windows informa, em vez de criar uma pasta "WinForge" no diretório atual; apagar os dados na desinstalação nunca alcança outra pasta.
+- **Pasta de dados:** sem a variável LOCALAPPDATA (alguns acessos remotos abrem o PowerShell sem ela), o TF-Toolkit usa a pasta da conta que o Windows informa, em vez de criar uma pasta "TF-Toolkit" no diretório atual; apagar os dados na desinstalação nunca alcança outra pasta.
 - **Monitor na bandeja:** uma leitura em segundo plano que passa do tempo é deixada de lado sem esperar por ela, e o ícone não fica travado se a consulta do Windows não responder.
 - **winget num Windows em espanhol:** as tabelas do winget ("Nombre", "Origen") voltam a ser lidas. Antes, **Atualizar programas**, **Listar programas instalados**, a busca de programas, a desinstalação e o **Verificar o PC** não reconheciam a lista.
 - **Atualizar programas, só com programas deixados de fora:** quando o winget deixa de fora todos os programas com versão nova (os marcados para não atualizar e os de versão desconhecida), a tela diz que os programas estão em dia. Antes, dizia que não dava para ler a lista e oferecia "Atualizar tudo o que o winget oferecer", e o **Verificar o PC** dizia "não foi possível ler".
 
 ## Build 3.70
 
-Esta build traz o WinForge em três idiomas: **português, inglês e espanhol**. No automático, ele segue o idioma do Windows (português, inglês ou espanhol; em qualquer outro, inglês), e a escolha fica em **Sobre o WinForge > Idioma**. Mudam de idioma a janela, o menu do terminal, o monitor na bandeja, os relatórios e as mensagens; em português, os textos continuam os da 3.69.
+Esta build traz o TF-Toolkit em três idiomas: **português, inglês e espanhol**. No automático, ele segue o idioma do Windows (português, inglês ou espanhol; em qualquer outro, inglês), e a escolha fica em **Sobre o TF-Toolkit > Idioma**. Mudam de idioma a janela, o menu do terminal, o monitor na bandeja, os relatórios e as mensagens; em português, os textos continuam os da 3.69.
 - **Três idiomas:** português, inglês (dos Estados Unidos) e espanhol (neutro, da América Latina, com "tú").
 - **Segue o Windows:** no automático, o idioma de exibição do Windows decide; o português de Portugal recebe o do Brasil.
-- **Windows em espanhol:** o WinForge passa a entender as mensagens do DISM, do SFC, do CHKDSK e do winget em espanhol, como já entendia em português e em inglês.
+- **Windows em espanhol:** o TF-Toolkit passa a entender as mensagens do DISM, do SFC, do CHKDSK e do winget em espanhol, como já entendia em português e em inglês.
 
 ### Mudou para quem usa
 
 **A escolha do idioma**
-- **Sobre o WinForge > Idioma:** um cartão ao lado de **Aparência**, com Automático, Português, English e Español. Cada idioma aparece com o próprio nome, para quem não lê o idioma da tela achar o seu.
-- **Vale ao abrir de novo:** com nenhuma ação rodando, o WinForge pergunta se reabre agora, na mesma página. Com uma ação em andamento, nada é interrompido: a troca fica para a próxima vez que o WinForge abrir.
-- **No terminal:** **Sobre o WinForge > Idioma** no menu guarda a escolha; `-Language pt`, `en` ou `es` vale só para aquela vez.
+- **Sobre o TF-Toolkit > Idioma:** um cartão ao lado de **Aparência**, com Automático, Português, English e Español. Cada idioma aparece com o próprio nome, para quem não lê o idioma da tela achar o seu.
+- **Vale ao abrir de novo:** com nenhuma ação rodando, o TF-Toolkit pergunta se reabre agora, na mesma página. Com uma ação em andamento, nada é interrompido: a troca fica para a próxima vez que o TF-Toolkit abrir.
+- **No terminal:** **Sobre o TF-Toolkit > Idioma** no menu guarda a escolha; `-Language pt`, `en` ou `es` vale só para aquela vez.
 - **Monitor na bandeja:** muda de idioma quando abre de novo (ao entrar no Windows ou ao ser ligado outra vez).
 
 **O que muda com o idioma**
@@ -296,11 +296,11 @@ Esta build traz o WinForge em três idiomas: **português, inglês e espanhol**.
 - **Datas e números no formato do idioma:** em inglês, "11/18/2026 2:05 PM" e "1.5 GB"; em espanhol, "18/11/2026 14:05" e "1,5 GB". Listas ganham o "and" e o "y" (que vira "e" antes de som de i, como em "Chrome e Internet Explorer").
 - **Sim ou não:** a dica vira Y/n em inglês e S/n em espanhol; o terminal aceita S, Sim, Sí, Y e Yes em qualquer idioma.
 - **Busca (Ctrl+K):** cada idioma com as próprias palavras de ligação, sinônimos e terminações ("disable" acha o que a tela chama de "turn off"; "deshabilitar" acha "desactivar"). Os nomes em inglês das ferramentas do Windows ("task manager", "disk cleanup", "msconfig") continuam achando nos três idiomas.
-- **Referências "Página > Item":** os textos que mandam para outro lugar do WinForge usam os nomes traduzidos, e o link do resumo continua levando ao item.
+- **Referências "Página > Item":** os textos que mandam para outro lugar do TF-Toolkit usam os nomes traduzidos, e o link do resumo continua levando ao item.
 
 **Arquivos e registros**
-- **Nomes de arquivo fixos:** o backup antes de formatar mantém os nomes de sempre (como o LEIA-ME), para um backup feito num idioma ser lido em outro. A exportação de ajustes ganha o nome no idioma ("WinForge-tweaks-...json" em inglês, "WinForge-ajustes-...json" em espanhol), e a importação acha os dois.
-- **Registros gravados:** os estados que o WinForge guarda (inicialização, ajustes, Windows Update) usam códigos e aparecem no idioma da tela. **Manutenção > Histórico de mudanças** guarda cada mudança no idioma em que ela foi feita; nas anotadas em português (como todas as de antes desta build), o nome da ação aparece traduzido.
+- **Nomes de arquivo fixos:** o backup antes de formatar mantém os nomes de sempre (como o LEIA-ME), para um backup feito num idioma ser lido em outro. A exportação de ajustes ganha o nome no idioma ("TF-Toolkit-tweaks-...json" em inglês, "TF-Toolkit-ajustes-...json" em espanhol), e a importação acha os dois.
+- **Registros gravados:** os estados que o TF-Toolkit guarda (inicialização, ajustes, Windows Update) usam códigos e aparecem no idioma da tela. **Manutenção > Histórico de mudanças** guarda cada mudança no idioma em que ela foi feita; nas anotadas em português (como todas as de antes desta build), o nome da ação aparece traduzido.
 
 **Leitura do Windows em espanhol**
 - **Reparo:** o DISM e o SFC em espanhol são lidos como em português e em inglês (repositório sem dano, reparável ou não, reparo concluído, reparo no próximo reinício), com o andamento do SFC na barra; o aviso do CHKDSK de reparo no próximo reinício também.
@@ -345,21 +345,21 @@ Esta build revisa a **Busca** (Ctrl+K) de ponta a ponta: o desenho da caixa e do
 
 ## Build 3.68
 
-Esta build revisa a página **Sobre o WinForge** de ponta a ponta: o desenho em vários tamanhos de janela, o código por trás de cada item, o que cada um faz no Windows e uma bateria de casos típicos e fora do comum. O que cada item faz já estava certo; o que mudou é a faixa de resultado, que agora diz o que aconteceu em vez de "Tudo certo".
+Esta build revisa a página **Sobre o TF-Toolkit** de ponta a ponta: o desenho em vários tamanhos de janela, o código por trás de cada item, o que cada um faz no Windows e uma bateria de casos típicos e fora do comum. O que cada item faz já estava certo; o que mudou é a faixa de resultado, que agora diz o que aconteceu em vez de "Tudo certo".
 - **Verificar nova versão:** "Você está na versão mais recente" ou "Build 3.9 baixada e conferida", com a pasta para onde copiar.
-- **Criar atalho do WinForge:** "Atalho criado", com onde ele ficou e como fixar na barra de tarefas.
+- **Criar atalho do TF-Toolkit:** "Atalho criado", com onde ele ficou e como fixar na barra de tarefas.
 - **Conferir dados online e Monitor na bandeja:** "Dados atualizados", "Dados em dia", "Monitor ligado", "Monitor desligado".
 
 ### Mudou para quem usa
 
 **A página**
-- **Conferida, sem mudança de arrumação:** o alto da página (versão, atalho e Administrador), os dois grupos de itens (Versão e dados; Integração com o Windows) e o cartão **Aparência**. Conferi também o que cada item faz: o download confere o SHA-256 publicado pelo GitHub, vai para a pasta Downloads de quem usa o PC e não troca os arquivos do WinForge; o monitor grava só a entrada de início da sua conta. Nada disso mudou.
+- **Conferida, sem mudança de arrumação:** o alto da página (versão, atalho e Administrador), os dois grupos de itens (Versão e dados; Integração com o Windows) e o cartão **Aparência**. Conferi também o que cada item faz: o download confere o SHA-256 publicado pelo GitHub, vai para a pasta Downloads de quem usa o PC e não troca os arquivos do TF-Toolkit; o monitor grava só a entrada de início da sua conta. Nada disso mudou.
 
 **Verificar nova versão**
 - **Em dia:** "Você está na versão mais recente", com a build publicada no GitHub. Numa cópia mais nova que a publicada, "Esta cópia é mais nova que a publicada".
-- **Depois do download:** "Build 3.9 baixada e conferida" (ou "já baixada e conferida", quando o arquivo já estava na pasta Downloads), e a frase diz o passo que falta: fechar o WinForge e copiar o que está na pasta WinForge do zip para a pasta dele, que a frase mostra.
+- **Depois do download:** "Build 3.9 baixada e conferida" (ou "já baixada e conferida", quando o arquivo já estava na pasta Downloads), e a frase diz o passo que falta: fechar o TF-Toolkit e copiar o que está na pasta TF-Toolkit do zip para a pasta dele, que a frase mostra.
 
-**Criar atalho do WinForge**
+**Criar atalho do TF-Toolkit**
 - **A faixa:** "Atalho criado", "Atalhos criados" (nos dois lugares) ou "Atalho atualizado", com onde ele ficou e como fixar na barra de tarefas.
 - **Fixar no Windows 11:** a tela diz que a opção **Fixar na barra de tarefas** fica dentro de **Mostrar mais opções** (Área de Trabalho) ou de **Mais** (Menu Iniciar).
 
@@ -404,7 +404,7 @@ Esta build revisa a página **Ajustes do Windows** de ponta a ponta: o desenho e
 - **Conferida, sem mudança de arrumação:** os oito cartões do alto (com **Aplicar ajustes recomendados** como o único em destaque) e as seis categorias de chaves (Explorador, Privacidade e sugestões, Windows Update, Notificações e teclado, Jogos, Energia e desempenho) seguem do que mais se vê para o que mexe no hardware. Conferi também o que cada ajuste grava no registro e nos planos de energia, e as versões do Windows em que cada um aparece; fora da Game Bar, nada mudou.
 
 **As chaves**
-- **A faixa:** o título diz o recurso e como ele ficou ("ID de publicidade: desativado"); a frase diz como voltar ("O valor de antes foi guardado; para voltar, use a chave de novo"), ou, ao desfazer, se voltou ao valor de antes do WinForge, se o que foi alterado depois foi mantido ou se valeram os padrões do Windows. Num ajuste do Explorador sem reiniciá-lo, a frase acrescenta que a mudança aparece quando você sair e entrar de novo no Windows.
+- **A faixa:** o título diz o recurso e como ele ficou ("ID de publicidade: desativado"); a frase diz como voltar ("O valor de antes foi guardado; para voltar, use a chave de novo"), ou, ao desfazer, se voltou ao valor de antes do TF-Toolkit, se o que foi alterado depois foi mantido ou se valeram os padrões do Windows. Num ajuste do Explorador sem reiniciá-lo, a frase acrescenta que a mudança aparece quando você sair e entrar de novo no Windows.
 
 **Aplicar ajustes recomendados, Perfis de ajustes e Importar ajustes**
 - **A faixa:** "2 ajustes aplicados", com os nomes (até quatro; com mais, três e quantos faltam). Com falhas, "1 de 2 ajustes aplicados", dizendo qual não foi aplicado e que o motivo está no resumo. Sem o Explorador reiniciado, a frase diz quando as mudanças aparecem.
@@ -412,7 +412,7 @@ Esta build revisa a página **Ajustes do Windows** de ponta a ponta: o desenho e
 **Exportar ajustes aplicados**
 - **A faixa:** "2 ajustes exportados", com a pasta do arquivo e o que fazer no outro PC (**Ajustes do Windows > Importar ajustes**).
 
-**Desfazer ajustes do WinForge**
+**Desfazer ajustes do TF-Toolkit**
 - **A faixa:** "2 ajustes desfeitos", com os nomes. Com falhas, "1 de 2 ajustes desfeitos", dizendo qual ficou e que o backup dele foi mantido para uma nova tentativa.
 - **A pergunta:** "Desfazer todos agora?", com **Não** como padrão, como antes, em vez de "Deseja desfazer todos?".
 
@@ -481,7 +481,7 @@ Esta build revisa a página **Programas** de ponta a ponta: o desenho em vários
 
 **Backup antes de formatar e Restaurar a partir de um backup**
 - **A faixa do backup:** "Backup salvo", com a pasta e o que falta fazer antes de formatar (copiar a pasta, quando ela ficou em Documentos, e as pastas pessoais).
-- **Nada salvo:** quando o que foi marcado estava vazio (nenhum ajuste aplicado, nenhuma rede salva) ou falhou, a pasta criada para o backup ficava em **Documentos > WinForge > Backups** só com o `backup.json` e o `LEIA-ME`, e a tela mostrava **Onde está o backup** e mandava copiá-la para um pendrive. Agora a pasta é apagada e a tela não manda copiar nada; o desfecho continua "Nada a fazer" ou "Não foi concluído". A soma do tamanho das pastas pessoais, que pode levar minutos, também deixa de rodar nesse caso.
+- **Nada salvo:** quando o que foi marcado estava vazio (nenhum ajuste aplicado, nenhuma rede salva) ou falhou, a pasta criada para o backup ficava em **Documentos > TF-Toolkit > Backups** só com o `backup.json` e o `LEIA-ME`, e a tela mostrava **Onde está o backup** e mandava copiá-la para um pendrive. Agora a pasta é apagada e a tela não manda copiar nada; o desfecho continua "Nada a fazer" ou "Não foi concluído". A soma do tamanho das pastas pessoais, que pode levar minutos, também deixa de rodar nesse caso.
 - **A faixa da restauração:** "4 itens restaurados", com o lembrete de reiniciar e de copiar de volta as pastas pessoais. Quando nada voltou, esse lembrete sai da tela.
 
 ## Build 3.63
@@ -500,7 +500,7 @@ Esta build revisa a página **Atualizações** de ponta a ponta: o desenho em v�
 
 **Instalar atualizações do Windows e Atualizar drivers**
 - **A faixa:** o título diz quantas foram instaladas ("3 atualizações instaladas", "2 drivers instalados"), e a frase, se falta reiniciar ("Reinicie o PC para terminar a instalação", dito uma vez só) ou, sem reinício, "Não precisa reiniciar" (nos drivers, como voltar ao driver anterior). Com falhas: "1 de 3 atualizações instaladas", com quantas falharam e que o motivo de cada uma está no resumo; nenhuma: "Nenhuma atualização instalada", em vermelho. Nada pendente: "O Windows está em dia"; nenhum driver novo: "Nenhum driver novo", com o botão **Ver as ferramentas do fabricante** (placa de vídeo e BIOS costumam ter versões mais novas lá).
-- **O botão que resolve:** quando o motivo de uma falha aponta um item do WinForge (o cache do Windows Update estragado, o serviço desativado, os arquivos do Windows danificados), a faixa traz o botão **Corrigir o Windows Update** ou **Reparar o Windows**. Também quando a consulta ao Windows Update falha ("O Windows Update não respondeu", com o motivo embaixo).
+- **O botão que resolve:** quando o motivo de uma falha aponta um item do TF-Toolkit (o cache do Windows Update estragado, o serviço desativado, os arquivos do Windows danificados), a faixa traz o botão **Corrigir o Windows Update** ou **Reparar o Windows**. Também quando a consulta ao Windows Update falha ("O Windows Update não respondeu", com o motivo embaixo).
 - **Windows sem suporte:** com nada pendente num Windows que não recebe mais atualizações de segurança, a faixa diz isso e o botão abre **Diagnóstico > Suporte do Windows**.
 
 **Corrigir o Windows Update**
@@ -520,7 +520,7 @@ Esta build revisa a página **Reparo** de ponta a ponta: o desenho em vários ta
 - **Reinício pendente primeiro:** com uma atualização esperando o reinício, o reparo nem começa; a tela diz por quê e oferece reiniciar.
 - **"Nenhum problema encontrado", "Windows reparado":** o título da faixa do reparo, em vez de "Tudo certo".
 - **O próximo passo num botão:** do SFC ao reparo completo, do DISM ao SFC, do reparo que não resolveu à Recuperação, e outros.
-- **Perguntas no mesmo padrão:** "Iniciar o reparo agora?", como no resto do WinForge.
+- **Perguntas no mesmo padrão:** "Iniciar o reparo agora?", como no resto do TF-Toolkit.
 
 ### Mudou para quem usa
 
@@ -562,8 +562,8 @@ Esta build revisa a página **Desempenho** de ponta a ponta: o desenho em vário
 - **O que deu errado:** "A memória não foi liberada" quando o Windows recusa; sem a leitura do Windows, "Memória liberada", sem número. No Acelerar agora, a pasta de temporários recusada e a conta diferente aparecem no fim da frase (antes, a faixa ficava amarela sem dizer por quê).
 
 **Programas pesando agora**
-- **Aplicativos da Microsoft Store:** a janela deles (Calculadora, Configurações...) é desenhada dentro de uma moldura do Windows, que é de outro processo. O WinForge os tratava como programas sem janela: dizia "não tem janela aberta" e oferecia encerrar à força. Agora eles fecham pela moldura, como no X, e contam como fechados quando ela fecha (o Windows encerra o aplicativo logo depois). Minimizado, um aplicativo da Store sai de dentro da moldura e continua contando como sem janela, com a pergunta de antes.
-- **PowerShell e terminais:** um PowerShell ou terminal pesando aparece com "pode ser o WinForge", em vez de "usado pelo WinForge": o WinForge que está aberto nem entra na lista, e o que aparece pode ser o monitor da bandeja, a janela de texto do WinForge ou um script seu. Continua fora da lista para fechar.
+- **Aplicativos da Microsoft Store:** a janela deles (Calculadora, Configurações...) é desenhada dentro de uma moldura do Windows, que é de outro processo. O TF-Toolkit os tratava como programas sem janela: dizia "não tem janela aberta" e oferecia encerrar à força. Agora eles fecham pela moldura, como no X, e contam como fechados quando ela fecha (o Windows encerra o aplicativo logo depois). Minimizado, um aplicativo da Store sai de dentro da moldura e continua contando como sem janela, com a pergunta de antes.
+- **PowerShell e terminais:** um PowerShell ou terminal pesando aparece com "pode ser o TF-Toolkit", em vez de "usado pelo TF-Toolkit": o TF-Toolkit que está aberto nem entra na lista, e o que aparece pode ser o monitor da bandeja, a janela de texto do TF-Toolkit ou um script seu. Continua fora da lista para fechar.
 - **A faixa:** "2 programas fechados" no título, com a memória em uso agora e antes embaixo (sem a leitura da memória, os nomes).
 
 **Gerenciar inicialização** (também em **Programas**)
@@ -601,7 +601,7 @@ Esta build revisa a página **Limpeza** de ponta a ponta: o desenho em vários t
 - **O espaço ainda está na Lixeira:** o que essas ferramentas tiram vai para a Lixeira, e o espaço só volta ao esvaziá-la. A faixa agora diz quanto foi para lá ("12 itens na Lixeira", "1,4 GB voltam ao disco ao esvaziar a Lixeira") e traz o botão **Esvaziar a Lixeira**, que abre a tela que faz isso. Antes, só o texto apontava o caminho. A exclusão definitiva da Downloads não tem o botão: ali o espaço já voltou.
 
 **Apagar o espaço livre**
-- **O PC fica acordado:** o `cipher /w` grava por horas, e com o PC suspenso no meio ele para com o disco cheio até o PC voltar. Enquanto ele roda, o WinForge pede ao Windows para não suspender, como na Manutenção, e devolve o controle ao terminar, ao ser parado ou com erro.
+- **O PC fica acordado:** o `cipher /w` grava por horas, e com o PC suspenso no meio ele para com o disco cheio até o PC voltar. Enquanto ele roda, o TF-Toolkit pede ao Windows para não suspender, como na Manutenção, e devolve o controle ao terminar, ao ser parado ou com erro.
 
 ## Build 3.59
 
@@ -647,7 +647,7 @@ Esta build revisa a página **Diagnóstico** de ponta a ponta: o desenho em vár
 ### Mudou para quem usa
 
 **A página**
-- **Organização:** as seções tinham três, três e seis cartões, arrumados para a janela de três colunas: só nessa largura o Monitor de Confiabilidade ficava embaixo de Eventos críticos e o Gerenciador de Dispositivos embaixo de Dispositivos com problema. Com a janela no mínimo (duas colunas) ou maximizada (quatro), a arrumação se perdia e os atalhos do Windows ficavam no meio das telas do WinForge. Agora as seções seguem o assunto: **Visão geral** (Sobre este PC, Suporte do Windows, Exportar relatório), **Hardware** (Discos e espaço livre, Saúde dos discos, Dispositivos com problema, Saúde da bateria), **Funcionamento do Windows** (Eventos críticos, Reinício pendente, Tempo ligado e energia) e **Ferramentas do Windows** (Monitor de Confiabilidade e Gerenciador de Dispositivos), como nas outras páginas. Em qualquer largura, nenhuma seção passa de duas linhas.
+- **Organização:** as seções tinham três, três e seis cartões, arrumados para a janela de três colunas: só nessa largura o Monitor de Confiabilidade ficava embaixo de Eventos críticos e o Gerenciador de Dispositivos embaixo de Dispositivos com problema. Com a janela no mínimo (duas colunas) ou maximizada (quatro), a arrumação se perdia e os atalhos do Windows ficavam no meio das telas do TF-Toolkit. Agora as seções seguem o assunto: **Visão geral** (Sobre este PC, Suporte do Windows, Exportar relatório), **Hardware** (Discos e espaço livre, Saúde dos discos, Dispositivos com problema, Saúde da bateria), **Funcionamento do Windows** (Eventos críticos, Reinício pendente, Tempo ligado e energia) e **Ferramentas do Windows** (Monitor de Confiabilidade e Gerenciador de Dispositivos), como nas outras páginas. Em qualquer largura, nenhuma seção passa de duas linhas.
 - **Saúde da bateria:** quando o cartão Bateria do Início confirma que o PC não tem bateria (um PC de mesa, inclusive com nobreak), o cartão sai do Diagnóstico. Ele é o último da seção **Hardware**, então os outros não mudam de lugar. Antes de o Início terminar a leitura, ele aparece; a busca continua chegando nele.
 
 **Sobre este PC**
@@ -695,14 +695,14 @@ Esta build revisa a página **Manutenção** de ponta a ponta: o desenho em vár
 - **O motivo de cada etapa:** o **Histórico de manutenções** começa pelo que pediu atenção na última manutenção, com onde rodar cada etapa de novo.
 - **Verificar o PC mais completo:** confere o espaço no disco e se as atualizações de segurança estão em dia.
 - **Ponto de restauração honesto:** quando o Windows não cria o ponto, a faixa diz isso, em vermelho.
-- **Nada some:** um arquivo do WinForge estragado que volta da cópia anterior não se perde mais na leitura seguinte.
+- **Nada some:** um arquivo do TF-Toolkit estragado que volta da cópia anterior não se perde mais na leitura seguinte.
 
 ### Mudou para quem usa
 
 **A página**
 - **O alto da página:** o cartão **Última manutenção**, o mesmo do Início ("há 2 dias" e, embaixo, a data ou "2 etapas com atenção"), no lugar das três linhas de texto. O clique nele abre o **Histórico de manutenções**. A frase embaixo do título ficou curta: "Cuide do PC e volte atrás se algo der errado."
 - **Duas seções de três cartões:** **Cuidar do PC** (**Otimizar**, **Verificar o PC** e **Manutenção agendada**) e **Se algo der errado** (**Criar ponto de restauração**, **Histórico de mudanças** e **Restauração do Sistema**). A manutenção agendada não fica mais abaixo da dobra numa janela de 1180 x 760. O **Histórico de manutenções** (que repetia o cartão do alto) e o **Agendador de Tarefas** não viram cartão: a busca e o console continuam chegando neles.
-- **Descrições curtas:** cada cartão diz o que faz em uma frase ("A manutenção completa do PC, em ordem; pode levar mais de uma hora"). O **Histórico de mudanças** não promete mais "tudo o que o WinForge mudou": diz o que mudou e que dá para desfazer o que tiver volta.
+- **Descrições curtas:** cada cartão diz o que faz em uma frase ("A manutenção completa do PC, em ordem; pode levar mais de uma hora"). O **Histórico de mudanças** não promete mais "tudo o que o TF-Toolkit mudou": diz o que mudou e que dá para desfazer o que tiver volta.
 - **Ícones:** **Criar ponto de restauração** ganhou uma bandeira, e **Restauração do Sistema** ficou com a seta de voltar; antes, os dois eram quase iguais, lado a lado.
 - **Leitor de tela:** o nome de cada cartão inclui o que ele mostra em etiqueta e nota ("Recomendado", "Abre no Windows", "Pede Administrador ao executar"), em todas as páginas.
 
@@ -717,7 +717,7 @@ Esta build revisa a página **Manutenção** de ponta a ponta: o desenho em vár
 
 **Histórico de manutenções**
 - **A última manutenção primeiro:** cada etapa que pediu atenção aparece com o motivo guardado e onde rodá-la de novo ("Limpeza rápida: Atenção (2 arquivos em uso); rode de novo em Limpeza > Limpeza rápida"). O cartão do Início e o da página diziam "2 etapas com atenção" e mandavam para cá, mas aqui só havia contagens.
-- **Datas no futuro:** uma verificação gravada com o relógio adiantado não aparece mais como "agora há pouco". Em todo o WinForge, uma data mais de um dia no futuro aparece como "com data no futuro".
+- **Datas no futuro:** uma verificação gravada com o relógio adiantado não aparece mais como "agora há pouco". Em todo o TF-Toolkit, uma data mais de um dia no futuro aparece como "com data no futuro".
 - **Sem "Executar de novo":** a tela só mostra informações, e rodar de novo mostraria a mesma coisa (o mesmo vale para o **Histórico de mudanças** quando nada é desfeito). Um histórico que não pôde ser lido termina em vermelho.
 
 **Criar ponto de restauração**
@@ -728,7 +728,7 @@ Esta build revisa a página **Manutenção** de ponta a ponta: o desenho em vár
 
 **Histórico de mudanças**
 - **Uma vez só:** a pergunta "O que desfazer?" (botão **Desfazer**) traz as mudanças que têm volta; a lista de cima traz só as outras. Antes, cada mudança aparecia duas vezes, e três linhas soltas vinham antes da pergunta.
-- **Sem Administrador:** desfazer um recurso do Windows ou o DNS diz "pede Administrador: abra o WinForge como Administrador e desfaça de novo", e a mudança continua na lista. Antes, vinha o texto cru do Windows, ou a indicação de outra tela que também pede Administrador.
+- **Sem Administrador:** desfazer um recurso do Windows ou o DNS diz "pede Administrador: abra o TF-Toolkit como Administrador e desfaça de novo", e a mudança continua na lista. Antes, vinha o texto cru do Windows, ou a indicação de outra tela que também pede Administrador.
 - **DNS:** só endereços IP de verdade voltam como servidores DNS; um backup alterado por outro programa deixa o adaptador como está.
 
 **Manutenção agendada**
@@ -738,7 +738,7 @@ Esta build revisa a página **Manutenção** de ponta a ponta: o desenho em vár
 
 **O que acontece no Windows**
 - **A janela da tarefa no Windows 11:** com o Terminal do Windows como programa de console padrão (o normal no Windows 11 22H2 em diante), o `-WindowStyle Hidden` não esconde nada: a janela aparecia todo mês, e fechá-la parava a limpeza. No Windows 11, a tarefa nova abre o PowerShell pelo console sem janela (`conhost.exe --headless`). Uma tarefa criada antes continua como estava até o dia ser escolhido de novo.
-- **Arquivos recuperados da cópia:** quando um arquivo de estado do WinForge (o diário de mudanças, o histórico, as preferências) estava estragado e a cópia anterior (`.bak`) era lida no lugar, o arquivo bom não voltava para o lugar. A leitura seguinte dizia "nunca rodou", e a gravação seguinte trocava a cópia boa pela vazia: desfazer uma mudança apagava as outras do diário. Agora a cópia volta para o lugar na hora, e só as três cópias estragadas mais novas ficam guardadas.
+- **Arquivos recuperados da cópia:** quando um arquivo de estado do TF-Toolkit (o diário de mudanças, o histórico, as preferências) estava estragado e a cópia anterior (`.bak`) era lida no lugar, o arquivo bom não voltava para o lugar. A leitura seguinte dizia "nunca rodou", e a gravação seguinte trocava a cópia boa pela vazia: desfazer uma mudança apagava as outras do diário. Agora a cópia volta para o lugar na hora, e só as três cópias estragadas mais novas ficam guardadas.
 - **Leituras que falham:** com as preferências presas por outro programa, a última verificação não vira mais "nunca verificou"; o cartão diz "Não foi possível ler", e o monitor na bandeja não avisa "Hora de cuidar do PC" sem ter lido.
 - **Restauração do Sistema:** recusar o aviso de Administrador dela (código 1223) não mostra mais "o recurso pode não existir nesta edição do Windows".
 
@@ -763,7 +763,7 @@ Esta build revisa o **Início** de ponta a ponta: o desenho da tela em vários t
 - **Verificar vírus** aparece só quando o Windows Defender é quem protege o PC: sai também com o Defender desligado, em modo passivo ou sem resposta (a verificação falharia, e o ponto da nota já leva à Segurança do Windows). Quem protege fica guardado para a próxima abertura: o botão não aparece mais por alguns segundos para sumir quando a leitura termina.
 - **Leitura:** "Lendo o PC..." e "Atualizando...", sem a contagem de etapas ("2 de 7"), que não batia com os cartões. Uma falha no meio da leitura não deixa mais o Início preso em "Lendo" com o botão de ler de novo desligado: a hora diz "A leitura não terminou". Trocar o tema depois de uma leitura cuja nota não pôde ser calculada não lê o PC de novo.
 - **Leitor de tela:** a frase da nota é lida quando a leitura termina, e os cartões dizem "lendo" enquanto esperam.
-- **O aviso da conta diferente** ficou mais curto ("O WinForge foi aberto com a conta admin, não com a que está em uso: a limpeza e os ajustes do Windows valem só para ela."), e sem o nome da conta não fica mais com um buraco ("conta , e não").
+- **O aviso da conta diferente** ficou mais curto ("O TF-Toolkit foi aberto com a conta admin, não com a que está em uso: a limpeza e os ajustes do Windows valem só para ela."), e sem o nome da conta não fica mais com um buraco ("conta , e não").
 
 **A nota de saúde**
 - **Atualizações atrasadas:** com o Windows ainda no suporte, a nota confere a revisão da build instalada (o "7807" de 19045.7807) contra a da atualização de segurança de outubro de 2026, guardada no catálogo. Sem ela, 35 dias depois (o máximo que o Windows Update deixa pausar), "Faltam atualizações de segurança do Windows" é um ponto grave, com o botão **Atualizar**, e o cartão Windows diz "atualizações atrasadas". Vale também para o Windows 10 no ESU, que antes contava como protegido só por ter instalado uma atualização do programa.
@@ -773,10 +773,10 @@ Esta build revisa o **Início** de ponta a ponta: o desenho da tela em vários t
 - **Suporte do Windows sem leitura:** quando a leitura do Windows falha ou passa do tempo, a nota diz "Não foi possível ler: Suporte do Windows", como quando só o suporte falha; antes, ela ficava "Ótima" em verde.
 - **Resumo:** com algo sem leitura e um ponto leve, o resumo dizia "1 ponto pede atenção." embaixo de "Seu PC parece bem"; agora diz "1 detalhe para quando puder.".
 - **Manutenção:** a última manutenção com etapas pedindo atenção leva ao histórico (**Ver**), onde está o motivo de cada uma, e não mais a refazer a manutenção inteira. O registro da manutenção que existe, mas não abre (preso por outro programa), aparece como "Não foi possível ler", e não como "nunca feita" pedindo uma verificação. A data registrada depois da data de hoje diz só que as duas não batem ("confira o relógio"), sem afirmar qual está errada.
-- **Manutenção agendada:** desligada no Agendador de Tarefas, usando um WinForge de outra pasta ou com a última execução falha, é um ponto leve (peso 3) com o botão **Ver**, que abre a tela do agendamento.
+- **Manutenção agendada:** desligada no Agendador de Tarefas, usando um TF-Toolkit de outra pasta ou com a última execução falha, é um ponto leve (peso 3) com o botão **Ver**, que abre a tela do agendamento.
 
 **O que acontece no Windows**
-- **Quem está usando o PC:** o WinForge pergunta ao Windows o dono do Explorador da sessão em que ele roda, e só sem isso usa quem está no console. Antes, pela Área de Trabalho Remota, a conta de quem estava na frente do monitor (ou ninguém) aparecia como "a que está usando o PC", e o aviso da conta diferente saía errado.
+- **Quem está usando o PC:** o TF-Toolkit pergunta ao Windows o dono do Explorador da sessão em que ele roda, e só sem isso usa quem está no console. Antes, pela Área de Trabalho Remota, a conta de quem estava na frente do monitor (ou ninguém) aparecia como "a que está usando o PC", e o aviso da conta diferente saía errado.
 - **Sem o WMI:** a build do Windows vem do Registro quando o WMI não responde; antes, ela ficava em 0, e o suporte do Windows não era conferido.
 - **Bateria:** o cartão só aparece em notebooks. Num desktop com nobreak ligado pelo USB, que o Windows mostra como bateria, ele aparecia.
 - **Leitura em segundo plano:** o limite de 45 segundos por etapa conta pelo cronômetro, e não pelo relógio do Windows (um acerto da hora no meio não encerra a etapa antes do tempo nem a deixa presa). Um leitor que roda, mas termina sem resultado (os módulos não carregaram nele), é descartado, e a etapa roda na janela, em vez de todos os cartões dizerem "Não foi possível ler".
@@ -788,10 +788,10 @@ Esta build revisa o **Início** de ponta a ponta: o desenho da tela em vários t
 
 ## Build 3.54
 
-Esta build revisa o **Verificar vírus** de ponta a ponta: o desenho da tela, o código por trás dela e o que ele pede ao Windows Defender. O resultado passa a dizer o que importa, e as ameaças que pedem ação ficam em vermelho, com o botão para resolvê-las. A atualização do antivírus tem um segundo caminho quando o Windows Update falha, e o WinForge confere se a verificação chegou ao fim.
+Esta build revisa o **Verificar vírus** de ponta a ponta: o desenho da tela, o código por trás dela e o que ele pede ao Windows Defender. O resultado passa a dizer o que importa, e as ameaças que pedem ação ficam em vermelho, com o botão para resolvê-las. A atualização do antivírus tem um segundo caminho quando o Windows Update falha, e o TF-Toolkit confere se a verificação chegou ao fim.
 - **Resultado claro:** "Nenhum vírus encontrado", "2 ameaças resolvidas" ou, em vermelho, "3 ameaças pedem ação", com o botão **Abrir a Segurança do Windows** em destaque.
 - **Nenhuma ameaça escondida:** as de antes que ainda estão ativas aparecem mesmo quando a verificação acha outras.
-- **Antivírus atualizado de verdade:** se o Windows Update falha, o WinForge tenta direto da Microsoft.
+- **Antivírus atualizado de verdade:** se o Windows Update falha, o TF-Toolkit tenta direto da Microsoft.
 - **Verificação até o fim:** sem o registro do fim no Defender, a tela diz que ela pode ter parado antes.
 - **Sem botão à toa:** com outro antivírus protegendo o PC, Verificar vírus sai do Início e as ações do Defender saem da página Segurança.
 - **Uma verificação rápida só:** o cartão "Verificação rápida de vírus" saiu; o Verificar vírus faz a mesma verificação, com o antivírus atualizado antes.
@@ -807,10 +807,10 @@ Esta build revisa o **Verificar vírus** de ponta a ponta: o desenho da tela, o 
 - **Parar:** "Verificação cancelada" quando o Defender aceita cancelar; senão, a tela diz que ele pode continuar até o fim. Na verificação de uma pasta, que não tem como ser cancelada por fora, a tela diz isso, em vez de "Verificação interrompida".
 
 **O que acontece no Windows**
-- **Atualização:** quando o `Update-MpSignature` falha (o Windows Update desligado por um programa de "otimização", com defeito, ou um servidor da empresa sem a atualização do Defender aprovada) ou termina com as assinaturas ainda com mais de 3 dias, o WinForge tenta de novo direto da Microsoft (`-UpdateSource MMPC`), como o próprio Defender só faria depois de 7 dias. Uma política da empresa que tirou essa fonte da lista é respeitada.
-- **O que a verificação achou:** antes de começar, o WinForge anota as detecções que o Defender já tinha; depois, só o que é novo conta como achado. Antes, valia o relógio, com um minuto de folga: uma detecção de segundos antes (a da execução anterior, ou da proteção em tempo real durante a atualização) contava como desta, e um ajuste da hora no meio podia esconder uma de verdade.
+- **Atualização:** quando o `Update-MpSignature` falha (o Windows Update desligado por um programa de "otimização", com defeito, ou um servidor da empresa sem a atualização do Defender aprovada) ou termina com as assinaturas ainda com mais de 3 dias, o TF-Toolkit tenta de novo direto da Microsoft (`-UpdateSource MMPC`), como o próprio Defender só faria depois de 7 dias. Uma política da empresa que tirou essa fonte da lista é respeitada.
+- **O que a verificação achou:** antes de começar, o TF-Toolkit anota as detecções que o Defender já tinha; depois, só o que é novo conta como achado. Antes, valia o relógio, com um minuto de folga: uma detecção de segundos antes (a da execução anterior, ou da proteção em tempo real durante a atualização) contava como desta, e um ajuste da hora no meio podia esconder uma de verdade.
 - **Ameaças de antes ainda ativas** aparecem sempre. Antes, só quando a verificação não achava nada: uma ameaça nova já resolvida escondia uma antiga ainda ativa.
-- **O fim da verificação:** depois da rápida (ou da completa), o WinForge confere no Defender o registro do fim. Sem ele (a verificação cancelada por fora, por exemplo), a faixa diz "A verificação pode ter parado antes do fim", em vez de "Nenhum vírus encontrado".
+- **O fim da verificação:** depois da rápida (ou da completa), o TF-Toolkit confere no Defender o registro do fim. Sem ele (a verificação cancelada por fora, por exemplo), a faixa diz "A verificação pode ter parado antes do fim", em vez de "Nenhum vírus encontrado".
 - **O que o Defender ainda pede ao PC** (reiniciar, a verificação completa, a offline ou uma ação sua) aparece na linha da ameaça e, quando é do PC inteiro, na faixa.
 - **Verificação já em andamento** (a agendada do Windows, ou uma aberta na Segurança do Windows): ressalva, "Já havia uma verificação em andamento", e não mais erro vermelho.
 - **O PC não suspende** no meio da verificação rápida também (antes, só na completa e na de uma pasta).
@@ -846,7 +846,7 @@ Esta build revisa a tela do **Otimizar** de ponta a ponta: o desenho, o código 
 - Com uma pergunta na tela, a lista (ou as opções em linha) fica com pelo menos 40% da altura; antes dela, encolhem a saída dos detalhes técnicos abertos e o resumo. Um resumo que ficaria com menos de três linhas some, e o cartão do andamento com ele: a etapa vai para o alto da pergunta, em letra pequena.
 - As últimas linhas que a etapa escreveu (a pasta e o tamanho dela, o que deixa de abrir com o Windows, por que reiniciar) ficam dentro do cartão da pergunta, e não mais escondidas no alto de um resumo encolhido.
 - A frase em destaque é sempre a etapa: títulos do meio dela ("Lixeira", "Reparar imagem e componentes (DISM)", "Reiniciar o PC") não a trocam mais. A barra de progresso e o botão na barra de tarefas mostram o Otimizar inteiro, e a porcentagem da ferramenta da vez fica no texto embaixo da etapa. Em outra página, a faixa de execução mostra a etapa. O leitor de tela lê cada etapa nova.
-- **Botões:** um só destaque por pergunta (na pasta da revisão, "Limpar com o WinForge" e "Pular esta pasta" ficavam os dois em azul). "Fechou todos os programas?" e "Começar a parte automática?" respondem ao Enter com o botão em destaque, e não mais com Cancelar. Na Lixeira, **Esvaziar** e **Manter**; no fim, **Reiniciar agora** e **Depois**, sem botão azul quando o padrão é não.
+- **Botões:** um só destaque por pergunta (na pasta da revisão, "Limpar com o TF-Toolkit" e "Pular esta pasta" ficavam os dois em azul). "Fechou todos os programas?" e "Começar a parte automática?" respondem ao Enter com o botão em destaque, e não mais com Cancelar. Na Lixeira, **Esvaziar** e **Manter**; no fim, **Reiniciar agora** e **Depois**, sem botão azul quando o padrão é não.
 - **Listas:** o botão diz o que faz e quantos ("Desinstalar (2)", "Remover (1)", "Atualizar (3)"). Nas revisões (inicialização e ajustes), ele conta as mudanças ("Aplicar (3)") e diz **Continuar** quando nada mudou, e desmarcar tudo passa a ser uma resposta (antes, o botão ficava desligado sem nada marcado). "Limpar" virou **Desmarcar tudo** e sai das revisões. Dentro do Otimizar, fechar uma lista é **Pular**; na lista do winget, **Voltar**. Do filtro, a seta para baixo leva à lista.
 - **Parar** fica discreto (não mais vermelho) e continua com a confirmação. **Executar de novo** não aparece depois do Otimizar. **Copiar**, **Salvar** e **Abrir log** aparecem só com os detalhes técnicos abertos.
 - No fim, o resumo usa a altura da janela e abre no "Resumo" das etapas. A faixa de resultado diz até duas etapas pelo nome e, com mais, a conta; o desfecho e a duração não se repetem mais no resumo, e uma frase longa demais é cortada num espaço, não no meio de uma palavra.
@@ -868,12 +868,12 @@ Esta build revisa a tela do **Otimizar** de ponta a ponta: o desenho, o código 
 **Histórico e log**
 - No fim da parte automática o resultado já fica gravado: se a janela fechar ou o PC reiniciar durante a revisão dos ajustes, a manutenção não se perde. O fim do Otimizar grava de novo, por cima da mesma execução.
 - Cancelar a parte automática depois das telas com você não conta mais como manutenção: o resumo e a faixa dizem que ela foi cancelada, e o Início continua lembrando do Otimizar. Sem nada mudado antes, é só "Cancelado". Reiniciar antes de otimizar termina como "Reiniciando", e não "Nada a fazer".
-- Na janela, o log da sessão (`%LOCALAPPDATA%\WinForge\logs`, botão Abrir log) passa a ter cada linha que as ações escrevem, com a hora; antes, o log das ações da janela ficava praticamente vazio.
-- Durações: 59,6 segundos aparecem como "1min 00s", e não "60s". A última etapa que falha não diz mais que o WinForge "continuará para a próxima etapa", e tudo falhando termina em vermelho também no resumo do menu de texto.
+- Na janela, o log da sessão (`%LOCALAPPDATA%\TF-Toolkit\logs`, botão Abrir log) passa a ter cada linha que as ações escrevem, com a hora; antes, o log das ações da janela ficava praticamente vazio.
+- Durações: 59,6 segundos aparecem como "1min 00s", e não "60s". A última etapa que falha não diz mais que o TF-Toolkit "continuará para a próxima etapa", e tudo falhando termina em vermelho também no resumo do menu de texto.
 
 ## Build 3.52
 
-Esta build deixa o **Otimizar** sempre inteiro, sem a lista do que fazer, e começa com a sugestão forte de fechar os programas. As telas ficam mais curtas, os botões das perguntas não somem mais em janelas pequenas, os navegadores Chrome e Firefox entram nas atualizações, e as telas de desinstalar e de inicialização só oferecem o que o WinForge consegue mudar de verdade.
+Esta build deixa o **Otimizar** sempre inteiro, sem a lista do que fazer, e começa com a sugestão forte de fechar os programas. As telas ficam mais curtas, os botões das perguntas não somem mais em janelas pequenas, os navegadores Chrome e Firefox entram nas atualizações, e as telas de desinstalar e de inicialização só oferecem o que o TF-Toolkit consegue mudar de verdade.
 - **Otimizar sempre completo:** sai a pergunta "Escolha o que o Otimizar deve fazer"; as 22 etapas rodam sempre, e cada uma decide sozinha se tem o que fazer.
 - **Feche os programas:** antes de começar, o aviso e a lista dos programas abertos, pelo nome; "Já fechei" confere de novo.
 - **Botões sempre à vista:** a lista de uma pergunta encolhe e rola dentro do cartão, e os botões ficam embaixo dela em qualquer tamanho de janela.
@@ -886,7 +886,7 @@ Esta build deixa o **Otimizar** sempre inteiro, sem a lista do que fazer, e come
 
 **Otimizar**
 - Não há mais lista para escolher as etapas: o Otimizar é sempre o inteiro, na mesma ordem da 3.51 (com os navegadores no lugar do Edge).
-- O começo é a sugestão forte de fechar os programas: "Salve seu trabalho e feche todos os programas antes de otimizar", com "Abertos agora:" e os nomes (até seis, e quantos mais). "Já fechei, começar" confere de novo; com algo ainda aberto, a tela diz o quê e oferece verificar de novo, começar assim mesmo ou cancelar. O próprio WinForge, o terminal que o abriu e as partes do Windows que sempre têm janela não entram na lista.
+- O começo é a sugestão forte de fechar os programas: "Salve seu trabalho e feche todos os programas antes de otimizar", com "Abertos agora:" e os nomes (até seis, e quantos mais). "Já fechei, começar" confere de novo; com algo ainda aberto, a tela diz o quê e oferece verificar de novo, começar assim mesmo ou cancelar. O próprio TF-Toolkit, o terminal que o abriu e as partes do Windows que sempre têm janela não entram na lista.
 - A confirmação da parte automática é um clique em **Começar** (no menu de texto, S), sem a palavra WINFORGE.
 - Saem o parágrafo "Como funciona", as orientações antes das telas com você, a pergunta do relatório no fim (ele continua em Diagnóstico > Exportar relatório), a linha "Otimização finalizada" e o caminho do log no resumo (ele fica no botão Abrir log). Os avisos de reinício pendente, bateria, pouco espaço e outra conta viram uma linha cada.
 - **Atualizar os navegadores** substitui a etapa do Edge: o Edge pelo atualizador dele; o Chrome instalado para todos pelo atualizador do Google; o Firefox pelo instalador da Mozilla, que o winget baixa e roda em silêncio no mesmo idioma. Uma linha por navegador instalado ("Google Chrome: atualizado para 141.0", "já na versão mais nova"); ficam de fora, dizendo por quê, o Chrome de um usuário só, a atualização desligada por política, o Firefox ESR e o Firefox aberto.
@@ -896,15 +896,15 @@ Esta build deixa o **Otimizar** sempre inteiro, sem a lista do que fazer, e come
 - O cartão da pergunta fica limitado ao espaço que sobra na tela: a lista (ou as opções em linha) encolhe e rola dentro dele, e os botões de resposta, a caixa de texto e o filtro ficam sempre inteiros. Quando a lista ficaria apertada, o resumo acima encolhe antes, até sumir se preciso. Vale para todas as perguntas, ao abrir, ao mudar o tamanho da janela e ao abrir os detalhes técnicos.
 
 **Desinstalar programas e Remover aplicativos do Windows**
-- A lista só oferece o que o WinForge consegue remover de verdade. Os programas de ID longo, que o winget cortava na tabela e por isso sempre falhavam, aparecem agora com o ID completo (lido do registro, dos aplicativos instalados ou numa consulta curta ao winget); o que continua sem ID fica de fora. Também ficam de fora entradas sem desinstalador (ou com ele apagado do disco), as que o fabricante travou, atualizações de outro programa, componentes do Windows (bibliotecas do Visual C++ e do .NET, WebView2, o Edge e o atualizador dele, codecs, componentes do Xbox, pacotes de idioma) e os aplicativos de fábrica protegidos (Calculadora, Fotos, Bloco de Notas, Paint, Ferramenta de Captura, Terminal).
-- Desinstalado só quando sumiu: depois do desinstalador, o WinForge lê a lista de novo; se o programa continua lá, confere outra vez em alguns segundos e, se ainda estiver, pergunta se confere de novo (o desinstalador pode estar com a janela dele aberta). Cada programa termina como desinstalado, termina na próxima reinicialização, continua instalado ou com o motivo do erro, e só o que saiu de verdade vai para o Histórico e para a busca de restos.
+- A lista só oferece o que o TF-Toolkit consegue remover de verdade. Os programas de ID longo, que o winget cortava na tabela e por isso sempre falhavam, aparecem agora com o ID completo (lido do registro, dos aplicativos instalados ou numa consulta curta ao winget); o que continua sem ID fica de fora. Também ficam de fora entradas sem desinstalador (ou com ele apagado do disco), as que o fabricante travou, atualizações de outro programa, componentes do Windows (bibliotecas do Visual C++ e do .NET, WebView2, o Edge e o atualizador dele, codecs, componentes do Xbox, pacotes de idioma) e os aplicativos de fábrica protegidos (Calculadora, Fotos, Bloco de Notas, Paint, Ferramenta de Captura, Terminal).
+- Desinstalado só quando sumiu: depois do desinstalador, o TF-Toolkit lê a lista de novo; se o programa continua lá, confere outra vez em alguns segundos e, se ainda estiver, pergunta se confere de novo (o desinstalador pode estar com a janela dele aberta). Cada programa termina como desinstalado, termina na próxima reinicialização, continua instalado ou com o motivo do erro, e só o que saiu de verdade vai para o Histórico e para a busca de restos.
 - Duas versões do mesmo programa viram uma opção só, desinstaladas juntas.
 - Remover aplicativos do Windows confere do mesmo jeito, aplicativo por aplicativo.
 - Menos texto: sem as linhas antes da lista; Listar programas instalados mostra só o total e as atualizações.
 
 **Inicialização**
 - Entram os aplicativos da Microsoft Store que abrem com o Windows (Teams, Spotify, WhatsApp), desligados e religados como no Gerenciador de Tarefas e desfeitos pelo Histórico de mudanças. Ficam de fora os controlados por política e os de aplicativos já desinstalados.
-- Saem da lista as entradas que apontam para um arquivo que não existe mais, as tarefas agendadas de outras contas ou com o gatilho de entrada desligado e as tarefas de atualização que também rodam todo dia (desligá-las pararia as atualizações). Os itens de todos os usuários só aparecem com o WinForge como Administrador, e a tela diz quantos ficaram de fora.
+- Saem da lista as entradas que apontam para um arquivo que não existe mais, as tarefas agendadas de outras contas ou com o gatilho de entrada desligado e as tarefas de atualização que também rodam todo dia (desligá-las pararia as atualizações). Os itens de todos os usuários só aparecem com o TF-Toolkit como Administrador, e a tela diz quantos ficaram de fora.
 - Cada mudança é lida de volta no Windows antes de contar como feita.
 - Menos texto: cada item mostra só o fabricante (ou o arquivo) e "todos os usuários" quando vale.
 
@@ -916,7 +916,7 @@ Esta build deixa o **Otimizar** sempre inteiro, sem a lista do que fazer, e come
 
 ## Build 3.51
 
-Esta build troca os botões do Início por **Otimizar** e **Verificar vírus**, e a Manutenção recomendada vira o **Otimizar**: sempre a manutenção mais completa, na ordem pedida, com as telas do WinForge onde é preciso escolher.
+Esta build troca os botões do Início por **Otimizar** e **Verificar vírus**, e a Manutenção recomendada vira o **Otimizar**: sempre a manutenção mais completa, na ordem pedida, com as telas do TF-Toolkit onde é preciso escolher.
 - **Otimizar:** ponto de restauração, programas, o que abre com o Windows e as pastas pessoais com você; depois, sozinho, antivírus, atualizações antecipadas desligadas, componentes, DISM e SFC, Windows Update com os drivers opcionais, dispositivos, winget, Edge, Microsoft Store, atalhos, restos, registro, limpeza, rede, CHKDSK e disco; no fim, a revisão de todos os ajustes e, sempre, a sugestão de reiniciar.
 - **Verificar vírus:** atualiza o antivírus e faz a verificação rápida, numa ação só.
 - **Sem perfis:** saem os perfis Rápida, Completa e Profunda e a tela Opções da manutenção.
@@ -930,7 +930,7 @@ Esta build troca os botões do Início por **Otimizar** e **Verificar vírus**, 
 
 **Otimizar**
 - A lista traz as 22 etapas na ordem de execução, todas marcadas, com "Com você" ou "Automático" na descrição. A janela numera as etapas pelo Otimizar inteiro ("Etapa 19 de 22").
-- **Com você, no começo:** o ponto de restauração oferece ligar a Proteção do Sistema quando é ela que falta (Não como padrão). Depois, as telas do próprio WinForge, e não mais as janelas do Windows: Desinstalar programas (sem o winget no PC, a etapa fica ignorada, como a do winget), Remover aplicativos do Windows, **Revisar o que abre com o Windows** (uma lista só, com o que abre hoje marcado; desmarcar desativa, marcar reativa, e a tela mostra o que muda e pergunta, com Não como padrão quando algo deixa de abrir) e **Organizar Downloads, Documentos e Imagens** (uma pasta por vez, com o tamanho: limpar a Downloads com o WinForge, abrir no Explorador ou procurar arquivos duplicados). Fechar uma dessas listas pula a etapa e aparece no resumo como "nada mudou".
+- **Com você, no começo:** o ponto de restauração oferece ligar a Proteção do Sistema quando é ela que falta (Não como padrão). Depois, as telas do próprio TF-Toolkit, e não mais as janelas do Windows: Desinstalar programas (sem o winget no PC, a etapa fica ignorada, como a do winget), Remover aplicativos do Windows, **Revisar o que abre com o Windows** (uma lista só, com o que abre hoje marcado; desmarcar desativa, marcar reativa, e a tela mostra o que muda e pergunta, com Não como padrão quando algo deixa de abrir) e **Organizar Downloads, Documentos e Imagens** (uma pasta por vez, com o tamanho: limpar a Downloads com o TF-Toolkit, abrir no Explorador ou procurar arquivos duplicados). Fechar uma dessas listas pula a etapa e aparece no resumo como "nada mudou".
 - **Perguntas antes da parte automática:** o que atualizar no winget, que restos de programas mandar para a Lixeira (procurados depois das desinstalações) e se a Lixeira é esvaziada.
 - **Parte automática:** Verificar vírus; **Desligar as atualizações antecipadas** (a opção "Receba as atualizações mais recentes assim que estiverem disponíveis", com o valor de antes guardado); componentes do Windows; DISM e SFC completos, sem esperar sinal de dano; **Atualizar o Windows**, que instala as atualizações do Windows Update e os drivers opcionais; dispositivos e drivers; winget; **Atualizar o Microsoft Edge**, pelo atualizador do próprio Edge, dizendo de qual versão para qual foi; **Atualizar aplicativos da Microsoft Store**, com o mesmo pedido do botão Obter atualizações (se o Windows recusar, abre a página de atualizações da Store, e um código de erro aparece em hexadecimal); atalhos quebrados e registro, com a mesma correção de Verificar o PC; restos de programas; limpeza rápida; reparo de rede e DNS, agora mesmo com a internet funcionando; CHKDSK; otimização da unidade.
 - **A ordem pedida, com uma troca:** a limpeza dos componentes e o DISM e SFC vêm antes do Windows Update, e não depois. Uma atualização instalada deixa o Windows esperando o reinício, e aí o DISM recusa a limpeza e o reparo (0x800F0806) e o SFC também: depois do Windows Update, as duas etapas quase nunca rodariam. Com um reinício já pendente desde antes do Otimizar, as duas ficam para depois de reiniciar, ignoradas e não em vermelho, e dizem onde rodar o reparo.
@@ -952,18 +952,18 @@ Esta build troca os botões do Início por **Otimizar** e **Verificar vírus**, 
 Esta build faz cada chave dos Ajustes do Windows e da Personalização mostrar como o Windows está agora, lido do próprio Windows, e alternar entre ativado e desativado, como nas Configurações do Windows.
 - **O recurso, e não a mudança:** a chave tem o nome do recurso ("Efeitos de transparência", "Ícone da Lixeira na área de trabalho", "Modo de Jogo") e diz **Ativado** ou **Desativado**. Antes, ela tinha o nome da mudança ("Desativar efeitos de transparência") e dizia "Aplicado" ou "Padrão", e uma chave ligada podia querer dizer um recurso desligado.
 - **Lido do Windows:** a chave lê o que as Configurações do Windows mostram, e o Modo de Jogo, que vem ativado, aparece ativado.
-- **A chave alterna:** ligar ativa e desligar desativa; ao aplicar uma mudança, o WinForge guarda o valor de antes, e uma página aberta antes de uma mudança nas Configurações não faz o contrário do pedido.
+- **A chave alterna:** ligar ativa e desligar desativa; ao aplicar uma mudança, o TF-Toolkit guarda o valor de antes, e uma página aberta antes de uma mudança nas Configurações não faz o contrário do pedido.
 
 ### Mudou para quem usa
 
 **Ajustes do Windows e Personalização**
 - Cada chave mostra o recurso do Windows e se ele está ativado ou desativado, lido ao abrir a página, ao voltar de uma mudança e em **Atualizar estado**. "Ativado" fica no texto normal e "Desativado", discreto; nenhum dos dois é verde ou vermelho, porque é o estado, e não um problema.
-- Nas políticas que o WinForge grava para esses recursos, a chave diz "Permitir" e mostra a política: Permitir os Widgets, Permitir o Recall, Permitir o histórico de atividades, Permitir dados de diagnóstico opcionais e Permitir atualizações entre PCs.
+- Nas políticas que o TF-Toolkit grava para esses recursos, a chave diz "Permitir" e mostra a política: Permitir os Widgets, Permitir o Recall, Permitir o histórico de atividades, Permitir dados de diagnóstico opcionais e Permitir atualizações entre PCs.
 - **Lido como nas Configurações:** a chave segue o que as Configurações do Windows mostram, e não todos os valores que o ajuste grava:
-  - Teclas de Aderência: só o bit do atalho delas. Desativar muda só esse bit nas três teclas (Aderência, Filtragem e Alternância), e as outras opções que a pessoa escolheu ficam como estão (antes, o WinForge gravava os números padrão inteiros).
+  - Teclas de Aderência: só o bit do atalho delas. Desativar muda só esse bit nas três teclas (Aderência, Filtragem e Alternância), e as outras opções que a pessoa escolheu ficam como estão (antes, o TF-Toolkit gravava os números padrão inteiros).
   - Dicas e sugestões do Windows: a opção principal (Receber dicas e sugestões); as outras são desativadas junto.
   - Xbox Game Bar e gravação de jogos: os valores do usuário (a política do sistema é gravada junto). Agrupar os botões: a barra principal. Notificações na tela de bloqueio: o valor que as Configurações gravam.
-  - Planos de energia: o plano ativo e, num PC sem bateria, só o valor na tomada. Pela chave, a economia do PCI Express e a tela e suspensão automáticas voltam também no plano ativo que o WinForge não mudou; Desfazer ajustes do WinForge continua só devolvendo os planos que ele mudou.
+  - Planos de energia: o plano ativo e, num PC sem bateria, só o valor na tomada. Pela chave, a economia do PCI Express e a tela e suspensão automáticas voltam também no plano ativo que o TF-Toolkit não mudou; Desfazer ajustes do TF-Toolkit continua só devolvendo os planos que ele mudou.
   - Inicialização Rápida: desligada também quando a hibernação está desligada; ativá-la pela chave liga a hibernação junto, com aviso.
   - Alto desempenho: desligar a chave sai de qualquer plano de alto desempenho (o Desempenho Máximo, uma cópia), para o plano de antes ou o Equilibrado.
   - Compartilhar atualizações: os modos 99 e 100, que também não compartilham, contam como desativado. Dados de diagnóstico: o nível 0 (Segurança) também conta como desativado, e a chave não sobe esse nível para 1.
@@ -972,11 +972,11 @@ Esta build faz cada chave dos Ajustes do Windows e da Personalização mostrar c
 - **Página velha:** a janela manda junto o estado que a chave pediu. Se o Windows mudou depois que a página foi aberta e já está assim, nada muda, e a tela diz isso.
 - A descrição embaixo do nome diz o que o recurso é (e, quando ajuda, por que desativar), no lugar do que a mudança fazia.
 - A tela de uma chave diz o recurso e o estado de agora ("Recurso: Efeitos de transparência", "Estado atual: Ativado"), e o resultado diz "Efeitos de transparência: desativado." No menu de texto, a pergunta diz o que vai acontecer (Deseja desativar "Efeitos de transparência"?). Com o estado não identificado, a janela também pergunta antes, porque a chave não diz se vai ativar ou desativar. No notebook, o que afeta a bateria pergunta de novo, com Não como padrão.
-- A frase do alto diz quantos itens da página o WinForge mudou e continuam assim (os que Desfazer ajustes do WinForge devolveria), no lugar de quantos ajustes estavam aplicados.
-- **Modo de Jogo:** aparece Ativado num Windows de fábrica (antes, "Padrão" e desligado). Desativar grava o desativado; ativar de novo guarda o de antes. Só entra em Exportar ajustes aplicados quando foi o WinForge que o ativou. Um backup dele feito pela 3.49 (aplicado com ele já ativado) é esquecido, para Desfazer ajustes do WinForge não o desativar.
+- A frase do alto diz quantos itens da página o TF-Toolkit mudou e continuam assim (os que Desfazer ajustes do TF-Toolkit devolveria), no lugar de quantos ajustes estavam aplicados.
+- **Modo de Jogo:** aparece Ativado num Windows de fábrica (antes, "Padrão" e desligado). Desativar grava o desativado; ativar de novo guarda o de antes. Só entra em Exportar ajustes aplicados quando foi o TF-Toolkit que o ativou. Um backup dele feito pela 3.49 (aplicado com ele já ativado) é esquecido, para Desfazer ajustes do TF-Toolkit não o desativar.
 - **Agendamento de GPU acelerado por hardware:** desativar sem o valor de antes guardado grava o desativado (antes, apagava o valor e deixava o que o driver escolhesse).
 - Nomes que mudaram para não confundir na busca: "Ícone da Lixeira na área de trabalho", "Ícone de Este Computador na área de trabalho", "Teclas de Aderência pelo Shift", "Clima e notícias na tela de bloqueio" e "Tela e suspensão automáticas".
-- Aplicar ajustes recomendados, Perfis de ajustes, Desfazer ajustes do WinForge e o Histórico de mudanças continuam falando das mudanças ("Desativar o ID de publicidade: aplicado.").
+- Aplicar ajustes recomendados, Perfis de ajustes, Desfazer ajustes do TF-Toolkit e o Histórico de mudanças continuam falando das mudanças ("Desativar o ID de publicidade: aplicado.").
 
 **Busca, menu de texto e relatório**
 - Os cartões da busca mostram o recurso, como a página; o nome da mudança ("desativar transparência") também acha. "lixeira" continua levando a esvaziar a Lixeira, e "notificações", à chave das Notificações.
@@ -997,19 +997,19 @@ Esta build cria a página **Personalização**, com o visual do Windows que esta
 - Saíram dos Ajustes do Windows para cá: barra de tarefas alinhada à esquerda, Finalizar tarefa pela barra, ocultar a pesquisa, o botão Visão de Tarefas, os Widgets e o botão do Copilot, segundos no relógio, recomendações do Iniciar, modo escuro, transparência e dicas da tela de bloqueio. Quem já tinha aplicado algum continua com o estado e o backup dele.
 - Ajustes novos: Nunca agrupar os botões da barra de tarefas (do Windows 11 23H2 em diante), Ocultar a Lixeira da área de trabalho, Mostrar Este Computador na área de trabalho, Cor de destaque no Iniciar e na barra de tarefas, Cor de destaque nas barras de título, Remover os widgets da tela de bloqueio (Windows 11) e Não mostrar notificações na tela de bloqueio.
 - Na barra: **Cor de destaque** mostra a cor de agora pelo nome, grava a escolhida com tons mais claros e mais escuros, avisa o Windows na hora e, com a cor no Iniciar e na barra ligada, oferece reiniciar o Explorador (sem ela, diz o que ligar: o modo escuro e o ajuste da cor). A automática aparece quando o papel de parede mudar, e a tela diz como ver na hora. **Tela de bloqueio do Windows** e **Personalização do Windows** abrem essas telas nas Configurações do Windows e levam o ícone de abrir fora.
-- **Ajustes do Windows > Desfazer ajustes do WinForge** desfaz também os da Personalização, e o relatório do PC chama a seção de "Ajustes do Windows e Personalização".
+- **Ajustes do Windows > Desfazer ajustes do TF-Toolkit** desfaz também os da Personalização, e o relatório do PC chama a seção de "Ajustes do Windows e Personalização".
 
 **Ajustes do Windows**
 - Grupos: Explorador, Privacidade e sugestões, **Notificações e teclado** (novo), Jogos e, nos avançados, Energia e desempenho. O grupo Aparência foi para a Personalização.
-- Ajustes novos: Desativar as notificações (vale depois de sair e entrar de novo no Windows), Desativar o atalho das Teclas de Aderência (e os das Teclas de Filtragem e de Alternância), Ativar o histórico da área de transferência, Ativar o Modo de Jogo (já vem ligado no Windows; a chave o religa se algo o desligou) e Desativar a aceleração do mouse. O WinForge pede ao Windows que use na hora as opções novas do teclado e do mouse, sem precisar sair e entrar de novo.
+- Ajustes novos: Desativar as notificações (vale depois de sair e entrar de novo no Windows), Desativar o atalho das Teclas de Aderência (e os das Teclas de Filtragem e de Alternância), Ativar o histórico da área de transferência, Ativar o Modo de Jogo (já vem ligado no Windows; a chave o religa se algo o desligou) e Desativar a aceleração do mouse. O TF-Toolkit pede ao Windows que use na hora as opções novas do teclado e do mouse, sem precisar sair e entrar de novo.
 - **Teclas que trocam o idioma do teclado** (novo, na barra): o padrão do Windows (Alt + Shift troca o idioma e Ctrl + Shift, o teclado do mesmo idioma), só Alt + Shift (para quem troca entre o ABNT2 e o Internacional sem querer), só Ctrl + Shift ou nenhuma tecla, com as teclas de agora à vista.
-- A Cor de destaque e as Teclas que trocam o idioma do teclado, com o WinForge elevado por outra conta, não mudam nada e dizem por quê (iriam para o perfil da outra conta).
-- **Notificações e Não incomodar** (novo, na barra): abre a tela nas Configurações do Windows; o Não incomodar não tem um valor que o WinForge mude com segurança.
+- A Cor de destaque e as Teclas que trocam o idioma do teclado, com o TF-Toolkit elevado por outra conta, não mudam nada e dizem por quê (iriam para o perfil da outra conta).
+- **Notificações e Não incomodar** (novo, na barra): abre a tela nas Configurações do Windows; o Não incomodar não tem um valor que o TF-Toolkit mude com segurança.
 - Perfil Jogos: liga também o Modo de Jogo e tira a aceleração do mouse e o atalho das Teclas de Aderência.
 - Aplicar ajustes recomendados: a lista segue a ordem das páginas, e as dicas da tela de bloqueio vêm por último.
 
 **Busca, teclas e menu de texto**
-- Um ajuste achado na busca abre a página dele, e o cartão diz "Personalização > ajuste" ou "Ajustes do Windows > ajuste". "personalização" leva à página nova; "tema" continua levando à Aparência do WinForge.
+- Um ajuste achado na busca abre a página dele, e o cartão diz "Personalização > ajuste" ou "Ajustes do Windows > ajuste". "personalização" leva à página nova; "tema" continua levando à Aparência do TF-Toolkit.
 - A Personalização, como os Ajustes do Windows, fica fora do Ctrl+número (Ctrl+1 a Ctrl+0 continuam abrindo o Início e as nove páginas seguintes).
 - No menu de texto, a Personalização tem o próprio menu, com as letras C (Cor de destaque), B (Tela de bloqueio do Windows) e P (Personalização do Windows); nos Ajustes do Windows, T são as teclas do idioma e N as notificações.
 
@@ -1030,10 +1030,10 @@ Esta build acerta dois detalhes de acabamento da janela: os contornos arredondad
 
 Esta build é uma revisão completa da experiência de uso: cada tela, botão e opção da janela, do menu de texto e do monitor na bandeja, mais a abertura e o README. O foco é que quem não entende de computador saiba sempre o que aconteceu e o que fazer em seguida, que um Enter a mais nunca apague, interrompa ou reinicie nada, e que a janela funcione bem com o teclado, com o leitor de tela e em telas pequenas.
 - **Chave liga/desliga visível:** no tema claro, a chave desligada era quase invisível; agora tem contorno e bolinha, como a do Windows 11, e texto, contornos e foco do teclado passam do contraste mínimo nos dois temas.
-- **Um Enter a mais não faz estrago:** parar uma ação e fechar o WinForge no meio dela têm Não como padrão, as perguntas sem resposta padrão põem o foco no Não ou no Cancelar, e a Limpeza rápida propõe só os temporários (a Lixeira só com escolha).
+- **Um Enter a mais não faz estrago:** parar uma ação e fechar o TF-Toolkit no meio dela têm Não como padrão, as perguntas sem resposta padrão põem o foco no Não ou no Cancelar, e a Limpeza rápida propõe só os temporários (a Lixeira só com escolha).
 - **Perguntas inteiras à vista:** a pergunta e os botões de resposta sempre cabem na janela, as perguntas de texto ganham Cancelar e a resposta padrão já vem escrita.
 - **Resultados que dizem o que aconteceu:** as faixas nomeiam as etapas que falharam, dizem o espaço ganho, não repetem o pedido de reinício e, onde o Windows precisa reiniciar, oferecem reiniciar ali mesmo.
-- **Menu de texto, monitor e README:** o 0 sempre volta, o menu diz como a ação terminou, o ícone da bandeja lista os avisos abertos, e o README começa por "Primeiros passos" e termina com "Como remover o WinForge".
+- **Menu de texto, monitor e README:** o 0 sempre volta, o menu diz como a ação terminou, o ícone da bandeja lista os avisos abertos, e o README começa por "Primeiros passos" e termina com "Como remover o TF-Toolkit".
 
 ### Mudou para quem usa
 
@@ -1049,19 +1049,19 @@ Esta build é uma revisão completa da experiência de uso: cada tela, botão e 
 - Na primeira abertura, a janela não passa da área útil da tela (num notebook de 1366 × 768, ou com a escala de 125% ou 150%, a barra de título saía da tela); depois, vale o tamanho guardado, também num segundo monitor. Maximizada, a página fica em até quatro colunas de cartões, e a tela de execução também tem largura máxima.
 - O título de uma ação comprida quebra a linha em vez de ser cortado com "…", e o resumo da ação pode ser rolado pelo teclado.
 - Ícones com traço da mesma espessura em qualquer tamanho; as dicas (ao passar o mouse) ficam abertas enquanto o mouse está sobre o controle.
-- Erros: "Não foi possível começar "...". Tente de novo..." no lugar da mensagem crua do .NET; um erro ao acompanhar a ação mostra o resultado vermelho, com os detalhes abertos, e o caminho do log. Ao abrir, um arquivo faltando diz qual é e o que fazer ("Extraia de novo o WinForge.zip inteiro...").
+- Erros: "Não foi possível começar "...". Tente de novo..." no lugar da mensagem crua do .NET; um erro ao acompanhar a ação mostra o resultado vermelho, com os detalhes abertos, e o caminho do log. Ao abrir, um arquivo faltando diz qual é e o que fazer ("Extraia de novo o TF-Toolkit.zip inteiro...").
 
 **Início**
 - Os pontos graves de proteção (antivírus ou tempo real desligado, firewall desligado, ameaça ativa) levam direto à Segurança do Windows, com o botão **Abrir a Segurança do Windows**.
 - O cartão Windows diz o suporte ("suporte até 13/10/2026", "sem suporte de segurança", "ESU até..."); o cartão Usuário saiu (o nome da conta continua em Sobre este PC e no relatório); o disco diz "quase cheio".
 - Com a nota no verde, o resumo diz "1 detalhe para quando puder", e não "pede atenção". Enquanto lê o PC, o cartão diz "Lendo o estado do PC..." (antes, "Verificando", o nome da ação logo abaixo).
-- O aviso de WinForge aberto com outra conta explica, sem jargão, que a limpeza e os ajustes vão valer para aquela conta.
+- O aviso de TF-Toolkit aberto com outra conta explica, sem jargão, que a limpeza e os ajustes vão valer para aquela conta.
 
 **Manutenção**
 - **Verificar o PC:** fechar a lista sem corrigir não descarta o que foi achado ("Nenhuma correção foi feita", faixa amarela com os itens); a faixa nomeia o que pede atenção; a nota de segurança da lista fala só do que está marcado.
 - **Manutenção recomendada:** com reinício pendente, uma escolha só ("Reiniciar agora", "Continuar sem reiniciar", "Cancelar"); o fim diz o espaço ganho e nomeia as etapas com problema; depois de salvar o relatório, oferece abri-lo ou mostrá-lo na pasta. O passo manual das atualizações virou **Abrir o Windows Update**. Textos do plano, dos perfis e das opções sem jargão.
 - **Histórico de mudanças:** vai direto para a lista do que pode ser desfeito (sem marcar tudo de uma vez), e cada linha que pode ser desfeita diz isso. **Histórico de manutenções:** mostra a última verificação e, para uma etapa que costuma falhar, onde rodá-la sozinha.
-- **Manutenção agendada:** "Não agendada", "Ativa" ou "Desligada no Agendador de Tarefas", códigos de erro explicados, e uma resposta só para onde extrair o WinForge (Arquivos de Programas).
+- **Manutenção agendada:** "Não agendada", "Ativa" ou "Desligada no Agendador de Tarefas", códigos de erro explicados, e uma resposta só para onde extrair o TF-Toolkit (Arquivos de Programas).
 - Telas que só mostram informação (históricos, opções ao voltar, agendamento ao voltar) terminam sem a faixa "Tudo certo".
 - O reparo do disco agendado pela manutenção usa os mesmos textos de Reparo > Verificar o sistema de arquivos (CHKDSK).
 
@@ -1092,8 +1092,8 @@ Esta build é uma revisão completa da experiência de uso: cada tela, botão e 
 
 **Atualizações**
 - Num Windows sem suporte, **Instalar atualizações do Windows** não diz mais "em dia": a faixa fica amarela e explica que o Windows não recebe mais atualizações de segurança.
-- Depois de instalar atualizações ou drivers, e em **Corrigir o Windows Update**, o WinForge oferece reiniciar ali mesmo, com Não como padrão. Com um firmware (como a BIOS) entre os drivers escolhidos, a confirmação também tem Não como padrão. **Detectar dispositivos e drivers** diz o que está esperando; **Atualizar programas (winget)** pede para fechar os programas antes.
-- "Abra o WinForge como Administrador" virou "feche o WinForge, abra de novo e aceite o aviso do Windows".
+- Depois de instalar atualizações ou drivers, e em **Corrigir o Windows Update**, o TF-Toolkit oferece reiniciar ali mesmo, com Não como padrão. Com um firmware (como a BIOS) entre os drivers escolhidos, a confirmação também tem Não como padrão. **Detectar dispositivos e drivers** diz o que está esperando; **Atualizar programas (winget)** pede para fechar os programas antes.
+- "Abra o TF-Toolkit como Administrador" virou "feche o TF-Toolkit, abra de novo e aceite o aviso do Windows".
 
 **Programas**
 - **Instalar programas essenciais:** saiu o Spotify; entraram Adobe Acrobat Reader, LibreOffice e Zoom; "Desenvolvimento" virou "Para programadores", por último.
@@ -1114,7 +1114,7 @@ Esta build é uma revisão completa da experiência de uso: cada tela, botão e 
 
 **Monitor na bandeja**
 - O menu do ícone lista os avisos abertos (clicar abre o que resolve), tem **Retomar os avisos** durante a pausa e **Configurar o monitor...**, e "Fechar até a próxima entrada no Windows" diz o que acontece.
-- A dica do ícone diz o aviso ("WinForge: Pouco espaço no disco C: e mais 1 aviso") e "pausados até amanhã, às 14:30", e é refeita a cada leitura. Pausar mostra um balão com o horário de volta; a primeira vez que o monitor abre, um balão ensina onde ele fica.
+- A dica do ícone diz o aviso ("TF-Toolkit: Pouco espaço no disco C: e mais 1 aviso") e "pausados até amanhã, às 14:30", e é refeita a cada leitura. Pausar mostra um balão com o horário de volta; a primeira vez que o monitor abre, um balão ensina onde ele fica.
 - O aviso de disco diz qual disco; o do Windows sem suporte se chama "Windows sem atualizações de segurança". Os balões de pasta sumida dizem o que fazer, e clicar neles não repete o aviso anterior.
 - A tela **Monitor na bandeja** oferece **Retomar os avisos** e explica sem jargão quando ele está desligado na inicialização ou foi ligado de outra pasta.
 
@@ -1122,13 +1122,13 @@ Esta build é uma revisão completa da experiência de uso: cada tela, botão e 
 - O 0 sempre volta ou cancela; Enter vazio repete a ajuda; errar a tecla diz o que digitar ("Digite um número de 0 a 11 e tecle Enter"); dez respostas erradas só encerram quando a entrada vem de um arquivo ou de outro programa.
 - Ao terminar, a linha "[OK] Concluído", "[!] Concluído com ressalvas" ou "[X] Não foi concluído", e o pedido de reinício quando for o caso. Voltar ou Cancelar não pede mais uma tecla.
 - Descrições compridas vão para a linha de baixo, com recuo; a caixa do cabeçalho não passa mais da largura da janela; a barra de estado só mostra "Sem Administrador" quando falta, e o Windows como no Início.
-- Ajustes do Windows no console: "[ligado]" e "[desligado]", com legenda, e as letras A (recomendados), P (perfis) e R (ponto de restauração). O item em destaque diz "(recomendado)". A janela do terminal se chama WinForge.
+- Ajustes do Windows no console: "[ligado]" e "[desligado]", com legenda, e as letras A (recomendados), P (perfis) e R (ponto de restauração). O item em destaque diz "(recomendado)". A janela do terminal se chama TF-Toolkit.
 
 **Abertura e README**
-- WinForge.cmd e WinForge-Console.cmd conferem se os arquivos estão na pasta: aberto de dentro do zip, diz para extrair tudo, em vez de não abrir nada.
+- TF-Toolkit.cmd e TF-Toolkit-Console.cmd conferem se os arquivos estão na pasta: aberto de dentro do zip, diz para extrair tudo, em vez de não abrir nada.
 - O pedido de Administrador no terminal não apaga a tela e explica o que fazer quando é recusado; uma pausa só no fim.
 - Criar atalho: "Atalho criado na Área de Trabalho", com descrições do que é cada lugar.
-- README: "Primeiros passos" (baixar, desbloquear, extrair em Arquivos de Programas, abrir, o aviso do SmartScreen, o aviso do Windows PowerShell, por onde começar), "Como remover o WinForge" e uma resposta só para onde extrair.
+- README: "Primeiros passos" (baixar, desbloquear, extrair em Arquivos de Programas, abrir, o aviso do SmartScreen, o aviso do Windows PowerShell, por onde começar), "Como remover o TF-Toolkit" e uma resposta só para onde extrair.
 
 - a chave liga/desliga, a barrinha da barra lateral, os contornos e o foco do teclado nos dois temas, a página em colunas inteiras maximizada e a janela num notebook de 1366 × 768 com escala de 125%;
 - o foco nas perguntas, a pergunta comprida encolhendo o resumo, o Cancelar das perguntas de texto, e o Narrador lendo a pergunta, o desfecho e "página aberta" (este último pede o .NET 4.7.1 ou mais novo);
@@ -1149,7 +1149,7 @@ Esta build revisa a busca (Ctrl+K) e as teclas de atalho da janela nos sete pont
 ### Mudou para quem usa
 
 **O que a busca acha**
-- Erro de digitação: uma palavra de 6 letras ou mais que não aparece em lugar nenhum vira a mais parecida do WinForge, com as mesmas duas primeiras letras (uma letra trocada, sobrando, faltando ou invertida; duas nas palavras de 9 letras ou mais), e o resumo mostra "'limpeza' (você digitou 'limpesa')". Para quem ainda está digitando, vale também o começo de uma palavra ("atualisa" acha "atualizar"). Palavras comuns que o WinForge não tem ("excel", "filmes", "renomear", "carregador") ficam como estão, e com mais de duas palavras desconhecidas nada é corrigido.
+- Erro de digitação: uma palavra de 6 letras ou mais que não aparece em lugar nenhum vira a mais parecida do TF-Toolkit, com as mesmas duas primeiras letras (uma letra trocada, sobrando, faltando ou invertida; duas nas palavras de 9 letras ou mais), e o resumo mostra "'limpeza' (você digitou 'limpesa')". Para quem ainda está digitando, vale também o começo de uma palavra ("atualisa" acha "atualizar"). Palavras comuns que o TF-Toolkit não tem ("excel", "filmes", "renomear", "carregador") ficam como estão, e com mais de duas palavras desconhecidas nada é corrigido.
 - Quando nada tem todas as palavras ("senha wifi", "jogo travando"), aparecem os resultados com parte delas, os que têm mais palavras primeiro, e o resumo diz "Nada tem todas as palavras de...". Antes, a tela ficava vazia. Uma busca só com palavras de ligação ("o que fazer") continua sem resultado.
 - O Enter, numa busca corrigida ou que achou só parte das palavras, abre uma página ou um ajuste, mas uma ação ou uma janela do Windows só fica selecionada, e o resumo diz "Enter seleciona o primeiro".
 - Palavras parecidas: "ocultar" e "esconder" acham também o que diz "desativar"; "apagar", "excluir" e "deletar" se acham entre si, assim como "consertar", "reparar", "corrigir" e "arrumar", "travando" e "congelando", e "lento" e "devagar". A palavra exata, em qualquer ponto do nome, vem antes.
@@ -1161,7 +1161,7 @@ Esta build revisa a busca (Ctrl+K) e as teclas de atalho da janela nos sete pont
 - "pc" e "computador" só somam com a palavra inteira ("PCs" não conta).
 - Palavras novas para sintomas e pedidos comuns: "tela piscando", "tela preta", "impressora", "microfone", "pendrive não reconhecido", "internet caiu", "wifi lento", "disco 100%", "programas pesados", "esquentando", "barulho", "limpeza de disco", "otimizar windows", "atualizar windows", "atualização travada", "programas que iniciam" e termos em inglês ("cleanup", "restore"). Palavras como "não funciona", "não consigo", "sozinho" e "deixar" não atrapalham mais.
 - **Apagar o espaço livre** não é mais achado por quem procura recuperar arquivos apagados (as palavras "recuperar arquivos apagados" saíram dele, e a descrição diz que o apagado não pode mais ser trazido de volta).
-- A **Aparência do WinForge** é achada por "tema", "modo escuro", "claro" e "cores", e abre Sobre o WinForge com o foco na opção marcada.
+- A **Aparência do TF-Toolkit** é achada por "tema", "modo escuro", "claro" e "cores", e abre Sobre o TF-Toolkit com o foco na opção marcada.
 - A busca começa na segunda letra: uma letra só mostrava quase tudo e agora não troca a página pela busca.
 - Caracteres invisíveis colados de outros programas (hífen opcional, espaço de largura zero) não partem mais a palavra, e um texto enorme colado por engano é cortado em 200 caracteres.
 - Com a versão do Windows desconhecida, a busca mostra os mesmos ajustes que a página de Ajustes (antes, mostrava os do Windows 11, que a página escondia).
@@ -1178,7 +1178,7 @@ Esta build revisa a busca (Ctrl+K) e as teclas de atalho da janela nos sete pont
 - A tecla de cada página (Ctrl+1 a Ctrl+0) aparece ao passar o mouse sobre ela na barra lateral, e o leitor de tela a diz; a dica da caixa de busca também cita as teclas das páginas.
 - Leitor de tela (com o .NET 4.7.1 ou mais novo, que vem no Windows 10 desde a versão 1709): o resumo da busca (quantos resultados) é lido a cada busca. Em qualquer versão, cada cartão diz de onde vem ("Modo escuro, Ajustes do Windows > ajuste") e qual é o que o Enter abre.
 - A caixa de busca ganha contorno na cor de destaque com o foco, como as outras caixas de texto.
-- Na barra lateral, o Tab segue a ordem da tela: busca, páginas e, por último, o rodapé (antes, ia da busca para Sobre o WinForge). Durante a busca, nenhuma página fica marcada na barra lateral.
+- Na barra lateral, o Tab segue a ordem da tela: busca, páginas e, por último, o rodapé (antes, ia da busca para Sobre o TF-Toolkit). Durante a busca, nenhuma página fica marcada na barra lateral.
 - Trocar o tema com a busca na tela mantém a rolagem, e mais uma letra que não muda a lista não refaz os cartões. Montar o índice da busca, logo depois de a janela abrir, leva cerca de metade do tempo de antes, e o vocabulário da correção de digitação é montado junto, e não na primeira busca com erro.
 
 - o Enter agindo ao soltar a tecla, as setas para baixo e para cima entre a caixa e os cartões, e o foco saindo da caixa quando a ação começa;
@@ -1187,7 +1187,7 @@ Esta build revisa a busca (Ctrl+K) e as teclas de atalho da janela nos sete pont
 
 ## Build 3.45
 
-Esta build revisa a página Sobre o WinForge inteira, nos mesmos sete pontos das revisões anteriores: se cada opção faz o que promete, segurança e robustez, interface e fluxos, código, desempenho e erros comuns e incomuns. O foco é que a nova versão chegue conferida e fácil de instalar, e que o monitor na bandeja funcione bem com a janela sempre como Administrador.
+Esta build revisa a página Sobre o TF-Toolkit inteira, nos mesmos sete pontos das revisões anteriores: se cada opção faz o que promete, segurança e robustez, interface e fluxos, código, desempenho e erros comuns e incomuns. O foco é que a nova versão chegue conferida e fácil de instalar, e que o monitor na bandeja funcione bem com a janela sempre como Administrador.
 - **Nova versão conferida ou nada:** sem o SHA-256 publicado pelo GitHub, nada é baixado; com ele, a tela confere o pacote e diz como instalar.
 - **Monitor abre na hora:** ligado pela janela, ele abre já, sem herdar o Administrador.
 - **Desligar o monitor** não mostra mais o aviso de que o ícone não fechou quando ele fechou.
@@ -1198,34 +1198,34 @@ Esta build revisa a página Sobre o WinForge inteira, nos mesmos sete pontos das
 
 **Verificar nova versão**
 - O arquivo só é baixado quando o GitHub publica o SHA-256 dele (o `digest`, que o GitHub dá aos arquivos de release). Sem ele, nada é baixado e a tela aponta a página do projeto; antes, o arquivo ficava na pasta, sem conferência, com a instrução de instalar.
-- Depois do download, a tela confere que o zip é um pacote do WinForge e avisa se a versão escrita nele não bate com a anunciada. Ela diz como instalar (abrir o zip, entrar na pasta WinForge e copiar tudo para a pasta do WinForge, substituindo os arquivos; extrair "por cima", como dizia antes, criava uma pasta WinForge dentro da outra) e oferece mostrar o arquivo na pasta Downloads.
-- A mesma versão já baixada e conferida não é baixada de novo, e um arquivo antigo de mesmo nome em uso não derruba mais um download bom (o novo fica com outro nome, como "WinForge-3.45 (2).zip").
+- Depois do download, a tela confere que o zip é um pacote do TF-Toolkit e avisa se a versão escrita nele não bate com a anunciada. Ela diz como instalar (abrir o zip, entrar na pasta TF-Toolkit e copiar tudo para a pasta do TF-Toolkit, substituindo os arquivos; extrair "por cima", como dizia antes, criava uma pasta TF-Toolkit dentro da outra) e oferece mostrar o arquivo na pasta Downloads.
+- A mesma versão já baixada e conferida não é baixada de novo, e um arquivo antigo de mesmo nome em uso não derruba mais um download bom (o novo fica com outro nome, como "TF-Toolkit-3.45 (2).zip").
 - Parar no meio do download não deixa o arquivo parcial (.download) na pasta.
 - Com a conta de outro Administrador, o download não é feito (iria para a pasta Downloads dessa conta), e a tela diz como baixar na sua.
 - As falhas aparecem em português, com o que fazer: sem conexão, GitHub sem resposta, data e hora do PC erradas, limite de consultas do GitHub (com a hora em que libera, quando o GitHub informa), versão não encontrada, falta de espaço em disco.
 - As notas do release perdem os marcadores de ênfase, mas não o "_" dentro de uma palavra (tweak_backup.json).
-- As versões aparecem como "Instalada" e "Última publicada", as duas no formato "Build 3.45", e a data de publicação vem na hora local (antes, em UTC: à noite, um dia depois). A versão do release é o número com ponto: "WinForge 2026 v3.45" é 3.45, e não 2026.
+- As versões aparecem como "Instalada" e "Última publicada", as duas no formato "Build 3.45", e a data de publicação vem na hora local (antes, em UTC: à noite, um dia depois). A versão do release é o número com ponto: "TF-Toolkit 2026 v3.45" é 3.45, e não 2026.
 - As notas do release entram no resumo da janela, sem Markdown, links, HTML, tabelas nem blocos de código, com "Notas completas" quando são cortadas.
 
 **Conferir dados online**
-- Um catálogo baixado com data no futuro, com datas de suporte fora de 2015 a 2045 ou com o fim do Enterprise antes do Home é recusado; antes, um erro de digitação no arquivo publicado podia marcar todo Windows como sem suporte. O catálogo que vem com o WinForge não depende do relógio do PC.
+- Um catálogo baixado com data no futuro, com datas de suporte fora de 2015 a 2045 ou com o fim do Enterprise antes do Home é recusado; antes, um erro de digitação no arquivo publicado podia marcar todo Windows como sem suporte. O catálogo que vem com o TF-Toolkit não depende do relógio do PC.
 - Uma publicação mais antiga que a cópia guardada não a substitui.
 - As falhas de download aparecem em português, com o detalhe técnico numa linha separada, e a barra de andamento do PowerShell não toma mais o lugar do texto da etapa.
 
 **Resumo da página e Criar atalho**
-- O resumo avisa em amarelo quando o atalho abre outra pasta do WinForge (uma cópia antiga), quando o WinForge está aberto com a conta de outro Administrador e quando outras contas do PC podem alterar os arquivos do WinForge, que a janela roda como Administrador. A linha do ícone diz o que fazer ("extraia a pasta inteira do WinForge de novo"), e a do Administrador diz "aberta como Administrador".
+- O resumo avisa em amarelo quando o atalho abre outra pasta do TF-Toolkit (uma cópia antiga), quando o TF-Toolkit está aberto com a conta de outro Administrador e quando outras contas do PC podem alterar os arquivos do TF-Toolkit, que a janela roda como Administrador. A linha do ícone diz o que fazer ("extraia a pasta inteira do TF-Toolkit de novo"), e a do Administrador diz "aberta como Administrador".
 - Com a conta de outro Administrador, o atalho não é criado (iria para a Área de Trabalho dessa conta), e a tela diz como criar na sua.
-- Numa pasta que outras contas alteram, **Criar atalho do WinForge** avisa antes e sugere extrair o WinForge de novo em Arquivos de Programas (mover a pasta não muda as permissões dela); o README passa a sugerir `C:\Program Files\WinForge`.
-- Depois de gravar o atalho, o WinForge pede ao Windows que releia os ícones, para o ícone novo aparecer.
+- Numa pasta que outras contas alteram, **Criar atalho do TF-Toolkit** avisa antes e sugere extrair o TF-Toolkit de novo em Arquivos de Programas (mover a pasta não muda as permissões dela); o README passa a sugerir `C:\Program Files\TF-Toolkit`.
+- Depois de gravar o atalho, o TF-Toolkit pede ao Windows que releia os ícones, para o ícone novo aparecer.
 - O botão **Abrir log** abre o log pelo Explorador, no Bloco de Notas da sessão, sem o Administrador da janela.
 
 **Monitor na bandeja**
-- **Ligar o monitor** e **Abrir agora**, com a janela como Administrador, abrem o ícone na hora pelo Explorador, sem a elevação; antes, ele só aparecia no próximo login. Se o Windows não fizer essa troca, o monitor fecha sozinho (com o UAC ligado, ele nunca fica como Administrador), e a tela diz que ele abre com o Windows. Um monitor aberto de outra pasta do WinForge (a cópia antiga) é fechado e trocado pelo desta.
+- **Ligar o monitor** e **Abrir agora**, com a janela como Administrador, abrem o ícone na hora pelo Explorador, sem a elevação; antes, ele só aparecia no próximo login. Se o Windows não fizer essa troca, o monitor fecha sozinho (com o UAC ligado, ele nunca fica como Administrador), e a tela diz que ele abre com o Windows. Um monitor aberto de outra pasta do TF-Toolkit (a cópia antiga) é fechado e trocado pelo desta.
 - **Desligar o monitor** com o ícone já fechado (ou fechado logo no pedido) dizia que ele não tinha fechado; agora fica verde.
 - "Começa com o Windows" diz quando a entrada foi desativada no Gerenciador de Tarefas ou aponta para outra pasta (a pasta mudou de lugar), e **Ligar o monitor** corrige as duas. Uma pasta de caminho longo demais para a entrada de início é recusada com a explicação.
-- Com a pasta do WinForge apagada ou movida, o monitor aberto tira a própria entrada, avisa e fecha alguns segundos depois; o menu do ícone não tenta mais abrir uma janela que não existe.
+- Com a pasta do TF-Toolkit apagada ou movida, o monitor aberto tira a própria entrada, avisa e fecha alguns segundos depois; o menu do ícone não tenta mais abrir uma janela que não existe.
 - Um balão por vez, o mais grave primeiro, e o clique no balão que está na tela abre a tela daquele aviso; antes, vários saíam de uma vez, e o clique abria a do último.
-- Sem nenhuma verificação ainda, o aviso diz "O WinForge ainda não verificou este PC" (antes, "faz mais de um mês"). Uma leitura que não confirmou o ESU não vira mais aviso semanal.
+- Sem nenhuma verificação ainda, o aviso diz "O TF-Toolkit ainda não verificou este PC" (antes, "faz mais de um mês"). Uma leitura que não confirmou o ESU não vira mais aviso semanal.
 - Numa conexão limitada ou na bateria, o monitor não consulta o winget nem os dados online.
 - Um relógio que esteve adiantado não cala mais o monitor (conferências e pausa gravadas no futuro), e os avisos pausados mostram até quando.
 - Antes da primeira leitura, a dica do ícone diz "a primeira leitura sai em instantes", e não "nada pedindo atenção".
@@ -1238,11 +1238,11 @@ Esta build revisa a página Sobre o WinForge inteira, nos mesmos sete pontos das
 - o monitor abrindo pelo Explorador com a janela como Administrador, e a entrada desativada no Gerenciador de Tarefas;
 - o download de uma versão nova e as mensagens de rede (sem internet, limite do GitHub);
 - o ícone do atalho atualizado depois de criá-lo de novo;
-- a linha da pasta com o WinForge em `C:\WinForge` num PC com mais de uma conta.
+- a linha da pasta com o TF-Toolkit em `C:\TF-Toolkit` num PC com mais de uma conta.
 
 ## Build 3.44
 
-Esta build atende quatro pedidos: explica e trata a falha de **Desativar os Widgets**, põe o cursor da busca no lugar (e corrige outros desalinhamentos da janela do mesmo tipo), troca o ícone do WinForge e faz a janela abrir sempre como Administrador.
+Esta build atende quatro pedidos: explica e trata a falha de **Desativar os Widgets**, põe o cursor da busca no lugar (e corrige outros desalinhamentos da janela do mesmo tipo), troca o ícone do TF-Toolkit e faz a janela abrir sempre como Administrador.
 - **Widgets e pesquisa protegidos pelo Windows:** a tela diz por que não muda e oferece abrir as Configurações da barra de tarefas.
 - **Cursor da busca no lugar:** o cursor piscante começa onde começa a dica "Buscar".
 - **Contorno de foco acompanha cada controle:** cartões, chaves, opções e botões menores.
@@ -1251,21 +1251,21 @@ Esta build atende quatro pedidos: explica e trata a falha de **Desativar os Widg
 
 ### Mudou para quem usa
 
-**Abrir o WinForge**
-- A janela abre sempre como Administrador: o aviso do Windows (Controle de Conta de Usuário) aparece ao abrir, como já acontecia no menu de texto. O item **Modo de Administrador** saiu de Sobre o WinForge, e a escolha gravada antes deixa de ser lida.
-- Recusado o aviso, a janela abre assim mesmo, sem Administrador: o rodapé diz "Sem Administrador", a linha Administrador do resumo de Sobre o WinForge fica amarela, e cada ação que altera o sistema oferece reabrir elevada, na mesma página.
+**Abrir o TF-Toolkit**
+- A janela abre sempre como Administrador: o aviso do Windows (Controle de Conta de Usuário) aparece ao abrir, como já acontecia no menu de texto. O item **Modo de Administrador** saiu de Sobre o TF-Toolkit, e a escolha gravada antes deixa de ser lida.
+- Recusado o aviso, a janela abre assim mesmo, sem Administrador: o rodapé diz "Sem Administrador", a linha Administrador do resumo de Sobre o TF-Toolkit fica amarela, e cada ação que altera o sistema oferece reabrir elevada, na mesma página.
 - Aberta pelo monitor na bandeja (Acelerar agora, Limpeza rápida, Verificar o PC), a janela também pede a permissão, e a ação pedida segue para a janela elevada.
-- Com a janela já aberta, abrir o WinForge de novo (pelo atalho, pelo `WinForge.cmd` ou pelo monitor) não mostra o aviso do Windows: o pedido vai direto para a janela aberta, como antes.
+- Com a janela já aberta, abrir o TF-Toolkit de novo (pelo atalho, pelo `TF-Toolkit.cmd` ou pelo monitor) não mostra o aviso do Windows: o pedido vai direto para a janela aberta, como antes.
 - **Monitor na bandeja:** ligado pela janela, que agora roda como Administrador, ele passa a abrir no próximo login (o monitor nunca roda como Administrador). Quem já usa o monitor não percebe diferença.
-- **Programas:** com a janela como Administrador, o winget não altera um programa instalado só para o seu usuário (0x8A15007D) nem roda um instalador que recusa o Administrador (0x8A150056). Esses programas falham em **Atualizar programas** e na instalação, e a tela diz como seguir: fechar o WinForge, abrir de novo e responder Não ao aviso do Windows; sem Administrador, eles atualizam como antes.
+- **Programas:** com a janela como Administrador, o winget não altera um programa instalado só para o seu usuário (0x8A15007D) nem roda um instalador que recusa o Administrador (0x8A150056). Esses programas falham em **Atualizar programas** e na instalação, e a tela diz como seguir: fechar o TF-Toolkit, abrir de novo e responder Não ao aviso do Windows; sem Administrador, eles atualizam como antes.
 - **Páginas dos fabricantes** (drivers, em Atualizações): abrem pelo Explorador, então o navegador não herda o Administrador da janela.
-- Aberto de uma unidade de rede mapeada (Z:, por exemplo), o WinForge passa à execução elevada o caminho de rede, que ela enxerga; a janela elevada não enxerga a letra da unidade.
+- Aberto de uma unidade de rede mapeada (Z:, por exemplo), o TF-Toolkit passa à execução elevada o caminho de rede, que ela enxerga; a janela elevada não enxerga a letra da unidade.
 
 **Desativar os Widgets e Ocultar a pesquisa da barra de tarefas**
-- No Windows 11 atual, um driver do próprio Windows (UCPD) protege a configuração dos Widgets e, em algumas versões, a da pesquisa na barra de tarefas: ele impede que ferramentas como o PowerShell, que o WinForge usa, as gravem, mesmo como Administrador, enquanto as Configurações do Windows mudam normalmente. Por isso **Desativar os Widgets** falhava sempre, com "Attempted to perform an unauthorized operation.".
-- Agora, quando o Windows recusa, o resultado fica amarelo, diz que a configuração é protegida e onde mudar (nas Configurações do Windows, em Personalização, Barra de tarefas; no Windows 10, a pesquisa pelo clique direito na barra de tarefas) e, no Windows 11, oferece abrir as Configurações da barra de tarefas. O WinForge não tenta contornar a proteção.
+- No Windows 11 atual, um driver do próprio Windows (UCPD) protege a configuração dos Widgets e, em algumas versões, a da pesquisa na barra de tarefas: ele impede que ferramentas como o PowerShell, que o TF-Toolkit usa, as gravem, mesmo como Administrador, enquanto as Configurações do Windows mudam normalmente. Por isso **Desativar os Widgets** falhava sempre, com "Attempted to perform an unauthorized operation.".
+- Agora, quando o Windows recusa, o resultado fica amarelo, diz que a configuração é protegida e onde mudar (nas Configurações do Windows, em Personalização, Barra de tarefas; no Windows 10, a pesquisa pelo clique direito na barra de tarefas) e, no Windows 11, oferece abrir as Configurações da barra de tarefas. O TF-Toolkit não tenta contornar a proteção.
 - Ao aplicar vários (recomendados, perfis, importar), o ajuste protegido vira um aviso, sem pergunta.
-- Ao desfazer (pela chave, em **Desfazer ajustes do WinForge** ou no **Histórico de mudanças**), a tela diz onde voltar: a pesquisa, pelas Configurações do Windows; os Widgets, pelo Editor de Política de Grupo (gpedit.msc, no Windows Pro), porque a política gravada deixa a chave das Configurações travada. Desfazer os Widgets não oferece mais abrir as Configurações.
+- Ao desfazer (pela chave, em **Desfazer ajustes do TF-Toolkit** ou no **Histórico de mudanças**), a tela diz onde voltar: a pesquisa, pelas Configurações do Windows; os Widgets, pelo Editor de Política de Grupo (gpedit.msc, no Windows Pro), porque a política gravada deixa a chave das Configurações travada. Desfazer os Widgets não oferece mais abrir as Configurações.
 - Nos outros ajustes, uma recusa do Windows aparece em português ("o Windows negou a alteração (acesso negado)"), e não mais com a mensagem em inglês.
 
 **A janela**
@@ -1274,20 +1274,20 @@ Esta build atende quatro pedidos: explica e trata a falha de **Desativar os Widg
 - **Contorno de foco** (o anel azul ao navegar com Tab): era um só, com a curva dos botões comuns, para todos os controles; nos cartões, nas chaves liga/desliga, nas opções das perguntas e nos botões menores, a curva do anel não acompanhava a do controle. Agora cada um tem o seu.
 
 **Ícone**
-- Ícone novo: uma bigorna branca de face azul sobre um quadrado grafite. `assets\WinForge.ico` tem dez tamanhos (16, 20, 24, 32, 40, 48, 64, 96, 128 e 256 px), cada um desenhado para o seu tamanho, e vale para a barra de título, a barra de tarefas, o Alt+Tab, o atalho, a barra lateral e o monitor na bandeja. `assets\WinForge.svg` é a nova fonte editável.
+- Ícone novo: uma bigorna branca de face azul sobre um quadrado grafite. `assets\TF-Toolkit.ico` tem dez tamanhos (16, 20, 24, 32, 40, 48, 64, 96, 128 e 256 px), cada um desenhado para o seu tamanho, e vale para a barra de título, a barra de tarefas, o Alt+Tab, o atalho, a barra lateral e o monitor na bandeja. `assets\TF-Toolkit.svg` é a nova fonte editável.
 - Sem o `.ico` na pasta, a janela desenha a mesma bigorna (antes, um "W" sobre o quadrado azul).
-- Um atalho criado antes pode continuar com o ícone antigo até o Windows atualizar o cache de ícones; criar o atalho de novo, em Sobre o WinForge, resolve.
+- Um atalho criado antes pode continuar com o ícone antigo até o Windows atualizar o cache de ícones; criar o atalho de novo, em Sobre o TF-Toolkit, resolve.
 
 - abrir a janela aceitando e recusando o aviso do Windows, e pelo monitor na bandeja;
 - **Desativar os Widgets** num Windows 11 com a proteção ativa, o botão que abre as Configurações e o desfazer pelo Editor de Política de Grupo;
-- abrir o WinForge de uma unidade de rede mapeada;
+- abrir o TF-Toolkit de uma unidade de rede mapeada;
 - o cursor e a dica da busca, e o anel de foco, nas escalas de tela de 100%, 125% e 150%;
 - o ícone novo na barra de tarefas, no Alt+Tab e na bandeja.
 
 ## Build 3.43
 
 Esta build revisa a tela de Ajustes do Windows inteira, nos mesmos sete pontos das revisões anteriores: se cada opção faz o que promete, segurança e robustez, interface e fluxos, código, desempenho e erros comuns e incomuns. O foco é que desfazer seja seguro e que cada ajuste só apareça onde faz efeito.
-- **Desfazer não passa por cima do que mudou depois:** só volta ao original o que ainda está como o WinForge deixou.
+- **Desfazer não passa por cima do que mudou depois:** só volta ao original o que ainda está como o TF-Toolkit deixou.
 - **Cada ajuste na versão certa do Windows:** Finalizar tarefa só a partir da 23H2; o botão do Copilot só até a 23H2.
 - **Dois ajustes novos na barra de tarefas:** ocultar a pesquisa e o botão Visão de Tarefas.
 - **Resumo mais limpo:** andamento na barra de progresso, avisos como linhas do resumo e a data de cada ajuste ao desfazer todos.
@@ -1303,11 +1303,11 @@ Esta build revisa a tela de Ajustes do Windows inteira, nos mesmos sete pontos d
 - **Busca:** os ajustes que não valem neste Windows (os do Windows 11 no 10, o botão do Copilot na 24H2) saem dos resultados; antes, o clique levava a uma página sem eles.
 - **Desativar o reconhecimento de fala online** não cita mais a Cortana, aposentada pela Microsoft; diz que recursos que dependem da nuvem, como o ditado, podem deixar de funcionar.
 
-**Desfazer um ajuste (a chave e Desfazer ajustes do WinForge)**
-- **O que mudou depois fica:** um valor que você (ou o Windows) mudou depois do ajuste não volta ao original de antes, que passaria por cima da sua escolha mais nova; o que ainda está como o WinForge deixou volta. Vale também para a energia: o plano de antes só volta se o plano ativo ainda é o Alto desempenho que o ajuste ativou (trocado depois, até para o Desempenho Máximo, fica), um tempo de tela ou de suspensão que você mudou depois fica, e a hibernação só é ligada se ainda estiver desligada.
+**Desfazer um ajuste (a chave e Desfazer ajustes do TF-Toolkit)**
+- **O que mudou depois fica:** um valor que você (ou o Windows) mudou depois do ajuste não volta ao original de antes, que passaria por cima da sua escolha mais nova; o que ainda está como o TF-Toolkit deixou volta. Vale também para a energia: o plano de antes só volta se o plano ativo ainda é o Alto desempenho que o ajuste ativou (trocado depois, até para o Desempenho Máximo, fica), um tempo de tela ou de suspensão que você mudou depois fica, e a hibernação só é ligada se ainda estiver desligada.
 - **O resultado diz o que aconteceu:** "desfeito"; "desfeito; o que foi alterado depois foi mantido"; ou "nada a desfazer; foi alterado depois", que não conta como desfeito nem pede para reiniciar o Explorador. Com tudo alterado depois, a faixa fica cinza ("Nada a fazer").
 - **Sem conseguir ler o plano de energia ativo**, desfazer o Alto desempenho falha e o backup fica para uma nova tentativa (antes, o plano não voltava e o backup era apagado).
-- **Desfazer ajustes do WinForge** lista cada ajuste com a data em que foi aplicado ("aplicado em 01/11/2026 14:30"), numa coluna do tamanho do maior nome.
+- **Desfazer ajustes do TF-Toolkit** lista cada ajuste com a data em que foi aplicado ("aplicado em 01/11/2026 14:30"), numa coluna do tamanho do maior nome.
 - O andamento fica na barra de progresso.
 
 **Aplicar vários (recomendados, perfis, importar)**
@@ -1372,7 +1372,7 @@ Esta build revisa a tela de Rede inteira, nos mesmos sete pontos das revisões a
 - **O andamento** de cada comando e da espera pela conexão fica na barra de progresso; no resumo, uma linha por comando, a do resultado. Os avisos de antes da pergunta (IP fixo, a conexão que pode cair) não contam mais como resultado.
 
 **Trocar o servidor DNS**
-- **Tempo de resposta:** antes do menu, o WinForge consulta três nomes de sites comuns direto em cada servidor (sem o cache do Windows) e mostra a mediana ao lado de cada opção ("· 12 ms") e do servidor medido no DNS atual de cada adaptador ("192.168.0.1 (4 ms)"). Um servidor que não responde, quando os outros respondem, aparece como "sem resposta deste PC"; sem nenhuma resposta, os tempos não aparecem. Um servidor que não responde ao primeiro nome não é consultado de novo, e depois de dois DNS públicos seguidos sem resposta os outros nem são consultados: o menu não fica esperando o tempo limite de cada um. A barra de progresso diz qual está sendo medido ("Cloudflare (1.1.1.1)").
+- **Tempo de resposta:** antes do menu, o TF-Toolkit consulta três nomes de sites comuns direto em cada servidor (sem o cache do Windows) e mostra a mediana ao lado de cada opção ("· 12 ms") e do servidor medido no DNS atual de cada adaptador ("192.168.0.1 (4 ms)"). Um servidor que não responde, quando os outros respondem, aparece como "sem resposta deste PC"; sem nenhuma resposta, os tempos não aparecem. Um servidor que não responde ao primeiro nome não é consultado de novo, e depois de dois DNS públicos seguidos sem resposta os outros nem são consultados: o menu não fica esperando o tempo limite de cada um. A barra de progresso diz qual está sendo medido ("Cloudflare (1.1.1.1)").
 - **Destaque:** a opção mais rápida entre as que não filtram conteúdo; para não pular entre execuções por 1 ou 2 ms, a primeira medida só perde para uma claramente mais rápida (mais de 5 ms e mais de 20%). Nenhuma fica em destaque quando o DNS atual já responde tão rápido quanto a melhor (o roteador costuma responder do cache em poucos ms), e a tela diz que trocar não deve deixar as páginas mais rápidas, nem quando nenhum DNS público responde: aí a tela avisa, antes da pergunta, que a rede parece bloquear DNS externo e que o melhor é manter o atual. Sem medição, o Cloudflare, como antes.
 - **Cloudflare para famílias:** bloqueia sites adultos e maliciosos (1.1.1.3, 1.0.0.3 e os IPv6 publicados pela Cloudflare). Por filtrar conteúdo, nunca é a sugerida em destaque.
 - A conferência do novo DNS fica na barra de progresso.
@@ -1380,7 +1380,7 @@ Esta build revisa a tela de Rede inteira, nos mesmos sete pontos das revisões a
 **Relatório de Wi-Fi**
 - A geração fica na barra de progresso, e o "Como ler" vira uma dica do resumo.
 
-- a saída do `netsh wlan show interfaces` em português e em inglês, com a acentuação que chega ao WinForge;
+- a saída do `netsh wlan show interfaces` em português e em inglês, com a acentuação que chega ao TF-Toolkit;
 - o tempo de resposta do `Resolve-DnsName` com servidor escolhido, numa rede comum e numa que bloqueia DNS externo;
 - a latência do teste de velocidade comparada à de um medidor conhecido;
 - o proxy lido das Configurações do Windows, manual e por script;
@@ -1415,7 +1415,7 @@ Esta build revisa a tela de Programas inteira, nos mesmos sete pontos das revis�
 - **Histórico:** os programas instalados entram no **Histórico de mudanças**, e os que já estavam no PC e foram atualizados entram como atualizados; o que o winget disse que já estava na versão nova, não.
 
 **Erros do winget**
-- **Mais códigos com frase:** programa instalado só para o usuário, que o winget não altera como Administrador (`0x8A15007D`), e instalador que não roda como Administrador (`0x8A150056`), os dois apontando **Sobre o WinForge > Modo de Administrador**; política da organização (`0x8A15010F`) ou da Microsoft Store (`0x8A15001B`, `0x8A15001C`); dependência faltando (`0x8A150104`, `0x8A150110`); memória (`0x8A150106`); PC ou Windows incompatível (`0x8A150113`); erro do instalador (`0x8A150108`, `0x8A150115`); versão nova com outro tipo de instalador (`0x8A15008E`); mais de um pacote com o ID (`0x8A150016`); a fonte do pacote pedindo conta (`0x8A150076`); winget sem fontes (`0x8A150015`).
+- **Mais códigos com frase:** programa instalado só para o usuário, que o winget não altera como Administrador (`0x8A15007D`), e instalador que não roda como Administrador (`0x8A150056`), os dois apontando **Sobre o TF-Toolkit > Modo de Administrador**; política da organização (`0x8A15010F`) ou da Microsoft Store (`0x8A15001B`, `0x8A15001C`); dependência faltando (`0x8A150104`, `0x8A150110`); memória (`0x8A150106`); PC ou Windows incompatível (`0x8A150113`); erro do instalador (`0x8A150108`, `0x8A150115`); versão nova com outro tipo de instalador (`0x8A15008E`); mais de um pacote com o ID (`0x8A150016`); a fonte do pacote pedindo conta (`0x8A150076`); winget sem fontes (`0x8A150015`).
 
 **Remover aplicativos do Windows**
 - **O Teams novo** diz que é também o de trabalho ou escola: removê-lo remove o Teams da pessoa.
@@ -1446,7 +1446,7 @@ Esta build revisa a tela de Atualizações inteira, nos mesmos sete pontos das r
 - **Drivers explicados:** cada driver diz para que serve; um firmware (como a BIOS) é avisado antes.
 - **Antes de baixar:** reinício pendente e bateria também nos drivers; numa conexão limitada, a tela diz quanto vai ser baixado.
 - **Ferramenta do fabricante certa:** Dell e Lenovo têm uma para a linha de empresa e outra para a de uso pessoal; a tela indica a da linha do PC.
-- **Mais erros explicados,** com o item do WinForge que resolve, e a política que bloqueia o Windows Update é dita quando a consulta falha.
+- **Mais erros explicados,** com o item do TF-Toolkit que resolve, e a política que bloqueia o Windows Update é dita quando a consulta falha.
 
 ### Mudou para quem usa
 
@@ -1459,7 +1459,7 @@ Esta build revisa a tela de Atualizações inteira, nos mesmos sete pontos das r
 **Corrigir o Windows Update (novo)**
 - **O que faz:** desliga os serviços Windows Update, BITS e Serviços de Criptografia, põe de lado o cache (as pastas `SoftwareDistribution\Download` e `SoftwareDistribution\DataStore` e o `catroot2`, os passos da página de erros comuns do Windows Update, da Microsoft) e liga os serviços de novo. Os downloads são apagados depois que os serviços já estão ligados de novo; o banco de dados e o `catroot2` ficam guardados como `.bak`, e a cópia de uma vez anterior sai antes.
 - **Antes de perguntar,** a tela diz que as atualizações instaladas continuam instaladas e que a lista do histórico nas Configurações recomeça vazia.
-- **Serviço desativado:** um serviço desativado por um "otimizador" ou bloqueador (inclusive o orquestrador de atualizações) é avisado antes e volta ao padrão do Windows. Se ele não voltar, o reparo para aí, sem mexer no cache: refeito, ele não adiantaria, e o histórico das Configurações se perderia à toa. O Windows Update Medic desativado é dito; o Windows protege esse serviço, e o WinForge não mexe nele.
+- **Serviço desativado:** um serviço desativado por um "otimizador" ou bloqueador (inclusive o orquestrador de atualizações) é avisado antes e volta ao padrão do Windows. Se ele não voltar, o reparo para aí, sem mexer no cache: refeito, ele não adiantaria, e o histórico das Configurações se perderia à toa. O Windows Update Medic desativado é dito; o Windows protege esse serviço, e o TF-Toolkit não mexe nele.
 - **Serviço que não existe:** um serviço removido por um script de limpeza é dito como tal, com a saída possível (**Reparo > Recuperação**); antes de um serviço sem resposta, a tela indica o reparo dos arquivos do Windows.
 - **O que ele não faz:** não roda com o Windows Update no meio de uma instalação (confere antes e de novo depois da pergunta, e pede para esperar), não muda políticas (diz quando há uma) e não segue uma pasta que aponta para outro disco, nem um atalho dentro dos downloads ao apagá-los. Com um reinício pendente, sugere reiniciar antes, com Não em destaque.
 - **Quando algo falha:** um serviço "parando" ou "iniciando" ganha tempo em vez de virar erro; um que não para em 30 segundos cancela tudo sem mexer no cache. Uma pasta em uso fica como estava, e a faixa diz qual; uma que aponta para outro lugar também, com o que fazer. Os serviços voltam a ligar mesmo assim, e um que não liga pede o reinício.
@@ -1509,7 +1509,7 @@ Esta build revisa a tela de Reparo inteira, nos mesmos sete pontos das revisões
 ### Mudou para quem usa
 
 **A página**
-- **Ferramentas do Windows:** uma terceira seção com **Restauração do Sistema** (voltar o PC a um ponto de restauração) e **Recuperação** (a página das Configurações com "Restaurar o PC", a reinstalação pelo Windows Update no Windows 11 e a inicialização avançada). São o próximo passo quando DISM e SFC não resolvem, e antes ficavam só na Manutenção (a Restauração) ou fora do WinForge (a Recuperação).
+- **Ferramentas do Windows:** uma terceira seção com **Restauração do Sistema** (voltar o PC a um ponto de restauração) e **Recuperação** (a página das Configurações com "Restaurar o PC", a reinstalação pelo Windows Update no Windows 11 e a inicialização avançada). São o próximo passo quando DISM e SFC não resolvem, e antes ficavam só na Manutenção (a Restauração) ou fora do TF-Toolkit (a Recuperação).
 - **Ao abrir um atalho:** a tela diz "Abrindo: Recuperação.", em vez de "Recuperação aberto.", que errava o gênero e afirmava antes da hora que a janela abriu.
 
 **Reparar o Windows (DISM + SFC)**
@@ -1526,7 +1526,7 @@ Esta build revisa a tela de Reparo inteira, nos mesmos sete pontos das revisões
 - **Reparo offline na unidade certa:** quando a verificação pede reparo offline, ele é agendado na unidade verificada, e a tela diz qual. Ela também avisa que o reparo roda ao **Reiniciar**, e não ao Desligar e ligar (com a Inicialização Rápida do Windows, ele pode não rodar), e, num disco externo, que ele precisa estar conectado.
 
 **Detectar dispositivos e drivers**
-- **O que continua com problema:** depois da busca, o WinForge espera até 20 segundos o Windows terminar de instalar os drivers que ela achou e confere os dispositivos com as mesmas regras de **Diagnóstico > Dispositivos com problema**. Com algum ainda com problema, a faixa fica amarela ("a busca terminou, mas 1 dispositivo ainda aparece com problema"), com o nome, o problema e o caminho para ver mais; os desativados de propósito não contam, e um dispositivo esperando o reinício faz o resumo pedir o reinício. Sem nenhum, a faixa diz isso, e, sem conseguir ler os dispositivos, não afirma nada. Antes, a busca terminava sempre em verde, mesmo com a câmera ou o som que levaram a pessoa até ali ainda sem funcionar.
+- **O que continua com problema:** depois da busca, o TF-Toolkit espera até 20 segundos o Windows terminar de instalar os drivers que ela achou e confere os dispositivos com as mesmas regras de **Diagnóstico > Dispositivos com problema**. Com algum ainda com problema, a faixa fica amarela ("a busca terminou, mas 1 dispositivo ainda aparece com problema"), com o nome, o problema e o caminho para ver mais; os desativados de propósito não contam, e um dispositivo esperando o reinício faz o resumo pedir o reinício. Sem nenhum, a faixa diz isso, e, sem conseguir ler os dispositivos, não afirma nada. Antes, a busca terminava sempre em verde, mesmo com a câmera ou o som que levaram a pessoa até ali ainda sem funcionar.
 - **Na Manutenção recomendada:** os nomes vão nas observações da etapa, que continua verde: um problema que a busca não resolve, como um celular pareado sem driver, não deixa a manutenção amarela todo mês.
 
 **Otimizar a unidade do sistema**
@@ -1562,17 +1562,17 @@ Uma revisão da tela de Desempenho por inteiro, nos mesmos sete pontos das revis
 - **Liberar memória:** a descrição diz o que ele faz ("tira da memória o que os programas abertos ocupam") e quando ajuda ("antes de abrir algo pesado"), sem a promessa do cache de arquivos. Antes, dizia que esvaziava "a memória que os programas não estão usando", mas o Windows tira tudo o que pode, e os programas recarregam o que voltam a usar.
 
 **Liberar memória e Acelerar agora**
-- **O cache de arquivos fica:** como Administrador, o WinForge esvaziava também a lista de espera do Windows (o cache de arquivos). Ela já conta como memória disponível: esvaziá-la não aumentava a memória livre que a tela media, e o Windows tinha de ler de novo do disco o que estava pronto, o que deixava programas e arquivos mais lentos por um tempo. Agora a tela diz que o cache fica e por quê, com ou sem Administrador.
-- **Só a sua sessão:** a memória esvaziada é a dos programas da sua sessão. Os serviços do Windows (o antivírus, a impressão) e os programas de outras contas logadas no PC ficam como estão, sem ter de recarregar a memória. O próprio WinForge também fica: a memória dele voltava na hora de desenhar o resultado, e entrava na conta do que foi liberado.
+- **O cache de arquivos fica:** como Administrador, o TF-Toolkit esvaziava também a lista de espera do Windows (o cache de arquivos). Ela já conta como memória disponível: esvaziá-la não aumentava a memória livre que a tela media, e o Windows tinha de ler de novo do disco o que estava pronto, o que deixava programas e arquivos mais lentos por um tempo. Agora a tela diz que o cache fica e por quê, com ou sem Administrador.
+- **Só a sua sessão:** a memória esvaziada é a dos programas da sua sessão. Os serviços do Windows (o antivírus, a impressão) e os programas de outras contas logadas no PC ficam como estão, sem ter de recarregar a memória. O próprio TF-Toolkit também fica: a memória dele voltava na hora de desenhar o resultado, e entrava na conta do que foi liberado.
 - O mesmo vale para a correção de memória do **Verificar o PC**, que agora diz a verdade quando não adianta: com a memória ainda alta depois de liberar (85% ou mais), ou sem medida, a correção fica em amarelo ("a memória continua alta (90%): feche o que pesa em Desempenho > Programas pesando agora") e a Memória continua entre os pontos que pedem a sua decisão. Antes, a correção contava como feita e a faixa podia ficar verde com a memória cheia.
 
 **Programas pesando agora**
 - **A memória do Gerenciador de Tarefas:** cada processo conta a memória privada dele, a mesma da coluna Memória do Gerenciador de Tarefas. Antes, contava também as bibliotecas que os processos dividem, e somar os processos de um navegador ou do Teams dava várias vezes o que eles usam de fato. Sem essa leitura do Windows, vale a memória privada de cada processo, que também não repete o que eles dividem.
-- **Processador "sem leitura":** um programa aberto como Administrador, com o WinForge sem, não deixa medir o uso do processador; antes aparecia como "processador quase parado", mesmo a 100%. Com parte dos processos sem leitura e o resto parado, "sem leitura em parte". Vale também quando o Windows nega a leitura devolvendo um valor vazio, e não um erro.
-- **O motivo de não fechar:** os processos que aparecem na lista dos que mais pesam e não podem ser fechados por aqui vêm com o motivo: "do Windows", "usado por vários programas" (o WebView2, que desenha o Teams e o novo Outlook), "instalação ou atualização" ou "usado pelo WinForge". Antes, tudo isso aparecia como "do Windows", e a tela dizia que o que mais pesava era "do próprio Windows".
+- **Processador "sem leitura":** um programa aberto como Administrador, com o TF-Toolkit sem, não deixa medir o uso do processador; antes aparecia como "processador quase parado", mesmo a 100%. Com parte dos processos sem leitura e o resto parado, "sem leitura em parte". Vale também quando o Windows nega a leitura devolvendo um valor vazio, e não um erro.
+- **O motivo de não fechar:** os processos que aparecem na lista dos que mais pesam e não podem ser fechados por aqui vêm com o motivo: "do Windows", "usado por vários programas" (o WebView2, que desenha o Teams e o novo Outlook), "instalação ou atualização" ou "usado pelo TF-Toolkit". Antes, tudo isso aparecia como "do Windows", e a tela dizia que o que mais pesava era "do próprio Windows".
 - **A ordem da tela:** a lista vem pelo processador como ele aparece (o que está "quase parado" empata) e, no empate, pela memória; antes, um programa a 0,9% de processador e 40 MB vinha antes de um a 0,1% com 3 GB.
 - **Mais processos do Windows protegidos:** tarefas em segundo plano do Windows (`backgroundTaskHost`), o `rundll32` (que hospeda partes do Windows), o teclado virtual, o editor de idiomas asiáticos (IME), o configurador do Windows e o núcleo do Defender não entram na lista para fechar.
-- **Fechar sem esperar à toa:** o WinForge espera a janela fechar e segue assim que ela fecha, até 5 segundos; antes, esperava sempre 2 segundos, o que era pouco para um programa salvando e demais para um que fecha na hora.
+- **Fechar sem esperar à toa:** o TF-Toolkit espera a janela fechar e segue assim que ela fecha, até 5 segundos; antes, esperava sempre 2 segundos, o que era pouco para um programa salvando e demais para um que fecha na hora.
 - **Programa sem janela:** um programa que não tem nenhuma janela aberta (escondido perto do relógio, como o OBS gravando ou o Outlook minimizado; uma máquina virtual; um processo em segundo plano) era encerrado à força na hora, apesar do "é como clicar no X". Agora a tela avisa que fechar é encerrar à força e faz uma pergunta à parte, com **Não** como padrão; com Não, ele fica aberto.
 - **Só os auxiliares do programa:** depois que a janela fecha, saem os processos sem janela abertos pelo próprio programa (pelo processo pai, direta ou indiretamente). Um processo de mesmo nome que é de outro programa (outro `python`, outro `javaw`) fica, e a faixa diz que ele continua aberto. Sem saber o processo pai, nenhum auxiliar é encerrado.
 - **Por que não fechou:** uma janela com caixa de diálogo aberta nem recebe o pedido de fechar, e a tela diz isso na hora, sem esperar; um programa que foi para perto do relógio ao fechar a janela (Discord, Teams, Steam) aparece como "continua aberto perto do relógio", com como sair; a janela que continua aberta pode estar perguntando se quer salvar ou ter outra janela aberta.
@@ -1618,7 +1618,7 @@ Uma revisão da tela de Limpeza por inteiro, nos mesmos sete pontos das revisõe
 - **OneDrive:** um atalho da Área de Trabalho sincronizada pelo OneDrive vem desmarcado, com o aviso de que o programa pode estar instalado em outro PC seu e que o atalho sairia de lá também. Fica fora da correção com um clique do **Verificar o PC**.
 
 **Encontrar arquivos duplicados**
-- **Mudou depois da busca, fica:** antes de mover, o WinForge confere que os dois arquivos continuam com a mesma data de modificação da busca. Um disco virtual, um cofre criptografado ou uma caixa do Outlook mudam por dentro sem mudar de tamanho, e a "cópia" podia ser a única versão antiga.
+- **Mudou depois da busca, fica:** antes de mover, o TF-Toolkit confere que os dois arquivos continuam com a mesma data de modificação da busca. Um disco virtual, um cofre criptografado ou uma caixa do Outlook mudam por dentro sem mudar de tamanho, e a "cópia" podia ser a única versão antiga.
 - **Fica o criado primeiro:** uma cópia feita no Explorador guarda a data de modificação do original; o arquivo que fica passa a ser o criado primeiro.
 - **Pastas de programas e jogos:** `Program Files`, `ProgramData`, `WindowsApps` e bibliotecas da Steam, Epic, GOG e Xbox de qualquer unidade ficam fora da busca e não podem ser escolhidas.
 - **Pasta que é atalho:** uma pasta que é atalho para outra (ou fica dentro de um) é recusada, com o destino na tela; antes, `D:\Link` apontando para `C:\Program Files` passava pela trava.
@@ -1668,7 +1668,7 @@ Uma revisão da tela de Segurança por inteiro, nos mesmos sete pontos das revis
 **Verificação rápida, completa e de uma pasta**
 - **O que o Defender fez:** cada ameaça encontrada traz o que aconteceu com ela (em quarentena, removida, limpa, bloqueada, permitida, ou "o Windows Defender não conseguiu resolver") e onde estava. A que ainda pede ação aparece em vermelho, e a faixa diz "1 ameaça encontrada; 1 ainda pede ação" ou "2 ameaças encontradas; todas resolvidas pelo Windows Defender". Uma ameaça resolvida para a qual o Defender ainda pede reiniciar o PC ou outra verificação conta como pendente. Antes, só o nome e onde estava, com "veja no aplicativo".
 - **Onde estava, sem lixo:** um arquivo baixado mostra só o caminho, sem o endereço do site e o número do processo que o Defender guarda junto; um programa em execução aparece como "programa em execução (processo 4321)".
-- **Caminho completo:** "Fotos", ".\Downloads" ou "\Fotos" seriam procurados a partir da pasta do WinForge; a tela pede o caminho com a unidade (D:\Fotos) ou de rede. Só a letra de um pen drive ("E:") vale pela raiz dele (E:\), também em **Limpeza > Encontrar arquivos duplicados**.
+- **Caminho completo:** "Fotos", ".\Downloads" ou "\Fotos" seriam procurados a partir da pasta do TF-Toolkit; a tela pede o caminho com a unidade (D:\Fotos) ou de rede. Só a letra de um pen drive ("E:") vale pela raiz dele (E:\), também em **Limpeza > Encontrar arquivos duplicados**.
 - **Pasta de rede:** com o Defender configurado para não examinar arquivos de rede (o padrão), a tela avisa antes de começar, e "nenhuma ameaça" vem com a ressalva de que os arquivos podem não ter sido examinados.
 - **Completa:** avisa quando pen drives e discos USB ficam de fora (o padrão do Defender) e onde examiná-los.
 - **Erros em português:** sem internet, servidor fora do ar, outra instalação em andamento, o serviço do Defender parado e um serviço necessário desativado (geralmente o Windows Update) viram frases, com o código ("o PC não encontrou o servidor: sem internet ou sem DNS (erro 0x80072EE7)"). O código vem de onde o Windows o põe (no identificador do erro, e não na mensagem), e "confira a conexão com a internet" só aparece quando o erro é de conexão.
@@ -1684,7 +1684,7 @@ Uma revisão da tela de Segurança por inteiro, nos mesmos sete pontos das revis
 
 Uma revisão da tela de Diagnóstico por inteiro, nos mesmos sete pontos das revisões do Início e da Manutenção: se cada opção faz o que promete, segurança e robustez, interface e fluxos, código, desempenho e erros comuns e incomuns. O mais grave era a tela Eventos críticos, que contava a lista inteira de eventos como um evento só (num PC sem erro nenhum, "1 evento" de "Origem desconhecida"); outras telas inventavam dados que o Windows não deu (0 °C, "0 horas", "4 GB" de vídeo numa placa de 8) ou alarmavam sem motivo (um pen drive "quase cheio", serviços que falham em todo PC).
 - **Eventos críticos funcionando:** cada evento conta por si, os avisos do disco e do vídeo entram, e um serviço barulhento não esconde mais um desligamento inesperado.
-- **Só o que o Windows informou:** discos, bateria, memória de vídeo e XMP/EXPO deixam de mostrar valores impossíveis ou conclusões que o WinForge não tem como tirar.
+- **Só o que o Windows informou:** discos, bateria, memória de vídeo e XMP/EXPO deixam de mostrar valores impossíveis ou conclusões que o TF-Toolkit não tem como tirar.
 - **Menos alarme falso:** pen drives e discos de dados, serviços que falham ao iniciar, dispositivos desativados pela BIOS e o nobreak de um PC de mesa deixam de pedir atenção.
 - **Suporte do Windows mais certo:** o Windows Server não leva a data do Windows 11 Home, o ESU de empresas e escolas é reconhecido, e o conselho muda conforme a edição e a versão.
 - **Relatório de laudo:** fabricante e modelo, o veredito do suporte do Windows, abrir ou mostrar na pasta, e nenhum relatório apaga outro.
@@ -1744,11 +1744,11 @@ Uma revisão da tela de Diagnóstico por inteiro, nos mesmos sete pontos das rev
 
 ## Build 3.34
 
-Uma revisão da tela de Manutenção por inteiro, nos mesmos sete pontos da revisão do Início: se cada opção faz o que promete, segurança e robustez, interface e fluxos, código, desempenho e erros comuns e incomuns. O que saiu dela são vereditos que escondiam o que ainda pedia atenção, uma Lixeira esvaziada sem pergunta, um reinício que podia fechar arquivos sem salvar e um agendamento que podia rodar o que outra conta pusesse na pasta do WinForge.
+Uma revisão da tela de Manutenção por inteiro, nos mesmos sete pontos da revisão do Início: se cada opção faz o que promete, segurança e robustez, interface e fluxos, código, desempenho e erros comuns e incomuns. O que saiu dela são vereditos que escondiam o que ainda pedia atenção, uma Lixeira esvaziada sem pergunta, um reinício que podia fechar arquivos sem salvar e um agendamento que podia rodar o que outra conta pusesse na pasta do TF-Toolkit.
 - **Nada some sem você ver:** a manutenção só esvazia a Lixeira com confirmação, mostrando o que há nela, e o reinício não fecha mais os programas à força.
 - **Vereditos honestos:** o Verificar o PC não fica verde depois de uma correção com o antivírus desligado, e o resumo da manutenção não diz "concluídas" quando tudo foi ignorado.
 - **Rede de segurança de verdade:** o ponto de restauração vem antes da revisão manual, e o pedido avulso não esbarra mais no limite de um ponto por dia.
-- **Agendamento seguro:** a tela diz de quem é um agendamento de outra conta, e o WinForge não agenda a partir de uma pasta que outras contas alteram.
+- **Agendamento seguro:** a tela diz de quem é um agendamento de outra conta, e o TF-Toolkit não agenda a partir de uma pasta que outras contas alteram.
 - **Página mais clara:** um resumo com uma informação por linha, que conta a última verificação como o Início, e três seções de três cartões, três por linha.
 
 ### Mudou para quem usa
@@ -1779,17 +1779,17 @@ Uma revisão da tela de Manutenção por inteiro, nos mesmos sete pontos da revi
 - **Histórico de manutenções:** "Variação do espaço livre" (do começo ao fim de cada manutenção), em vez de "Espaço liberado por manutenção: média de sem mudança"; com uma manutenção só, as linhas dizem só o que ela registrou, sem "média" nem "primeira e última"; um perfil que esta versão não conhece não vira "Completa". O histórico fica na ordem em que foi gravado: com o relógio do Windows atrasado, a manutenção nova não é mais descartada quando já há 20.
 
 **Criar ponto de restauração**
-- Pedido sozinho, o ponto é criado mesmo com outro de menos de 24 horas: o limite de um por dia do Windows fica em zero só durante a criação e volta ao que era. O original fica anotado até voltar, então um WinForge fechado no meio da criação devolve o limite no próximo ponto. Antes, terminava em "já havia um ponto recente", mesmo antes de instalar um driver.
+- Pedido sozinho, o ponto é criado mesmo com outro de menos de 24 horas: o limite de um por dia do Windows fica em zero só durante a criação e volta ao que era. O original fica anotado até voltar, então um TF-Toolkit fechado no meio da criação devolve o limite no próximo ponto. Antes, terminava em "já havia um ponto recente", mesmo antes de instalar um driver.
 - Ligar a Proteção do Sistema só é oferecido quando é ela que falta. Com outro motivo (disco sem espaço, política do Windows), o motivo aparece e o resultado fica vermelho, sem ligar a proteção à toa.
 
 **Manutenção agendada**
 - O Windows guarda um agendamento só por PC, com a conta de quem agendou. Se ele é de outra conta, a tela diz de quem é, e trocar o dia ou remover pedem confirmação (**Não** é o padrão). Antes, outra conta via "Ativo" e, ao recriar, tirava o agendamento da primeira sem saber.
-- O WinForge não agenda a partir de uma pasta que outras contas do PC podem alterar (uma pasta criada direto em `C:\`, por exemplo), nem de uma cujas permissões não pôde conferir: a tarefa rodaria o que estivesse nela, todo mês, com a sua conta. A tela pede para extrair o WinForge de novo dentro da sua pasta de usuário (mover a pasta leva junto as permissões de onde ela está). Um agendamento feito antes, de uma pasta assim, ganha o mesmo aviso na tela.
-- Remover um agendamento que já não existe (apagado pelo Agendador de Tarefas) termina bem, e a pasta `WinForge` vazia sai do Agendador. Com o Agendador fora do ar, a remoção diz o motivo, em vez de "já não existia".
+- O TF-Toolkit não agenda a partir de uma pasta que outras contas do PC podem alterar (uma pasta criada direto em `C:\`, por exemplo), nem de uma cujas permissões não pôde conferir: a tarefa rodaria o que estivesse nela, todo mês, com a sua conta. A tela pede para extrair o TF-Toolkit de novo dentro da sua pasta de usuário (mover a pasta leva junto as permissões de onde ela está). Um agendamento feito antes, de uma pasta assim, ganha o mesmo aviso na tela.
+- Remover um agendamento que já não existe (apagado pelo Agendador de Tarefas) termina bem, e a pasta `TF-Toolkit` vazia sai do Agendador. Com o Agendador fora do ar, a remoção diz o motivo, em vez de "já não existia".
 
 **Histórico de mudanças**
 - **Registro:** as chaves (`.reg`) e os valores (`.json`) voltam cada um por si: um arquivo que sumiu ou estragou num corte de energia não segura o outro. Com uma parte sumida, a outra volta e a mudança sai da lista, com o aviso do que não tinha como voltar; com uma parte ilegível agora, o desfazer fica amarelo, na lista, para tentar de novo.
-- **Ajustes:** com os valores de antes guardados, o desfazer sempre volta a eles, mesmo quando o Windows já desfez parte do ajuste. Antes, dizia "o ajuste já estava desfeito" e deixava o resto como o WinForge pôs. Sem os valores guardados, a frase diz que valeram os padrões do Windows.
+- **Ajustes:** com os valores de antes guardados, o desfazer sempre volta a eles, mesmo quando o Windows já desfez parte do ajuste. Antes, dizia "o ajuste já estava desfeito" e deixava o resto como o TF-Toolkit pôs. Sem os valores guardados, a frase diz que valeram os padrões do Windows.
 - **DNS:** desfazer volta ao DNS de antes da primeira troca (como em **Rede > Desfazer a troca de DNS**) e tira todas as trocas da lista. Antes, a frase dizia "DNS de antes" e as outras trocas continuavam na lista, prometendo um DNS intermediário.
 - Desfazer vários itens de inicialização lê as tarefas do Agendador uma vez, e não uma por item (cada leitura leva segundos).
 
@@ -1821,7 +1821,7 @@ Uma revisão da tela de Início por inteiro: se cada parte faz o que promete, se
 
 ## Build 3.32
 
-Uma revisão de todos os fluxos: cada ação da janela e do console foi conferida de ponta a ponta, com cada tipo de resposta (o padrão, a primeira opção, cancelar, marcar tudo e Parar), com e sem Administrador, com pastas de nomes difíceis e com cada arquivo de dados estragado de vários jeitos. O que saiu dela são correções de vereditos que diziam mais do que o WinForge sabia, de mensagens cruas do Windows e de casos em que a Build 3.31 não fazia o que o CHANGELOG prometia.
+Uma revisão de todos os fluxos: cada ação da janela e do console foi conferida de ponta a ponta, com cada tipo de resposta (o padrão, a primeira opção, cancelar, marcar tudo e Parar), com e sem Administrador, com pastas de nomes difíceis e com cada arquivo de dados estragado de vários jeitos. O que saiu dela são correções de vereditos que diziam mais do que o TF-Toolkit sabia, de mensagens cruas do Windows e de casos em que a Build 3.31 não fazia o que o CHANGELOG prometia.
 - **Vereditos honestos:** uma leitura que não respondeu não vira mais "tudo certo", e um driver instalado com erros, um relatório que falhou ao gravar ou um ponto de restauração que não foi criado não aparecem mais como sucesso.
 - **Mensagens em português:** os erros do Windows chegam sem o embrulho técnico do PowerShell, e um comando que não existe no Windows da pessoa vira uma frase.
 - **O que a 3.31 prometia e agora faz:** o desfazer parcial fica na lista para tentar de novo, e a manutenção agendada só esvazia uma pasta chamada Temp.
@@ -1839,7 +1839,7 @@ Uma revisão de todos os fluxos: cada ação da janela e do console foi conferid
 - **Exportar relatório:** uma falha ao gravar não diz mais "Relatório salvo".
 - **Suporte do Windows:** o ESU que não pôde ser conferido não vira "não recebe mais atualizações" na faixa de resultado.
 - **Reparo:** o `DISM /CheckHealth` que diz "cannot be repaired" ou "não pode ser reparado" conta como dano.
-- **Criar ponto de restauração:** sem nenhum ponto no PC, o WinForge não promete mais que "um ponto recente já deve existir": a ação termina em vermelho e oferece ligar a Proteção do Sistema, e na Manutenção vira ressalva com o motivo certo.
+- **Criar ponto de restauração:** sem nenhum ponto no PC, o TF-Toolkit não promete mais que "um ponto recente já deve existir": a ação termina em vermelho e oferece ligar a Proteção do Sistema, e na Manutenção vira ressalva com o motivo certo.
 - **Atualizar drivers:** um driver instalado com erros fica amarelo, com o motivo; um erro no meio da instalação aparece na tela e na faixa; e um erro inesperado ao criar o ponto de restauração segue sem ponto novo, em vez de parar tudo.
 - **Ferramentas do fabricante:** sem resposta do Windows para o fabricante do PC e a placa de vídeo, a tela diz "não foi possível ler", e não "Tudo certo".
 - **Duplicados:** um caminho digitado que não existe termina "Não foi concluído" (e não "Cancelado"), e a lista avisa quando só mostra as 300 maiores cópias.
@@ -1856,7 +1856,7 @@ Uma revisão de todos os fluxos: cada ação da janela e do console foi conferid
 
 **Ajustes do Windows**
 - Desfazer o PCI Express ou os tempos de tela e suspensão não grava mais os valores num plano de energia que o ajuste não tocou (quando o plano do ajuste foi apagado, como a cópia do Alto desempenho). O plano ativo só volta aos padrões do Windows se estiver entre os planos do ajuste.
-- A chave de um ajuste do perfil do usuário, com o WinForge elevado por outra conta, fica de fora com aviso, como já acontecia nos perfis, na importação e nos recomendados. Antes, ela aplicava no perfil da conta elevada e dizia "Tudo certo".
+- A chave de um ajuste do perfil do usuário, com o TF-Toolkit elevado por outra conta, fica de fora com aviso, como já acontecia nos perfis, na importação e nos recomendados. Antes, ela aplicava no perfil da conta elevada e dizia "Tudo certo".
 
 **Rede**
 - **Trocar o servidor DNS:** quando o DNS novo não resolve e a ação desfaz sozinha, volta o DNS de logo antes da troca, e não o original do backup. Antes, trocar para o Cloudflare (porque o do provedor não funcionava) e depois para um DNS que não resolve deixava o PC sem resolver nomes, com "desfeito" na faixa. O **Desfazer a troca de DNS** continua voltando ao original.
@@ -1878,26 +1878,26 @@ Uma revisão de todos os fluxos: cada ação da janela e do console foi conferid
 - **Conferir dados online:** nomes e descrições com caracteres de controle (quebra de linha, ESC), que podiam desenhar linhas falsas no console, fazem o catálogo inteiro ser recusado; vale a cópia embutida.
 
 **Janela**
-- O Início lido em segundo plano (Build 3.31) importa os módulos também quando a pasta do WinForge tem colchetes no nome. Antes, no Windows PowerShell 5.1, todos os cartões ficariam como "Não foi possível ler".
+- O Início lido em segundo plano (Build 3.31) importa os módulos também quando a pasta do TF-Toolkit tem colchetes no nome. Antes, no Windows PowerShell 5.1, todos os cartões ficariam como "Não foi possível ler".
 - A trava dos arquivos de dados e a da janela única, quando o Windows recusa o acesso total a uma trava que a outra parte criou (a janela como Administrador e o monitor sem, por exemplo), abrem só com o acesso para esperar e soltar, em vez de seguir sem trava.
 
 ## Build 3.31
 
 Uma revisão de engenharia do projeto inteiro: consistência dos dados gravados, desempenho da janela e correções em todas as páginas, quase todas em casos que davam um resultado errado sem avisar.
 - **Dados que não se perdem:** preferências, históricos e backups são gravados por inteiro de uma vez, com cópia da versão anterior, e um arquivo que não abre nunca é sobrescrito.
-- **Janela mais leve:** o Início é lido fora da janela, a saída longa de uma ação não trava a tela, e abrir o WinForge de novo traz a janela que já está aberta.
+- **Janela mais leve:** o Início é lido fora da janela, a saída longa de uma ação não trava a tela, e abrir o TF-Toolkit de novo traz a janela que já está aberta.
 - **Limpeza mais segura:** nada vai "para a Lixeira" onde o Windows apagaria em definitivo, os restos de programas não propõem pastas do sistema, e o registro de programas de 32 bits não aparece mais como quebrado.
 - **Segurança sem falso alarme nem falsa tranquilidade:** o ESU do Windows 10 é conferido pela build, a auditoria usa as mesmas datas de suporte do Início, e uma leitura que falhou não vira "sem antivírus".
-- **Ajustes, rede e manutenção:** desfazer volta exatamente ao que era, o DNS volta IPv4 e IPv6 em separado, o reparo de rede preserva IP fixo, e a manutenção agendada avisa quando a pasta do WinForge mudou.
+- **Ajustes, rede e manutenção:** desfazer volta exatamente ao que era, o DNS volta IPv4 e IPv6 em separado, o reparo de rede preserva IP fixo, e a manutenção agendada avisa quando a pasta do TF-Toolkit mudou.
 
 ### Mudou para quem usa
 
 **Dados gravados**
 - Preferências, histórico de manutenções, Histórico de mudanças, última manutenção, backups de ajustes e de DNS, o registro da manutenção agendada e os dados online são gravados num arquivo temporário e trocados de uma vez, com uma cópia `.bak` da versão anterior. A janela, o monitor e a manutenção agendada não gravam o mesmo arquivo ao mesmo tempo.
-- Um arquivo que não abre (corrompido) é guardado como `.corrompido-<data>` e o WinForge volta à cópia anterior. Um arquivo que existe, mas não pôde ser lido agora (em uso, sem permissão), nunca é sobrescrito: a gravação é recusada com uma mensagem, em vez de apagar o que havia.
+- Um arquivo que não abre (corrompido) é guardado como `.corrompido-<data>` e o TF-Toolkit volta à cópia anterior. Um arquivo que existe, mas não pôde ser lido agora (em uso, sem permissão), nunca é sobrescrito: a gravação é recusada com uma mensagem, em vez de apagar o que havia.
 
 **Janela**
-- **Uma janela só:** abrir o WinForge com ele já aberto (pelo atalho, pelo `.cmd` ou por um aviso do monitor) traz a janela para a frente e abre nela a ação pedida.
+- **Uma janela só:** abrir o TF-Toolkit com ele já aberto (pelo atalho, pelo `.cmd` ou por um aviso do monitor) traz a janela para a frente e abre nela a ação pedida.
 - **O Início é lido fora da janela.** A proteção do Windows e as consultas ao WMI podem levar segundos; agora a janela continua respondendo enquanto isso. Uma etapa que não responde em 45 segundos fica como "Não foi possível ler" e a leitura segue.
 - A preparação das ações (o código que liga a janela às ações) também é feita fora da janela, logo depois de ela abrir.
 - **Saída longa:** a tela desenha a saída aos poucos, sem travar, e só termina a ação depois de mostrar tudo. Antes, parte da saída de uma ação grande podia aparecer no começo da ação seguinte, e os últimos erros se perdiam. O progresso de uma ação também não aparece mais na seguinte.
@@ -1910,7 +1910,7 @@ Uma revisão de engenharia do projeto inteiro: consistência dos dados gravados,
 
 **Início e nota de saúde**
 - Uma leitura que entra na nota e não respondeu deixa a nota como **"Incompleta"**, em amarelo, com a frase "Seu PC parece bem", em vez de um verde que não foi conferido. O suporte do Windows também entra nessa conta quando não pôde ser lido.
-- O cartão **Manutenção agendada** fica amarelo, com "Pede atenção", quando a tarefa usa um WinForge que não existe mais ou de outra pasta, ou quando a última execução terminou mal.
+- O cartão **Manutenção agendada** fica amarelo, com "Pede atenção", quando a tarefa usa um TF-Toolkit que não existe mais ou de outra pasta, ou quando a última execução terminou mal.
 - O Defender em modo passivo sem outro antivírus identificado é um ponto leve na nota. Com outro antivírus no lugar, as ameaças que o Defender ainda guarda são ressalva (confira no outro antivírus), e não mais "ameaça ativa", que é um ponto grave.
 - O ESU do Windows 10 é conferido pela build instalada, sem consultar o histórico de atualizações (a leitura fica mais rápida). Quando não dá para conferir, o cartão diz "ESU não conferido", e não "sem atualizações de segurança".
 
@@ -1921,49 +1921,49 @@ Uma revisão de engenharia do projeto inteiro: consistência dos dados gravados,
 - Atalhos quebrados abertos em outro programa ficam de fora, sem parar a ação atrás da janela "Arquivo em uso".
 
 **Desempenho**
-- **Fechar programas medidos:** só entram programas da sua sessão. Antes de fechar, o WinForge confere que o processo ainda é o mesmo que foi medido (o Windows reaproveita números de processo). Um programa cuja janela continua aberta (pode estar perguntando se quer salvar) fica aberto, com um aviso em amarelo, em vez de ser encerrado à força; os processos sem janela só são encerrados depois.
+- **Fechar programas medidos:** só entram programas da sua sessão. Antes de fechar, o TF-Toolkit confere que o processo ainda é o mesmo que foi medido (o Windows reaproveita números de processo). Um programa cuja janela continua aberta (pode estar perguntando se quer salvar) fica aberto, com um aviso em amarelo, em vez de ser encerrado à força; os processos sem janela só são encerrados depois.
 - A lista de processos do Windows que nunca entram ganhou a tela de entrada, os drivers de usuário, o Windows Update e os instaladores (`msiexec`, `TiWorker`, `TrustedInstaller`) e o Terminal.
 
 **Limpeza**
-- **Lixeira:** atalhos quebrados, duplicados, restos de programas e a limpeza da pasta Downloads não mandam mais nada "para a Lixeira" em pendrives, cartões de memória e unidades ou pastas de rede, onde o Windows apagaria em definitivo: o WinForge avisa e não remove. Duplicados e restos também mostram o aviso do limite de tamanho da Lixeira.
+- **Lixeira:** atalhos quebrados, duplicados, restos de programas e a limpeza da pasta Downloads não mandam mais nada "para a Lixeira" em pendrives, cartões de memória e unidades ou pastas de rede, onde o Windows apagaria em definitivo: o TF-Toolkit avisa e não remove. Duplicados e restos também mostram o aviso do limite de tamanho da Lixeira.
 - **Restos de programas:** pastas do Windows, da Microsoft e com nomes genéricos (`AppData\Microsoft\Windows`, pastas de idioma como `pt-BR`) não são mais propostas.
-- **Temporários** (também na Limpeza rápida, no Acelerar agora e na manutenção agendada): só uma pasta chamada `Temp` é esvaziada, e uma TEMP apontando para o AppData, a pasta do WinForge, o perfil público ou a pasta Users é recusada.
+- **Temporários** (também na Limpeza rápida, no Acelerar agora e na manutenção agendada): só uma pasta chamada `Temp` é esvaziada, e uma TEMP apontando para o AppData, a pasta do TF-Toolkit, o perfil público ou a pasta Users é recusada.
 - A limpeza da pasta Downloads recusa uma Downloads redirecionada para Documentos, Área de Trabalho, OneDrive ou outra pasta pessoal.
 - **Duplicados:** a busca não segue mais atalhos de pasta (junções), que faziam um arquivo parecer cópia de si mesmo; recusa as pastas do Windows, dos programas, o ProgramData e o AppData (também em "Outra pasta"); fica mais rápida em pastas grandes e para no limite sem listar a pasta inteira antes. Uma cópia só vai para a Lixeira depois de conferir que o arquivo que fica continua lá, com o mesmo tamanho.
-- **Apagar o espaço livre:** se for interrompido ou falhar, a pasta `EFSTMPWP` que enche o disco é apagada, e ao abrir a tela de novo o WinForge oferece apagar uma que tenha ficado. **Parar** também interrompe o `cipher`.
+- **Apagar o espaço livre:** se for interrompido ou falhar, a pasta `EFSTMPWP` que enche o disco é apagada, e ao abrir a tela de novo o TF-Toolkit oferece apagar uma que tenha ficado. **Parar** também interrompe o `cipher`.
 - **Limpar o registro:** a limpeza se recusa a rodar num PowerShell de 32 bits, e remover um valor com colchetes no nome não leva mais junto outro valor parecido.
 
 **Histórico de mudanças**
 - Dá para desfazer qualquer mudança guardada, não só as 30 mais recentes.
-- Desfazer uma limpeza do registro recria só os valores removidos que não existem hoje, sem voltar valores que outros programas mudaram depois. Só são aceitos backups do registro da pasta do WinForge que mexem nas chaves da limpeza, itens de inicialização que o WinForge gerencia e recursos do Windows da lista dele. Um desfazer que dá certo só em parte fica na lista para tentar de novo.
+- Desfazer uma limpeza do registro recria só os valores removidos que não existem hoje, sem voltar valores que outros programas mudaram depois. Só são aceitos backups do registro da pasta do TF-Toolkit que mexem nas chaves da limpeza, itens de inicialização que o TF-Toolkit gerencia e recursos do Windows da lista dele. Um desfazer que dá certo só em parte fica na lista para tentar de novo.
 - Desfazer a troca de DNS com o backup ilegível diz que não conseguiu ler, em vez de "já estava como antes"; um adaptador que ficou como estava não conta como restaurado.
 
 **Ajustes do Windows**
-- Ligar de novo um ajuste que o Windows desfez em parte não troca mais os valores originais pelos do WinForge: desfazer volta ao que era antes. Nos ajustes de energia, cada plano guarda os próprios valores.
+- Ligar de novo um ajuste que o Windows desfez em parte não troca mais os valores originais pelos do TF-Toolkit: desfazer volta ao que era antes. Nos ajustes de energia, cada plano guarda os próprios valores.
 - Desfazer devolve o valor com o tipo que ele tinha (texto, número de 64 bits, binário), em vez de virar número de 32 bits ou falhar, e grava só os valores daquele ajuste.
 - Quando o Windows nega a gravação no registro, o ajuste aparece como falha, e não como "aplicado"; desfazer só apaga o backup e marca o Histórico depois de voltar de fato ao original.
 - Um backup de ajustes que não pôde ser lido não é mais tratado como vazio: aplicar e desfazer param com uma mensagem, e os originais guardados não se perdem.
 - **Plano de energia Alto desempenho:** não acumula mais cópias do plano. A cópia criada é reaproveitada e apagada ao desfazer; com um plano de alto desempenho já ativo, nada muda.
 - "Desativar resultados da web na busca do Iniciar" agora pede Administrador, que é o que o Windows exige para essa política.
-- Com o WinForge elevado por outra conta, os ajustes do perfil do usuário ficam de fora, com aviso, nos perfis, na importação e nos recomendados.
+- Com o TF-Toolkit elevado por outra conta, os ajustes do perfil do usuário ficam de fora, com aviso, nos perfis, na importação e nos recomendados.
 
 **Programas**
 - Ao desinstalar vários programas, só os que saíram de fato vão para o Histórico e para a busca de restos.
-- **Gerenciar inicialização** confere o item que mudou mesmo com tarefas ou atalhos de mesmo nome em lugares diferentes, e não mexe nos itens de outra conta quando o WinForge está elevado por ela. Instalar, instalar essenciais e atualizar programas avisam, nesse caso, que o perfil é o da conta elevada.
+- **Gerenciar inicialização** confere o item que mudou mesmo com tarefas ou atalhos de mesmo nome em lugares diferentes, e não mexe nos itens de outra conta quando o TF-Toolkit está elevado por ela. Instalar, instalar essenciais e atualizar programas avisam, nesse caso, que o perfil é o da conta elevada.
 - **Remover aplicativos do Windows:** remover o Facebook não leva mais o Instagram e o Messenger, e nenhum item some da lista quando há dois aplicativos do mesmo fabricante. A lista abre mais rápido (uma consulta ao Windows) e diz quando não conseguiu ler, em vez de dizer que nada está instalado.
 
 **Segurança e suporte do Windows**
-- **ESU do Windows 10 22H2:** o WinForge só diz que o PC recebe as atualizações estendidas quando a build instalada é uma das que só saem para quem se inscreveu (19045.6575 em diante). Antes, um PC fora do programa que instalou a última atualização gratuita com atraso aparecia como protegido.
+- **ESU do Windows 10 22H2:** o TF-Toolkit só diz que o PC recebe as atualizações estendidas quando a build instalada é uma das que só saem para quem se inscreveu (19045.6575 em diante). Antes, um PC fora do programa que instalou a última atualização gratuita com atraso aparecia como protegido.
 - Versões do Windows 10 anteriores ao 22H2 que não estavam na lista de datas (1703 a 21H1) aparecem como sem atualizações de segurança, em vez de "fora da lista".
 - A **Auditoria de segurança** usa as mesmas datas de suporte da tela Suporte do Windows e do Início (atualizáveis pelos dados online), com o prazo das edições IoT Enterprise LTSC (2021 até 13/01/2032; 2024 até 10/10/2034). Uma versão sem suporte limita a nota a B.
 - A auditoria não dá nota quando o antivírus não pôde ser verificado, e explica o motivo.
-- Quando a Central de Segurança do Windows não responde e o Defender está desligado, o WinForge diz "não foi possível ler" em vez de acusar "PC sem antivírus". Um antivírus só registrado, desligado ou vencido não conta mais como proteção.
+- Quando a Central de Segurança do Windows não responde e o Defender está desligado, o TF-Toolkit diz "não foi possível ler" em vez de acusar "PC sem antivírus". Um antivírus só registrado, desligado ou vencido não conta mais como proteção.
 - O estado do firewall inclui as regras da política de grupo e do gerenciamento da empresa.
 - Com outro antivírus no lugar, a auditoria não conta as ameaças do Defender como "sem verificar"; as que ele ainda guarda viram ressalva. O Defender em modo passivo sem outro antivírus ligado é ponto de atenção na auditoria, no Estado da proteção e no Verificar o PC.
 - **Requisitos do Windows 11:** o disco (64 GB, contados como no script da Microsoft) agora é conferido de verdade; antes ficava "não verificado" e o resultado nunca dava "atende". Sem Administrador, ou quando a consulta ao TPM falha, o TPM aparece como "não verificado", e não como "não encontrado" (que reprovava o PC).
 
 **Diagnóstico e relatório**
-- **Eventos críticos** ficou bem mais rápido: o WinForge lê só a origem, o código e a hora de cada evento.
+- **Eventos críticos** ficou bem mais rápido: o TF-Toolkit lê só a origem, o código e a hora de cada evento.
 - A lista de discos mostra o tipo certo (SSD ou HDD, e não só "SATA"), com uma consulta só ao Windows.
 - As placas Intel Arc integradas ao processador (Meteor Lake, Arrow Lake, Lunar Lake e Panther Lake) não são mais tratadas como placas de vídeo dedicadas.
 - O indicativo de XMP/EXPO compara primeiro com a velocidade do próprio módulo e usa os limites JEDEC atuais (DDR5 até 8800), sem acusar perfil ligado em memórias padrão.
@@ -1977,7 +1977,7 @@ Uma revisão de engenharia do projeto inteiro: consistência dos dados gravados,
 - DISM, SFC, CHKDSK e a otimização do disco impedem o PC de dormir também quando rodados sozinhos, e uma ação dentro de outra não desliga mais o "manter acordado" da Manutenção.
 
 **Manutenção agendada**
-- Se a pasta do WinForge usada pela tarefa for apagada ou trocada, a tela avisa, deixa de dizer só "Ativo" e oferece recriar a tarefa escolhendo o dia; a última execução registrada pelo Agendador aparece quando é mais nova ou terminou mal.
+- Se a pasta do TF-Toolkit usada pela tarefa for apagada ou trocada, a tela avisa, deixa de dizer só "Ativo" e oferece recriar a tarefa escolhendo o dia; a última execução registrada pelo Agendador aparece quando é mais nova ou terminou mal.
 - A tarefa apaga só os temporários com mais de 7 dias, como a Limpeza de Disco do Windows (um programa aberto pode estar usando os mais novos). A limpeza feita na hora continua igual.
 - A tarefa confere que o relatório foi mesmo gravado antes de dizer que ele foi salvo.
 
@@ -1994,7 +1994,7 @@ Uma revisão de engenharia do projeto inteiro: consistência dos dados gravados,
 - O relatório de Wi-Fi abre no navegador sem os privilégios de Administrador.
 
 **Backup antes de formatar**
-- Se a pasta do backup fica no OneDrive, o WinForge avisa que as senhas do Wi-Fi iriam para a nuvem e só as inclui se você confirmar.
+- Se a pasta do backup fica no OneDrive, o TF-Toolkit avisa que as senhas do Wi-Fi iriam para a nuvem e só as inclui se você confirmar.
 - O backup avisa quando o Windows não consegue exportar as redes Wi-Fi (com o Wi-Fi desligado, por exemplo), em vez de dizer que não há redes salvas.
 
 **Monitor na bandeja**
@@ -2004,13 +2004,13 @@ Uma revisão de engenharia do projeto inteiro: consistência dos dados gravados,
 **Linha de comando e iniciadores**
 - `-Action Check`: com parte da nota sem leitura, o resultado é "Há pontos de atenção" (código 1), e não "Tudo em dia". Sem conseguir verificar o antivírus, a segurança aparece "sem nota" com o motivo, também com código 1. O JSON ganhou `Security.NoGradeReason`.
 - `-ReportDirectory` com uma pasta relativa vale a partir da pasta de onde o comando foi rodado.
-- Aberto por um programa de 32 bits, o WinForge usa o PowerShell de 64 bits e lê a parte certa do registro.
+- Aberto por um programa de 32 bits, o TF-Toolkit usa o PowerShell de 64 bits e lê a parte certa do registro.
 - Cancelar o aviso do Windows ao reabrir como Administrador termina com código 1.
 - Um programa do Windows que não existe neste PC dá a mensagem "O programa 'X' não foi encontrado neste PC.".
 
 **Outras correções**
-- A identidade do WinForge na barra de tarefas (o ícone e o agrupamento próprios) não falha mais ao ser aplicada à janela e ao atalho.
-- **Correção do texto da Build 3.29:** o ESU do Windows 10 para consumidores vai até **12/10/2027** (a Microsoft estendeu o programa), e não até 13/10/2026 como aquela entrada dizia. Os dados do WinForge já usavam a data certa.
+- A identidade do TF-Toolkit na barra de tarefas (o ícone e o agrupamento próprios) não falha mais ao ser aplicada à janela e ao atalho.
+- **Correção do texto da Build 3.29:** o ESU do Windows 10 para consumidores vai até **12/10/2027** (a Microsoft estendeu o programa), e não até 13/10/2026 como aquela entrada dizia. Os dados do TF-Toolkit já usavam a data certa.
 
 ## Build 3.30
 
@@ -2034,7 +2034,7 @@ Uma revisão de design da janela e dos fluxos: páginas organizadas em seções,
   - Atualizações: Windows e drivers, Programas e aplicativos e Ferramentas do Windows;
   - Programas: Instalar e remover, Inicialização e recursos, Backup e formatação e Ferramentas do Windows;
   - Rede: Ver e testar e Consertar e configurar;
-  - Sobre o WinForge: Versão e dados e Integração com o Windows.
+  - Sobre o TF-Toolkit: Versão e dados e Integração com o Windows.
 - **Ferramentas do Windows** junta os atalhos que só abrem uma janela do Windows e fica por último. A Restauração do Sistema, o Agendador de Tarefas, as atualizações da Microsoft Store e a pasta de logs ficam junto do assunto deles.
 - Alguns itens mudaram de lugar para a seção ficar inteira: Exportar relatório subiu para a Visão geral do Diagnóstico, Limpar a pasta Downloads foi para Liberar espaço, e a Manutenção ficou com o Histórico de manutenções e as Opções logo depois dos dois botões principais.
 - **No console,** o menu de cada página mostra o nome das seções antes dos itens; a numeração segue direto de uma seção para a outra.
@@ -2061,13 +2061,13 @@ Uma revisão de design da janela e dos fluxos: páginas organizadas em seções,
 
 ## Build 3.29
 
-Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a ponta, mais a revisão da tela de Programas.
+Uma build grande, com o que faltava para o TF-Toolkit cuidar do PC de ponta a ponta, mais a revisão da tela de Programas.
 - **Verificar o PC:** uma passada lê tudo (lixo, registro, atalhos, memória, inicialização, programas desatualizados, suporte do Windows, proteção e reinício) e corrige com um clique o que é seguro. Virou o botão principal do Início.
 - **Página Desempenho:** Acelerar agora, Programas pesando agora e Liberar memória.
 - **Histórico de mudanças,** com desfazer: registro, inicialização, ajustes, recursos do Windows e DNS.
 - **Limpar o registro,** só referências quebradas, com backup.
 - **Limpeza:** atalhos quebrados, arquivos duplicados, restos de programas desinstalados, apagar o espaço livre e mais navegadores, sombreadores e despejos de memória na limpeza personalizada.
-- **Drivers** pelo Windows Update, dentro do WinForge, e as ferramentas oficiais dos fabricantes.
+- **Drivers** pelo Windows Update, dentro do TF-Toolkit, e as ferramentas oficiais dos fabricantes.
 - **Suporte do Windows:** até quando a versão recebe atualizações de segurança, o ESU do Windows 10 e os requisitos do Windows 11. Entra na nota do Início.
 - **Monitor na bandeja,** opcional, com avisos.
 - **Gerenciar inicialização** com tarefas agendadas e o fabricante de cada programa.
@@ -2107,7 +2107,7 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
 - **Gerenciador de Tarefas:** abre o do Windows.
 
 **Histórico de mudanças** (Manutenção)
-- Lista o que o WinForge mudou no PC, com data e hora: ajustes, inicialização, recursos do Windows, DNS, limpeza do registro, aplicativos e programas removidos, drivers, atalhos, duplicados e restos enviados para a Lixeira, monitor ligado ou desligado.
+- Lista o que o TF-Toolkit mudou no PC, com data e hora: ajustes, inicialização, recursos do Windows, DNS, limpeza do registro, aplicativos e programas removidos, drivers, atalhos, duplicados e restos enviados para a Lixeira, monitor ligado ou desligado.
 - **Desfaz o que tem volta:** o registro (importa o backup), a inicialização (cada item volta ao estado de antes), os ajustes, os recursos do Windows e o DNS. Nada vem marcado.
 - Desfazer um ajuste pela página Ajustes do Windows, ou o DNS pela página Rede, marca a mudança como desfeita aqui também.
 
@@ -2119,7 +2119,7 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
   - A tela diz com honestidade que isso não deixa o PC mais rápido: só tira do registro entradas que levam a lugar nenhum.
 - **Remover atalhos quebrados** (novo): Área de Trabalho e Menu Iniciar, seus e de todos os usuários (estes com Administrador). Os atalhos vão para a Lixeira.
 - **Encontrar arquivos duplicados** (novo): compara pelo conteúdo os arquivos de 1 MB ou mais de Downloads, Imagens, Documentos, Área de Trabalho ou outra pasta. Em cada grupo o mais antigo fica; nada vem marcado, e o que você marcar vai para a Lixeira.
-- **Restos de programas desinstalados** (novo): procura pastas com o nome dos programas desinstalados pelo WinForge, em Arquivos de Programas, ProgramData e AppData, desde que nenhum programa instalado tenha esse nome. Nada vem marcado; vai para a Lixeira.
+- **Restos de programas desinstalados** (novo): procura pastas com o nome dos programas desinstalados pelo TF-Toolkit, em Arquivos de Programas, ProgramData e AppData, desde que nenhum programa instalado tenha esse nome. Nada vem marcado; vai para a Lixeira.
 - **Apagar o espaço livre** (novo): o `cipher /w` do Windows, para que arquivos já apagados não possam ser recuperados. A tela explica quando vale a pena e o desgaste em SSD; a confirmação vem com **Não** como padrão.
 - **Limpeza personalizada:** o cache dos navegadores inclui Brave, Opera, Opera GX e Vivaldi. Novos alvos, desmarcados: cache de sombreadores dos jogos (DirectX, NVIDIA e AMD) e despejos de memória de falhas.
 
@@ -2135,7 +2135,7 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
 - Até quando a versão e a edição deste Windows recebem atualizações de segurança: Home e Pro, Enterprise e Education, e LTSC têm datas diferentes.
 - **Windows 10 22H2:** depois de 14/10/2025, diz se o PC está no ESU (pela data da última atualização instalada) ou como entrar nele, pela página do Windows Update, até 13/10/2026.
 - **Requisitos do Windows 11,** no Windows 10: TPM 2.0, UEFI e Secure Boot, memória, disco, processador e 64 bits. O processador é avaliado pelo nome; os casos que só a lista da Microsoft decide aparecem como "não dá para saber pelo nome".
-- As datas vêm do catálogo do WinForge, que pode ser atualizado em Sobre o WinForge > Conferir dados online.
+- As datas vêm do catálogo do TF-Toolkit, que pode ser atualizado em Sobre o TF-Toolkit > Conferir dados online.
 
 **Programas > Gerenciar inicialização**
 - **Entram as tarefas agendadas** de outros fabricantes que rodam ao entrar no Windows ou ao ligar o PC, onde ficam os atualizadores. Desativar uma delas a desativa no Agendador de Tarefas.
@@ -2154,10 +2154,10 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
 - Os recomendados não mudaram: continuam só os de baixo impacto.
 - **Perfil novo, Privacidade:** o Essencial mais tudo o que reduz os dados enviados ao Windows e à Microsoft, também a busca na web e o Recall.
 
-**Sobre o WinForge**
+**Sobre o TF-Toolkit**
 - **Monitor na bandeja** (novo, opcional): um ícone perto do relógio que avisa quando o disco enche, a proteção desliga ou há ameaça ativa, falta reiniciar, passa um mês sem verificação, o Windows perde o suporte ou há três ou mais programas com versão nova.
   - Cada aviso aparece no máximo uma vez a cada tanto tempo (de 12 horas a uma semana), e clicar nele abre a tela que resolve.
-  - O menu do ícone abre o WinForge, roda Acelerar agora, Limpeza rápida e Verificar o PC, pausa os avisos por 24 horas e fecha o monitor.
+  - O menu do ícone abre o TF-Toolkit, roda Acelerar agora, Limpeza rápida e Verificar o PC, pausa os avisos por 24 horas e fecha o monitor.
   - Só lê; nada muda no PC sem o seu clique. Começa com o Windows por uma entrada do seu usuário em `Run`, sem Administrador.
 - **Conferir dados online** (novo): baixa do repositório do projeto a lista de programas essenciais e as datas de suporte do Windows. Sem internet, vale a cópia embutida; uma cópia que não passa na conferência é descartada. Nenhum dado do PC é enviado.
 
@@ -2203,7 +2203,7 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
 **Desinstalar programas**
 - **Corrigido: a lista parava no primeiro programa com ID local com espaço.**
   - Para o que só encontra no Windows, o winget monta um ID com o nome do programa, como "ARP\Machine\X86\Microsoft Edge Update".
-  - O WinForge tratava o espaço como fim da tabela, e todos os programas seguintes sumiam da lista.
+  - O TF-Toolkit tratava o espaço como fim da tabela, e todos os programas seguintes sumiam da lista.
   - Listar programas instalados, que agora conta os programas, usa a mesma leitura.
 - **Um ID que o winget mostra cortado não vai para o comando.**
   - O winget corta com reticências o que não cabe na largura da tabela, inclusive o ID.
@@ -2212,7 +2212,7 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
   - Buscar e instalar e Atualizar programas tratam o ID cortado do mesmo jeito.
 - Duas versões instaladas do mesmo pacote viram uma opção só na lista.
 - Depois de desinstalar, a tela indica Limpeza > Restos de programas desinstalados, que procura as pastas que o programa deixou.
-- Quando a leitura da lista falha, a tela diz o motivo: "código de saída 1", ou que o WinForge não reconheceu a tabela do winget. Antes era "(código 1)".
+- Quando a leitura da lista falha, a tela diz o motivo: "código de saída 1", ou que o TF-Toolkit não reconheceu a tabela do winget. Antes era "(código 1)".
 
 **Remover aplicativos do Windows**
 - **Os erros mais comuns do Windows viram frase, com o código:**
@@ -2274,7 +2274,7 @@ Uma build grande, com o que faltava para o WinForge cuidar do PC de ponta a pont
 - o Remove-AppxPackage, os cmdlets de recursos opcionais, o registro da inicialização, o pnputil e o netsh;
 - nas funções novas, o Windows Update (busca de drivers), as tarefas agendadas, o registro, os atalhos (.lnk), os processos, a memória, o Defender e o `cipher`.
 
-Partes que só rodam no Windows e não foram executadas aqui: a liberação de memória (as chamadas `EmptyWorkingSet` e `NtSetSystemInformation`; o código C# foi conferido como C# 5, o compilador do Windows PowerShell 5.1), o `reg export` e o `reg import` do limpador do registro, o `cipher /w`, a busca de drivers com o critério `Type='Driver'` e o monitor na bandeja (`WinForge.Agent.ps1`, que usa o ícone de notificação do Windows Forms). O monitor teve as regras conferidas (quando conferir, quando avisar, a pausa e cada leitura); o ícone e os balões, não.
+Partes que só rodam no Windows e não foram executadas aqui: a liberação de memória (as chamadas `EmptyWorkingSet` e `NtSetSystemInformation`; o código C# foi conferido como C# 5, o compilador do Windows PowerShell 5.1), o `reg export` e o `reg import` do limpador do registro, o `cipher /w`, a busca de drivers com o critério `Type='Driver'` e o monitor na bandeja (`TF-Toolkit.Agent.ps1`, que usa o ícone de notificação do Windows Forms). O monitor teve as regras conferidas (quando conferir, quando avisar, a pausa e cada leitura); o ícone e os balões, não.
 
 As datas de suporte seguem as páginas de ciclo de vida da Microsoft, consultadas em 30/10/2026; o ESU do Windows 10 para consumidores vai até 13/10/2026. Os IDs do winget das ferramentas da Dell, da Lenovo e da Intel foram conferidos no repositório do winget; HP, NVIDIA e AMD abrem a página oficial. A Auditoria de segurança continua com a própria tabela de datas, com os mesmos valores do catálogo.
 
@@ -2377,7 +2377,7 @@ Revisão da tela de Reparo.
 **Verificar arquivos do sistema (SFC)**
 - **Corrigido: o mesmo arquivo sem reparo era contado mais de uma vez.** O SFC repete a linha de cada arquivo no CBS.log a cada passada, e um único arquivo aparecia como "3 arquivo(s) corrompido(s)". Agora cada arquivo conta uma vez: "1 arquivo corrompido não pôde ser reparado".
 - **Os nomes desses arquivos aparecem no resumo**, junto com o caminho do CBS.log.
-  - O WinForge lê os nomes entre aspas simples e entre aspas duplas (o formato da documentação da Microsoft). Antes, o formato com aspas duplas não era lido e o nome virava "arquivo".
+  - O TF-Toolkit lê os nomes entre aspas simples e entre aspas duplas (o formato da documentação da Microsoft). Antes, o formato com aspas duplas não era lido e o nome virava "arquivo".
   - A linha "Could not reproject corrupted file" também conta.
 - **Corrigido: uma passada anterior do SFC podia entrar na conta.** O CBS.log era lido a partir de um minuto antes da pergunta. Se o SFC fosse repetido logo depois do DISM, os arquivos da primeira passada podiam aparecer como não reparados na segunda. Agora conta só o que foi registrado depois de a ferramenta começar.
 - A faixa diz "nenhum arquivo corrompido foi encontrado" ou "arquivos corrompidos foram encontrados e reparados".
@@ -2385,9 +2385,9 @@ Revisão da tela de Reparo.
 - Com um reparo pendente, a faixa diz "depois de reiniciar, rode o SFC de novo".
 
 **Verificar o sistema de arquivos (CHKDSK)**
-- **Corrigido: "Nenhum erro foi encontrado" seguido de um pedido de reparo offline.** Com o código 0 e a frase do /spotfix no texto, a tela dizia as duas coisas. Agora o WinForge primeiro vê se há reparo offline e só depois escreve a mensagem: "A verificação encontrou problemas que só o reparo offline corrige."
+- **Corrigido: "Nenhum erro foi encontrado" seguido de um pedido de reparo offline.** Com o código 0 e a frase do /spotfix no texto, a tela dizia as duas coisas. Agora o TF-Toolkit primeiro vê se há reparo offline e só depois escreve a mensagem: "A verificação encontrou problemas que só o reparo offline corrige."
 - **Corrigido: um agendamento que falhava deixava a unidade marcada.**
-  - Antes, o WinForge marcava a unidade para reparo (`fsutil dirty set`, que não se desfaz) e só depois agendava a verificação (`chkntfs /C`).
+  - Antes, o TF-Toolkit marcava a unidade para reparo (`fsutil dirty set`, que não se desfaz) e só depois agendava a verificação (`chkntfs /C`).
   - Se o agendamento falhasse, a tela dizia "não foi possível agendar", mas a unidade já estava marcada e o Windows verificaria o disco na inicialização.
   - Agora o agendamento vem primeiro e a marcação por último. Se o agendamento falhar, nada muda.
 - **O tempo do reparo offline aparece no resumo durante a pergunta:** "pode levar de minutos a horas (principalmente em HDD)". Antes era uma linha cinza, que a janela não mostrava enquanto a pergunta esperava. O mesmo vale para a pergunta no fim da Manutenção.
@@ -2425,7 +2425,7 @@ Revisão da tela de Segurança.
 - **O andamento vai na barra de progresso.** "Consultando o antivírus e o firewall...", "Consultando o Windows Update...", "Baixando as assinaturas..." e "Verificando..." ficavam no resumo depois do fim, como se a tela ainda estivesse trabalhando.
 - **Corrigido: as datas seguiam o idioma do Windows.** As das assinaturas e das últimas verificações, e a do fim do suporte na auditoria, saíam com pontos num Windows em alemão ("24.10.2026"). Agora são sempre "24/10/2026 08:00".
 - "1 ameaça encontrada", "3 atualizações pendentes" e "2 pontos de atenção", em vez de "ameaça(s)", "atualização(ões)" e "ponto(s)". Listas com "e": "Rede privada e Rede pública".
-- Para as atualizações pendentes, a tela indica **Atualizações > Instalar atualizações do Windows**, que instala dentro do WinForge. Antes indicava **Windows Update**, que só abre as Configurações do Windows.
+- Para as atualizações pendentes, a tela indica **Atualizações > Instalar atualizações do Windows**, que instala dentro do TF-Toolkit. Antes indicava **Windows Update**, que só abre as Configurações do Windows.
 
 **Estado da proteção**
 - **A faixa conta e nomeia os pontos de atenção:** "5 pontos de atenção: proteção em tempo real desligada, assinaturas com 10 dias, 2 ameaças ativas, firewall desligado (Rede pública) e 7 atualizações pendentes". Antes, a faixa repetia só a última mensagem ("7 atualização(ões) do Windows pendente(s)...").
@@ -2518,7 +2518,7 @@ Revisão da tela de Limpeza.
   - "a pasta já estava vazia".
 
   Antes, "Concluído com sucesso" ou a última mensagem da tela.
-- **Corrigido: com o WinForge elevado com outra conta, uma limpeza que dava certo terminava "com ressalvas",** por causa do aviso de quem é a pasta. O aviso continua antes da primeira pergunta, sem mudar a faixa.
+- **Corrigido: com o TF-Toolkit elevado com outra conta, uma limpeza que dava certo terminava "com ressalvas",** por causa do aviso de quem é a pasta. O aviso continua antes da primeira pergunta, sem mudar a faixa.
 
 **Analisar uso de espaço**
 - **Novo aviso de disco cheio**, com a regra do Início: "Pouco espaço livre no disco do sistema." ou "O disco do sistema está quase cheio...". É um aviso sobre o disco, não sobre a análise: a tela continua sem faixa de ressalva.
@@ -2647,7 +2647,7 @@ Revisão da tela de Diagnóstico.
 - A faixa diz "relatório salvo em HTML e em texto". Se o relatório não puder ser aberto, a tela termina com ressalvas e o motivo.
 
 **Na janela, em todas as páginas**
-- **Uma tela que só informa e cujo resumo diz tudo mostra o resumo como o conteúdo.** Isso vale quando a tela escreveu só mensagens do WinForge, linhas "rótulo : valor" e seções.
+- **Uma tela que só informa e cujo resumo diz tudo mostra o resumo como o conteúdo.** Isso vale quando a tela escreveu só mensagens do TF-Toolkit, linhas "rótulo : valor" e seções.
   - O resumo ocupa toda a altura até o cartão dos detalhes técnicos, e os detalhes ficam recolhidos.
   - Antes, essas telas escondiam o resumo e abriam os detalhes técnicos, em fonte de terminal.
   - Quando há algo que o resumo não mostra (uma tabela, o texto de um programa), os detalhes continuam se abrindo. É o caso de Informações de rede e de Inicialização e energia.
@@ -2685,14 +2685,14 @@ Revisão da tela de Manutenção.
 - **O resumo final mostra cada etapa numa linha:** "Limpeza rápida · 1min 05s", "Reparar o Windows · Atenção (…) · 12min 40s", com o ícone do desfecho. As etapas ignoradas também aparecem, com o ícone de "ignorado". O antes e depois mostra cada dado com o rótulo ao lado.
 - **Corrigido: escolher um perfil mudava o perfil padrão mesmo sem a manutenção começar.** Olhar o plano da Profunda e cancelar deixava a Profunda como padrão. Agora o perfil só vira o padrão quando a fase automática é confirmada, ou quando a manutenção só tem revisão manual.
 - **Corrigido: uma janela da revisão manual que não abria ainda pedia "conclua na janela aberta".** Agora a tela diz "A janela não abriu; esta revisão fica para depois".
-- O ponto de restauração criado pela manutenção agora se chama "WinForge - antes da manutenção recomendada" na Restauração do Sistema. Antes se chamava "antes dos ajustes".
+- O ponto de restauração criado pela manutenção agora se chama "TF-Toolkit - antes da manutenção recomendada" na Restauração do Sistema. Antes se chamava "antes dos ajustes".
 - "Manutenção recomendada finalizada." passou a ser uma informação, e não um "ok" verde ao lado de etapas que falharam. O desfecho continua sendo o das etapas.
 - **Frases corrigidas:**
   - "1 etapa falhou e 1 etapa terminou com ressalvas. As mensagens de cada etapa e o log dizem o motivo." Antes: "1 etapa(s) falharam e 0 terminaram com ressalvas. Revise a saída acima".
   - "Duração da fase automática", em vez de "Tempo total", porque a conta não inclui a revisão manual.
   - "A fase automática executa 1 etapa" ou "7 etapas", em vez de "etapa(s)".
   - No resultado, "1 etapa terminou com ressalvas" (antes, "1 terminou com ressalvas").
-- No terminal, digitar " winforge " com espaços ou terminar a entrada (Ctrl+Z) conta como "não começar", sem erro.
+- No terminal, digitar " tf-toolkit " com espaços ou terminar a entrada (Ctrl+Z) conta como "não começar", sem erro.
 - Na janela, o "Cancelar" da fase automática passou a ser a saída da pergunta, como nas outras.
 
 **Opções da manutenção**
@@ -2718,7 +2718,7 @@ Revisão da tela de Manutenção.
 - **Corrigido:** se a limpeza devolvesse algum texto junto com o resultado, uma execução em que nada funcionou podia ser registrada como "com ressalvas". Nesse caso a tarefa terminava sem o código de erro que o Agendador mostra.
 
 **Criar ponto de restauração** (páginas Manutenção e Ajustes)
-- **O ponto se chama "WinForge - ponto criado manualmente"** na Restauração do Sistema. O de antes de aplicar ajustes continua "WinForge - antes dos ajustes".
+- **O ponto se chama "TF-Toolkit - ponto criado manualmente"** na Restauração do Sistema. O de antes de aplicar ajustes continua "TF-Toolkit - antes dos ajustes".
 - **Corrigido: pedido sozinho, um ponto que não foi criado terminava "Concluído com ressalvas: não criado".** Isso acontecia, por exemplo, com a Proteção do Sistema desligada e a pessoa recusando ligá-la. Agora termina em vermelho: "Não foi concluído: o ponto de restauração não foi criado". Dentro da Manutenção recomendada, o mesmo caso continua sendo uma ressalva e o fluxo segue.
 - **Corrigido: sem o comando do ponto de restauração** (PowerShell 7), o ponto não era criado, mas os ajustes seguiam sem perguntar se a pessoa queria aplicar mesmo sem ele. Agora a pergunta aparece, como quando a Proteção do Sistema está desligada. Ligar a Proteção do Sistema não é oferecido nesse caso, porque não resolveria.
 
@@ -2798,7 +2798,7 @@ Interface nova. A janela ganhou um visual mais limpo e atual, em temas claro e e
 ### Mudou para quem usa
 
 **Aparência**
-- **Tema claro e tema escuro.** Por padrão, a janela segue o tema das Configurações do Windows, inclusive se você trocar com ela aberta. Para fixar um tema: **Sobre o WinForge > Aparência** (**Automático**, **Claro** ou **Escuro**). A troca vale na hora e fica salva. A barra de título também segue o tema.
+- **Tema claro e tema escuro.** Por padrão, a janela segue o tema das Configurações do Windows, inclusive se você trocar com ela aberta. Para fixar um tema: **Sobre o TF-Toolkit > Aparência** (**Automático**, **Claro** ou **Escuro**). A troca vale na hora e fica salva. A barra de título também segue o tema.
 - **Visual novo:**
   - Fundo neutro, cartões brancos (ou grafite, no escuro) com cantos arredondados.
   - Uma cor de destaque azul.
@@ -2812,7 +2812,7 @@ Interface nova. A janela ganhou um visual mais limpo e atual, em temas claro e e
 **Barra lateral e busca**
 - Cada página tem um ícone. A página aberta fica marcada, com o ícone em azul.
 - A busca mostra "Buscar" e o atalho **Ctrl K**.
-- O rodapé diz se a janela está como **Administrador** ou como usuário padrão. Como usuário padrão, lembra que o WinForge pede o Administrador quando uma ação precisar.
+- O rodapé diz se a janela está como **Administrador** ou como usuário padrão. Como usuário padrão, lembra que o TF-Toolkit pede o Administrador quando uma ação precisar.
 
 **Cartões das páginas**
 - Cada ação é um cartão com ícone, nome e uma frase do que faz.
@@ -2838,7 +2838,7 @@ Interface nova. A janela ganhou um visual mais limpo e atual, em temas claro e e
 
 **Tela de execução**
 - **A etapa em andamento fica em destaque,** com uma barra de progresso fina. Com percentual (DISM, SFC, winget...), a barra enche; sem percentual, ela corre.
-- **Um resumo do que já foi feito:** uma linha por mensagem do WinForge, com ícone de ok, atenção, erro ou informação. Os títulos de seção viram subtítulos.
+- **Um resumo do que já foi feito:** uma linha por mensagem do TF-Toolkit, com ícone de ok, atenção, erro ou informação. Os títulos de seção viram subtítulos.
 - **A saída completa fica em "Detalhes técnicos", recolhida.** Ela se abre sozinha em três casos:
   - quando a ação termina com erro;
   - quando a tela só mostra informações (Informações de rede, por exemplo);
@@ -2854,8 +2854,8 @@ Interface nova. A janela ganhou um visual mais limpo e atual, em temas claro e e
 - **Perguntas:**
   - Escolhas com descrição, ou com mais de três opções, viram linhas clicáveis, com a recomendada destacada. "Cancelar" e "Voltar" ficam como botões embaixo.
   - As listas de marcação ganharam caixas no estilo da janela.
-  - Enquanto o WinForge espera a resposta, a barra de progresso para e o estado diz "Esperando a sua resposta".
-- **A barra de execução** (a que aparece no alto quando você está em outra página) mostra o tempo e a etapa: "Em execução · 01:15 · Limpeza do Windows". Quando o WinForge espera uma resposta, ela diz "Precisa da sua resposta". Quando a ação termina sem você ver, o ponto fica na cor do resultado e o botão vira "Ver resultado".
+  - Enquanto o TF-Toolkit espera a resposta, a barra de progresso para e o estado diz "Esperando a sua resposta".
+- **A barra de execução** (a que aparece no alto quando você está em outra página) mostra o tempo e a etapa: "Em execução · 01:15 · Limpeza do Windows". Quando o TF-Toolkit espera uma resposta, ela diz "Precisa da sua resposta". Quando a ação termina sem você ver, o ponto fica na cor do resultado e o botão vira "Ver resultado".
 
 - o desenho final com a fonte Segoe UI;
 - as animações;
@@ -2864,11 +2864,11 @@ Interface nova. A janela ganhou um visual mais limpo e atual, em temas claro e e
 
 ## Build 3.19
 
-Revisão da tela Sobre o WinForge: o endereço de download da nova versão passa a ser conferido contra tentativas de sair da pasta de releases do projeto, a faixa de resultado do atalho diz onde ele ficou e avisa quando ele sai sem o ícone, o Modo de Administrador e a verificação de nova versão terminam com uma faixa que diz o que mudou ou por que não deu, e o alto da página ganha um resumo com a versão, o atalho e o modo de Administrador.
+Revisão da tela Sobre o TF-Toolkit: o endereço de download da nova versão passa a ser conferido contra tentativas de sair da pasta de releases do projeto, a faixa de resultado do atalho diz onde ele ficou e avisa quando ele sai sem o ícone, o Modo de Administrador e a verificação de nova versão terminam com uma faixa que diz o que mudou ou por que não deu, e o alto da página ganha um resumo com a versão, o atalho e o modo de Administrador.
 
 ### Mudou para quem usa
 
-**Criar atalho do WinForge**
+**Criar atalho do TF-Toolkit**
 - **Corrigido: um atalho criado sem o ícone, ou sem o identificador que agrupa o botão na barra de tarefas, saía verde ("Concluído com sucesso").** Agora a faixa fica amarela e diz o que falta: "atalho criado na Área de Trabalho, mas está com o ícone do PowerShell" e/ou "o botão pode aparecer como PowerShell ao ser fixado na barra de tarefas".
 - **A faixa diz onde o atalho ficou:** "Concluído: atalho criado na Área de Trabalho e no Menu Iniciar." (ou "atualizado", quando já existia).
 - **Cancelar o menu agora termina em "Operação cancelada."** em vez de "Nada a fazer".
@@ -2879,22 +2879,22 @@ Revisão da tela Sobre o WinForge: o endereço de download da nova versão passa
 - **Salvar a escolha diz o efeito:** "Concluído: salvo; a partir da próxima abertura, o Administrador será pedido ao abrir a janela" (ou "só será pedido quando uma ação precisar"). Se a preferência não puder ser gravada, a faixa fica vermelha com esse motivo.
 
 **Versão e pastas**
-- Se o arquivo `assets\WinForge.ico` não for encontrado, a faixa fica amarela e diz isso; antes a tela terminava sem nada, só com o aviso no meio do texto. Com o ícone no lugar, continua sem faixa, porque a tela só informa.
+- Se o arquivo `assets\TF-Toolkit.ico` não for encontrado, a faixa fica amarela e diz isso; antes a tela terminava sem nada, só com o aviso no meio do texto. Com o ícone no lugar, continua sem faixa, porque a tela só informa.
 
 **Verificar nova versão**
-- **Corrigido (segurança): o endereço do WinForge.zip que o GitHub informa era aceito se apenas começasse com a pasta de downloads do projeto.** Endereços com `..` ou `%2e%2e` ("…/releases/download/../../outro-projeto/…"), espaços em volta, `\`, credenciais no endereço, porta diferente ou sem nome de arquivo depois da pasta agora são recusados antes de qualquer download. O endereço de uma release legítima continua funcionando. O download já era conferido pelo SHA-256 publicado; isto fecha a porta antes dele.
+- **Corrigido (segurança): o endereço do TF-Toolkit.zip que o GitHub informa era aceito se apenas começasse com a pasta de downloads do projeto.** Endereços com `..` ou `%2e%2e` ("…/releases/download/../../outro-projeto/…"), espaços em volta, `\`, credenciais no endereço, porta diferente ou sem nome de arquivo depois da pasta agora são recusados antes de qualquer download. O endereço de uma release legítima continua funcionando. O download já era conferido pelo SHA-256 publicado; isto fecha a porta antes dele.
 - **As faixas dizem a versão e o motivo**, com o número da versão publicada: "a versão … está disponível, mas o download foi recusado", "versão … baixada e conferida (SHA-256)", "versão … baixada, mas sem hash publicado para conferir", "o hash do download não confere e o arquivo foi apagado", "esta cópia é mais nova que a última publicada (…)", "não foi possível consultar o GitHub agora; tente de novo mais tarde". O aviso de GitHub inacessível agora inclui "resposta inesperada" entre as causas possíveis.
 - **Se a resposta do GitHub vier sem o endereço da página da release,** a mensagem aponta para a lista de releases do projeto em vez de terminar com um endereço vazio.
 
 **Pasta de logs e Downloads**
 - **Corrigido: se o Explorador de Arquivos não abrisse a pasta, a mensagem dizia "o recurso pode não existir nesta edição do Windows".** Para a pasta de logs e a de Downloads, que existem em qualquer edição, agora diz "O Explorador de Arquivos não abriu a pasta. Tente abri-la manualmente."
 
-**Página Sobre o WinForge**
-- **Um resumo no alto da página**, que não espera nenhuma leitura lenta: a **versão** ("Build 3.19"), **onde o atalho já existe** ("Área de Trabalho e Menu Iniciar", ou "ainda não criado; use Criar atalho do WinForge"), um aviso amarelo quando o **ícone** não foi encontrado e o **Administrador** ("pedido só quando uma ação precisar · esta janela está sem Administrador"). Se alguma leitura falhar, só aquela linha vira "não foi possível ler", e a página abre do mesmo jeito.
+**Página Sobre o TF-Toolkit**
+- **Um resumo no alto da página**, que não espera nenhuma leitura lenta: a **versão** ("Build 3.19"), **onde o atalho já existe** ("Área de Trabalho e Menu Iniciar", ou "ainda não criado; use Criar atalho do TF-Toolkit"), um aviso amarelo quando o **ícone** não foi encontrado e o **Administrador** ("pedido só quando uma ação precisar · esta janela está sem Administrador"). Se alguma leitura falhar, só aquela linha vira "não foi possível ler", e a página abre do mesmo jeito.
 - A descrição da página na barra lateral e nos resultados da busca passa a citar as atualizações e o modo de Administrador: "Versão e atualizações, atalho com ícone, pasta de logs e modo de Administrador."
 
 **Busca**
-- Novas palavras levam ao item certo: "build" e "powershell" a Versão e pastas; "fixar" e "barra de tarefas" a Criar atalho do WinForge; "pedir", "sempre" e "sob demanda" ao Modo de Administrador.
+- Novas palavras levam ao item certo: "build" e "powershell" a Versão e pastas; "fixar" e "barra de tarefas" a Criar atalho do TF-Toolkit; "pedir", "sempre" e "sob demanda" ao Modo de Administrador.
 
 **Desempenho** (medido em Linux, com leituras simuladas; no Windows não foi medido)
 - O resumo do alto da página lê só as preferências, duas pastas e o cabeçalho do ícone; na simulação, leva cerca de 4 ms (mediana), e abrir a tela "Versão e pastas" no console, cerca de 7 ms. Nenhuma consulta à internet acontece ao abrir a página: a verificação de nova versão continua só quando você a pede.
@@ -2906,7 +2906,7 @@ Revisão da tela de Ajustes do Windows: a faixa de resultado da chave de cada aj
 ### Mudou para quem usa
 
 **Ligar e desligar um ajuste (a chave)**
-- **Corrigido: aplicar em notebook um ajuste que gasta bateria saía amarelo mesmo dando certo.** O aviso que aparece antes da pergunta (o de notebook, ou o de o WinForge estar elevado com outra conta) rebaixava a faixa. Agora ela fica verde e diz "Concluído: ajuste aplicado." (ou "ajuste desfeito.").
+- **Corrigido: aplicar em notebook um ajuste que gasta bateria saía amarelo mesmo dando certo.** O aviso que aparece antes da pergunta (o de notebook, ou o de o TF-Toolkit estar elevado com outra conta) rebaixava a faixa. Agora ela fica verde e diz "Concluído: ajuste aplicado." (ou "ajuste desfeito.").
 - **Corrigido: se o Explorador de Arquivos não reiniciava, a tela dizia "Falha ao alterar o ajuste"**, embora o ajuste já estivesse gravado, e a faixa repetia essa falha. Agora aparece "Não foi possível reiniciar o Explorador (motivo). Para ver as mudanças, saia do Windows e entre de novo." e a faixa fica amarela: "o Explorador não reiniciou".
 - **Sem Administrador, num ajuste de sistema, a faixa fica vermelha:** "Não foi concluído: requer Administrador". Recusar a pergunta termina em cinza ("Cancelado").
 - **Depois de aplicar, a dica de como desfazer fala da janela:** "para desfazer, desligue a chave deste ajuste" (no terminal continua "abra este ajuste de novo").
@@ -2918,9 +2918,9 @@ Revisão da tela de Ajustes do Windows: a faixa de resultado da chave de cada aj
 - **Corrigido: o Explorador que não reiniciava no fim deixava a faixa vermelha** ("Falha ao aplicar os ajustes", "Não foi possível importar"), com os ajustes já gravados. Agora é a mesma faixa amarela de acima.
 
 **Importar ajustes**
-- **Corrigido: um arquivo sem nenhum ajuste que esta versão conheça dizia que os ajustes "já estão aplicados".** Agora diz "O arquivo não traz nenhum ajuste que esta versão do WinForge conheça" e termina em cinza ("Nada a fazer"). Ajustes repetidos no arquivo aparecem uma vez só.
+- **Corrigido: um arquivo sem nenhum ajuste que esta versão conheça dizia que os ajustes "já estão aplicados".** Agora diz "O arquivo não traz nenhum ajuste que esta versão do TF-Toolkit conheça" e termina em cinza ("Nada a fazer"). Ajustes repetidos no arquivo aparecem uma vez só.
 
-**Desfazer ajustes do WinForge**
+**Desfazer ajustes do TF-Toolkit**
 - **A faixa diz o que ficou:** "Concluído: 3 ajuste(s) desfeito(s).", amarela com "1 de 3 não puderam ser desfeitos" (o backup deles é mantido) e vermelha quando nenhum pôde ser desfeito. Sem backup ou recusando a pergunta, cinza. Um Explorador que não reinicia deixa de ser tratado como erro e vira o mesmo aviso amarelo.
 
 **Busca**
@@ -2948,7 +2948,7 @@ Revisão da tela de Rede: o reparo que não funciona deixa de sair amarelo e de 
 - **Quando dá certo, a faixa traz os dois números:** "Concluído: download 95.3 Mbps, upload 20.1 Mbps." Recusar a pergunta termina em cinza ("Cancelado", "Operação cancelada.").
 
 **Testar conectividade (ping)**
-- **Corrigido: servidores que não respondem ao ping eram tratados como problema de DNS.** Quando os IPs respondiam e www.microsoft.com e www.google.com não, a tela dizia que o DNS estava quebrado, mesmo com o DNS funcionando e só o ping bloqueado. Agora o WinForge pergunta ao DNS do PC: se ele resolve os nomes, a mensagem é "Alguns servidores bloqueiam ICMP"; se não resolve, aí sim aponta o DNS e o "Reparar rede e DNS".
+- **Corrigido: servidores que não respondem ao ping eram tratados como problema de DNS.** Quando os IPs respondiam e www.microsoft.com e www.google.com não, a tela dizia que o DNS estava quebrado, mesmo com o DNS funcionando e só o ping bloqueado. Agora o TF-Toolkit pergunta ao DNS do PC: se ele resolve os nomes, a mensagem é "Alguns servidores bloqueiam ICMP"; se não resolve, aí sim aponta o DNS e o "Reparar rede e DNS".
 - **Corrigido: sem internet o teste podia ficar parado por muito tempo.** No PowerShell 7, cada resposta esperada tinha até 5 s; agora são 3 s.
 
 **Informações de rede**
@@ -3005,7 +3005,7 @@ Revisão da tela de Programas: instalar, buscar e desinstalar passam a terminar 
 - **O pedido de reinício dos drivers chega à faixa.** Quando o instalador de drivers diz que falta reiniciar (código 3010), a faixa passa a acrescentar "Reinicie o PC para concluir.", também quando outro item terminou com ressalva.
 
 **Página Programas**
-- **Itens em grupos.** Instalar (essenciais, buscar, listar) → remover (desinstalar, aplicativos instalados, Programas e Recursos, aplicativos do Windows) → inicialização (o gerenciador do WinForge vem antes da janela do Windows que faz parecido) → recursos opcionais → backup e restauração. Antes, "Gerenciar inicialização" ficava separado de "Aplicativos de inicialização" por três itens e os atalhos de remoção ficavam espalhados.
+- **Itens em grupos.** Instalar (essenciais, buscar, listar) → remover (desinstalar, aplicativos instalados, Programas e Recursos, aplicativos do Windows) → inicialização (o gerenciador do TF-Toolkit vem antes da janela do Windows que faz parecido) → recursos opcionais → backup e restauração. Antes, "Gerenciar inicialização" ficava separado de "Aplicativos de inicialização" por três itens e os atalhos de remoção ficavam espalhados.
 
 **Busca**
 - Novas palavras levam à tela certa: o nome dos programas essenciais ("discord", "steam", "vscode", "python", "node", "java", "powershell", "notepad", "everything", "powertoys") leva a Instalar programas essenciais; "startup", "lenta" e "lentidão" levam a Gerenciar inicialização e a Aplicativos de inicialização; "smb1" leva a Recursos opcionais.
@@ -3033,7 +3033,7 @@ Revisão da tela de Atualizações: "Windows em dia" deixa de aparecer como "nad
 - **Corrigido: falhas do winget podiam sair amarelas.** O desfecho agora vem do resultado de verdade: pacote escolhido que falha deixa a faixa vermelha, e um erro depois de a lista de pacotes ter sido atualizada continua sendo falha.
 - **Corrigido: "nenhuma atualização aplicável" saía amarelo** em "Atualizar todos". É só o winget dizendo que não havia o que atualizar; agora termina verde.
 - **Código de erro legível.** Um erro do winget aparece como "código 5 (0x00000005)", em decimal e em hexadecimal.
-- **Saída resumida na tela.** O winget escreve um quadro do indicador de espera ("-", "\", "|", "/") e uma barra a cada passo do download; num exemplo sintético de dois programas, a tela recebia 1.018 linhas. Agora mostra 30: sem os quadros do indicador, com a primeira barra, uma a cada 10 pontos e a última. O texto completo continua no log, e uma linha que o WinForge não reconhece como progresso continua aparecendo.
+- **Saída resumida na tela.** O winget escreve um quadro do indicador de espera ("-", "\", "|", "/") e uma barra a cada passo do download; num exemplo sintético de dois programas, a tela recebia 1.018 linhas. Agora mostra 30: sem os quadros do indicador, com a primeira barra, uma a cada 10 pontos e a última. O texto completo continua no log, e uma linha que o TF-Toolkit não reconhece como progresso continua aparecendo.
 
 **Página Atualizações**
 - **"Instalar atualizações do Windows" vem primeiro e em destaque** (é o caminho recomendado), seguido de "Atualizar programas (winget)" e dos três atalhos para as janelas do Windows. Antes, os atalhos vinham na frente e o destaque ficava no winget.
@@ -3060,7 +3060,7 @@ Revisão da tela de Reparo: um SFC que não chegou a rodar e um CHKDSK interromp
 - **Tempo de cada etapa.** O resumo do reparo completo mostra a duração do DISM e do SFC (e do SFC final, quando há).
 
 **Tela e progresso**
-- **Barras de progresso resumidas.** O DISM escreve uma barra a cada fração de porcentagem e o SFC um percentual por linha; a tela mostrava todas (num teste sintético, 2.022 linhas). Agora mostra a primeira, uma a cada 10 pontos e a última (222 linhas). O log guarda o texto completo, e uma linha que o WinForge não reconhece como progresso continua aparecendo.
+- **Barras de progresso resumidas.** O DISM escreve uma barra a cada fração de porcentagem e o SFC um percentual por linha; a tela mostrava todas (num teste sintético, 2.022 linhas). Agora mostra a primeira, uma a cada 10 pontos e a última (222 linhas). O log guarda o texto completo, e uma linha que o TF-Toolkit não reconhece como progresso continua aparecendo.
 - **Faixa "Operação cancelada." em todas as telas.** Ao cancelar na pergunta, a faixa dizia "Nada foi feito: cancelado pelo usuário."; agora diz "Operação cancelada.", igual em Reparo, Segurança, Limpeza e nas demais.
 
 **Busca**
@@ -3076,7 +3076,7 @@ Revisão da tela de Limpeza: pasta que o Windows não deixa ler deixa de parecer
 ### Mudou para quem usa
 
 **Temporários do usuário, temporários do Windows e Limpeza rápida**
-- **Corrigido: "Não há nada para limpar" sem ter olhado.** Quando o Windows negava a leitura da pasta (por exemplo, a Temp do Windows sem Administrador), a tela dizia "Não há nada para limpar nesta pasta" e terminava verde. Agora diz "Não foi possível ler a pasta" com o motivo, orienta abrir o WinForge como Administrador, não pergunta nada e termina em vermelho.
+- **Corrigido: "Não há nada para limpar" sem ter olhado.** Quando o Windows negava a leitura da pasta (por exemplo, a Temp do Windows sem Administrador), a tela dizia "Não há nada para limpar nesta pasta" e terminava verde. Agora diz "Não foi possível ler a pasta" com o motivo, orienta abrir o TF-Toolkit como Administrador, não pergunta nada e termina em vermelho.
 - **Corrigido: "Limpeza concluída" sem ter removido nada.** Se todos os itens estavam em uso, a tela mostrava "Limpeza concluída. Itens removidos: 0" e a faixa saía verde. Agora diz "Nenhum item pôde ser removido", orienta fechar os programas e a faixa fica amarela. Quando só parte dos itens está em uso, continua verde e explica que isso é esperado.
 - A **Limpeza rápida** passa a contar as partes que terminaram com ressalvas: uma parte em que nada foi removido não deixa mais o total verde ("2 de 3 partes com ressalvas"). Uma parte que falhou continua sendo dita junto ("1 de 3 partes falharam; 1 com ressalvas").
 - O espaço liberado sai do que de fato foi removido: cada item é medido uma vez, antes de ser apagado, inclusive numa pasta que ficou pela metade.
@@ -3089,7 +3089,7 @@ Revisão da tela de Limpeza: pasta que o Windows não deixa ler deixa de parecer
 - Quando nada foi removido (tudo em uso), a tela diz "Nenhum item foi removido" em amarelo, e a dica de que o espaço só volta ao esvaziar a Lixeira só aparece se algo foi para a Lixeira.
 
 **Analisar uso de espaço**
-- **Corrigido: "Não há temporários, relatórios nem caches acumulados" sem ter medido tudo.** Com a Lixeira sem resposta ou uma pasta que o Windows não deixa ler, a tela afirmava que não havia nada. Agora nomeia o que não foi medido ("Não foi possível medir: Lixeira."), e o total vira "Pelo menos X podem ser liberados" quando algo ficou de fora. Como Administrador isso é uma ressalva; sem Administrador é só uma informação, com o conselho de abrir o WinForge como Administrador.
+- **Corrigido: "Não há temporários, relatórios nem caches acumulados" sem ter medido tudo.** Com a Lixeira sem resposta ou uma pasta que o Windows não deixa ler, a tela afirmava que não havia nada. Agora nomeia o que não foi medido ("Não foi possível medir: Lixeira."), e o total vira "Pelo menos X podem ser liberados" quando algo ficou de fora. Como Administrador isso é uma ressalva; sem Administrador é só uma informação, com o conselho de abrir o TF-Toolkit como Administrador.
 - O Windows.old e os downloads do Windows Update que existem e não abrem aparecem como "não foi possível medir" (antes a linha sumia, como se não existissem). Se o tamanho do disco não pôde ser lido, a tela avisa em vez de pular a seção em silêncio.
 
 **Limpeza personalizada**
@@ -3118,7 +3118,7 @@ Revisão da tela de Segurança: o "tudo em ordem" deixa de aparecer quando parte
 
 **Auditoria de segurança**
 - **Corrigido: nota A sem ter lido o antivírus.** Os pontos que não puderam ser verificados ficam fora da conta, e com o antivírus, o firewall e o UAC ilegíveis a tela dava "A (100 de 100)" e a faixa verde. Agora a nota vem com "calculada sem N ponto(s) que não puderam ser verificados", uma linha amarela lista quais ficaram de fora e o resultado é "Concluído com ressalvas". O que só informa (BitLocker, Secure Boot) continua não alterando o resultado.
-- **Corrigido: Windows 11 antigo contava como "em dia".** Qualquer Windows 11 era "Windows 11, com suporte". Agora as versões 21H2 (compilações 22000 a 22620, fim do suporte em 08/10/2024) e 22H2 (22621 a 22630, 14/10/2025) viram ressalva, com o conselho de atualizar. Versões mais novas só saem de suporte para parte das edições (Home e Pro antes de Enterprise e Education) e o WinForge não lê a edição, então continuam "em dia".
+- **Corrigido: Windows 11 antigo contava como "em dia".** Qualquer Windows 11 era "Windows 11, com suporte". Agora as versões 21H2 (compilações 22000 a 22620, fim do suporte em 08/10/2024) e 22H2 (22621 a 22630, 14/10/2025) viram ressalva, com o conselho de atualizar. Versões mais novas só saem de suporte para parte das edições (Home e Pro antes de Enterprise e Education) e o TF-Toolkit não lê a edição, então continuam "em dia".
 
 **Atualizar assinaturas**
 - **Corrigido: "Assinaturas em dia: ."** Se o Windows não devolvesse a data das assinaturas depois da atualização, a tela dizia "em dia" com o texto vazio e a faixa verde. Agora vira ressalva: "o Windows concluiu a atualização, mas não informou a data das assinaturas".
@@ -3178,7 +3178,7 @@ Revisão da tela de Manutenção: o desfecho da Manutenção recomendada passa a
 - O histórico vazio não promete mais que a Manutenção agendada aparece nele (ela guarda só a última execução, na tela dela).
 
 **Página Manutenção**
-- **Resumo no alto:** quando foi a última manutenção ("há 2 dias (16/10/2026 21:40) · 14 etapas"), quais etapas pediram atenção e o perfil padrão (com "o DISM completo roda sempre", se for o caso). Em amarelo quando alguma etapa pediu atenção ou passou de um mês; "ainda não executada" quando nunca rodou. Só lê arquivos pequenos do WinForge, então não atrasa a página, e um arquivo ilegível vira "não foi possível ler" em vez de derrubar a página. Ao voltar de uma manutenção, o resumo já mostra a que acabou de terminar.
+- **Resumo no alto:** quando foi a última manutenção ("há 2 dias (16/10/2026 21:40) · 14 etapas"), quais etapas pediram atenção e o perfil padrão (com "o DISM completo roda sempre", se for o caso). Em amarelo quando alguma etapa pediu atenção ou passou de um mês; "ainda não executada" quando nunca rodou. Só lê arquivos pequenos do TF-Toolkit, então não atrasa a página, e um arquivo ilegível vira "não foi possível ler" em vez de derrubar a página. Ao voltar de uma manutenção, o resumo já mostra a que acabou de terminar.
 
 **Manutenção agendada**
 - **Corrigido: beco sem saída sem Administrador.** O cartão não pedia Administrador, mas a tela sim: no modo padrão da janela (pedir só quando precisa), quem não era Administrador via a tela recusar. O cartão agora tem a marca de Administrador (e a nota "Pede Administrador ao executar"), então a janela oferece reabrir como Administrador.
@@ -3187,7 +3187,7 @@ Revisão da tela de Manutenção: o desfecho da Manutenção recomendada passa a
 - A tela mostra a última execução com o desfecho ("; terminou com ressalvas", "; não funcionou") e o caminho do relatório.
 
 **Ponto de restauração**
-- **Já havia um ponto recente deixa de ser ressalva.** O Windows cria no máximo um ponto a cada 24 horas; se existe um de menos de 24 horas, o WinForge diz isso e a etapa fica *Ignorada*, não "Concluído com ressalvas" na Manutenção recomendada nem ponto de atenção no Início. Se a data do ponto não puder ser lida, continua sendo um aviso, como antes.
+- **Já havia um ponto recente deixa de ser ressalva.** O Windows cria no máximo um ponto a cada 24 horas; se existe um de menos de 24 horas, o TF-Toolkit diz isso e a etapa fica *Ignorada*, não "Concluído com ressalvas" na Manutenção recomendada nem ponto de atenção no Início. Se a data do ponto não puder ser lida, continua sendo um aviso, como antes.
 
 ## Build 3.9
 
@@ -3235,7 +3235,7 @@ Avaliação da 3.6 página por página (interface, fluxos, possíveis falhas) e 
 - **Faixa de resultado:** ao terminar, a ação mostra se foi OK, terminou com ressalvas ou falhou, e quanto tempo levou. O mesmo desfecho vale no menu de texto. Há **Executar de novo**, **Salvar saída** e **Abrir log**; o botão da barra de tarefas mostra o andamento e, com a janela em segundo plano, pisca ao terminar (barra vermelha se falhou, amarela se houve ressalvas). Ao trocar de página durante uma ação, a **barra de execução** no topo mostra o que está rodando, com **Parar** e **Ver**.
 - **Busca (Ctrl+K)** em ações, atalhos e ajustes de qualquer página, com sinônimos; **Ctrl+1 a Ctrl+9** (e Ctrl+0) abrem o Início e as páginas; **F5** atualiza o Início. A janela lembra o tamanho e a posição.
 - **Início:** novos cartões (proteção, bateria, manutenção agendada) e a **nota de saúde** de 0 a 100, com cada ponto que a desconta e o botão que o resolve. Os cartões são clicáveis.
-- **Modo de Administrador:** a janela agora abre como usuário comum e pede o Administrador só quando uma ação precisar. Quem prefere o comportamento antigo (pedir ao abrir) muda em **Sobre o WinForge > Modo de Administrador**. O menu de texto continua pedindo ao abrir.
+- **Modo de Administrador:** a janela agora abre como usuário comum e pede o Administrador só quando uma ação precisar. Quem prefere o comportamento antigo (pedir ao abrir) muda em **Sobre o TF-Toolkit > Modo de Administrador**. O menu de texto continua pedindo ao abrir.
 - **Parar** agora também pede ao Windows Defender que cancele a verificação em andamento.
 
 **Manutenção**
@@ -3250,7 +3250,7 @@ Avaliação da 3.6 página por página (interface, fluxos, possíveis falhas) e 
 - **Auditoria de segurança** com **nota de A a F** (antivírus, tempo real, assinaturas, ameaças, firewall, UAC, SmartScreen, atualizações, suporte do Windows, Área de Trabalho Remota, conta Convidado e entrada automática; BitLocker e Secure Boot "só para saber"). Só lê. Um ponto com risco real limita a nota a B e um problema grave a limita a C.
 
 **Atualizações**
-- **Instalar atualizações do Windows** dentro do WinForge: procura, deixa escolher, baixa e instala com progresso e com o botão **Parar** à mão.
+- **Instalar atualizações do Windows** dentro do TF-Toolkit: procura, deixa escolher, baixa e instala com progresso e com o botão **Parar** à mão.
 
 **Programas**
 - **Gerenciar inicialização** (liga e desliga o que abre com o Windows pelo mesmo mecanismo do Gerenciador de Tarefas; nada é apagado).
@@ -3261,17 +3261,17 @@ Avaliação da 3.6 página por página (interface, fluxos, possíveis falhas) e 
 
 **Rede**
 - **Trocar o servidor DNS** (Cloudflare, Google, Quad9 ou automático) guardando o DNS de antes, com **Desfazer a troca de DNS**; se o PC deixar de resolver nomes depois da troca, a ação desfaz sozinha.
-- **Relatório de Wi-Fi** (`netsh wlan show wlanreport`), copiado para `Documentos\WinForge`.
+- **Relatório de Wi-Fi** (`netsh wlan show wlanreport`), copiado para `Documentos\TF-Toolkit`.
 
 **Ajustes do Windows**
 - Os **recomendados** agora são só os de baixo impacto (extensões visíveis, sem dicas e sugestões, sem ID de publicidade, sem Game Bar). Os de energia e desempenho (Inicialização Rápida, Alto desempenho, PCI Express, nunca suspender, hibernação) **deixaram de ser recomendados**, ficam em **Avançados** (recolhidos na janela) e não vêm marcados.
 - Ajustes novos: ID de publicidade, resultados da web na busca do Iniciar, menu de contexto clássico, Copilot, Widgets, Recall e segundos no relógio.
 - **Perfis de ajustes** (Essencial, Trabalho, Jogos e Notebook), **Exportar ajustes aplicados** e **Importar ajustes** (mostra o que vai mudar antes de aplicar).
 
-**Sobre o WinForge e linha de comando**
-- **Verificar nova versão:** compara a build instalada com a última release do GitHub e, se você aceitar, baixa o `WinForge.zip` para Downloads e confere o **SHA-256** (`digest` do GitHub ou arquivo `.sha256` do release). Hash diferente apaga o arquivo; sem hash publicado o arquivo fica com um aviso e o hash calculado na tela. O WinForge nunca troca os próprios arquivos.
-- **`-Action Check [-Json]`** no `WinForge.Console.ps1`: verificação rápida e só de leitura (nota de saúde e nota de segurança, sem a consulta ao Windows Update). Não pede Administrador, não pergunta nada, não grava log e devolve o **código de saída** 0 (tudo em dia), 1 (atenção), 2 (crítico) ou 3 (não foi possível avaliar). Com `-Json`, escreve só o JSON. O `WinForge-Console.cmd` não pausa nem desbloqueia arquivos nesse modo.
-- `WinForge.cmd`: o comentário sobre o Administrador passou a refletir o modo sob demanda.
+**Sobre o TF-Toolkit e linha de comando**
+- **Verificar nova versão:** compara a build instalada com a última release do GitHub e, se você aceitar, baixa o `TF-Toolkit.zip` para Downloads e confere o **SHA-256** (`digest` do GitHub ou arquivo `.sha256` do release). Hash diferente apaga o arquivo; sem hash publicado o arquivo fica com um aviso e o hash calculado na tela. O TF-Toolkit nunca troca os próprios arquivos.
+- **`-Action Check [-Json]`** no `TF-Toolkit.Console.ps1`: verificação rápida e só de leitura (nota de saúde e nota de segurança, sem a consulta ao Windows Update). Não pede Administrador, não pergunta nada, não grava log e devolve o **código de saída** 0 (tudo em dia), 1 (atenção), 2 (crítico) ou 3 (não foi possível avaliar). Com `-Json`, escreve só o JSON. O `TF-Toolkit-Console.cmd` não pausa nem desbloqueia arquivos nesse modo.
+- `TF-Toolkit.cmd`: o comentário sobre o Administrador passou a refletir o modo sob demanda.
 
 ### Correções
 
@@ -3285,7 +3285,7 @@ Revisão da 3.5 página por página, a partir de um caso real: o reparo da Manut
 
 ### Mudou para quem usa
 
-- **Reparar o Windows (DISM + SFC) na Manutenção recomendada:** o `DISM /CheckHealth` só lê a marcação de dano que o Windows já gravou. Num PC saudável ele diz "Nenhuma corrupção detectada" e o DISM completo (`/RestoreHealth`), que é demorado, é dispensado de propósito; mas ele diz o mesmo quando há dano que ninguém marcou, e aí o DISM completo nunca rodava. Agora, se o **SFC** achar arquivos que não consegue reparar, o WinForge roda o `DISM /RestoreHealth` e **repete o SFC**. O resumo mostra as três linhas ("SFC (antes do DISM)", DISM e "SFC (depois do DISM)") e o resultado final vem do DISM e da segunda passada; se o DISM falhar, o SFC não é repetido. A mensagem que explicava o pulo agora diz quando o DISM completo ainda pode rodar, e a descrição do item no plano também.
+- **Reparar o Windows (DISM + SFC) na Manutenção recomendada:** o `DISM /CheckHealth` só lê a marcação de dano que o Windows já gravou. Num PC saudável ele diz "Nenhuma corrupção detectada" e o DISM completo (`/RestoreHealth`), que é demorado, é dispensado de propósito; mas ele diz o mesmo quando há dano que ninguém marcou, e aí o DISM completo nunca rodava. Agora, se o **SFC** achar arquivos que não consegue reparar, o TF-Toolkit roda o `DISM /RestoreHealth` e **repete o SFC**. O resumo mostra as três linhas ("SFC (antes do DISM)", DISM e "SFC (depois do DISM)") e o resultado final vem do DISM e da segunda passada; se o DISM falhar, o SFC não é repetido. A mensagem que explicava o pulo agora diz quando o DISM completo ainda pode rodar, e a descrição do item no plano também.
 - **Reparo > Reparar o Windows (DISM + SFC)** continua rodando o DISM completo sempre, antes do SFC.
 - **Verificar arquivos do sistema (SFC)** sozinho: a tela avisa que, se sobrar algo que ele não consiga reparar, o caminho é **Reparar o Windows (DISM + SFC)**, que corrige a imagem antes.
 - **Testar velocidade da internet:** o resultado não aparece mais duas vezes (uma linha "medido" e o quadro "Resultado" com os mesmos números).
@@ -3305,7 +3305,7 @@ Revisão da 3.4, página por página (nomes, dados mostrados, interação, códi
 
 ### Correções de compatibilidade
 
-- Distribuição: o repositório ficou só com os arquivos do WinForge; as funcionalidades não mudaram.
+- Distribuição: o repositório ficou só com os arquivos do TF-Toolkit; as funcionalidades não mudaram.
 - Host gráfico: a leitura da versão do progresso usa `Volatile.Read` no lugar da API obsoleta, mantendo compatibilidade com Windows PowerShell 5.1 e PowerShell 7.
 - Publicação: normalização das quebras de linha do README e da licença para evitar falhas de formatação e avisos do Git.
 
@@ -3317,21 +3317,21 @@ Cinco ideias novas e a verificação do antivírus do Windows na Manutenção.
 
 - **Segurança (página nova, entre Diagnóstico e Limpeza):**
   - **Estado da proteção** (só leitura): antivírus ligado ou não (e qual, se for outro que não o Windows Defender), assinaturas em dia, proteção em tempo real, firewall nos três perfis (domínio, privada, pública), ameaças ativas e atualizações do Windows pendentes. O resumo no fim lista os pontos de atenção, do mais importante ao menos, e diz o que fazer em cada um.
-  - **Atualizar assinaturas do antivírus**, **Verificação rápida**, **Verificação completa** (avisa que pode levar horas) e **Verificar uma pasta** (você informa o caminho da pasta ou do arquivo). Elas usam o próprio Windows Defender (`Start-MpScan`) e mostram, ao final, as ameaças encontradas e o que o Defender fez com elas. O WinForge **não apaga nem põe nada em quarentena por conta própria**: quem decide é o Defender, e o item **Segurança do Windows** abre o aplicativo do Windows para revisar e agir.
+  - **Atualizar assinaturas do antivírus**, **Verificação rápida**, **Verificação completa** (avisa que pode levar horas) e **Verificar uma pasta** (você informa o caminho da pasta ou do arquivo). Elas usam o próprio Windows Defender (`Start-MpScan`) e mostram, ao final, as ameaças encontradas e o que o Defender fez com elas. O TF-Toolkit **não apaga nem põe nada em quarentena por conta própria**: quem decide é o Defender, e o item **Segurança do Windows** abre o aplicativo do Windows para revisar e agir.
   - Se o Defender não for o antivírus ativo (outro antivírus instalado, Defender desligado por política ou ausente), a verificação **não roda** e a tela explica por quê, em vez de tentar e falhar.
 - **Manutenção recomendada:** nova etapa **Verificação de segurança** na fase automática (depois de drivers e antes da otimização da unidade): atualiza as assinaturas e faz a verificação rápida. Aparece no plano como as demais, pode ser desmarcada e mostra no resumo as ameaças encontradas.
-- **Antes e depois na Manutenção:** o WinForge registra **o espaço livre no disco do Windows e quantos programas abrem junto com o Windows** antes da revisão manual e de novo no fim, e mostra a comparação (por exemplo, "de 41 GB para 52 GB (+11 GB)") no resumo e no relatório. O relatório também traz a duração da fase automática. Um dado que não pôde ser lido simplesmente não aparece na comparação, em vez de virar uma diferença inventada. Os programas contados são só os que estão ativos, não os desativados no Gerenciador de Tarefas.
+- **Antes e depois na Manutenção:** o TF-Toolkit registra **o espaço livre no disco do Windows e quantos programas abrem junto com o Windows** antes da revisão manual e de novo no fim, e mostra a comparação (por exemplo, "de 41 GB para 52 GB (+11 GB)") no resumo e no relatório. O relatório também traz a duração da fase automática. Um dado que não pôde ser lido simplesmente não aparece na comparação, em vez de virar uma diferença inventada. Os programas contados são só os que estão ativos, não os desativados no Gerenciador de Tarefas.
 - **Restauração do Sistema:** novo item em Manutenção que abre a janela de restauração do Windows, completando o ponto de restauração que já existia.
-- **Manutenção agendada (opcional):** novo item em Manutenção. Você escolhe o dia do mês (1, 15 ou 28) e o Windows roda, às 12h, **só o que é seguro**: limpa os temporários do seu usuário e salva o relatório. Não esvazia a Lixeira, não repara o Windows, não atualiza programas e não muda ajustes. A tarefa roda **sem Administrador** (nenhum aviso do Windows em segundo plano) e só com você logado; se o PC estava desligado no dia, roda quando for ligado. **Remover** está na mesma tela, e o item **Agendador de Tarefas** abre o programa do Windows onde a tarefa fica visível (pasta `WinForge`). Nada é agendado sem você pedir.
-- **Saúde da bateria** (Diagnóstico, só leitura, para notebooks): carga e situação atuais, capacidade de fábrica, capacidade atual com a carga completa, saúde em porcentagem e ciclos de carga, a partir do relatório do próprio Windows (`powercfg /batteryreport`), com a leitura direta do WMI como alternativa quando o relatório não vem. Em um computador sem bateria, a tela diz isso. O relatório HTML do WinForge ganha a seção **Bateria** em notebooks e a seção **Segurança** em qualquer computador.
-- Versão **3.4** em **Sobre o WinForge** e no relatório.
+- **Manutenção agendada (opcional):** novo item em Manutenção. Você escolhe o dia do mês (1, 15 ou 28) e o Windows roda, às 12h, **só o que é seguro**: limpa os temporários do seu usuário e salva o relatório. Não esvazia a Lixeira, não repara o Windows, não atualiza programas e não muda ajustes. A tarefa roda **sem Administrador** (nenhum aviso do Windows em segundo plano) e só com você logado; se o PC estava desligado no dia, roda quando for ligado. **Remover** está na mesma tela, e o item **Agendador de Tarefas** abre o programa do Windows onde a tarefa fica visível (pasta `TF-Toolkit`). Nada é agendado sem você pedir.
+- **Saúde da bateria** (Diagnóstico, só leitura, para notebooks): carga e situação atuais, capacidade de fábrica, capacidade atual com a carga completa, saúde em porcentagem e ciclos de carga, a partir do relatório do próprio Windows (`powercfg /batteryreport`), com a leitura direta do WMI como alternativa quando o relatório não vem. Em um computador sem bateria, a tela diz isso. O relatório HTML do TF-Toolkit ganha a seção **Bateria** em notebooks e a seção **Segurança** em qualquer computador.
+- Versão **3.4** em **Sobre o TF-Toolkit** e no relatório.
 
 ## Build 3.3
 
 ### Mudou para quem usa
 
 - **Ajustes do Windows com chave liga/desliga:** cada ajuste agora é uma chave (ligada = aplicado), com o estado escrito ao lado ("Aplicado", "Padrão" ou "Não identificado"), no lugar do par "estado + botão Aplicar/Desfazer". Ligar aplica e guarda o valor original; desligar desfaz. A chave nunca fica "mentindo": ela mostra sempre o estado real e é relida quando você volta da execução. Ajustes que gastam bateria em notebook continuam pedindo confirmação. As três ações da página (aplicar os recomendados, criar o ponto de restauração, desfazer tudo) continuam sendo botões, porque são ações e não estados.
-- Estrutura: `Get-WinForgeTweakSwitchState` (estado da chave, testável sem WPF) e o estilo `SwitchToggle` em `gui/MainWindow.xaml`.
+- Estrutura: `Get-TFToolkitTweakSwitchState` (estado da chave, testável sem WPF) e o estilo `SwitchToggle` em `gui/MainWindow.xaml`.
 
 ## Build 3.2
 
@@ -3340,16 +3340,16 @@ Revisão página por página da barra lateral: nomes, ordem, o que cada tela mos
 ### Mudou para quem usa
 
 - **Uma regra de nomes para todo o programa:** o nome do item no menu é o título que a tela mostra ao abrir (por exemplo, "Reparar o Windows (DISM + SFC)", "Limpar temporários do usuário"); itens que abrem uma janela do Windows têm o nome da própria janela e a descrição começa com "Abre"; os textos dizem "programas", não "software". As mensagens que mandam o usuário para outra tela usam o caminho real do menu ("Limpeza > Esvaziar a Lixeira", "Diagnóstico > Saúde dos discos").
-- **Ordem:** Início → Manutenção → Diagnóstico → Limpeza → Reparo → Atualizações → Programas → Rede → Ajustes do Windows, e **Sobre o WinForge** fixo no rodapé da barra lateral (antes era a última página da lista). Cada página vai do que é mais seguro/mais usado ao mais profundo, com o item recomendado em destaque (cartão azulado). O menu de texto segue a mesma tabela e a mesma ordem.
+- **Ordem:** Início → Manutenção → Diagnóstico → Limpeza → Reparo → Atualizações → Programas → Rede → Ajustes do Windows, e **Sobre o TF-Toolkit** fixo no rodapé da barra lateral (antes era a última página da lista). Cada página vai do que é mais seguro/mais usado ao mais profundo, com o item recomendado em destaque (cartão azulado). O menu de texto segue a mesma tabela e a mesma ordem.
 - **Início** mostra o estado do PC antes de você clicar em qualquer coisa: Windows, computador, usuário, disco do sistema (avisa "pouco espaço" abaixo de 10% livres e "espaço crítico" abaixo de 5 GB), reinício pendente e última manutenção ("há 3 dias", "2 etapas com atenção", "já passou de um mês"). Os cartões aparecem como "Lendo..." e são preenchidos em seguida; uma leitura que falhe vira "Não foi possível ler" sem apagar as demais.
-- **Sobre o WinForge:** nova tela **Versão e pastas** (versão, onde está instalado, PowerShell, se está como Administrador, pastas de logs e relatórios e quais atalhos já existem); **Criar atalho do WinForge** (nome igual ao título da tela) e a pasta de logs. A barra lateral inteira, rodapé incluído, fica desabilitada enquanto uma ação roda.
+- **Sobre o TF-Toolkit:** nova tela **Versão e pastas** (versão, onde está instalado, PowerShell, se está como Administrador, pastas de logs e relatórios e quais atalhos já existem); **Criar atalho do TF-Toolkit** (nome igual ao título da tela) e a pasta de logs. A barra lateral inteira, rodapé incluído, fica desabilitada enquanto uma ação roda.
 - **Manutenção:** os nomes das etapas do plano são os mesmos dos itens do menu; a decisão de pedir reinício passa a ler dados estruturados do resultado de cada etapa (DISM/SFC e CHKDSK avisam por `RebootRequired`) em vez do texto exibido.
 - **Diagnóstico:** a lista de discos aplica a mesma regra de espaço do Início e, se algum estiver quase cheio, aponta para a página Limpeza. A leitura de eventos críticos tem limite (diz "pelo menos N" quando o limite é atingido e "e mais N grupo(s)" para o que não coube na lista); as dicas dos eventos citam a tela certa. O título da tela não se repete dentro da janela, que já o mostra no topo.
 - **Limpeza:** a Limpeza rápida mostra o **espaço liberado** somado; limpar a pasta Downloads diz quantos itens foram para a Lixeira e quanto espaço ocupam (o espaço só volta ao esvaziar a Lixeira) ou, na exclusão definitiva, quanto foi liberado; esvaziar uma Lixeira que já estava vazia é reconhecido pelo código de erro do Windows, em qualquer idioma.
 - **Reparo:** o reparo DISM + SFC e o CHKDSK avisam por dado estruturado quando é preciso reiniciar; as mensagens de resultado mostram o motivo ("concluído com ressalvas: ...").
 - **Rede:** redes e firewalls que bloqueiam o ping são comuns; agora, se o ping falha, uma conexão TCP na porta 443 decide, então uma rede saudável deixa de ser tratada como quebrada (e a Manutenção não redefine o Winsock sem motivo). O teste de conectividade conclui em uma frase entre "nada responde" (cabo/Wi-Fi/roteador), "os IPs respondem mas os nomes não" (DNS) e "tudo responde"; o reparo de rede avisa que é preciso reiniciar.
 - **Atualizações e Programas:** o texto do winget aponta para os outros itens da página Atualizações (Windows Update, drivers opcionais, Microsoft Store); "Listar programas instalados" aponta para "Programas > Desinstalar programas". Um plano de atualização com ação desconhecida agora é falha, nunca sucesso silencioso.
-- **Ajustes do Windows:** em **Aplicar ajustes recomendados**, se o ponto de restauração não puder ser criado o WinForge oferece ativar a Proteção do Sistema e, sem o ponto, **só aplica se você confirmar** (padrão: não). **Desfazer ajustes do WinForge** avisa quando os backups são de ajustes que esta versão não conhece (e não finge desfazer) e mostra o total desfeito; a mensagem de "Ajuste aplicado" explica como desfazer.
+- **Ajustes do Windows:** em **Aplicar ajustes recomendados**, se o ponto de restauração não puder ser criado o TF-Toolkit oferece ativar a Proteção do Sistema e, sem o ponto, **só aplica se você confirmar** (padrão: não). **Desfazer ajustes do TF-Toolkit** avisa quando os backups são de ajustes que esta versão não conhece (e não finge desfazer) e mostra o total desfeito; a mensagem de "Ajuste aplicado" explica como desfazer.
 
 ## Build 3.1
 
@@ -3357,12 +3357,12 @@ Revisão página por página da barra lateral: nomes, ordem, o que cada tela mos
 
 ### Mudou para quem usa
 
-- **Ícone do WinForge** (uma bigorna com uma faísca, no azul da janela) em sete tamanhos, de 16 a 256 px: aparece na barra de título, na barra de tarefas, no Alt+Tab e na barra lateral. Antes a janela mostrava um "W" desenhado na hora.
-- O WinForge ganha **identidade própria na barra de tarefas**: o botão não se mistura mais com outras janelas do PowerShell e o "Fixar na barra de tarefas" abre o WinForge, com o ícone dele.
-- **Criar atalho:** nova página **WinForge** (a última da barra lateral) com o botão que cria o atalho com o ícone na Área de Trabalho, no Menu Iniciar ou nos dois. Se o atalho já existir, é atualizado.
-- `WinForge-Console.cmd -Action Shortcut` cria o atalho na Área de Trabalho sem abrir a janela e sem pedir Administrador.
+- **Ícone do TF-Toolkit** (uma bigorna com uma faísca, no azul da janela) em sete tamanhos, de 16 a 256 px: aparece na barra de título, na barra de tarefas, no Alt+Tab e na barra lateral. Antes a janela mostrava um "W" desenhado na hora.
+- O TF-Toolkit ganha **identidade própria na barra de tarefas**: o botão não se mistura mais com outras janelas do PowerShell e o "Fixar na barra de tarefas" abre o TF-Toolkit, com o ícone dele.
+- **Criar atalho:** nova página **TF-Toolkit** (a última da barra lateral) com o botão que cria o atalho com o ícone na Área de Trabalho, no Menu Iniciar ou nos dois. Se o atalho já existir, é atualizado.
+- `TF-Toolkit-Console.cmd -Action Shortcut` cria o atalho na Área de Trabalho sem abrir a janela e sem pedir Administrador.
 - A pasta de logs e relatórios também está na nova página (e, portanto, no menu de texto).
-- O WinForge confere o arquivo do ícone (vazio, cortado ou que não é ícone vira "sem ícone") e confere se o atalho realmente apareceu depois de gravar (a proteção contra ransomware do Windows pode bloquear a Área de Trabalho sem avisar).
+- O TF-Toolkit confere o arquivo do ícone (vazio, cortado ou que não é ícone vira "sem ícone") e confere se o atalho realmente apareceu depois de gravar (a proteção contra ransomware do Windows pode bloquear a Área de Trabalho sem avisar).
 
 ## Build 3.0
 
@@ -3370,7 +3370,7 @@ Reorganização completa do projeto. A interface com janela passa a ser a princi
 
 ### Mudou para quem usa
 
-- `WinForge.cmd` agora abre a **janela**; o menu de texto passou para `WinForge-Console.cmd`.
+- `TF-Toolkit.cmd` agora abre a **janela**; o menu de texto passou para `TF-Toolkit-Console.cmd`.
 - Tudo acontece dentro da janela: perguntas viram botões (Sim/Não, Continuar, opções) e listas de marcação; só texto livre usa a caixa de texto. Nenhum terminal aparece.
 - Barra de título escura, barra de progresso para DISM/SFC/winget e progresso na barra de tarefas.
 - **Nova ordem do menu lateral:** Manutenção → Diagnóstico → Limpeza → Reparo → Atualizações → Programas → Rede → Ajustes (olhar, limpar, consertar, atualizar, instalar, conferir a rede, personalizar). A mesma ordem vale no menu de texto.
@@ -3386,12 +3386,12 @@ Reorganização completa do projeto. A interface com janela passa a ser a princi
 - `Relatório`: o tempo ligado com data de boot nula derrubava o relatório inteiro; cada seção agora falha isoladamente.
 - `Dispositivos com problema`: dispositivos de software com estado "Unknown" e sem código de problema deixam de aparecer como defeito.
 - `Teste de ping`: filtro robusto a respostas sem status.
-- `Test-WinForgeAdministrator` não lança mais erro fora do Windows.
+- `Test-TFToolkitAdministrator` não lança mais erro fora do Windows.
 - Argumentos de linha de comando com aspas e barras invertidas passam a seguir as regras do Windows (`CommandLineToArgvW`).
 - Tela do host gráfico: sequências ANSI e de título de janela (OSC), NUL e retornos de carro isolados são tratados.
 - Janela: se a tela de execução falhar no meio de uma ação, a ação é interrompida e a janela volta ao estado normal (antes podia ficar uma ação "zumbi" rodando por trás).
-- Perguntas: opções passadas em formatos diferentes (tabela de hash com chaves opcionais ou objeto) são normalizadas em um único lugar (`ConvertTo-WinForgeOptionList`); chaves ausentes não quebram mais.
-- O modo janela é consultado só por `Test-WinForgeGuiMode`, que não falha com `Set-StrictMode`.
+- Perguntas: opções passadas em formatos diferentes (tabela de hash com chaves opcionais ou objeto) são normalizadas em um único lugar (`ConvertTo-TFToolkitOptionList`); chaves ausentes não quebram mais.
+- O modo janela é consultado só por `Test-TFToolkitGuiMode`, que não falha com `Set-StrictMode`.
 - Importação dos módulos tolera colchetes no caminho da pasta (o `Import-Module` os lê como curinga), no menu de texto, na janela e na execução das ações.
 
 ## Builds anteriores

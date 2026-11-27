@@ -9,28 +9,28 @@
 #     uma tarefa em segundo plano.
 #   - Não esvazia a Lixeira, não repara, não atualiza e não muda ajustes: isso exige a sua decisão na hora.
 
-$script:WinForgeSchedulePath = "\WinForge\"
-$script:WinForgeScheduleName = "Manutencao-Mensal"
-$script:WinForgeScheduleDays = @(1, 15, 28)
-$script:WinForgeScheduleHour = 12
+$script:TFToolkitSchedulePath = "\TF-Toolkit\"
+$script:TFToolkitScheduleName = "Manutencao-Mensal"
+$script:TFToolkitScheduleDays = @(1, 15, 28)
+$script:TFToolkitScheduleHour = 12
 
 # Na execução agendada, só sai dos temporários o que está lá há mais tempo que isto (a Limpeza de Disco do Windows também
 # usa 7 dias).
-$script:WinForgeScheduleTempDays = 7
+$script:TFToolkitScheduleTempDays = 7
 
 # Resultados do Agendador que não são falha: 0 (terminou bem), 0x41300 (pronta), 0x41301 (em execução), 0x41302
 # (desativada) e 0x41303 (ainda não executou).
-$script:WinForgeScheduleOkResults = @(0, 267008, 267009, 267010, 267011)
+$script:TFToolkitScheduleOkResults = @(0, 267008, 267009, 267010, 267011)
 
 
 # ---------------------------------------------------------------------------
 # A tarefa
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeScheduleUser {
-    # Quem vai executar a tarefa: o usuário que está usando o PC. Se o WinForge foi elevado com outra conta, é o
+function Get-TFToolkitScheduleUser {
+    # Quem vai executar a tarefa: o usuário que está usando o PC. Se o TF-Toolkit foi elevado com outra conta, é o
     # usuário logado que importa (é a Área de Trabalho e os temporários dele que a limpeza deve tratar).
-    $interactive = Get-WinForgeInteractiveUser
+    $interactive = Get-TFToolkitInteractiveUser
 
     if (-not [string]::IsNullOrWhiteSpace($interactive)) {
         return $interactive
@@ -45,9 +45,9 @@ function Get-WinForgeScheduleUser {
 }
 
 
-function Get-WinForgeHiddenPowerShellCommand {
+function Get-TFToolkitHiddenPowerShellCommand {
     <#
-    O programa e os argumentos para uma tarefa rodar o PowerShell do WinForge.cmd sem janela, com os Arguments dados (que
+    O programa e os argumentos para uma tarefa rodar o PowerShell do TF-Toolkit.cmd sem janela, com os Arguments dados (que
     já devem trazer o -WindowStyle Hidden). No Windows 11 (build 22000 em diante), o Terminal do Windows pode ser o
     programa padrão de console, e ele ignora o -WindowStyle Hidden: a janela apareceria, e fechá-la pararia o que a
     tarefa faz. Lá o PowerShell é aberto pelo console clássico sem janela (conhost.exe --headless), quando ele existe. O
@@ -56,17 +56,17 @@ function Get-WinForgeHiddenPowerShellCommand {
     param (
         [Parameter(Mandatory)][string]$Arguments,
         [Parameter(Mandatory)][string]$WorkingDirectory,
-        [int]$Build = (Get-WinForgeWindowsBuild),
+        [int]$Build = (Get-TFToolkitWindowsBuild),
         [AllowEmptyString()][string]$SystemRoot = $env:SystemRoot
     )
 
-    $powershell = Get-WinForgePowerShellPath
+    $powershell = Get-TFToolkitPowerShellPath
     $conhost = $(if (-not [string]::IsNullOrWhiteSpace($SystemRoot)) { Join-Path (Join-Path $SystemRoot "System32") "conhost.exe" } else { "" })
 
     if ($Build -ge 22000 -and $conhost -and (Test-Path -LiteralPath $conhost -PathType Leaf)) {
         return [PSCustomObject]@{
             Executable       = $conhost
-            Arguments        = "--headless $(ConvertTo-WinForgeCommandLineArgument -Value $powershell) $Arguments"
+            Arguments        = "--headless $(ConvertTo-TFToolkitCommandLineArgument -Value $powershell) $Arguments"
             WorkingDirectory = $WorkingDirectory
         }
     }
@@ -79,30 +79,30 @@ function Get-WinForgeHiddenPowerShellCommand {
 }
 
 
-function Get-WinForgeScheduleCommand {
+function Get-TFToolkitScheduleCommand {
     <#
-    O programa e os argumentos que a tarefa executa: o mesmo PowerShell do WinForge.cmd, com o script do terminal, sem
-    janela (Get-WinForgeHiddenPowerShellCommand).
+    O programa e os argumentos que a tarefa executa: o mesmo PowerShell do TF-Toolkit.cmd, com o script do terminal, sem
+    janela (Get-TFToolkitHiddenPowerShellCommand).
     #>
     param (
-        [string]$Root = (Get-WinForgeAppRoot),
-        [int]$Build = (Get-WinForgeWindowsBuild),
+        [string]$Root = (Get-TFToolkitAppRoot),
+        [int]$Build = (Get-TFToolkitWindowsBuild),
         [AllowEmptyString()][string]$SystemRoot = $env:SystemRoot
     )
 
-    $script = Join-Path $Root "WinForge.Console.ps1"
+    $script = Join-Path $Root "TF-Toolkit.Console.ps1"
 
     if (-not (Test-Path -LiteralPath $script -PathType Leaf)) {
-        throw (Get-WinForgeText 'O arquivo WinForge.Console.ps1 não foi encontrado em ''{0}''. Extraia a pasta inteira do WinForge antes de agendar.' "$Root")
+        throw (Get-TFToolkitText 'O arquivo TF-Toolkit.Console.ps1 não foi encontrado em ''{0}''. Extraia a pasta inteira do TF-Toolkit antes de agendar.' "$Root")
     }
 
-    $arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File $(ConvertTo-WinForgeCommandLineArgument -Value $script) -Action ScheduledMaintenance"
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File $(ConvertTo-TFToolkitCommandLineArgument -Value $script) -Action ScheduledMaintenance"
 
-    return (Get-WinForgeHiddenPowerShellCommand -Arguments $arguments -WorkingDirectory $Root -Build $Build -SystemRoot $SystemRoot)
+    return (Get-TFToolkitHiddenPowerShellCommand -Arguments $arguments -WorkingDirectory $Root -Build $Build -SystemRoot $SystemRoot)
 }
 
 
-function New-WinForgeScheduleTaskXml {
+function New-TFToolkitScheduleTaskXml {
     <#
     O XML da tarefa (esquema do Agendador de Tarefas): todo mês no dia escolhido, às 12h, com o usuário logado e sem
     elevação. Se o PC estiver desligado na hora, roda assim que for possível; não começa na bateria e para se passar
@@ -117,19 +117,19 @@ function New-WinForgeScheduleTaskXml {
         [ValidateRange(1, 28)]
         [int]$DayOfMonth = 1,
 
-        [datetime]$Start = ((Get-Date).Date.AddDays(1).AddHours($script:WinForgeScheduleHour))
+        [datetime]$Start = ((Get-Date).Date.AddDays(1).AddHours($script:TFToolkitScheduleHour))
     )
 
     $escape = { param ($text) [System.Security.SecurityElement]::Escape($text) }
     $startBoundary = $Start.ToString("yyyy-MM-dd'T'HH:mm:ss", [System.Globalization.CultureInfo]::InvariantCulture)
     $months = (@("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December") | ForEach-Object { "<$_ />" }) -join ""
-    $description = (Get-WinForgeText 'Manutenção mensal do WinForge: limpa os temporários do usuário com mais de 7 dias e salva um relatório. Não esvazia a Lixeira nem altera o sistema. Para remover, use o WinForge (Manutenção > Manutenção agendada) ou apague esta tarefa.')
+    $description = (Get-TFToolkitText 'Manutenção mensal do TF-Toolkit: limpa os temporários do usuário com mais de 7 dias e salva um relatório. Não esvazia a Lixeira nem altera o sistema. Para remover, use o TF-Toolkit (Manutenção > Manutenção agendada) ou apague esta tarefa.')
 
     return @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Author>WinForge</Author>
+    <Author>TF-Toolkit</Author>
     <Description>$(& $escape $description)</Description>
   </RegistrationInfo>
   <Triggers>
@@ -176,7 +176,7 @@ function New-WinForgeScheduleTaskXml {
 }
 
 
-function ConvertTo-WinForgeScheduleResultCode {
+function ConvertTo-TFToolkitScheduleResultCode {
     # O código de resultado como número sem sinal (o Agendador às vezes o entrega negativo: -196608 é 0xFFFD0000).
     param ($Code)
 
@@ -187,7 +187,7 @@ function ConvertTo-WinForgeScheduleResultCode {
 }
 
 
-function ConvertTo-WinForgeScheduleResultText {
+function ConvertTo-TFToolkitScheduleResultText {
     # O código de resultado da última execução, em português.
     param ($Code)
 
@@ -195,22 +195,22 @@ function ConvertTo-WinForgeScheduleResultText {
         return ""
     }
 
-    $value = ConvertTo-WinForgeScheduleResultCode -Code $Code
+    $value = ConvertTo-TFToolkitScheduleResultCode -Code $Code
 
     switch ($value) {
-        0          { return (Get-WinForgeText 'terminou bem') }
-        267009     { return (Get-WinForgeText 'em execução agora') }
-        267011     { return (Get-WinForgeText 'ainda não executou') }
-        267014     { return (Get-WinForgeText 'foi interrompida') }
-        # O código que o PowerShell devolve quando o script passado em -File não existe (o WinForge mudou de pasta ou foi
+        0          { return (Get-TFToolkitText 'terminou bem') }
+        267009     { return (Get-TFToolkitText 'em execução agora') }
+        267011     { return (Get-TFToolkitText 'ainda não executou') }
+        267014     { return (Get-TFToolkitText 'foi interrompida') }
+        # O código que o PowerShell devolve quando o script passado em -File não existe (o TF-Toolkit mudou de pasta ou foi
         # apagado).
-        4294770688 { return (Get-WinForgeText 'não encontrou o WinForge na pasta de antes') }
-        default    { return (Get-WinForgeText 'terminou com erro (código 0x{0})' "$($value.ToString('X'))") }
+        4294770688 { return (Get-TFToolkitText 'não encontrou o TF-Toolkit na pasta de antes') }
+        default    { return (Get-TFToolkitText 'terminou com erro (código 0x{0})' "$($value.ToString('X'))") }
     }
 }
 
 
-function Get-WinForgeScheduleTaskScript {
+function Get-TFToolkitScheduleTaskScript {
     # O script que a tarefa executa: o caminho depois de -File nos argumentos dela, ou "" quando não há como saber.
     param ([string]$Arguments)
 
@@ -221,7 +221,7 @@ function Get-WinForgeScheduleTaskScript {
 }
 
 
-function Test-WinForgeSchedulePathSame {
+function Test-TFToolkitSchedulePathSame {
     # Os dois caminhos levam ao mesmo arquivo? Compara o caminho completo, sem diferenciar maiúsculas (como o Windows).
     param (
         [string]$Path,
@@ -240,20 +240,20 @@ function Test-WinForgeSchedulePathSame {
 }
 
 
-function Get-WinForgeScheduleStatus {
+function Get-TFToolkitScheduleStatus {
     <#
     O estado da tarefa no Agendador de Tarefas. Installed é falso quando ela não existe (ou quando o Agendador não pôde
     ser consultado, ou não respondeu no prazo: aí QueryFailed é verdadeiro, e a tela não diz "não agendada" sem saber).
     Day é o dia do mês; LastRun e NextRun são $null quando não houve/não há execução marcada. Cada consulta ao Agendador
-    passa por Invoke-WinForgeCimCommand, com prazo: um Agendador travado não prende a tela, a leitura do Início, o
+    passa por Invoke-TFToolkitCimCommand, com prazo: um Agendador travado não prende a tela, a leitura do Início, o
     instalador nem a desinstalação.
     A tarefa guarda o caminho do script; extrair uma versão nova em outra pasta e apagar a antiga a deixa falhando todo
     mês, ainda "ativa" no Agendador. Por isso:
       ScriptPath     - o script que a tarefa executa ("" quando não deu para ler);
       ScriptMissing  - esse script não existe mais (a tarefa vai falhar até ser recriada);
-      Stale          - o script é de outra pasta, não do WinForge que está aberto;
+      Stale          - o script é de outra pasta, não do TF-Toolkit que está aberto;
       LastRunFailed  - o Agendador registrou que a última execução terminou mal (LastResult fora dos códigos normais);
-      RecordFailed   - o registro que o próprio WinForge gravou na última execução diz que nada funcionou. No Windows 11 a
+      RecordFailed   - o registro que o próprio TF-Toolkit gravou na última execução diz que nada funcionou. No Windows 11 a
                        tarefa abre o PowerShell pelo conhost, que não devolve o código de saída dele: sem o registro, o
                        Agendador diria "terminou bem" de uma execução que falhou;
       NeedsAttention - instalada e com algum dos problemas acima; Problem diz qual, numa frase curta.
@@ -278,10 +278,10 @@ function Get-WinForgeScheduleStatus {
     }
 
     $task = $null
-    $names = @{ TaskPath = $script:WinForgeSchedulePath; TaskName = $script:WinForgeScheduleName }
+    $names = @{ TaskPath = $script:TFToolkitSchedulePath; TaskName = $script:TFToolkitScheduleName }
 
     try {
-        $task = @(Invoke-WinForgeCimCommand -Name "Get-ScheduledTask" -Parameters $names) | Select-Object -First 1
+        $task = @(Invoke-TFToolkitCimCommand -Name "Get-ScheduledTask" -Parameters $names) | Select-Object -First 1
     }
     catch {
         # Tarefa que não existe é "não agendada"; o Agendador que não respondeu (serviço parado, acesso negado, RPC
@@ -300,22 +300,22 @@ function Get-WinForgeScheduleStatus {
 
     try {
         $xml = New-Object System.Xml.XmlDocument
-        $xml.LoadXml([string](@(Invoke-WinForgeCimCommand -Name "Export-ScheduledTask" -Parameters $names) | Select-Object -First 1))
+        $xml.LoadXml([string](@(Invoke-TFToolkitCimCommand -Name "Export-ScheduledTask" -Parameters $names) | Select-Object -First 1))
         $day = $xml.SelectSingleNode("//*[local-name()='DaysOfMonth']/*[local-name()='Day']")
 
         if ($null -ne $day) { $status.Day = [int]$day.InnerText }
 
         $arguments = $xml.SelectSingleNode("//*[local-name()='Exec']/*[local-name()='Arguments']")
 
-        if ($null -ne $arguments) { $status.ScriptPath = Get-WinForgeScheduleTaskScript -Arguments $arguments.InnerText }
+        if ($null -ne $arguments) { $status.ScriptPath = Get-TFToolkitScheduleTaskScript -Arguments $arguments.InnerText }
 
-        # O WinForge usa uma tarefa só por PC (um nome fixo no Agendador), com a conta de quem agendou: a de outra conta
+        # O TF-Toolkit usa uma tarefa só por PC (um nome fixo no Agendador), com a conta de quem agendou: a de outra conta
         # limpa os temporários dela, e criar ou remover aqui mexeria no agendamento dela.
         $owner = $xml.SelectSingleNode("//*[local-name()='Principal']/*[local-name()='UserId']")
 
         if ($null -ne $owner -and -not [string]::IsNullOrWhiteSpace($owner.InnerText)) {
-            $status.Owner = ConvertTo-WinForgeScheduleAccountName -Account $owner.InnerText
-            $status.OtherUser = -not (Test-WinForgeScheduleSameAccount -Account $status.Owner -Other (Get-WinForgeScheduleUser))
+            $status.Owner = ConvertTo-TFToolkitScheduleAccountName -Account $owner.InnerText
+            $status.OtherUser = -not (Test-TFToolkitScheduleSameAccount -Account $status.Owner -Other (Get-TFToolkitScheduleUser))
         }
     }
     catch {
@@ -326,19 +326,19 @@ function Get-WinForgeScheduleStatus {
         $status.ScriptMissing = -not (Test-Path -LiteralPath $status.ScriptPath -PathType Leaf)
 
         try {
-            $root = [string](Get-WinForgeAppRoot)
+            $root = [string](Get-TFToolkitAppRoot)
 
             if ($root) {
-                $status.Stale = -not (Test-WinForgeSchedulePathSame -Path $status.ScriptPath -Other (Join-Path $root "WinForge.Console.ps1"))
+                $status.Stale = -not (Test-TFToolkitSchedulePathSame -Path $status.ScriptPath -Other (Join-Path $root "TF-Toolkit.Console.ps1"))
             }
         }
         catch {
-            # Sem saber onde o WinForge está, não dá para comparar; o script que falta continua sendo conferido acima.
+            # Sem saber onde o TF-Toolkit está, não dá para comparar; o script que falta continua sendo conferido acima.
         }
     }
 
     try {
-        $info = @(Invoke-WinForgeCimCommand -Name "Get-ScheduledTaskInfo" -Parameters $names) | Select-Object -First 1
+        $info = @(Invoke-TFToolkitCimCommand -Name "Get-ScheduledTaskInfo" -Parameters $names) | Select-Object -First 1
 
         # O Agendador usa datas antigas (1999/2000) para "nunca".
         if ($info.LastRunTime -is [datetime] -and $info.LastRunTime.Year -ge 2001) { $status.LastRun = $info.LastRunTime }
@@ -352,18 +352,18 @@ function Get-WinForgeScheduleStatus {
 
     if ($null -ne $status.LastRun -and $null -ne $status.LastResult) {
         try {
-            $status.LastRunFailed = ((ConvertTo-WinForgeScheduleResultCode -Code $status.LastResult) -notin $script:WinForgeScheduleOkResults)
+            $status.LastRunFailed = ((ConvertTo-TFToolkitScheduleResultCode -Code $status.LastResult) -notin $script:TFToolkitScheduleOkResults)
         }
         catch {
             $status.LastRunFailed = $false
         }
     }
 
-    # O registro do WinForge vale para a execução que o Agendador diz ter sido a última (a tarefa começa um pouco antes do
+    # O registro do TF-Toolkit vale para a execução que o Agendador diz ter sido a última (a tarefa começa um pouco antes do
     # script: a margem de um minuto é a da tela). Um registro mais velho que ela é de outra execução; o de uma tarefa de
     # outra conta fica na pasta dessa conta.
     if (-not $status.OtherUser -and $null -ne $status.LastRun) {
-        $record = Get-WinForgeScheduledRun
+        $record = Get-TFToolkitScheduledRun
 
         if ($null -ne $record -and [string]$record.Kind -eq "Failed" -and $status.LastRun -le $record.RunAt.AddMinutes(1)) {
             $status.RecordFailed = $true
@@ -371,16 +371,16 @@ function Get-WinForgeScheduleStatus {
     }
 
     if ($status.ScriptMissing) {
-        $status.Problem = (Get-WinForgeText 'a tarefa usa um WinForge que não existe mais; recrie o agendamento')
+        $status.Problem = (Get-TFToolkitText 'a tarefa usa um TF-Toolkit que não existe mais; recrie o agendamento')
     }
     elseif ($status.Stale) {
-        $status.Problem = (Get-WinForgeText 'a tarefa usa o WinForge de outra pasta; recrie o agendamento')
+        $status.Problem = (Get-TFToolkitText 'a tarefa usa o TF-Toolkit de outra pasta; recrie o agendamento')
     }
     elseif ($status.LastRunFailed) {
-        $status.Problem = (Get-WinForgeText 'a última execução {0}' "$(ConvertTo-WinForgeScheduleResultText -Code $status.LastResult)")
+        $status.Problem = (Get-TFToolkitText 'a última execução {0}' "$(ConvertTo-TFToolkitScheduleResultText -Code $status.LastResult)")
     }
     elseif ($status.RecordFailed) {
-        $status.Problem = (Get-WinForgeText 'a última execução não funcionou')
+        $status.Problem = (Get-TFToolkitText 'a última execução não funcionou')
     }
 
     $status.NeedsAttention = [bool]$status.Problem
@@ -389,7 +389,7 @@ function Get-WinForgeScheduleStatus {
 }
 
 
-function ConvertTo-WinForgeScheduleAccountName {
+function ConvertTo-TFToolkitScheduleAccountName {
     # O nome de uma conta ("PC\ana") a partir do que a tarefa guarda, que pode ser o nome ou o SID (S-1-5-21-...).
     param ([AllowEmptyString()][string]$Account)
 
@@ -404,7 +404,7 @@ function ConvertTo-WinForgeScheduleAccountName {
 }
 
 
-function Test-WinForgeScheduleSameAccount {
+function Test-TFToolkitScheduleSameAccount {
     # Se dois nomes de conta são a mesma conta ("PC\Ana" e "ana" também são; sem saber a conta de um dos lados, sim).
     param ([AllowEmptyString()][string]$Account, [AllowEmptyString()][string]$Other)
 
@@ -420,7 +420,7 @@ function Test-WinForgeScheduleSameAccount {
 }
 
 
-function Get-WinForgePathWriteRules {
+function Get-TFToolkitPathWriteRules {
     # As permissões de um arquivo ou pasta, do jeito que a conferência de quem pode alterá-lo precisa: o dono (Owner e
     # OwnerSid) e cada regra (Identity, Sid, Rights, Allow e InheritOnly, a regra que só vale para o que for criado dentro).
     param ([Parameter(Mandatory)][string]$Path)
@@ -450,18 +450,18 @@ function Get-WinForgePathWriteRules {
 }
 
 
-function Get-WinForgeScheduleUntrustedWriters {
+function Get-TFToolkitScheduleUntrustedWriters {
     <#
     Quem, além da conta do agendamento, dos Administradores, do SYSTEM e do TrustedInstaller, pode alterar o que a tarefa
-    executa: a pasta do WinForge, o script do terminal, os módulos e as traduções (os textos que ela escreve). A tarefa
-    roda esses arquivos todo mês com a conta da pessoa; numa pasta que outras contas alteram (C:\WinForge criada direto
+    executa: a pasta do TF-Toolkit, o script do terminal, os módulos e as traduções (os textos que ela escreve). A tarefa
+    roda esses arquivos todo mês com a conta da pessoa; numa pasta que outras contas alteram (C:\TF-Toolkit criada direto
     no disco, por exemplo, onde os "Usuários autenticados" podem modificar), qualquer conta do PC passaria a rodar código
     como ela. Devolve os nomes (vazio = só contas de confiança); permissões que não puderam ser lidas também entram,
     como um aviso.
     #>
     param (
-        [string]$Root = (Get-WinForgeAppRoot),
-        [string]$User = (Get-WinForgeScheduleUser)
+        [string]$Root = (Get-TFToolkitAppRoot),
+        [string]$User = (Get-TFToolkitScheduleUser)
     )
 
     # SYSTEM, Administradores e TrustedInstaller.
@@ -474,7 +474,7 @@ function Get-WinForgeScheduleUntrustedWriters {
 
     $modules = Join-Path $Root "modules"
     $lang = Join-Path $Root "lang"
-    $paths = @($Root, (Join-Path $Root "WinForge.Console.ps1"), $modules, $lang) + @(Get-ChildItem -LiteralPath $modules, $lang -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+    $paths = @($Root, (Join-Path $Root "TF-Toolkit.Console.ps1"), $modules, $lang) + @(Get-ChildItem -LiteralPath $modules, $lang -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
     $writers = @()
 
     foreach ($path in $paths) {
@@ -482,19 +482,19 @@ function Get-WinForgeScheduleUntrustedWriters {
 
         # Sem conseguir ler as permissões, não dá para dizer que só contas de confiança alteram o arquivo (nas pastas
         # comuns, a conta e os Administradores sempre leem).
-        try { $acl = Get-WinForgePathWriteRules -Path $path }
+        try { $acl = Get-TFToolkitPathWriteRules -Path $path }
         catch {
-            $writers += (Get-WinForgeText 'não foi possível conferir as permissões de {0}' "$path")
+            $writers += (Get-TFToolkitText 'não foi possível conferir as permissões de {0}' "$path")
             continue
         }
 
-        if ($acl.OwnerSid -and $trusted -notcontains $acl.OwnerSid -and -not (Test-WinForgeScheduleSameAccount -Account $acl.Owner -Other $User)) { $writers += $acl.Owner }
+        if ($acl.OwnerSid -and $trusted -notcontains $acl.OwnerSid -and -not (Test-TFToolkitScheduleSameAccount -Account $acl.Owner -Other $User)) { $writers += $acl.Owner }
 
         foreach ($rule in @($acl.Rules)) {
             if (-not $rule.Allow -or $rule.InheritOnly) { continue }
             if (([int64]$rule.Rights -band $writeMask) -eq 0) { continue }
             if ($trusted -contains [string]$rule.Sid) { continue }
-            if (Test-WinForgeScheduleSameAccount -Account ([string]$rule.Identity) -Other $User) { continue }
+            if (Test-TFToolkitScheduleSameAccount -Account ([string]$rule.Identity) -Other $User) { continue }
 
             $writers += [string]$rule.Identity
         }
@@ -504,66 +504,66 @@ function Get-WinForgeScheduleUntrustedWriters {
 }
 
 
-function Register-WinForgeScheduledMaintenance {
-    # Cria (ou troca) a tarefa mensal. Devolve um WinForge.Result.
+function Register-TFToolkitScheduledMaintenance {
+    # Cria (ou troca) a tarefa mensal. Devolve um TFToolkit.Result.
     param (
         [Parameter(Mandatory)]
         [ValidateRange(1, 28)]
         [int]$Day,
 
-        # A pasta do WinForge que a tarefa roda (o instalador passa a instalada).
-        [string]$Root = (Get-WinForgeAppRoot)
+        # A pasta do TF-Toolkit que a tarefa roda (o instalador passa a instalada).
+        [string]$Root = (Get-TFToolkitAppRoot)
     )
 
-    if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Criar a tarefa agendada exige privilégios de Administrador.'))) {
-        return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador'))
+    if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Criar a tarefa agendada exige privilégios de Administrador.'))) {
+        return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador'))
     }
 
     try {
-        $user = Get-WinForgeScheduleUser
+        $user = Get-TFToolkitScheduleUser
 
         if ([string]::IsNullOrWhiteSpace($user)) {
-            throw (Get-WinForgeText 'Não foi possível descobrir qual usuário está usando o PC.')
+            throw (Get-TFToolkitText 'Não foi possível descobrir qual usuário está usando o PC.')
         }
 
-        $command = Get-WinForgeScheduleCommand -Root $Root
-        $writers = @(Get-WinForgeScheduleUntrustedWriters -Root $command.WorkingDirectory -User $user)
+        $command = Get-TFToolkitScheduleCommand -Root $Root
+        $writers = @(Get-TFToolkitScheduleUntrustedWriters -Root $command.WorkingDirectory -User $user)
 
         if ($writers.Count -gt 0) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'A pasta do WinForge ({0}) pode ser alterada por outras contas deste PC ({1}). A tarefa rodaria o que estiver nela todo mês com a conta {2}.' "$($command.WorkingDirectory)" "$(Join-WinForgeList -Items $writers)" "$user")
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'A pasta do TF-Toolkit ({0}) pode ser alterada por outras contas deste PC ({1}). A tarefa rodaria o que estiver nela todo mês com a conta {2}.' "$($command.WorkingDirectory)" "$(Join-TFToolkitList -Items $writers)" "$user")
             # Mover a pasta de agora não basta: ela leva junto as permissões de onde está.
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Extraia o WinForge de novo em Arquivos de Programas (C:\Program Files) e agende de lá.')
-            return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'a pasta do WinForge pode ser alterada por outras contas'))
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Extraia o TF-Toolkit de novo em Arquivos de Programas (C:\Program Files) e agende de lá.')
+            return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'a pasta do TF-Toolkit pode ser alterada por outras contas'))
         }
 
-        $xml = New-WinForgeScheduleTaskXml -Executable $command.Executable -Arguments $command.Arguments -WorkingDirectory $command.WorkingDirectory -UserId $user -DayOfMonth $Day
+        $xml = New-TFToolkitScheduleTaskXml -Executable $command.Executable -Arguments $command.Arguments -WorkingDirectory $command.WorkingDirectory -UserId $user -DayOfMonth $Day
 
-        [void](Invoke-WinForgeCimCommand -Name "Register-ScheduledTask" -Parameters @{ Xml = $xml; TaskPath = $script:WinForgeSchedulePath; TaskName = $script:WinForgeScheduleName; Force = $true })
+        [void](Invoke-TFToolkitCimCommand -Name "Register-ScheduledTask" -Parameters @{ Xml = $xml; TaskPath = $script:TFToolkitSchedulePath; TaskName = $script:TFToolkitScheduleName; Force = $true })
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível criar a tarefa agendada: {0}' "$($_.Exception.Message)")
-        return (New-WinForgeResult -Kind Failed -Detail $_.Exception.Message)
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível criar a tarefa agendada: {0}' "$($_.Exception.Message)")
+        return (New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message)
     }
 
-    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Manutenção agendada para todo dia {0}, às {1}h, com a conta {2}.' "$Day" "$($script:WinForgeScheduleHour)" "$user")
+    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Manutenção agendada para todo dia {0}, às {1}h, com a conta {2}.' "$Day" "$($script:TFToolkitScheduleHour)" "$user")
 
-    $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'agendada para todo dia {0}, às {1}h' "$Day" "$($script:WinForgeScheduleHour)") -Data @{ Day = $Day }
-    [void](Add-WinForgeChange -Action (Get-WinForgeText 'Manutenção agendada') -Text (Get-WinForgeText 'todo dia {0}, às {1}h' "$Day" "$($script:WinForgeScheduleHour)"))
+    $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'agendada para todo dia {0}, às {1}h' "$Day" "$($script:TFToolkitScheduleHour)") -Data @{ Day = $Day }
+    [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Manutenção agendada') -Text (Get-TFToolkitText 'todo dia {0}, às {1}h' "$Day" "$($script:TFToolkitScheduleHour)"))
 
     return $result
 }
 
 
-function Remove-WinForgeScheduleFolder {
-    # Tira do Agendador de Tarefas a pasta \WinForge\, se ela ficou vazia (sem a tarefa, ela só sobraria na lista). Uma
+function Remove-TFToolkitScheduleFolder {
+    # Tira do Agendador de Tarefas a pasta \TF-Toolkit\, se ela ficou vazia (sem a tarefa, ela só sobraria na lista). Uma
     # pasta com outra tarefa dentro fica; uma falha aqui não muda nada no que a pessoa pediu.
     try {
         $service = New-Object -ComObject "Schedule.Service"
         $service.Connect()
-        $folder = $service.GetFolder($script:WinForgeSchedulePath.TrimEnd('\'))
+        $folder = $service.GetFolder($script:TFToolkitSchedulePath.TrimEnd('\'))
 
         if ($folder.GetTasks(1).Count -eq 0 -and $folder.GetFolders(0).Count -eq 0) {
-            $service.GetFolder("\").DeleteFolder($script:WinForgeSchedulePath.Trim('\'), 0)
+            $service.GetFolder("\").DeleteFolder($script:TFToolkitSchedulePath.Trim('\'), 0)
         }
     }
     catch {
@@ -572,25 +572,25 @@ function Remove-WinForgeScheduleFolder {
 }
 
 
-function Unregister-WinForgeScheduledMaintenance {
-    # Apaga a tarefa. Devolve um WinForge.Result.
-    if (-not (Test-WinForgeElevation -Reason (Get-WinForgeText 'Remover a tarefa agendada exige privilégios de Administrador.'))) {
-        return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'requer Administrador'))
+function Unregister-TFToolkitScheduledMaintenance {
+    # Apaga a tarefa. Devolve um TFToolkit.Result.
+    if (-not (Test-TFToolkitElevation -Reason (Get-TFToolkitText 'Remover a tarefa agendada exige privilégios de Administrador.'))) {
+        return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'requer Administrador'))
     }
 
     $task = $null
     $missing = $false
-    $names = @{ TaskPath = $script:WinForgeSchedulePath; TaskName = $script:WinForgeScheduleName }
+    $names = @{ TaskPath = $script:TFToolkitSchedulePath; TaskName = $script:TFToolkitScheduleName }
 
     try {
-        $task = @(Invoke-WinForgeCimCommand -Name "Get-ScheduledTask" -Parameters $names) | Select-Object -First 1
+        $task = @(Invoke-TFToolkitCimCommand -Name "Get-ScheduledTask" -Parameters $names) | Select-Object -First 1
         $missing = ($null -eq $task)
     }
     catch {
         # Um Agendador que não respondeu no prazo também não responderia à remoção: o motivo vai direto, sem esperar de novo.
         if ($_.Exception -is [System.TimeoutException]) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível remover a tarefa agendada: {0}' "$($_.Exception.Message)")
-            return (New-WinForgeResult -Kind Failed -Detail $_.Exception.Message)
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível remover a tarefa agendada: {0}' "$($_.Exception.Message)")
+            return (New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message)
         }
 
         # Só "nenhuma tarefa com esse nome" quer dizer que ela já não existe; outro erro (o serviço parado, acesso negado)
@@ -600,24 +600,24 @@ function Unregister-WinForgeScheduledMaintenance {
 
     if ($missing) {
         # Já removida (pelo Agendador de Tarefas, por exemplo): o que a pessoa queria já está feito.
-        Remove-WinForgeScheduleFolder
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'A manutenção agendada já não existia. Nada vai rodar sozinho.')
-        return (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'o agendamento já não existia; nada roda sozinho'))
+        Remove-TFToolkitScheduleFolder
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'A manutenção agendada já não existia. Nada vai rodar sozinho.')
+        return (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'o agendamento já não existia; nada roda sozinho'))
     }
 
     try {
-        [void](Invoke-WinForgeCimCommand -Name "Unregister-ScheduledTask" -Parameters ($names + @{ Confirm = $false }))
+        [void](Invoke-TFToolkitCimCommand -Name "Unregister-ScheduledTask" -Parameters ($names + @{ Confirm = $false }))
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível remover a tarefa agendada: {0}' "$($_.Exception.Message)")
-        return (New-WinForgeResult -Kind Failed -Detail $_.Exception.Message)
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível remover a tarefa agendada: {0}' "$($_.Exception.Message)")
+        return (New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message)
     }
 
-    Remove-WinForgeScheduleFolder
-    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Manutenção agendada removida. Nada mais vai rodar sozinho.')
+    Remove-TFToolkitScheduleFolder
+    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Manutenção agendada removida. Nada mais vai rodar sozinho.')
 
-    $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'agendamento removido; nada mais roda sozinho')
-    [void](Add-WinForgeChange -Action (Get-WinForgeText 'Manutenção agendada') -Text (Get-WinForgeText 'removida; nada mais roda sozinho'))
+    $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'agendamento removido; nada mais roda sozinho')
+    [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Manutenção agendada') -Text (Get-TFToolkitText 'removida; nada mais roda sozinho'))
 
     return $result
 }
@@ -627,16 +627,16 @@ function Unregister-WinForgeScheduledMaintenance {
 # A execução (chamada pela tarefa, sem ninguém olhando)
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeScheduledRunPath {
-    return (Join-Path (Get-WinForgeDataPath) "scheduled-maintenance.json")
+function Get-TFToolkitScheduledRunPath {
+    return (Join-Path (Get-TFToolkitDataPath) "scheduled-maintenance.json")
 }
 
 
-function Get-WinForgeScheduledRun {
+function Get-TFToolkitScheduledRun {
     # O registro da última execução automática (quando, quanto liberou, onde está o relatório). $null se nunca rodou.
     try {
         # Um registro estragado volta da cópia anterior (.bak), como os outros arquivos de estado.
-        $document = (Read-WinForgeStateFile -Path (Get-WinForgeScheduledRunPath)).Document
+        $document = (Read-TFToolkitStateFile -Path (Get-TFToolkitScheduledRunPath)).Document
 
         if ($null -eq $document) {
             return $null
@@ -655,14 +655,14 @@ function Get-WinForgeScheduledRun {
 }
 
 
-function Clear-WinForgeScheduledTempFolder {
+function Clear-TFToolkitScheduledTempFolder {
     <#
     A limpeza de uma pasta de temporários na execução agendada: só o que está lá há mais de 7 dias, como faz a Limpeza
     de Disco do Windows. Sem ninguém olhando, um arquivo recente pode ser de um instalador que espera o PC reiniciar ou
     de um programa aberto que ainda vai lê-lo. A limpeza pedida na hora (Limpeza) continua levando tudo o que não está
     em uso. As travas são as da Limpeza: pasta não localizada, recusada por segurança ou ilegível não é tocada.
-    Um item conta como antigo pela última atividade dele, olhando dentro das pastas (Measure-WinForgeFolderItems): uma
-    pasta antiga com um arquivo novo dentro fica. Devolve um WinForge.Result com FreedBytes.
+    Um item conta como antigo pela última atividade dele, olhando dentro das pastas (Measure-TFToolkitFolderItems): uma
+    pasta antiga com um arquivo novo dentro fica. Devolve um TFToolkit.Result com FreedBytes.
     #>
     param (
         [Parameter(Mandatory)]
@@ -672,65 +672,65 @@ function Clear-WinForgeScheduledTempFolder {
         [AllowEmptyString()]
         [string]$Path,
 
-        [int]$Days = $script:WinForgeScheduleTempDays
+        [int]$Days = $script:TFToolkitScheduleTempDays
     )
 
-    Write-WinForgeSection -Title $Title
+    Write-TFToolkitSection -Title $Title
 
     $result = $null
 
     try {
         if ([string]::IsNullOrWhiteSpace($Path)) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível localizar a pasta a limpar: a variável de ambiente que a indica não está definida.')
-            $result = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'pasta não localizada')
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível localizar a pasta a limpar: a variável de ambiente que a indica não está definida.')
+            $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'pasta não localizada')
         }
         # As duas pastas daqui vêm das variáveis TEMP: só uma pasta chamada Temp (ou Tmp) é esvaziada, como na limpeza feita
         # na hora. Sem essa trava, uma TEMP apontando para D:\Dados teria tudo o que tem mais de 7 dias apagado todo mês,
         # sem ninguém olhando.
-        elseif (-not (Test-WinForgeTempFolderSafe -Path $Path -RequireTempName)) {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Pasta recusada por segurança: {0}' "$Path")
-            $result = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'pasta recusada por segurança')
+        elseif (-not (Test-TFToolkitTempFolderSafe -Path $Path -RequireTempName)) {
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Pasta recusada por segurança: {0}' "$Path")
+            $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'pasta recusada por segurança')
         }
         elseif (-not (Test-Path -LiteralPath $Path -PathType Container)) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Pasta não encontrada: {0}' "$Path")
-            $result = New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'pasta não encontrada') -Data @{ FreedBytes = [int64]0 }
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Pasta não encontrada: {0}' "$Path")
+            $result = New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'pasta não encontrada') -Data @{ FreedBytes = [int64]0 }
         }
         else {
-            $listing = Get-WinForgeFolderListing -Path $Path
+            $listing = Get-TFToolkitFolderListing -Path $Path
 
             if (-not $listing.Readable) {
-                Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível ler a pasta: {0}' "$($listing.Reason)")
-                $result = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'pasta ilegível')
+                Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível ler a pasta: {0}' "$($listing.Reason)")
+                $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'pasta ilegível')
             }
             else {
-                $entries = @(Measure-WinForgeFolderItems -Items $listing.Items)
-                $old = @(Select-WinForgeItemsOlderThan -Entries $entries -Cutoff (Get-Date).AddDays(-$Days))
+                $entries = @(Measure-TFToolkitFolderItems -Items $listing.Items)
+                $old = @(Select-TFToolkitItemsOlderThan -Entries $entries -Cutoff (Get-Date).AddDays(-$Days))
 
-                Write-WinForgeKeyValue -Label (Get-WinForgeText 'Pasta') -Value $Path
-                Write-WinForgeKeyValue -Label (Get-WinForgeText 'Com mais de {0} dias' "$Days") -Value (Get-WinForgeText '{0} de {1}' "$($old.Count)" "$(Format-WinForgeCount -Count $entries.Count -One (Get-WinForgeText 'item') -Many (Get-WinForgeText 'itens'))")
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Pasta') -Value $Path
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Com mais de {0} dias' "$Days") -Value (Get-TFToolkitText '{0} de {1}' "$($old.Count)" "$(Format-TFToolkitCount -Count $entries.Count -One (Get-TFToolkitText 'item') -Many (Get-TFToolkitText 'itens'))")
 
                 if ($old.Count -eq 0) {
-                    Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nada com mais de {0} dias para limpar.' "$Days")
-                    $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nada com mais de {0} dias' "$Days") -Data @{ FreedBytes = [int64]0 }
+                    Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nada com mais de {0} dias para limpar.' "$Days")
+                    $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nada com mais de {0} dias' "$Days") -Data @{ FreedBytes = [int64]0 }
                 }
                 else {
-                    $outcome = Clear-WinForgeFolderContents -Path $Path -Activity $Title -Entries $old
+                    $outcome = Clear-TFToolkitFolderContents -Path $Path -Activity $Title -Entries $old
 
                     # Itens em uso são esperados; mas se NADA saiu, a limpeza não aconteceu.
                     $nothingRemoved = ($outcome.Removed -eq 0 -and $outcome.Skipped -gt 0)
-                    $detail = (Get-WinForgeText 'liberou {0}' "$(Format-WinForgeBytes -Bytes $outcome.Freed)")
-                    if ($outcome.Skipped -gt 0) { $detail += (Get-WinForgeText '; {0} em uso' "$($outcome.Skipped)") }
-                    if ($nothingRemoved) { $detail = (Get-WinForgeText 'nenhum item removido; {0} em uso' "$($outcome.Skipped)") }
+                    $detail = (Get-TFToolkitText 'liberou {0}' "$(Format-TFToolkitBytes -Bytes $outcome.Freed)")
+                    if ($outcome.Skipped -gt 0) { $detail += (Get-TFToolkitText '; {0} em uso' "$($outcome.Skipped)") }
+                    if ($nothingRemoved) { $detail = (Get-TFToolkitText 'nenhum item removido; {0} em uso' "$($outcome.Skipped)") }
 
-                    Write-WinForgeStatus -Type $(if ($nothingRemoved) { "Warning" } else { "Success" }) -Message (Get-WinForgeText 'Temporários com mais de {0} dias: {1}.' "$Days" "$detail")
-                    $result = New-WinForgeResult -Kind $(if ($nothingRemoved) { "Warning" } else { "Ok" }) -Detail $detail -Data @{ FreedBytes = [int64]$outcome.Freed }
+                    Write-TFToolkitStatus -Type $(if ($nothingRemoved) { "Warning" } else { "Success" }) -Message (Get-TFToolkitText 'Temporários com mais de {0} dias: {1}.' "$Days" "$detail")
+                    $result = New-TFToolkitResult -Kind $(if ($nothingRemoved) { "Warning" } else { "Ok" }) -Detail $detail -Data @{ FreedBytes = [int64]$outcome.Freed }
                 }
             }
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Falha na limpeza ({0}): {1}' "$Title" "$($_.Exception.Message)")
-        $result = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Falha na limpeza ({0}): {1}' "$Title" "$($_.Exception.Message)")
+        $result = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message
     }
 
     $result.Etapa = $Title
@@ -739,40 +739,40 @@ function Clear-WinForgeScheduledTempFolder {
 }
 
 
-function Invoke-WinForgeScheduledMaintenance {
+function Invoke-TFToolkitScheduledMaintenance {
     <#
     O que a tarefa agendada executa: limpa os temporários do usuário com mais de 7 dias (e os do Windows, se por acaso
     estiver com privilégios de Administrador) e salva o relatório. Nunca pergunta nada, nunca esvazia a Lixeira. Devolve
-    um WinForge.Result e grava o registro da execução.
+    um TFToolkit.Result e grava o registro da execução.
     #>
     $runAt = Get-Date
     $parts = @()
 
-    Write-WinForgeSection -Title (Get-WinForgeText 'Manutenção agendada')
+    Write-TFToolkitSection -Title (Get-TFToolkitText 'Manutenção agendada')
 
     # Uma limpeza que lança uma exceção não pode levar junto o relatório e o registro da execução: vira uma parte que falhou.
     try {
-        $parts += @(Clear-WinForgeScheduledTempFolder -Title (Get-WinForgeText 'Temporários do usuário') -Path (Get-WinForgeUserTempPath) | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "WinForge.Result" })
+        $parts += @(Clear-TFToolkitScheduledTempFolder -Title (Get-TFToolkitText 'Temporários do usuário') -Path (Get-TFToolkitUserTempPath) | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "TFToolkit.Result" })
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Falha na limpeza dos temporários do usuário: {0}' "$($_.Exception.Message)")
-        $parts += New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title (Get-WinForgeText 'Temporários do usuário')
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Falha na limpeza dos temporários do usuário: {0}' "$($_.Exception.Message)")
+        $parts += New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title (Get-TFToolkitText 'Temporários do usuário')
     }
 
-    if (Test-WinForgeAdministrator) {
+    if (Test-TFToolkitAdministrator) {
         try {
-            $parts += @(Clear-WinForgeScheduledTempFolder -Title (Get-WinForgeText 'Temporários do Windows') -Path (Get-WinForgeWindowsTempPath) | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "WinForge.Result" })
+            $parts += @(Clear-TFToolkitScheduledTempFolder -Title (Get-TFToolkitText 'Temporários do Windows') -Path (Get-TFToolkitWindowsTempPath) | Where-Object { $null -ne $_ -and $_.PSObject.TypeNames -contains "TFToolkit.Result" })
         }
         catch {
-            Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Falha na limpeza dos temporários do Windows: {0}' "$($_.Exception.Message)")
-            $parts += New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title (Get-WinForgeText 'Temporários do Windows')
+            Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Falha na limpeza dos temporários do Windows: {0}' "$($_.Exception.Message)")
+            $parts += New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title (Get-TFToolkitText 'Temporários do Windows')
         }
     }
 
     $freed = [int64]0
 
     foreach ($part in $parts) {
-        $partFreed = Get-WinForgeResultData -Result $part -Name "FreedBytes"
+        $partFreed = Get-TFToolkitResultData -Result $part -Name "FreedBytes"
         if ($null -ne $partFreed) { $freed += [int64]$partFreed }
     }
 
@@ -780,7 +780,7 @@ function Invoke-WinForgeScheduledMaintenance {
     $reportFailed = $false
 
     try {
-        $report = Export-WinForgeReport
+        $report = Export-TFToolkitReport
         $html = [string]$report.Html
 
         # A gravação do relatório não para num erro de disco: o arquivo é conferido aqui, para o registro e o resultado
@@ -789,28 +789,28 @@ function Invoke-WinForgeScheduledMaintenance {
         if (-not [string]::IsNullOrWhiteSpace($html)) { $saved = Get-Item -LiteralPath $html -Force -ErrorAction SilentlyContinue }
 
         if ($null -eq $saved -or $saved.PSIsContainer -or [int64]$saved.Length -le 0) {
-            throw (Get-WinForgeText 'o arquivo do relatório não foi gravado ({0})' "$(if ($html) { $html } else { (Get-WinForgeText 'sem caminho') })")
+            throw (Get-TFToolkitText 'o arquivo do relatório não foi gravado ({0})' "$(if ($html) { $html } else { (Get-TFToolkitText 'sem caminho') })")
         }
 
         $reportPath = $html
-        Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Relatório salvo em: {0}' "$reportPath")
+        Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Relatório salvo em: {0}' "$reportPath")
     }
     catch {
         $reportFailed = $true
-        Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Não foi possível salvar o relatório: {0}' "$($_.Exception.Message)")
+        Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Não foi possível salvar o relatório: {0}' "$($_.Exception.Message)")
     }
 
     $failed = @($parts | Where-Object { $_.Kind -eq "Failed" })
 
     if ($failed.Count -eq 0 -and -not $reportFailed) {
-        $result = New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'liberou {0}' "$(Format-WinForgeBytes -Bytes $freed)") -Data @{ FreedBytes = $freed; Report = $reportPath }
+        $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'liberou {0}' "$(Format-TFToolkitBytes -Bytes $freed)") -Data @{ FreedBytes = $freed; Report = $reportPath }
     }
     elseif ($failed.Count -eq $parts.Count -and $reportFailed) {
         # Nada funcionou: a tarefa termina com código de erro, e o Agendador de Tarefas mostra que falhou.
-        $result = New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nada foi feito') -Data @{ FreedBytes = $freed; Report = $reportPath }
+        $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nada foi feito') -Data @{ FreedBytes = $freed; Report = $reportPath }
     }
     else {
-        $result = New-WinForgeResult -Kind Warning -Detail (Get-WinForgeText 'parte do trabalho falhou') -Data @{ FreedBytes = $freed; Report = $reportPath }
+        $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'parte do trabalho falhou') -Data @{ FreedBytes = $freed; Report = $reportPath }
     }
 
     try {
@@ -822,13 +822,13 @@ function Invoke-WinForgeScheduledMaintenance {
         }
 
         # Gravação atômica: a tela pode estar lendo o registro enquanto a tarefa grava.
-        Write-WinForgeStateJson -Path (Get-WinForgeScheduledRunPath) -InputObject $document
+        Write-TFToolkitStateJson -Path (Get-TFToolkitScheduledRunPath) -InputObject $document
     }
     catch {
         # O registro é um complemento da tela; a limpeza e o relatório já foram feitos.
     }
 
-    $result.Etapa = (Get-WinForgeText 'Manutenção agendada')
+    $result.Etapa = (Get-TFToolkitText 'Manutenção agendada')
 
     return $result
 }
@@ -838,9 +838,9 @@ function Invoke-WinForgeScheduledMaintenance {
 # A tela
 # ---------------------------------------------------------------------------
 
-function Show-WinForgeScheduledMaintenance {
-    $title = (Get-WinForgeText 'Manutenção agendada')
-    Enter-WinForgeAction -Title $title
+function Show-TFToolkitScheduledMaintenance {
+    $title = (Get-TFToolkitText 'Manutenção agendada')
+    Enter-TFToolkitAction -Title $title
 
     # Voltar sem escolher só foi olhar: a tela termina sem faixa de resultado. Criar, trocar o dia ou remover dizem o que
     # ficou valendo. Por isso os avisos sobre a tarefa saem como avisos à vista (-Notice), e não como um desfecho.
@@ -851,62 +851,62 @@ function Show-WinForgeScheduledMaintenance {
         # recolhida durante a pergunta). O que roda todo mês, e quando, numa linha: com o PC desligado ao meio-dia, a
         # tarefa roda depois que você entrar no Windows (o Agendador espera uns 10 minutos); Lixeira, reparo, programas e
         # ajustes ficam de fora.
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Uma vez por mês, às {0}h (ou depois que você entrar no Windows, se o PC estava desligado), apaga os temporários com mais de {1} dias e salva um relatório. Nada mais muda; no notebook, só na tomada.' "$($script:WinForgeScheduleHour)" "$($script:WinForgeScheduleTempDays)")
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Uma vez por mês, às {0}h (ou depois que você entrar no Windows, se o PC estava desligado), apaga os temporários com mais de {1} dias e salva um relatório. Nada mais muda; no notebook, só na tomada.' "$($script:TFToolkitScheduleHour)" "$($script:TFToolkitScheduleTempDays)")
 
-        $status = Get-WinForgeScheduleStatus
+        $status = Get-TFToolkitScheduleStatus
         $recreate = ($status.Installed -and ($status.ScriptMissing -or $status.Stale))
         $unknown = [bool]$status.QueryFailed
 
         if ($unknown) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Tarefa mensal') -Value (Get-WinForgeText 'não foi possível consultar o Agendador de Tarefas') -Level Warn
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Tarefa mensal') -Value (Get-TFToolkitText 'não foi possível consultar o Agendador de Tarefas') -Level Warn
         }
         elseif (-not $status.Installed) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Tarefa mensal') -Value (Get-WinForgeText 'Não agendada')
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Tarefa mensal') -Value (Get-TFToolkitText 'Não agendada')
         }
         else {
-            $when = $(if ($null -ne $status.Day) { (Get-WinForgeText 'todo dia {0}, às {1}h' "$($status.Day)" "$($script:WinForgeScheduleHour)") } else { (Get-WinForgeText 'mensal') })
-            $state = $(if (-not $status.Enabled) { (Get-WinForgeText 'Desligada no Agendador de Tarefas ({0})' "$when") } elseif ($status.ScriptMissing) { (Get-WinForgeText 'Ativa, mas a tarefa não vai funcionar ({0})' "$when") } else { (Get-WinForgeText 'Ativa ({0})' "$when") })
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Tarefa mensal') -Value $state -Level $(if (-not $status.Enabled -or $status.ScriptMissing) { "Warn" } else { "Normal" })
+            $when = $(if ($null -ne $status.Day) { (Get-TFToolkitText 'todo dia {0}, às {1}h' "$($status.Day)" "$($script:TFToolkitScheduleHour)") } else { (Get-TFToolkitText 'mensal') })
+            $state = $(if (-not $status.Enabled) { (Get-TFToolkitText 'Desligada no Agendador de Tarefas ({0})' "$when") } elseif ($status.ScriptMissing) { (Get-TFToolkitText 'Ativa, mas a tarefa não vai funcionar ({0})' "$when") } else { (Get-TFToolkitText 'Ativa ({0})' "$when") })
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Tarefa mensal') -Value $state -Level $(if (-not $status.Enabled -or $status.ScriptMissing) { "Warn" } else { "Normal" })
 
             if ($null -ne $status.NextRun) {
-                Write-WinForgeKeyValue -Label (Get-WinForgeText 'Próxima execução') -Value (Format-WinForgeDateTime -When $status.NextRun)
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Próxima execução') -Value (Format-TFToolkitDateTime -When $status.NextRun)
             }
 
             if ($status.OtherUser) {
-                Write-WinForgeKeyValue -Label (Get-WinForgeText 'Conta') -Value $status.Owner
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Conta') -Value $status.Owner
                 # O Windows guarda um agendamento só por PC: criar um aqui substitui o da outra conta, e remover tira o dela.
-                Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'Este agendamento é da conta {0} e limpa os temporários dela: criar ou remover aqui mexe no dela.' "$($status.Owner)")
+                Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'Este agendamento é da conta {0} e limpa os temporários dela: criar ou remover aqui mexe no dela.' "$($status.Owner)")
             }
 
             if ($status.ScriptMissing) {
-                Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'A tarefa roda o WinForge de uma pasta que não existe mais ({0}). Até ser recriada, ela falha todo mês.' "$($status.ScriptPath)")
+                Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'A tarefa roda o TF-Toolkit de uma pasta que não existe mais ({0}). Até ser recriada, ela falha todo mês.' "$($status.ScriptPath)")
             }
             elseif ($status.Stale) {
-                Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'A tarefa roda o WinForge de outra pasta ({0}), não deste. Se aquela pasta for apagada, a tarefa passa a falhar.' "$($status.ScriptPath)")
+                Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'A tarefa roda o TF-Toolkit de outra pasta ({0}), não deste. Se aquela pasta for apagada, a tarefa passa a falhar.' "$($status.ScriptPath)")
             }
 
             if ($recreate) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para recriar a tarefa com esta pasta do WinForge, escolha o dia abaixo.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para recriar a tarefa com esta pasta do TF-Toolkit, escolha o dia abaixo.')
             }
             elseif (-not $status.Enabled) {
                 # Desligada no Agendador (por alguém, ou por um programa de "otimização"): escolher o dia cria a tarefa de
                 # novo, já ligada.
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para religar, escolha o dia abaixo: a tarefa é criada de novo, ligada.')
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para religar, escolha o dia abaixo: a tarefa é criada de novo, ligada.')
             }
             elseif ($status.ScriptPath -and -not $status.OtherUser) {
                 # Uma tarefa criada antes desta conferência, de uma pasta que outras contas alteram, continua rodando o que
-                # estiver nela: a tela avisa, e recriar daqui é recusado até o WinForge estar numa pasta só da pessoa.
-                $writers = @(Get-WinForgeScheduleUntrustedWriters -Root (Split-Path -Path $status.ScriptPath -Parent))
+                # estiver nela: a tela avisa, e recriar daqui é recusado até o TF-Toolkit estar numa pasta só da pessoa.
+                $writers = @(Get-TFToolkitScheduleUntrustedWriters -Root (Split-Path -Path $status.ScriptPath -Parent))
 
                 if ($writers.Count -gt 0) {
-                    Write-WinForgeStatus -Type Warning -Notice -Message (Get-WinForgeText 'A pasta que a tarefa roda pode ser alterada por outras contas deste PC ({0}). Remova o agendamento, ou extraia o WinForge de novo em Arquivos de Programas (C:\Program Files) e agende de lá.' "$(Join-WinForgeList -Items $writers)")
+                    Write-TFToolkitStatus -Type Warning -Notice -Message (Get-TFToolkitText 'A pasta que a tarefa roda pode ser alterada por outras contas deste PC ({0}). Remova o agendamento, ou extraia o TF-Toolkit de novo em Arquivos de Programas (C:\Program Files) e agende de lá.' "$(Join-TFToolkitList -Items $writers)")
                 }
             }
         }
 
-        $lastRun = Get-WinForgeScheduledRun
+        $lastRun = Get-TFToolkitScheduledRun
 
-        # O registro do WinForge só existe quando o script chegou a rodar: uma execução que falhou antes disso (o script não
+        # O registro do TF-Toolkit só existe quando o script chegou a rodar: uma execução que falhou antes disso (o script não
         # existe mais) só aparece no Agendador. Vale a mais nova; e o resultado do Agendador também vale quando diz que a
         # execução terminou mal. A tarefa começa um pouco antes do script: a margem de um minuto separa as duas coisas.
         $fromScheduler = $false
@@ -917,36 +917,36 @@ function Show-WinForgeScheduledMaintenance {
         }
 
         if ($fromScheduler) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última execução') -Value "$(Format-WinForgeDateTime -When $status.LastRun), $(ConvertTo-WinForgeScheduleResultText -Code $status.LastResult)"
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última execução') -Value "$(Format-TFToolkitDateTime -When $status.LastRun), $(ConvertTo-TFToolkitScheduleResultText -Code $status.LastResult)"
         }
         elseif ($null -ne $lastRun) {
-            $outcome = $(switch ($lastRun.Kind) { "Warning" { (Get-WinForgeText '; terminou com ressalvas') } "Failed" { (Get-WinForgeText '; não funcionou') } default { "" } })
+            $outcome = $(switch ($lastRun.Kind) { "Warning" { (Get-TFToolkitText '; terminou com ressalvas') } "Failed" { (Get-TFToolkitText '; não funcionou') } default { "" } })
 
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última execução') -Value (Get-WinForgeText '{0} ({1}), liberou {2}{3}' "$(Format-WinForgeDateTime -When $lastRun.RunAt)" "$(Format-WinForgeRelativeTime -When $lastRun.RunAt)" "$(Format-WinForgeBytes -Bytes $lastRun.FreedBytes)" "$outcome")
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última execução') -Value (Get-TFToolkitText '{0} ({1}), liberou {2}{3}' "$(Format-TFToolkitDateTime -When $lastRun.RunAt)" "$(Format-TFToolkitRelativeTime -When $lastRun.RunAt)" "$(Format-TFToolkitBytes -Bytes $lastRun.FreedBytes)" "$outcome")
 
             if (-not [string]::IsNullOrWhiteSpace($lastRun.Report)) {
-                Write-WinForgeKeyValue -Label (Get-WinForgeText 'Relatório') -Value $lastRun.Report
+                Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Relatório') -Value $lastRun.Report
             }
         }
         elseif ($status.Installed) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Última execução') -Value (Get-WinForgeText 'Ainda não executou')
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Última execução') -Value (Get-TFToolkitText 'Ainda não executou')
         }
 
         Write-Host ""
 
         $options = @()
 
-        foreach ($day in $script:WinForgeScheduleDays) {
+        foreach ($day in $script:TFToolkitScheduleDays) {
             $current = ($status.Installed -and $status.Day -eq $day)
-            $label = $(if ($current) { (Get-WinForgeText 'Dia {0} (atual)' "$day") } else { (Get-WinForgeText 'Dia {0}' "$day") })
+            $label = $(if ($current) { (Get-TFToolkitText 'Dia {0} (atual)' "$day") } else { (Get-TFToolkitText 'Dia {0}' "$day") })
 
             # O horário e o que acontece com o PC desligado estão na linha do alto: aqui, só o que muda de um dia a outro.
             $description = ""
-            if ($current) { $description = $(if ($recreate) { (Get-WinForgeText 'recria a tarefa com esta pasta do WinForge') } else { (Get-WinForgeText 'o dia de agora; escolher de novo recria a tarefa') }) }
+            if ($current) { $description = $(if ($recreate) { (Get-TFToolkitText 'recria a tarefa com esta pasta do TF-Toolkit') } else { (Get-TFToolkitText 'o dia de agora; escolher de novo recria a tarefa') }) }
 
             # Em destaque: o primeiro dia, quando não há tarefa; o dia atual (ou o primeiro, sem dia lido), quando a tarefa
             # precisa ser recriada. Sem resposta do Agendador, não se sabe se há tarefa: nenhum dia em destaque.
-            $accent = ($day -eq $script:WinForgeScheduleDays[0] -and -not $unknown -and (-not $status.Installed -or ($recreate -and $null -eq $status.Day))) -or ($current -and $recreate)
+            $accent = ($day -eq $script:TFToolkitScheduleDays[0] -and -not $unknown -and (-not $status.Installed -or ($recreate -and $null -eq $status.Day))) -or ($current -and $recreate)
 
             $options += @{
                 Key         = "D$day"
@@ -957,39 +957,39 @@ function Show-WinForgeScheduledMaintenance {
         }
 
         if ($status.Installed) {
-            $options += @{ Key = "R"; Label = (Get-WinForgeText 'Remover o agendamento'); Description = (Get-WinForgeText 'a tarefa sai do Agendador de Tarefas; nada mais roda sozinho') }
+            $options += @{ Key = "R"; Label = (Get-TFToolkitText 'Remover o agendamento'); Description = (Get-TFToolkitText 'a tarefa sai do Agendador de Tarefas; nada mais roda sozinho') }
         }
 
-        $options += @{ Key = "V"; Label = (Get-WinForgeText 'Voltar'); Exit = $true }
+        $options += @{ Key = "V"; Label = (Get-TFToolkitText 'Voltar'); Exit = $true }
 
-        $message = $(if ($status.Installed) { (Get-WinForgeText 'Trocar o dia ou remover?') } else { (Get-WinForgeText 'Em que dia do mês?') })
-        $choice = Read-WinForgeChoice -Message $message -Options $options -DefaultKey "V" -ShowMenu
+        $message = $(if ($status.Installed) { (Get-TFToolkitText 'Trocar o dia ou remover?') } else { (Get-TFToolkitText 'Em que dia do mês?') })
+        $choice = Read-TFToolkitChoice -Message $message -Options $options -DefaultKey "V" -ShowMenu
 
         Write-Host ""
 
         # Mexer no agendamento de outra conta só com a confirmação, com Não como padrão.
         if ($choice -match '^D([0-9]+)$|^R$' -and $status.OtherUser) {
-            $question = $(if ($choice -eq "R") { (Get-WinForgeText 'Remover o agendamento da conta {0}?' "$($status.Owner)") } else { (Get-WinForgeText 'Substituir o agendamento da conta {0} pelo seu?' "$($status.Owner)") })
+            $question = $(if ($choice -eq "R") { (Get-TFToolkitText 'Remover o agendamento da conta {0}?' "$($status.Owner)") } else { (Get-TFToolkitText 'Substituir o agendamento da conta {0} pelo seu?' "$($status.Owner)") })
 
-            if (-not (Confirm-WinForgeAction $question -DefaultKey N)) {
-                Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'O agendamento da conta {0} ficou como estava.' "$($status.Owner)")
+            if (-not (Confirm-TFToolkitAction $question -DefaultKey N)) {
+                Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'O agendamento da conta {0} ficou como estava.' "$($status.Owner)")
                 $choice = "V"
             }
         }
 
         if ($choice -match '^D([0-9]+)$') {
-            $final = Register-WinForgeScheduledMaintenance -Day ([int]$Matches[1])
+            $final = Register-TFToolkitScheduledMaintenance -Day ([int]$Matches[1])
         }
         elseif ($choice -eq "R") {
-            $final = Unregister-WinForgeScheduledMaintenance
+            $final = Unregister-TFToolkitScheduledMaintenance
         }
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Ocorreu um erro na manutenção agendada: {0}' "$($_.Exception.Message)")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Ocorreu um erro na manutenção agendada: {0}' "$($_.Exception.Message)")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
@@ -997,38 +997,38 @@ function Show-WinForgeScheduledMaintenance {
 # Rodar com a conta de quem usa o PC, sem Administrador
 # ---------------------------------------------------------------------------
 #
-# O WinForge aberto como Administrador às vezes precisa rodar algo sem elevação: o winget recusa, de um processo elevado,
+# O TF-Toolkit aberto como Administrador às vezes precisa rodar algo sem elevação: o winget recusa, de um processo elevado,
 # desinstalar e atualizar o que foi instalado só para a conta da pessoa (erro 0x8A15007D). O caminho documentado pelo
 # Windows para isso é uma tarefa do Agendador com a conta da pessoa, o token interativo dela (só roda com ela logada, na
 # sessão dela) e os menores privilégios (RunLevel LeastPrivilege: com o UAC ligado, a versão da conta sem Administrador).
-# A tarefa é de uma vez só: sem horário, roda o WinForge.Unelevated.ps1 e é apagada quando ele termina.
+# A tarefa é de uma vez só: sem horário, roda o TF-Toolkit.Unelevated.ps1 e é apagada quando ele termina.
 #
 # Decisões de segurança:
 #   - Nada roda elevado: a tarefa e o que ela abre têm os direitos de qualquer programa que a pessoa abre. Rodar como
 #     Administrador o desinstalador gravado no registro da conta (HKCU), que qualquer programa da conta altera, seria
 #     justamente o que o winget bloqueia.
-#   - O WinForge elevado não grava na pasta da execução (em %LOCALAPPDATA%, que qualquer programa da conta altera): o
-#     pedido vai na linha de comando da tarefa, e quem cria a pasta e grava nela é o script, sem elevação. O WinForge só
+#   - O TF-Toolkit elevado não grava na pasta da execução (em %LOCALAPPDATA%, que qualquer programa da conta altera): o
+#     pedido vai na linha de comando da tarefa, e quem cria a pasta e grava nela é o script, sem elevação. O TF-Toolkit só
 #     lê arquivos comuns de lá (nem atalhos de pasta, nem links) cuja dona é a conta da pessoa, conferida também no
-#     arquivo já aberto, e apaga a pasta com o Remove-WinForgeFolder, que não segue atalhos de pasta.
+#     arquivo já aberto, e apaga a pasta com o Remove-TFToolkitFolder, que não segue atalhos de pasta.
 #   - O limite: um programa que já roda na conta da pessoa e troca a pasta por um atalho no meio da limpeza não é coberto
-#     por inteiro, como nas outras pastas do WinForge em %LOCALAPPDATA%. A Microsoft trata o UAC como defesa em
+#     por inteiro, como nas outras pastas do TF-Toolkit em %LOCALAPPDATA%. A Microsoft trata o UAC como defesa em
 #     profundidade, e não como fronteira de segurança, entre a conta e a versão dela como Administrador.
 
-$script:WinForgeLimitedTaskPrefix = "SemAdministrador-"
-# Quanto o Agendador pode levar para começar o script. Uma tarefa ou pasta que sobrou de um WinForge fechado à força só
-# sai depois de WinForgeLimitedStaleHours: mais que o limite da própria tarefa (2 horas), para nunca tirar uma que ainda
-# roda (de outra janela do WinForge, por exemplo).
-$script:WinForgeLimitedStartSeconds = 60
-$script:WinForgeLimitedStaleHours = 3
-$script:WinForgeLimitedPollMilliseconds = 400
+$script:TFToolkitLimitedTaskPrefix = "SemAdministrador-"
+# Quanto o Agendador pode levar para começar o script. Uma tarefa ou pasta que sobrou de um TF-Toolkit fechado à força só
+# sai depois de TFToolkitLimitedStaleHours: mais que o limite da própria tarefa (2 horas), para nunca tirar uma que ainda
+# roda (de outra janela do TF-Toolkit, por exemplo).
+$script:TFToolkitLimitedStartSeconds = 60
+$script:TFToolkitLimitedStaleHours = 3
+$script:TFToolkitLimitedPollMilliseconds = 400
 # Até quanto da saída é lido; o que passar disso fica fora da tela (o código de saída continua valendo).
-$script:WinForgeLimitedOutputLimit = 4MB
+$script:TFToolkitLimitedOutputLimit = 4MB
 
 
-function Get-WinForgeLimitedRunState {
+function Get-TFToolkitLimitedRunState {
     <#
-    Se este WinForge consegue rodar algo com a conta de quem usa o PC, sem Administrador (Invoke-WinForgeLimited):
+    Se este TF-Toolkit consegue rodar algo com a conta de quem usa o PC, sem Administrador (Invoke-TFToolkitLimited):
     - "Available": elevado, com a conta de quem usa o PC e com o UAC ligado (a conta tem a versão sem Administrador);
     - "NotElevated": já está sem Administrador, e não há o que trocar;
     - "OtherAccount": elevado com a conta de outro Administrador. O programa é dessa conta, e não de quem usa o PC, e a
@@ -1037,16 +1037,16 @@ function Get-WinForgeLimitedRunState {
       Windows).
     Sem conseguir ler o tipo do token, tenta ("Available"): se a tarefa não rodar, quem chama fica sabendo por quê.
     #>
-    if (-not (Test-WinForgeAdministrator)) { return "NotElevated" }
-    if (Test-WinForgeUserContextMismatch) { return "OtherAccount" }
-    if ((Get-WinForgeTokenElevationType) -eq "Default") { return "NoLimitedToken" }
+    if (-not (Test-TFToolkitAdministrator)) { return "NotElevated" }
+    if (Test-TFToolkitUserContextMismatch) { return "OtherAccount" }
+    if ((Get-TFToolkitTokenElevationType) -eq "Default") { return "NoLimitedToken" }
 
     return "Available"
 }
 
 
-function ConvertTo-WinForgeLimitedRunRequest {
-    # O pedido ao WinForge.Unelevated.ps1 (a pasta da execução, o programa e os argumentos), em JSON e Base64: vai inteiro
+function ConvertTo-TFToolkitLimitedRunRequest {
+    # O pedido ao TF-Toolkit.Unelevated.ps1 (a pasta da execução, o programa e os argumentos), em JSON e Base64: vai inteiro
     # na linha de comando da tarefa, sem aspas para proteger.
     param (
         [Parameter(Mandatory)][string]$Folder,
@@ -1060,9 +1060,9 @@ function ConvertTo-WinForgeLimitedRunRequest {
 }
 
 
-function New-WinForgeLimitedRunTaskXml {
+function New-TFToolkitLimitedRunTaskXml {
     <#
-    O XML da tarefa de uma vez só (esquema do Agendador de Tarefas): sem horário (roda quando o WinForge pede), com a
+    O XML da tarefa de uma vez só (esquema do Agendador de Tarefas): sem horário (roda quando o TF-Toolkit pede), com a
     conta de quem usa o PC (UserId: o SID dela), o token interativo e os menores privilégios. Roda também na bateria, com
     a prioridade normal (a pessoa está esperando) e para sozinha depois de 2 horas.
     #>
@@ -1074,13 +1074,13 @@ function New-WinForgeLimitedRunTaskXml {
     )
 
     $escape = { param ($text) [System.Security.SecurityElement]::Escape($text) }
-    $description = (Get-WinForgeText 'Tarefa de uma vez só do WinForge: roda um comando com a sua conta, sem Administrador, e é apagada quando ele termina.')
+    $description = (Get-TFToolkitText 'Tarefa de uma vez só do TF-Toolkit: roda um comando com a sua conta, sem Administrador, e é apagada quando ele termina.')
 
     return @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Author>WinForge</Author>
+    <Author>TF-Toolkit</Author>
     <Description>$(& $escape $description)</Description>
   </RegistrationInfo>
   <Principals>
@@ -1117,9 +1117,9 @@ function New-WinForgeLimitedRunTaskXml {
 }
 
 
-function Test-WinForgeLimitedRunFile {
+function Test-TFToolkitLimitedRunFile {
     <#
-    Se um arquivo da pasta da execução pode ser lido pelo WinForge elevado: um arquivo comum (nem atalho de pasta, nem
+    Se um arquivo da pasta da execução pode ser lido pelo TF-Toolkit elevado: um arquivo comum (nem atalho de pasta, nem
     link), numa pasta que também não é atalho, com a conta de quem usa o PC como dona. O que o script grava sem elevação é
     dela; um arquivo de outra conta ou do sistema, posto ali por um link, não é. OwnerSid: o SID dessa conta.
     #>
@@ -1147,10 +1147,10 @@ function Test-WinForgeLimitedRunFile {
 }
 
 
-function Get-WinForgeLimitedRunStreamOwner {
+function Get-TFToolkitLimitedRunStreamOwner {
     <#
     A dona (o SID) do arquivo que a Stream abriu, lida no próprio arquivo aberto e não pelo caminho: um link posto no
-    lugar do arquivo entre a conferência (Test-WinForgeLimitedRunFile) e a abertura leva a um arquivo de outra dona, e
+    lugar do arquivo entre a conferência (Test-TFToolkitLimitedRunFile) e a abertura leva a um arquivo de outra dona, e
     não passa. "" quando não foi possível ler.
     #>
     param ([Parameter(Mandatory)][System.IO.FileStream]$Stream)
@@ -1168,9 +1168,9 @@ function Get-WinForgeLimitedRunStreamOwner {
 }
 
 
-function Open-WinForgeLimitedRunFile {
+function Open-TFToolkitLimitedRunFile {
     <#
-    Abre para leitura um arquivo da pasta da execução que passa por Test-WinForgeLimitedRunFile e cuja dona, conferida
+    Abre para leitura um arquivo da pasta da execução que passa por Test-TFToolkitLimitedRunFile e cuja dona, conferida
     de novo no arquivo aberto, é a conta (OwnerSid). O arquivo continua podendo ser gravado e apagado pelo script. $null
     quando não existe, não passa ou não abriu.
     #>
@@ -1180,7 +1180,7 @@ function Open-WinForgeLimitedRunFile {
     )
 
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $null }
-    if (-not (Test-WinForgeLimitedRunFile -Path $Path -OwnerSid $OwnerSid)) { return $null }
+    if (-not (Test-TFToolkitLimitedRunFile -Path $Path -OwnerSid $OwnerSid)) { return $null }
 
     $stream = $null
 
@@ -1193,7 +1193,7 @@ function Open-WinForgeLimitedRunFile {
         return $null
     }
 
-    if ((Get-WinForgeLimitedRunStreamOwner -Stream $stream) -ne $OwnerSid) {
+    if ((Get-TFToolkitLimitedRunStreamOwner -Stream $stream) -ne $OwnerSid) {
         $stream.Dispose()
         return $null
     }
@@ -1202,15 +1202,15 @@ function Open-WinForgeLimitedRunFile {
 }
 
 
-function Read-WinForgeLimitedRunText {
+function Read-TFToolkitLimitedRunText {
     # O texto curto (o número do processo, o código de saída) de um arquivo da pasta da execução, se ele passa por
-    # Open-WinForgeLimitedRunFile; $null quando não existe, não passa ou é grande demais para ser um desses.
+    # Open-TFToolkitLimitedRunFile; $null quando não existe, não passa ou é grande demais para ser um desses.
     param (
         [Parameter(Mandatory)][string]$Path,
         [Parameter(Mandatory)][string]$OwnerSid
     )
 
-    $stream = Open-WinForgeLimitedRunFile -Path $Path -OwnerSid $OwnerSid
+    $stream = Open-TFToolkitLimitedRunFile -Path $Path -OwnerSid $OwnerSid
 
     if ($null -eq $stream) { return $null }
 
@@ -1230,12 +1230,12 @@ function Read-WinForgeLimitedRunText {
 }
 
 
-function Read-WinForgeLimitedRunOutput {
+function Read-TFToolkitLimitedRunOutput {
     <#
     Lê o que chegou na saída da execução (output.txt) desde a última leitura e mostra as linhas inteiras na tela, como
-    Invoke-WinForgeNative (Test-WinForgeEchoLine: as barras de progresso resumidas). State: o estado da leitura (Path,
+    Invoke-TFToolkitNative (Test-TFToolkitEchoLine: as barras de progresso resumidas). State: o estado da leitura (Path,
     OwnerSid, Stream, Decoder, Pending, Read, Lines, Echo, Refused). Com -Final, mostra também a última linha sem o fim.
-    O arquivo é conferido uma vez (Open-WinForgeLimitedRunFile), ao abrir, e fica aberto até o fim.
+    O arquivo é conferido uma vez (Open-TFToolkitLimitedRunFile), ao abrir, e fica aberto até o fim.
     #>
     param (
         [Parameter(Mandatory)][hashtable]$State,
@@ -1247,7 +1247,7 @@ function Read-WinForgeLimitedRunOutput {
     if ($null -eq $State.Stream) {
         if (-not (Test-Path -LiteralPath $State.Path -PathType Leaf)) { return }
 
-        $State.Stream = Open-WinForgeLimitedRunFile -Path $State.Path -OwnerSid $State.OwnerSid
+        $State.Stream = Open-TFToolkitLimitedRunFile -Path $State.Path -OwnerSid $State.OwnerSid
 
         # O arquivo existe e não passou: nada dele é lido.
         if ($null -eq $State.Stream) {
@@ -1258,7 +1258,7 @@ function Read-WinForgeLimitedRunOutput {
 
     $buffer = New-Object byte[] 65536
 
-    while ([long]$State.Read -lt $script:WinForgeLimitedOutputLimit) {
+    while ([long]$State.Read -lt $script:TFToolkitLimitedOutputLimit) {
         $count = $State.Stream.Read($buffer, 0, $buffer.Length)
 
         if ($count -le 0) { break }
@@ -1286,12 +1286,12 @@ function Read-WinForgeLimitedRunOutput {
         $line = $line.TrimEnd("`r") -replace "`0", ""
         $State.Lines.Add($line)
 
-        if (Test-WinForgeEchoLine -Line $line -State $State.Echo) { Write-Host $line }
+        if (Test-TFToolkitEchoLine -Line $line -State $State.Echo) { Write-Host $line }
     }
 }
 
 
-function Get-WinForgeLimitedRunProcess {
+function Get-TFToolkitLimitedRunProcess {
     # O processo do script (pelo pid.txt), quando ele já começou: é o PowerShell que a tarefa abriu depois de Since. $null
     # enquanto ele não gravou o número, ou se o número não é de um PowerShell aberto depois disso.
     param (
@@ -1300,7 +1300,7 @@ function Get-WinForgeLimitedRunProcess {
         [Parameter(Mandatory)][datetime]$Since
     )
 
-    $text = Read-WinForgeLimitedRunText -Path $Path -OwnerSid $OwnerSid
+    $text = Read-TFToolkitLimitedRunText -Path $Path -OwnerSid $OwnerSid
     $id = 0
 
     if (-not $text -or -not [int]::TryParse($text, [ref]$id) -or $id -le 0) { return $null }
@@ -1319,7 +1319,7 @@ function Get-WinForgeLimitedRunProcess {
 }
 
 
-function Stop-WinForgeLimitedRunProcess {
+function Stop-TFToolkitLimitedRunProcess {
     # Encerra o script e o que ele abriu (o winget, o desinstalador): o Parar vale também para o que roda sem
     # Administrador. Pelo taskkill do Windows, que segue a árvore de processos; sem ele, ao menos o script.
     param ([Parameter(Mandatory)]$Process)
@@ -1342,33 +1342,33 @@ function Stop-WinForgeLimitedRunProcess {
 }
 
 
-function Remove-WinForgeLimitedRunLeftovers {
+function Remove-TFToolkitLimitedRunLeftovers {
     <#
-    Tira o que sobrou de execuções sem Administrador interrompidas (um WinForge fechado à força no meio): as tarefas
-    \WinForge\SemAdministrador-* e as pastas de %LOCALAPPDATA%\WinForge\run com mais de WinForgeLimitedStaleHours. Com
+    Tira o que sobrou de execuções sem Administrador interrompidas (um TF-Toolkit fechado à força no meio): as tarefas
+    \TF-Toolkit\SemAdministrador-* e as pastas de %LOCALAPPDATA%\TF-Toolkit\run com mais de TFToolkitLimitedStaleHours. Com
     -All (ao desinstalar), todas. Uma pasta run que é atalho de pasta sai como atalho, sem olhar o que há do outro lado.
     Nunca dá erro.
     #>
     param ([switch]$All)
 
-    $limit = (Get-Date).AddHours(-$script:WinForgeLimitedStaleHours)
+    $limit = (Get-Date).AddHours(-$script:TFToolkitLimitedStaleHours)
 
     try {
-        foreach ($task in @(Invoke-WinForgeCimCommand -Name "Get-ScheduledTask" -Parameters @{ TaskPath = $script:WinForgeSchedulePath })) {
+        foreach ($task in @(Invoke-TFToolkitCimCommand -Name "Get-ScheduledTask" -Parameters @{ TaskPath = $script:TFToolkitSchedulePath })) {
             $name = [string]$task.TaskName
 
-            if (-not $name.StartsWith($script:WinForgeLimitedTaskPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+            if (-not $name.StartsWith($script:TFToolkitLimitedTaskPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
 
             if (-not $All) {
                 $stamp = [datetime]::MinValue
-                $text = $name.Substring($script:WinForgeLimitedTaskPrefix.Length).Split('-')[0]
+                $text = $name.Substring($script:TFToolkitLimitedTaskPrefix.Length).Split('-')[0]
                 $parsed = [datetime]::TryParseExact($text, "yyyyMMddHHmmss", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$stamp)
 
                 if (-not $parsed -or $stamp -gt $limit) { continue }
             }
 
             try {
-                [void](Invoke-WinForgeCimCommand -Name "Unregister-ScheduledTask" -Parameters @{ TaskPath = $script:WinForgeSchedulePath; TaskName = $name; Confirm = $false })
+                [void](Invoke-TFToolkitCimCommand -Name "Unregister-ScheduledTask" -Parameters @{ TaskPath = $script:TFToolkitSchedulePath; TaskName = $name; Confirm = $false })
             }
             catch {
                 Write-Verbose "Tarefa que sobrou ($name): $($_.Exception.Message)"
@@ -1376,24 +1376,24 @@ function Remove-WinForgeLimitedRunLeftovers {
         }
     }
     catch {
-        # Nenhuma tarefa na pasta \WinForge\ (o Agendador responde com erro) ou o Agendador sem resposta.
+        # Nenhuma tarefa na pasta \TF-Toolkit\ (o Agendador responde com erro) ou o Agendador sem resposta.
         Write-Verbose "Tarefas que sobraram: $($_.Exception.Message)"
     }
 
     try {
-        $root = Join-Path (Get-WinForgeDataPath) "run"
+        $root = Join-Path (Get-TFToolkitDataPath) "run"
         $folder = Get-Item -LiteralPath $root -Force -ErrorAction Stop
 
         if (($folder.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-            Remove-WinForgeFolder -Path $root -Quiet
+            Remove-TFToolkitFolder -Path $root -Quiet
             return
         }
 
         foreach ($run in @(Get-ChildItem -LiteralPath $root -Force -ErrorAction Stop)) {
-            if ($All -or $run.LastWriteTime -lt $limit) { Remove-WinForgeFolder -Path $run.FullName -Quiet }
+            if ($All -or $run.LastWriteTime -lt $limit) { Remove-TFToolkitFolder -Path $run.FullName -Quiet }
         }
 
-        if ($All) { Remove-WinForgeFolder -Path $root -Quiet }
+        if ($All) { Remove-TFToolkitFolder -Path $root -Quiet }
     }
     catch {
         # Sem a pasta run (nenhuma execução até hoje), não há o que tirar.
@@ -1402,12 +1402,12 @@ function Remove-WinForgeLimitedRunLeftovers {
 }
 
 
-function Invoke-WinForgeLimited {
+function Invoke-TFToolkitLimited {
     <#
     Roda um programa com a conta de quem usa o PC, sem Administrador, e espera por ele: uma tarefa de uma vez só
-    (New-WinForgeLimitedRunTaskXml) roda o WinForge.Unelevated.ps1, que roda o programa e grava a saída e o código de
-    saída. A saída aparece na tela enquanto chega, como em Invoke-WinForgeNative. Só faz sentido com
-    Get-WinForgeLimitedRunState = "Available".
+    (New-TFToolkitLimitedRunTaskXml) roda o TF-Toolkit.Unelevated.ps1, que roda o programa e grava a saída e o código de
+    saída. A saída aparece na tela enquanto chega, como em Invoke-TFToolkitNative. Só faz sentido com
+    Get-TFToolkitLimitedRunState = "Available".
     Devolve Ran ($true quando o programa rodou até o fim), ExitCode, Lines e, quando ele não rodou, Reason (o motivo, numa
     frase). O Parar (ou a janela fechada no meio) encerra o script e o que ele abriu; a tarefa e a pasta sempre saem.
     #>
@@ -1417,30 +1417,30 @@ function Invoke-WinForgeLimited {
     )
 
     $outcome = [PSCustomObject]@{ Ran = $false; ExitCode = $null; Lines = @(); Reason = "" }
-    $root = [string](Get-WinForgeAppRoot)
-    $runner = Join-Path $root "WinForge.Unelevated.ps1"
+    $root = [string](Get-TFToolkitAppRoot)
+    $runner = Join-Path $root "TF-Toolkit.Unelevated.ps1"
 
     if (-not (Test-Path -LiteralPath $runner -PathType Leaf)) {
-        $outcome.Reason = (Get-WinForgeText 'falta o arquivo WinForge.Unelevated.ps1 na pasta do WinForge')
+        $outcome.Reason = (Get-TFToolkitText 'falta o arquivo TF-Toolkit.Unelevated.ps1 na pasta do TF-Toolkit')
         return $outcome
     }
 
     # A tarefa roda com esta conta (pelo SID), e só o que é dela é lido da pasta da execução.
-    $sid = Get-WinForgeCurrentUserSid
+    $sid = Get-TFToolkitCurrentUserSid
 
     if (-not $sid) {
-        $outcome.Reason = (Get-WinForgeText 'não foi possível ler a conta que abriu o WinForge')
+        $outcome.Reason = (Get-TFToolkitText 'não foi possível ler a conta que abriu o TF-Toolkit')
         return $outcome
     }
 
-    Remove-WinForgeLimitedRunLeftovers
+    Remove-TFToolkitLimitedRunLeftovers
 
     $id = "$((Get-Date).ToString('yyyyMMddHHmmss', [System.Globalization.CultureInfo]::InvariantCulture))-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
-    $taskName = "$($script:WinForgeLimitedTaskPrefix)$id"
-    $folder = Join-Path (Join-Path (Get-WinForgeDataPath) "run") $id
-    $request = ConvertTo-WinForgeLimitedRunRequest -Folder $folder -FilePath $FilePath -Arguments $Arguments
-    $command = Get-WinForgeHiddenPowerShellCommand -Arguments "-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File $(ConvertTo-WinForgeCommandLineArgument -Value $runner) -Request $request" -WorkingDirectory $root
-    $xml = New-WinForgeLimitedRunTaskXml -Executable $command.Executable -Arguments $command.Arguments -WorkingDirectory $command.WorkingDirectory -UserId $sid
+    $taskName = "$($script:TFToolkitLimitedTaskPrefix)$id"
+    $folder = Join-Path (Join-Path (Get-TFToolkitDataPath) "run") $id
+    $request = ConvertTo-TFToolkitLimitedRunRequest -Folder $folder -FilePath $FilePath -Arguments $Arguments
+    $command = Get-TFToolkitHiddenPowerShellCommand -Arguments "-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File $(ConvertTo-TFToolkitCommandLineArgument -Value $runner) -Request $request" -WorkingDirectory $root
+    $xml = New-TFToolkitLimitedRunTaskXml -Executable $command.Executable -Arguments $command.Arguments -WorkingDirectory $command.WorkingDirectory -UserId $sid
 
     $state = @{
         Path     = (Join-Path $folder "output.txt")
@@ -1462,66 +1462,66 @@ function Invoke-WinForgeLimited {
 
     try {
         try {
-            [void](Invoke-WinForgeCimCommand -Name "Register-ScheduledTask" -Parameters @{ Xml = $xml; TaskPath = $script:WinForgeSchedulePath; TaskName = $taskName; Force = $true })
+            [void](Invoke-TFToolkitCimCommand -Name "Register-ScheduledTask" -Parameters @{ Xml = $xml; TaskPath = $script:TFToolkitSchedulePath; TaskName = $taskName; Force = $true })
             $registered = $true
-            [void](Invoke-WinForgeCimCommand -Name "Start-ScheduledTask" -Parameters @{ TaskPath = $script:WinForgeSchedulePath; TaskName = $taskName })
+            [void](Invoke-TFToolkitCimCommand -Name "Start-ScheduledTask" -Parameters @{ TaskPath = $script:TFToolkitSchedulePath; TaskName = $taskName })
         }
         catch {
-            $outcome.Reason = (Get-WinForgeText 'o Agendador de Tarefas não aceitou a tarefa: {0}' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
+            $outcome.Reason = (Get-TFToolkitText 'o Agendador de Tarefas não aceitou a tarefa: {0}' "$(([string]$_.Exception.Message).Trim().TrimEnd('.'))")
             return $outcome
         }
 
         $clock = [System.Diagnostics.Stopwatch]::StartNew()
 
         while ($true) {
-            Read-WinForgeLimitedRunOutput -State $state
+            Read-TFToolkitLimitedRunOutput -State $state
 
             if (Test-Path -LiteralPath $exitPath -PathType Leaf) {
                 $finished = $true
-                Read-WinForgeLimitedRunOutput -State $state -Final
-                $text = Read-WinForgeLimitedRunText -Path $exitPath -OwnerSid $sid
+                Read-TFToolkitLimitedRunOutput -State $state -Final
+                $text = Read-TFToolkitLimitedRunText -Path $exitPath -OwnerSid $sid
                 $code = 0
 
                 if ($null -eq $text) {
-                    $outcome.Reason = (Get-WinForgeText 'o resultado da execução não pôde ser conferido')
+                    $outcome.Reason = (Get-TFToolkitText 'o resultado da execução não pôde ser conferido')
                 }
                 elseif ($text.StartsWith("!")) {
-                    $outcome.Reason = (Get-WinForgeText 'o programa não abriu: {0}' "$($text.Substring(1).Trim().TrimEnd('.'))")
+                    $outcome.Reason = (Get-TFToolkitText 'o programa não abriu: {0}' "$($text.Substring(1).Trim().TrimEnd('.'))")
                 }
                 elseif ([int]::TryParse($text, [ref]$code)) {
                     $outcome.Ran = $true
                     $outcome.ExitCode = $code
                 }
                 else {
-                    $outcome.Reason = (Get-WinForgeText 'o resultado da execução não pôde ser conferido')
+                    $outcome.Reason = (Get-TFToolkitText 'o resultado da execução não pôde ser conferido')
                 }
 
                 break
             }
 
             if ($null -eq $process) {
-                $process = Get-WinForgeLimitedRunProcess -Path $pidPath -OwnerSid $sid -Since $since
+                $process = Get-TFToolkitLimitedRunProcess -Path $pidPath -OwnerSid $sid -Since $since
 
-                if ($null -eq $process -and $clock.Elapsed.TotalSeconds -ge $script:WinForgeLimitedStartSeconds) {
+                if ($null -eq $process -and $clock.Elapsed.TotalSeconds -ge $script:TFToolkitLimitedStartSeconds) {
                     # O Agendador que não começou a tarefa, ou o script que não abriu (uma política do PowerShell, por
                     # exemplo): nos dois casos, nada começou.
-                    $outcome.Reason = (Get-WinForgeText 'a execução sem Administrador não começou em {0} segundos' "$($script:WinForgeLimitedStartSeconds)")
+                    $outcome.Reason = (Get-TFToolkitText 'a execução sem Administrador não começou em {0} segundos' "$($script:TFToolkitLimitedStartSeconds)")
                     break
                 }
             }
             elseif ($process.HasExited) {
                 # O código de saída é a última coisa que o script grava: uma volta a mais para ele aparecer.
-                Start-Sleep -Milliseconds $script:WinForgeLimitedPollMilliseconds
+                Start-Sleep -Milliseconds $script:TFToolkitLimitedPollMilliseconds
 
                 if (Test-Path -LiteralPath $exitPath -PathType Leaf) { continue }
 
                 $finished = $true
-                Read-WinForgeLimitedRunOutput -State $state -Final
-                $outcome.Reason = (Get-WinForgeText 'a execução terminou sem dizer o resultado')
+                Read-TFToolkitLimitedRunOutput -State $state -Final
+                $outcome.Reason = (Get-TFToolkitText 'a execução terminou sem dizer o resultado')
                 break
             }
 
-            Start-Sleep -Milliseconds $script:WinForgeLimitedPollMilliseconds
+            Start-Sleep -Milliseconds $script:TFToolkitLimitedPollMilliseconds
         }
     }
     finally {
@@ -1532,11 +1532,11 @@ function Invoke-WinForgeLimited {
             # continuar rodando escondido, nem começar depois. Primeiro a árvore do script (o winget e o desinstalador, que
             # o taskkill só acha enquanto o script existe), mesmo que ele tenha começado agora; depois a tarefa, que o
             # Agendador encerra, e que apagada não roda mais.
-            if ($null -eq $process) { $process = Get-WinForgeLimitedRunProcess -Path $pidPath -OwnerSid $sid -Since $since }
-            if ($null -ne $process) { Stop-WinForgeLimitedRunProcess -Process $process }
+            if ($null -eq $process) { $process = Get-TFToolkitLimitedRunProcess -Path $pidPath -OwnerSid $sid -Since $since }
+            if ($null -ne $process) { Stop-TFToolkitLimitedRunProcess -Process $process }
 
             try {
-                [void](Invoke-WinForgeCimCommand -Name "Stop-ScheduledTask" -Parameters @{ TaskPath = $script:WinForgeSchedulePath; TaskName = $taskName })
+                [void](Invoke-TFToolkitCimCommand -Name "Stop-ScheduledTask" -Parameters @{ TaskPath = $script:TFToolkitSchedulePath; TaskName = $taskName })
             }
             catch {
                 Write-Verbose "Tarefa sem Administrador não encerrada ($taskName): $($_.Exception.Message)"
@@ -1545,16 +1545,16 @@ function Invoke-WinForgeLimited {
 
         if ($registered) {
             try {
-                [void](Invoke-WinForgeCimCommand -Name "Unregister-ScheduledTask" -Parameters @{ TaskPath = $script:WinForgeSchedulePath; TaskName = $taskName; Confirm = $false })
-                Remove-WinForgeScheduleFolder
+                [void](Invoke-TFToolkitCimCommand -Name "Unregister-ScheduledTask" -Parameters @{ TaskPath = $script:TFToolkitSchedulePath; TaskName = $taskName; Confirm = $false })
+                Remove-TFToolkitScheduleFolder
             }
             catch {
-                # A tarefa não tem horário e não roda sozinha; a próxima execução a tira (Remove-WinForgeLimitedRunLeftovers).
+                # A tarefa não tem horário e não roda sozinha; a próxima execução a tira (Remove-TFToolkitLimitedRunLeftovers).
                 Write-Verbose "Tarefa sem Administrador não apagada ($taskName): $($_.Exception.Message)"
             }
         }
 
-        Remove-WinForgeFolder -Path $folder -Quiet
+        Remove-TFToolkitFolder -Path $folder -Quiet
     }
 
     $outcome.Lines = @($state.Lines)

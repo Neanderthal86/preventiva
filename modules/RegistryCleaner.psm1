@@ -2,7 +2,7 @@
 # (programas desinstalados que deixaram a entrada para trás, atalhos de inicialização para um .exe apagado...).
 #
 # É uma limpeza conservadora de propósito. Nada é removido sem backup (um .reg das chaves inteiras e um .json dos valores
-# soltos), e o backup desfaz tudo pelo Histórico de mudanças. O WinForge não promete deixar o PC mais rápido com isso: o ganho é um registro sem referências
+# soltos), e o backup desfaz tudo pelo Histórico de mudanças. O TF-Toolkit não promete deixar o PC mais rápido com isso: o ganho é um registro sem referências
 # quebradas e listas (inicialização, Aplicativos instalados) sem entradas fantasmas.
 
 
@@ -10,7 +10,7 @@
 # Caminhos e comandos
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeWow64PathVariants {
+function Get-TFToolkitWow64PathVariants {
     <#
     Onde um caminho gravado por um programa de 32 bits fica de fato num Windows de 64 bits. Para ele, System32 é a pasta
     SysWOW64, Sysnative é a System32 de verdade e Arquivos de Programas (também %ProgramFiles% e %CommonProgramFiles%) é
@@ -56,7 +56,7 @@ function Get-WinForgeWow64PathVariants {
 }
 
 
-function Test-WinForgeLocalPathMissing {
+function Test-TFToolkitLocalPathMissing {
     <#
     Verdadeiro só quando o caminho é um arquivo local (C:\...) numa unidade que o Windows vê como disco fixo e o arquivo
     não existe. Caminho de rede, de uma unidade que não está ligada ou que não é disco fixo (pendrive, cartão, DVD,
@@ -66,7 +66,7 @@ function Test-WinForgeLocalPathMissing {
     outro disco na mesma letra, não há como distinguir.
     -Wow64: a entrada pode ter sido gravada por um programa de 32 bits (chaves WOW6432Node e as do usuário, que os dois
     lados compartilham); só falta quando não existe nem no caminho escrito nem na tradução de 32 bits
-    (Get-WinForgeWow64PathVariants). Sem isso, uma DLL registrada em System32 por um instalador de 32 bits, que está na
+    (Get-TFToolkitWow64PathVariants). Sem isso, uma DLL registrada em System32 por um instalador de 32 bits, que está na
     verdade em SysWOW64, pareceria apagada.
     #>
     param (
@@ -84,13 +84,13 @@ function Test-WinForgeLocalPathMissing {
 
     $drive = $expanded.Substring(0, 3)
 
-    if ((Get-WinForgeDriveType -Root $drive) -ne "Fixed") { return $false }
+    if ((Get-TFToolkitDriveType -Root $drive) -ne "Fixed") { return $false }
     if (-not (Test-Path -LiteralPath $drive -PathType Container)) { return $false }
 
     if (Test-Path -LiteralPath $expanded) { return $false }
 
     if ($Wow64) {
-        foreach ($variant in @(Get-WinForgeWow64PathVariants -Path $expanded)) {
+        foreach ($variant in @(Get-TFToolkitWow64PathVariants -Path $expanded)) {
             if (Test-Path -LiteralPath $variant) { return $false }
         }
     }
@@ -99,20 +99,20 @@ function Test-WinForgeLocalPathMissing {
 }
 
 
-function Test-WinForgeRegistryViewMismatch {
-    # Verdadeiro quando o WinForge roda num PowerShell de 32 bits num Windows de 64 bits: aí o Windows troca, por baixo,
+function Test-TFToolkitRegistryViewMismatch {
+    # Verdadeiro quando o TF-Toolkit roda num PowerShell de 32 bits num Windows de 64 bits: aí o Windows troca, por baixo,
     # o registro (SOFTWARE vira WOW6432Node) e as pastas do sistema (System32 vira SysWOW64), e a busca de referências
     # quebradas olharia as chaves e os arquivos errados.
     return ([Environment]::Is64BitOperatingSystem -and -not [Environment]::Is64BitProcess)
 }
 
 
-function Get-WinForgeRegistryViewMismatchText {
-    return (Get-WinForgeText 'o WinForge está aberto num PowerShell de 32 bits, que enxerga outra parte do registro e das pastas do sistema; feche e abra de novo pelo atalho do WinForge')
+function Get-TFToolkitRegistryViewMismatchText {
+    return (Get-TFToolkitText 'o TF-Toolkit está aberto num PowerShell de 32 bits, que enxerga outra parte do registro e das pastas do sistema; feche e abra de novo pelo atalho do TF-Toolkit')
 }
 
 
-function Test-WinForgeRegistryRootShared {
+function Test-TFToolkitRegistryRootShared {
     # Chaves que um programa de 32 bits também grava (as WOW6432Node e as do usuário, que os dois lados compartilham):
     # nelas, os caminhos são conferidos também na tradução de 32 bits.
     param ([Parameter(Mandatory)][string]$Root)
@@ -121,7 +121,7 @@ function Test-WinForgeRegistryRootShared {
 }
 
 
-function Get-WinForgeCommandTargetPath {
+function Get-TFToolkitCommandTargetPath {
     <#
     O arquivo que uma linha de comando executa: "C:\App\app.exe" --min, C:\App\app.exe /x ou rundll32.exe C:\x.dll,Entry
     (aí, a DLL). Devolve "" quando não dá para saber (sem caminho completo, msiexec, comandos do sistema).
@@ -158,7 +158,7 @@ function Get-WinForgeCommandTargetPath {
 }
 
 
-function ConvertTo-WinForgeRegExePath {
+function ConvertTo-TFToolkitRegExePath {
     # "HKLM:\SOFTWARE\X" vira "HKLM\SOFTWARE\X", como o reg.exe espera.
     param ([Parameter(Mandatory)][string]$Path)
 
@@ -166,7 +166,7 @@ function ConvertTo-WinForgeRegExePath {
 }
 
 
-function Get-WinForgeRegistryChildValues {
+function Get-TFToolkitRegistryChildValues {
     # As subchaves de uma chave, cada uma com os valores dela (Name, Path, Values). Chave ausente ou sem acesso = vazio.
     param ([Parameter(Mandatory)][string]$Path)
 
@@ -191,7 +191,7 @@ function Get-WinForgeRegistryChildValues {
 }
 
 
-function New-WinForgeRegistryIssue {
+function New-TFToolkitRegistryIssue {
     # Uma referência quebrada. Value vazio = a chave inteira sai; senão, só aquele valor. Admin: a chave é do HKLM.
     # Wow64: o arquivo foi procurado também na tradução de 32 bits (a reconferência antes de remover usa a mesma regra).
     param (
@@ -219,10 +219,10 @@ function New-WinForgeRegistryIssue {
 # O que procurar
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeRegistryRoots {
+function Get-TFToolkitRegistryRoots {
     <#
     As chaves onde cada categoria procura (-Category), ou todas. É a mesma lista que o desfazer usa para conferir os
-    backups (Get-WinForgeRegistryBackupRoots): escrita uma vez só, as duas não têm como se desencontrar.
+    backups (Get-TFToolkitRegistryBackupRoots): escrita uma vez só, as duas não têm como se desencontrar.
     #>
     param ([string]$Category = "")
 
@@ -243,21 +243,21 @@ function Get-WinForgeRegistryRoots {
 }
 
 
-function Get-WinForgeRegistryCategories {
+function Get-TFToolkitRegistryCategories {
     # As categorias, na ordem da tela. Admin: precisa de Administrador para remover (fica fora da busca sem ele).
     return @(
-        [PSCustomObject]@{ Id = "uninstall"; Label = (Get-WinForgeText 'Desinstaladores que não existem mais'); Description = (Get-WinForgeText 'Programas que sumiram, mas continuam em Aplicativos instalados'); Admin = $false },
-        [PSCustomObject]@{ Id = "run"; Label = (Get-WinForgeText 'Inicialização apontando para arquivos apagados'); Description = (Get-WinForgeText 'Ao entrar no Windows, ele tenta abrir algo que não existe mais'); Admin = $false },
-        [PSCustomObject]@{ Id = "app-paths"; Label = (Get-WinForgeText 'Atalhos de nome de programas apagados'); Description = (Get-WinForgeText 'Nomes de programas que o Executar e o Iniciar não conseguem mais abrir'); Admin = $false },
-        [PSCustomObject]@{ Id = "mui-cache"; Label = (Get-WinForgeText 'Nomes guardados de programas apagados'); Description = (Get-WinForgeText 'Cache que o Explorador guarda de cada programa já aberto'); Admin = $false },
-        [PSCustomObject]@{ Id = "shared-dlls"; Label = (Get-WinForgeText 'Bibliotecas compartilhadas que não existem mais'); Description = (Get-WinForgeText 'Contagem de uso de bibliotecas já removidas'); Admin = $true },
-        [PSCustomObject]@{ Id = "help-files"; Label = (Get-WinForgeText 'Arquivos de ajuda que não existem mais'); Description = (Get-WinForgeText 'Ajudas (.chm, .hlp) de programas desinstalados'); Admin = $true },
-        [PSCustomObject]@{ Id = "fonts"; Label = (Get-WinForgeText 'Fontes que não existem mais'); Description = (Get-WinForgeText 'Fontes registradas cujo arquivo foi apagado'); Admin = $true }
+        [PSCustomObject]@{ Id = "uninstall"; Label = (Get-TFToolkitText 'Desinstaladores que não existem mais'); Description = (Get-TFToolkitText 'Programas que sumiram, mas continuam em Aplicativos instalados'); Admin = $false },
+        [PSCustomObject]@{ Id = "run"; Label = (Get-TFToolkitText 'Inicialização apontando para arquivos apagados'); Description = (Get-TFToolkitText 'Ao entrar no Windows, ele tenta abrir algo que não existe mais'); Admin = $false },
+        [PSCustomObject]@{ Id = "app-paths"; Label = (Get-TFToolkitText 'Atalhos de nome de programas apagados'); Description = (Get-TFToolkitText 'Nomes de programas que o Executar e o Iniciar não conseguem mais abrir'); Admin = $false },
+        [PSCustomObject]@{ Id = "mui-cache"; Label = (Get-TFToolkitText 'Nomes guardados de programas apagados'); Description = (Get-TFToolkitText 'Cache que o Explorador guarda de cada programa já aberto'); Admin = $false },
+        [PSCustomObject]@{ Id = "shared-dlls"; Label = (Get-TFToolkitText 'Bibliotecas compartilhadas que não existem mais'); Description = (Get-TFToolkitText 'Contagem de uso de bibliotecas já removidas'); Admin = $true },
+        [PSCustomObject]@{ Id = "help-files"; Label = (Get-TFToolkitText 'Arquivos de ajuda que não existem mais'); Description = (Get-TFToolkitText 'Ajudas (.chm, .hlp) de programas desinstalados'); Admin = $true },
+        [PSCustomObject]@{ Id = "fonts"; Label = (Get-TFToolkitText 'Fontes que não existem mais'); Description = (Get-TFToolkitText 'Fontes registradas cujo arquivo foi apagado'); Admin = $true }
     )
 }
 
 
-function Test-WinForgeInstallerCachePath {
+function Test-TFToolkitInstallerCachePath {
     <#
     Verdadeiro para um desinstalador guardado na pasta de cache de um instalador, e não na do programa: Package Cache
     (pacotes WiX/Burn, como os Redistribuíveis do Visual C++), Caphyon (Advanced Installer) e InstallShield Installation
@@ -270,7 +270,7 @@ function Test-WinForgeInstallerCachePath {
 }
 
 
-function Get-WinForgeDisplayIconPath {
+function Get-TFToolkitDisplayIconPath {
     # O arquivo do ícone de uma entrada de Aplicativos instalados: "C:\App\app.exe",0 vira C:\App\app.exe.
     param ([AllowEmptyString()][string]$Icon)
 
@@ -281,18 +281,18 @@ function Get-WinForgeDisplayIconPath {
 }
 
 
-function Find-WinForgeBrokenUninstallEntries {
+function Find-TFToolkitBrokenUninstallEntries {
     <#
     Entradas de Aplicativos instalados cujo desinstalador e pasta de instalação sumiram. As do Windows Installer (MSI)
     e os componentes do sistema ficam de fora: quem cuida delas é o próprio Windows. Também ficam as que ainda têm
     sinal de programa instalado: o ícone (DisplayIcon) num arquivo que existe, ou o desinstalador na pasta de cache de
-    um instalador (Test-WinForgeInstallerCachePath), como os pacotes do Visual C++; tirar uma dessas da lista
+    um instalador (Test-TFToolkitInstallerCachePath), como os pacotes do Visual C++; tirar uma dessas da lista
     esconderia um programa que continua no PC.
     #>
-    foreach ($root in @(Get-WinForgeRegistryRoots -Category "uninstall")) {
-        $wow64 = Test-WinForgeRegistryRootShared -Root $root
+    foreach ($root in @(Get-TFToolkitRegistryRoots -Category "uninstall")) {
+        $wow64 = Test-TFToolkitRegistryRootShared -Root $root
 
-        foreach ($child in @(Get-WinForgeRegistryChildValues -Path $root)) {
+        foreach ($child in @(Get-TFToolkitRegistryChildValues -Path $root)) {
             $values = $child.Values
             $name = [string]$values["DisplayName"]
 
@@ -301,18 +301,18 @@ function Find-WinForgeBrokenUninstallEntries {
 
             if ($values.ContainsKey("BundleCachePath") -or $values.ContainsKey("BundleUpgradeCode")) { continue }
 
-            $target = Get-WinForgeCommandTargetPath -Command ([string]$values["UninstallString"])
+            $target = Get-TFToolkitCommandTargetPath -Command ([string]$values["UninstallString"])
 
-            if ([string]::IsNullOrWhiteSpace($target) -or (Test-WinForgeInstallerCachePath -Path $target)) { continue }
-            if (-not (Test-WinForgeLocalPathMissing -Path $target -Wow64:$wow64)) { continue }
+            if ([string]::IsNullOrWhiteSpace($target) -or (Test-TFToolkitInstallerCachePath -Path $target)) { continue }
+            if (-not (Test-TFToolkitLocalPathMissing -Path $target -Wow64:$wow64)) { continue }
 
-            $icon = Get-WinForgeDisplayIconPath -Icon ([string]$values["DisplayIcon"])
+            $icon = Get-TFToolkitDisplayIconPath -Icon ([string]$values["DisplayIcon"])
 
-            if ($icon -and -not (Test-WinForgeLocalPathMissing -Path $icon -Wow64:$wow64)) { continue }
+            if ($icon -and -not (Test-TFToolkitLocalPathMissing -Path $icon -Wow64:$wow64)) { continue }
 
             $location = [string]$values["InstallLocation"]
 
-            if (-not [string]::IsNullOrWhiteSpace($location) -and -not (Test-WinForgeLocalPathMissing -Path $location -Wow64:$wow64)) { continue }
+            if (-not [string]::IsNullOrWhiteSpace($location) -and -not (Test-TFToolkitLocalPathMissing -Path $location -Wow64:$wow64)) { continue }
 
             # Sem a pasta de instalação registrada, a do desinstalador faz as vezes dela: com a pasta ainda lá, o programa
             # pode estar instalado (só o desinstalador sumiu), e remover a entrada o tiraria da lista de Aplicativos.
@@ -320,85 +320,85 @@ function Find-WinForgeBrokenUninstallEntries {
                 $cut = $target.TrimEnd('\').LastIndexOf('\')
                 $folder = $(if ($cut -gt 2) { $target.Substring(0, $cut) } else { "" })
 
-                if (-not [string]::IsNullOrWhiteSpace($folder) -and -not (Test-WinForgeLocalPathMissing -Path $folder -Wow64:$wow64)) { continue }
+                if (-not [string]::IsNullOrWhiteSpace($folder) -and -not (Test-TFToolkitLocalPathMissing -Path $folder -Wow64:$wow64)) { continue }
             }
 
-            New-WinForgeRegistryIssue -Category "uninstall" -Key $child.Path -Name $name.Trim() -Missing $target -Wow64 $wow64
+            New-TFToolkitRegistryIssue -Category "uninstall" -Key $child.Path -Name $name.Trim() -Missing $target -Wow64 $wow64
         }
     }
 }
 
 
-function Find-WinForgeBrokenRunEntries {
+function Find-TFToolkitBrokenRunEntries {
     # Valores das chaves Run que abrem um arquivo que não existe mais.
-    foreach ($root in @(Get-WinForgeRegistryRoots -Category "run")) {
-        $wow64 = Test-WinForgeRegistryRootShared -Root $root
-        $values = Get-WinForgeRegistryValues -Path $root
+    foreach ($root in @(Get-TFToolkitRegistryRoots -Category "run")) {
+        $wow64 = Test-TFToolkitRegistryRootShared -Root $root
+        $values = Get-TFToolkitRegistryValues -Path $root
 
         foreach ($name in @($values.Keys)) {
-            $target = Get-WinForgeCommandTargetPath -Command ([string]$values[$name])
+            $target = Get-TFToolkitCommandTargetPath -Command ([string]$values[$name])
 
-            if ($target -and (Test-WinForgeLocalPathMissing -Path $target -Wow64:$wow64)) {
-                New-WinForgeRegistryIssue -Category "run" -Key $root -Value $name -Name $name -Missing $target -Wow64 $wow64
+            if ($target -and (Test-TFToolkitLocalPathMissing -Path $target -Wow64:$wow64)) {
+                New-TFToolkitRegistryIssue -Category "run" -Key $root -Value $name -Name $name -Missing $target -Wow64 $wow64
             }
         }
     }
 }
 
 
-function Find-WinForgeBrokenAppPaths {
+function Find-TFToolkitBrokenAppPaths {
     # App Paths: o nome curto de um programa (ex.: winword.exe) apontando para um arquivo que não existe mais.
-    foreach ($root in @(Get-WinForgeRegistryRoots -Category "app-paths")) {
-        $wow64 = Test-WinForgeRegistryRootShared -Root $root
+    foreach ($root in @(Get-TFToolkitRegistryRoots -Category "app-paths")) {
+        $wow64 = Test-TFToolkitRegistryRootShared -Root $root
 
-        foreach ($child in @(Get-WinForgeRegistryChildValues -Path $root)) {
+        foreach ($child in @(Get-TFToolkitRegistryChildValues -Path $root)) {
             $target = ([string]$child.Values[""]).Trim()
 
             # Entre aspas, o caminho é o que está dentro delas ("C:\X\x.exe" /arg); sem aspas, o valor inteiro.
-            if ($target.StartsWith('"')) { $target = Get-WinForgeCommandTargetPath -Command $target }
+            if ($target.StartsWith('"')) { $target = Get-TFToolkitCommandTargetPath -Command $target }
 
-            if ($target -and (Test-WinForgeLocalPathMissing -Path $target -Wow64:$wow64)) {
-                New-WinForgeRegistryIssue -Category "app-paths" -Key $child.Path -Name $child.Name -Missing $target -Wow64 $wow64
+            if ($target -and (Test-TFToolkitLocalPathMissing -Path $target -Wow64:$wow64)) {
+                New-TFToolkitRegistryIssue -Category "app-paths" -Key $child.Path -Name $child.Name -Missing $target -Wow64 $wow64
             }
         }
     }
 }
 
 
-function Find-WinForgeStaleMuiCache {
+function Find-TFToolkitStaleMuiCache {
     # MuiCache: "C:\App\app.exe.FriendlyAppName" e "C:\App\app.exe.ApplicationCompany" de programas apagados.
-    $root = @(Get-WinForgeRegistryRoots -Category "mui-cache")[0]
-    $values = Get-WinForgeRegistryValues -Path $root
+    $root = @(Get-TFToolkitRegistryRoots -Category "mui-cache")[0]
+    $values = Get-TFToolkitRegistryValues -Path $root
 
     foreach ($name in @($values.Keys)) {
         $match = [regex]::Match([string]$name, '^(.+\.(exe|dll))\.[A-Za-z]+$', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
 
-        if ($match.Success -and (Test-WinForgeLocalPathMissing -Path $match.Groups[1].Value -Wow64)) {
-            New-WinForgeRegistryIssue -Category "mui-cache" -Key $root -Value $name -Name ([IO.Path]::GetFileName($match.Groups[1].Value)) -Missing $match.Groups[1].Value -Wow64 $true
+        if ($match.Success -and (Test-TFToolkitLocalPathMissing -Path $match.Groups[1].Value -Wow64)) {
+            New-TFToolkitRegistryIssue -Category "mui-cache" -Key $root -Value $name -Name ([IO.Path]::GetFileName($match.Groups[1].Value)) -Missing $match.Groups[1].Value -Wow64 $true
         }
     }
 }
 
 
-function Find-WinForgeMissingSharedDlls {
+function Find-TFToolkitMissingSharedDlls {
     # As duas chaves recebem caminhos escritos por instaladores de 32 bits (System32 querendo dizer SysWOW64): a
     # tradução de 32 bits vale para as duas.
-    foreach ($root in @(Get-WinForgeRegistryRoots -Category "shared-dlls")) {
-        $values = Get-WinForgeRegistryValues -Path $root
+    foreach ($root in @(Get-TFToolkitRegistryRoots -Category "shared-dlls")) {
+        $values = Get-TFToolkitRegistryValues -Path $root
 
         foreach ($name in @($values.Keys)) {
-            if (Test-WinForgeLocalPathMissing -Path $name -Wow64) {
-                New-WinForgeRegistryIssue -Category "shared-dlls" -Key $root -Value $name -Name ([IO.Path]::GetFileName($name)) -Missing $name -Wow64 $true
+            if (Test-TFToolkitLocalPathMissing -Path $name -Wow64) {
+                New-TFToolkitRegistryIssue -Category "shared-dlls" -Key $root -Value $name -Name ([IO.Path]::GetFileName($name)) -Missing $name -Wow64 $true
             }
         }
     }
 }
 
 
-function Find-WinForgeMissingHelpFiles {
+function Find-TFToolkitMissingHelpFiles {
     # Help e HTML Help: o nome do arquivo de ajuda (valor) e a pasta dele (dado).
-    foreach ($root in @(Get-WinForgeRegistryRoots -Category "help-files")) {
-        $values = Get-WinForgeRegistryValues -Path $root
+    foreach ($root in @(Get-TFToolkitRegistryRoots -Category "help-files")) {
+        $values = Get-TFToolkitRegistryValues -Path $root
 
         foreach ($name in @($values.Keys)) {
             $folder = [string]$values[$name]
@@ -408,22 +408,22 @@ function Find-WinForgeMissingHelpFiles {
             # Sem Join-Path: com a pasta numa unidade que não existe mais, ele escreve um erro a cada entrada.
             $file = $folder.Trim().TrimEnd('\') + "\" + [string]$name
 
-            if (Test-WinForgeLocalPathMissing -Path $file) {
-                New-WinForgeRegistryIssue -Category "help-files" -Key $root -Value $name -Name $name -Missing $file
+            if (Test-TFToolkitLocalPathMissing -Path $file) {
+                New-TFToolkitRegistryIssue -Category "help-files" -Key $root -Value $name -Name $name -Missing $file
             }
         }
     }
 }
 
 
-function Find-WinForgeMissingFonts {
+function Find-TFToolkitMissingFonts {
     # Fontes registradas: o dado é o arquivo, na pasta Fonts do Windows (nome simples) ou em qualquer lugar (caminho completo).
     $windows = $(if (-not [string]::IsNullOrWhiteSpace($env:WINDIR)) { $env:WINDIR } else { $env:SystemRoot })
 
     if ([string]::IsNullOrWhiteSpace($windows)) { return }
 
-    $root = @(Get-WinForgeRegistryRoots -Category "fonts")[0]
-    $values = Get-WinForgeRegistryValues -Path $root
+    $root = @(Get-TFToolkitRegistryRoots -Category "fonts")[0]
+    $values = Get-TFToolkitRegistryValues -Path $root
 
     foreach ($name in @($values.Keys)) {
         $file = [string]$values[$name]
@@ -432,40 +432,40 @@ function Find-WinForgeMissingFonts {
 
         $full = $(if ($file -match '^[A-Za-z]:\\') { $file } else { Join-Path (Join-Path $windows "Fonts") $file })
 
-        if (Test-WinForgeLocalPathMissing -Path $full) {
-            New-WinForgeRegistryIssue -Category "fonts" -Key $root -Value $name -Name $name -Missing $full
+        if (Test-TFToolkitLocalPathMissing -Path $full) {
+            New-TFToolkitRegistryIssue -Category "fonts" -Key $root -Value $name -Name $name -Missing $full
         }
     }
 }
 
 
-function Find-WinForgeRegistryIssues {
+function Find-TFToolkitRegistryIssues {
     <#
     Procura as referências quebradas nas categorias pedidas (padrão: todas). Sem Administrador, as categorias que só
     existem no HKLM ficam de fora, e as entradas do HKLM das outras também: não daria para removê-las.
     #>
     param (
-        [string[]]$Categories = @(Get-WinForgeRegistryCategories | ForEach-Object { $_.Id }),
-        [bool]$IncludeMachine = (Test-WinForgeAdministrator)
+        [string[]]$Categories = @(Get-TFToolkitRegistryCategories | ForEach-Object { $_.Id }),
+        [bool]$IncludeMachine = (Test-TFToolkitAdministrator)
     )
 
-    if (Test-WinForgeRegistryViewMismatch) {
-        throw (Get-WinForgeRegistryViewMismatchText)
+    if (Test-TFToolkitRegistryViewMismatch) {
+        throw (Get-TFToolkitRegistryViewMismatchText)
     }
 
     $finders = @{
-        "uninstall"   = "Find-WinForgeBrokenUninstallEntries"
-        "run"         = "Find-WinForgeBrokenRunEntries"
-        "app-paths"   = "Find-WinForgeBrokenAppPaths"
-        "mui-cache"   = "Find-WinForgeStaleMuiCache"
-        "shared-dlls" = "Find-WinForgeMissingSharedDlls"
-        "help-files"  = "Find-WinForgeMissingHelpFiles"
-        "fonts"       = "Find-WinForgeMissingFonts"
+        "uninstall"   = "Find-TFToolkitBrokenUninstallEntries"
+        "run"         = "Find-TFToolkitBrokenRunEntries"
+        "app-paths"   = "Find-TFToolkitBrokenAppPaths"
+        "mui-cache"   = "Find-TFToolkitStaleMuiCache"
+        "shared-dlls" = "Find-TFToolkitMissingSharedDlls"
+        "help-files"  = "Find-TFToolkitMissingHelpFiles"
+        "fonts"       = "Find-TFToolkitMissingFonts"
     }
 
     $issues = @()
 
-    foreach ($category in @(Get-WinForgeRegistryCategories)) {
+    foreach ($category in @(Get-TFToolkitRegistryCategories)) {
         if ($Categories -notcontains $category.Id) { continue }
         if ($category.Admin -and -not $IncludeMachine) { continue }
 
@@ -489,8 +489,8 @@ function Find-WinForgeRegistryIssues {
 # Backup e remoção
 # ---------------------------------------------------------------------------
 
-function Get-WinForgeRegistryBackupFolder {
-    $folder = Join-Path (Get-WinForgeDataPath) "RegistryBackups"
+function Get-TFToolkitRegistryBackupFolder {
+    $folder = Join-Path (Get-TFToolkitDataPath) "RegistryBackups"
 
     if (-not (Test-Path -LiteralPath $folder)) {
         [void](New-Item -ItemType Directory -Path $folder -Force)
@@ -500,19 +500,19 @@ function Get-WinForgeRegistryBackupFolder {
 }
 
 
-function Get-WinForgeRegistryBackupRoots {
+function Get-TFToolkitRegistryBackupRoots {
     <#
     As chaves de onde a limpeza tira alguma coisa (as raízes das buscas acima). O desfazer só devolve o que fica nelas: o
     backup mora em %LOCALAPPDATA%, onde qualquer programa da conta grava sem Administrador, e o desfazer pode rodar como
     Administrador. Um backup que mexe em outra chave não é usado.
     #>
-    return @(Get-WinForgeRegistryRoots)
+    return @(Get-TFToolkitRegistryRoots)
 }
 
 
-function Test-WinForgeRegistryBackupFile {
+function Test-TFToolkitRegistryBackupFile {
     <#
-    Um arquivo de backup só é usado pelo desfazer se estiver direto na pasta de backups do registro do WinForge, com a
+    Um arquivo de backup só é usado pelo desfazer se estiver direto na pasta de backups do registro do TF-Toolkit, com a
     extensão esperada (.reg para chaves inteiras, .json para valores) e sem ser um atalho para outro arquivo. O caminho
     vem do Histórico de mudanças, que fica em %LOCALAPPDATA% e pode ser alterado por qualquer programa da conta.
     #>
@@ -529,7 +529,7 @@ function Test-WinForgeRegistryBackupFile {
 
     try {
         $full = [IO.Path]::GetFullPath($Path)
-        $folder = [IO.Path]::GetFullPath((Get-WinForgeRegistryBackupFolder)).TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar))
+        $folder = [IO.Path]::GetFullPath((Get-TFToolkitRegistryBackupFolder)).TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar))
     }
     catch {
         return $false
@@ -547,7 +547,7 @@ function Test-WinForgeRegistryBackupFile {
 }
 
 
-function Test-WinForgeRegistryKeyInBackupRoots {
+function Test-TFToolkitRegistryKeyInBackupRoots {
     # Se a chave é uma das raízes da limpeza ou fica dentro de uma (-Exact: só as próprias raízes, que é de onde saem
     # os valores).
     param (
@@ -555,7 +555,7 @@ function Test-WinForgeRegistryKeyInBackupRoots {
         [switch]$Exact
     )
 
-    foreach ($root in @(Get-WinForgeRegistryBackupRoots)) {
+    foreach ($root in @(Get-TFToolkitRegistryBackupRoots)) {
         if ([string]::Equals($Key, $root, [StringComparison]::OrdinalIgnoreCase)) { return $true }
         if (-not $Exact -and $Key.StartsWith($root + "\", [StringComparison]::OrdinalIgnoreCase)) { return $true }
     }
@@ -564,9 +564,9 @@ function Test-WinForgeRegistryKeyInBackupRoots {
 }
 
 
-function Test-WinForgeRegistryBackupKeys {
+function Test-TFToolkitRegistryBackupKeys {
     <#
-    Confere, antes de importar um .reg de backup, que ele só grava nas chaves da limpeza (Get-WinForgeRegistryBackupRoots)
+    Confere, antes de importar um .reg de backup, que ele só grava nas chaves da limpeza (Get-TFToolkitRegistryBackupRoots)
     e não apaga nada (linhas "[-HKEY...]"). Assim um .reg preparado por outro programa e posto na pasta de backups não
     vira um jeito de gravar qualquer coisa no registro com Administrador.
     #>
@@ -594,7 +594,7 @@ function Test-WinForgeRegistryBackupKeys {
 
         $hive = $(if ($match.Groups[2].Value -ieq "HKEY_LOCAL_MACHINE") { "HKLM:" } else { "HKCU:" })
 
-        if (-not (Test-WinForgeRegistryKeyInBackupRoots -Key "$hive\$($match.Groups[3].Value)")) { return $false }
+        if (-not (Test-TFToolkitRegistryKeyInBackupRoots -Key "$hive\$($match.Groups[3].Value)")) { return $false }
 
         $found++
     }
@@ -603,7 +603,7 @@ function Test-WinForgeRegistryBackupKeys {
 }
 
 
-function Get-WinForgeRegistryValueRecord {
+function Get-TFToolkitRegistryValueRecord {
     <#
     O que é preciso para recriar um valor: Key, Name, Kind (o tipo, como RegistryValueKind) e Data, com as variáveis de
     ambiente sem expandir. Binário vai em Base64 e números em texto, para o JSON não mudar nada. $null quando o valor não
@@ -635,7 +635,7 @@ function Get-WinForgeRegistryValueRecord {
 }
 
 
-function Test-WinForgeRegistryValuePresent {
+function Test-TFToolkitRegistryValuePresent {
     # Se o valor existe hoje. Chave ausente ou ilegível = não existe (recriar vai dizer se dá para gravar ali).
     param (
         [Parameter(Mandatory)][string]$Key,
@@ -653,8 +653,8 @@ function Test-WinForgeRegistryValuePresent {
 }
 
 
-function Set-WinForgeRegistryValueRecord {
-    # Recria um valor guardado por Get-WinForgeRegistryValueRecord, com o mesmo tipo e o mesmo dado.
+function Set-TFToolkitRegistryValueRecord {
+    # Recria um valor guardado por Get-TFToolkitRegistryValueRecord, com o mesmo tipo e o mesmo dado.
     param (
         [Parameter(Mandatory)][string]$Key,
         [Parameter(Mandatory)][AllowEmptyString()][string]$Name,
@@ -671,7 +671,7 @@ function Set-WinForgeRegistryValueRecord {
         "QWord" { [int64]::Parse([string]$Data, $invariant) }
         "Binary" { , [Convert]::FromBase64String([string]$Data) }
         "MultiString" { , [string[]]@($Data) }
-        default { throw (Get-WinForgeText 'tipo de valor desconhecido: {0}' "$Kind") }
+        default { throw (Get-TFToolkitText 'tipo de valor desconhecido: {0}' "$Kind") }
     }
 
     if (-not (Test-Path -LiteralPath $Key)) {
@@ -682,47 +682,47 @@ function Set-WinForgeRegistryValueRecord {
 }
 
 
-function Restore-WinForgeRegistryValues {
+function Restore-TFToolkitRegistryValues {
     <#
     Desfaz a remoção de valores a partir do JSON do backup: recria só os que não existem hoje. Um valor que voltou a
     existir (o programa foi reinstalado e o gravou de novo) fica como está; devolver o dado antigo desfaria uma mudança
-    que não foi do WinForge. Só valores das chaves da limpeza são recriados. Devolve Restored, Kept e Failed (os nomes
+    que não foi do TF-Toolkit. Só valores das chaves da limpeza são recriados. Devolve Restored, Kept e Failed (os nomes
     que não voltaram); lança erro se o arquivo não puder ser lido.
     #>
     param (
         [Parameter(Mandatory)][string]$Path
     )
 
-    $document = ConvertFrom-WinForgeStateText -Path $Path
+    $document = ConvertFrom-TFToolkitStateText -Path $Path
 
     if ($null -eq $document) {
-        throw (Get-WinForgeText 'não foi possível ler o backup dos valores do registro')
+        throw (Get-TFToolkitText 'não foi possível ler o backup dos valores do registro')
     }
 
     $restored = 0
     $kept = 0
     $failed = @()
 
-    foreach ($entry in @(Get-WinForgeJsonValue -Object $document -Name "Values" -Default @())) {
+    foreach ($entry in @(Get-TFToolkitJsonValue -Object $document -Name "Values" -Default @())) {
         if ($null -eq $entry) { continue }
 
-        $key = [string](Get-WinForgeJsonValue -Object $entry -Name "Key" -Default "")
-        $name = [string](Get-WinForgeJsonValue -Object $entry -Name "Name" -Default "")
-        $kind = [string](Get-WinForgeJsonValue -Object $entry -Name "Kind" -Default "")
-        $data = Get-WinForgeJsonValue -Object $entry -Name "Data" -Default $null
+        $key = [string](Get-TFToolkitJsonValue -Object $entry -Name "Key" -Default "")
+        $name = [string](Get-TFToolkitJsonValue -Object $entry -Name "Name" -Default "")
+        $kind = [string](Get-TFToolkitJsonValue -Object $entry -Name "Kind" -Default "")
+        $data = Get-TFToolkitJsonValue -Object $entry -Name "Data" -Default $null
 
-        if (-not (Test-WinForgeRegistryKeyInBackupRoots -Key $key -Exact) -or $kind -notin @("String", "ExpandString", "DWord", "QWord", "Binary", "MultiString")) {
+        if (-not (Test-TFToolkitRegistryKeyInBackupRoots -Key $key -Exact) -or $kind -notin @("String", "ExpandString", "DWord", "QWord", "Binary", "MultiString")) {
             $failed += $name
             continue
         }
 
         try {
-            if (Test-WinForgeRegistryValuePresent -Key $key -Name $name) {
+            if (Test-TFToolkitRegistryValuePresent -Key $key -Name $name) {
                 $kept++
                 continue
             }
 
-            Set-WinForgeRegistryValueRecord -Key $key -Name $name -Kind $kind -Data $data
+            Set-TFToolkitRegistryValueRecord -Key $key -Name $name -Kind $kind -Data $data
             $restored++
         }
         catch {
@@ -734,7 +734,7 @@ function Restore-WinForgeRegistryValues {
 }
 
 
-function Export-WinForgeRegistryBackup {
+function Export-TFToolkitRegistryBackup {
     <#
     Salva o que vai mudar antes de mexer. Chaves inteiras (programas em Aplicativos instalados, App Paths) vão para um
     .reg, que o desfazer importa. Valores soltos (Run, MuiCache, SharedDLLs, ajudas, fontes) vão para um .json com a chave,
@@ -747,7 +747,7 @@ function Export-WinForgeRegistryBackup {
         [datetime]$At = (Get-Date)
     )
 
-    $folder = Get-WinForgeRegistryBackupFolder
+    $folder = Get-TFToolkitRegistryBackupFolder
     $stamp = $At.ToString('yyyy-MM-dd-HHmmss', [System.Globalization.CultureInfo]::InvariantCulture)
     $file = Join-Path $folder "registro-$stamp.reg"
     $valuesFile = Join-Path $folder "registro-$stamp.json"
@@ -766,10 +766,10 @@ function Export-WinForgeRegistryBackup {
         $recorded[$id] = $true
 
         try {
-            $record = Get-WinForgeRegistryValueRecord -Key $issue.Key -Name $issue.Value
+            $record = Get-TFToolkitRegistryValueRecord -Key $issue.Key -Name $issue.Value
         }
         catch {
-            throw (Get-WinForgeText 'não foi possível salvar o backup de {0}' "$(ConvertTo-WinForgeRegExePath -Path $issue.Key)")
+            throw (Get-TFToolkitText 'não foi possível salvar o backup de {0}' "$(ConvertTo-TFToolkitRegExePath -Path $issue.Key)")
         }
 
         # Valor que já não existe: não há o que salvar (e a remoção dele vai falhar e ser contada).
@@ -790,11 +790,11 @@ function Export-WinForgeRegistryBackup {
     foreach ($key in $keys) {
         $position++
         $partFile = Join-Path $folder "parte-$position.reg"
-        $run = Invoke-WinForgeCapture -FilePath "reg" -Arguments @("export", (ConvertTo-WinForgeRegExePath -Path $key), $partFile, "/y")
+        $run = Invoke-TFToolkitCapture -FilePath "reg" -Arguments @("export", (ConvertTo-TFToolkitRegExePath -Path $key), $partFile, "/y")
 
         if ($run.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $partFile -PathType Leaf)) {
             foreach ($part in $parts) { Remove-Item -LiteralPath $part -Force -ErrorAction SilentlyContinue }
-            throw (Get-WinForgeText 'não foi possível salvar o backup de {0}' "$(ConvertTo-WinForgeRegExePath -Path $key)")
+            throw (Get-TFToolkitText 'não foi possível salvar o backup de {0}' "$(ConvertTo-TFToolkitRegExePath -Path $key)")
         }
 
         $parts.Add($partFile)
@@ -825,11 +825,11 @@ function Export-WinForgeRegistryBackup {
 
     if ($records.Count -gt 0) {
         try {
-            Write-WinForgeStateJson -Path $valuesFile -InputObject ([ordered]@{ Format = "WinForge.RegistryValues"; Version = 1; Values = $records.ToArray() }) -Depth 6
+            Write-TFToolkitStateJson -Path $valuesFile -InputObject ([ordered]@{ Format = "TFToolkit.RegistryValues"; Version = 1; Values = $records.ToArray() }) -Depth 6
         }
         catch {
             if ($regFile) { Remove-Item -LiteralPath $regFile -Force -ErrorAction SilentlyContinue }
-            throw (Get-WinForgeText 'não foi possível salvar o backup dos valores do registro: {0}' "$($_.Exception.Message.TrimEnd('.'))")
+            throw (Get-TFToolkitText 'não foi possível salvar o backup dos valores do registro: {0}' "$($_.Exception.Message.TrimEnd('.'))")
         }
 
         $jsonFile = $valuesFile
@@ -839,17 +839,17 @@ function Export-WinForgeRegistryBackup {
 }
 
 
-function Test-WinForgeRegistryIssuePresent {
+function Test-TFToolkitRegistryIssuePresent {
     # Se o que a referência aponta ainda está no registro: a chave (Value vazio) ou o valor. Ilegível = não está.
     param ([Parameter(Mandatory)]$Issue)
 
     if ([string]::IsNullOrEmpty([string]$Issue.Value)) { return (Test-Path -LiteralPath $Issue.Key) }
 
-    return (Test-WinForgeRegistryValuePresent -Key $Issue.Key -Name ([string]$Issue.Value))
+    return (Test-TFToolkitRegistryValuePresent -Key $Issue.Key -Name ([string]$Issue.Value))
 }
 
 
-function Remove-WinForgeRegistryValueExact {
+function Remove-TFToolkitRegistryValueExact {
     <#
     Remove um valor pelo nome exato. O -Name do Remove-ItemProperty trata colchetes e asteriscos de um jeito que muda
     com a versão do PowerShell e com o -LiteralPath: um nome como C:\App[1]\app.exe.FriendlyAppName podia casar com
@@ -863,7 +863,7 @@ function Remove-WinForgeRegistryValueExact {
 
     $match = [regex]::Match($Key, '^(HKCU|HKLM):\\(.+)$', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
 
-    if (-not $match.Success) { throw (Get-WinForgeText 'chave do registro não reconhecida: {0}' "$Key") }
+    if (-not $match.Success) { throw (Get-TFToolkitText 'chave do registro não reconhecida: {0}' "$Key") }
 
     $hive = $(if ($match.Groups[1].Value -ieq "HKLM") { [Microsoft.Win32.Registry]::LocalMachine } else { [Microsoft.Win32.Registry]::CurrentUser })
     $subKey = $hive.OpenSubKey($match.Groups[2].Value, $true)
@@ -879,7 +879,7 @@ function Remove-WinForgeRegistryValueExact {
 }
 
 
-function Remove-WinForgeRegistryIssue {
+function Remove-TFToolkitRegistryIssue {
     # Remove a referência quebrada: o valor, ou a chave inteira quando Value é vazio.
     param ([Parameter(Mandatory)]$Issue)
 
@@ -887,32 +887,32 @@ function Remove-WinForgeRegistryIssue {
         Remove-Item -LiteralPath $Issue.Key -Recurse -Force -ErrorAction Stop
     }
     else {
-        Remove-WinForgeRegistryValueExact -Key $Issue.Key -Name ([string]$Issue.Value)
+        Remove-TFToolkitRegistryValueExact -Key $Issue.Key -Name ([string]$Issue.Value)
     }
 }
 
 
-function Clear-WinForgeRegistryIssues {
+function Clear-TFToolkitRegistryIssues {
     <#
     Salva o backup e remove as referências dadas, sem perguntar nada (a Verificação do PC e a tela usam esta parte).
-    Anota a mudança no Histórico com o desfazer. Devolve um WinForge.Result com Data.Backup (o primeiro arquivo de
+    Anota a mudança no Histórico com o desfazer. Devolve um TFToolkit.Result com Data.Backup (o primeiro arquivo de
     backup), Data.BackupFiles (o .reg e/ou o .json) e Data.Removed.
     #>
     param (
         [Parameter(Mandatory)][object[]]$Issues
     )
 
-    if (Test-WinForgeRegistryViewMismatch) {
-        throw (Get-WinForgeRegistryViewMismatchText)
+    if (Test-TFToolkitRegistryViewMismatch) {
+        throw (Get-TFToolkitRegistryViewMismatchText)
     }
 
     # A busca pode ter sido minutos antes (a Verificação do PC lista e só depois corrige): um disco ligado nesse
     # meio-tempo, ou um programa reinstalado, faz o arquivo voltar a existir, e a referência deixa de estar quebrada. A
     # conferência usa a mesma regra de 32 bits da busca (Wow64); com outra, uma referência quebrada nunca sairia. O que
     # já saiu do registro (um desinstalador que tirou a própria chave) também fica de fora: não há o que salvar nem tirar.
-    $present = @($Issues | Where-Object { $null -ne $_ -and (Test-WinForgeRegistryIssuePresent -Issue $_) })
+    $present = @($Issues | Where-Object { $null -ne $_ -and (Test-TFToolkitRegistryIssuePresent -Issue $_) })
     $gone = $Issues.Count - $present.Count
-    $current = @($present | Where-Object { Test-WinForgeLocalPathMissing -Path ([string]$_.Missing) -Wow64:([bool](Get-WinForgeJsonValue -Object $_ -Name "Wow64" -Default $false)) })
+    $current = @($present | Where-Object { Test-TFToolkitLocalPathMissing -Path ([string]$_.Missing) -Wow64:([bool](Get-TFToolkitJsonValue -Object $_ -Name "Wow64" -Default $false)) })
     $back = $present.Count - $current.Count
     $removed = 0
     $failures = @()
@@ -920,14 +920,14 @@ function Clear-WinForgeRegistryIssues {
     $backupFiles = @()
 
     if ($current.Count -gt 0) {
-        $backup = Export-WinForgeRegistryBackup -Issues $current
+        $backup = Export-TFToolkitRegistryBackup -Issues $current
         $backupFiles = @(@([string]$backup.File, [string]$backup.Values) | Where-Object { -not [string]::IsNullOrEmpty($_) })
     }
 
     try {
         foreach ($issue in $current) {
             try {
-                Remove-WinForgeRegistryIssue -Issue $issue
+                Remove-TFToolkitRegistryIssue -Issue $issue
                 $removed++
             }
             catch {
@@ -939,25 +939,25 @@ function Clear-WinForgeRegistryIssues {
         # No finally: parar a ação no meio não deixa sem anotação (e sem o desfazer) o que já saiu.
         if ($removed -gt 0) {
             # File: as chaves inteiras (.reg); Values: os valores soltos (.json). Qualquer um dos dois pode faltar.
-            [void](Add-WinForgeChange -Action (Get-WinForgeText 'Limpeza do registro') -Text (Format-WinForgeCount -Count $removed -One (Get-WinForgeText 'referência removida') -Many (Get-WinForgeText 'referências removidas')) -Undo @{ Kind = "registry"; File = [string]$backup.File; Values = [string]$backup.Values })
+            [void](Add-TFToolkitChange -Action (Get-TFToolkitText 'Limpeza do registro') -Text (Format-TFToolkitCount -Count $removed -One (Get-TFToolkitText 'referência removida') -Many (Get-TFToolkitText 'referências removidas')) -Undo @{ Kind = "registry"; File = [string]$backup.File; Values = [string]$backup.Values })
         }
     }
 
-    $removedText = Format-WinForgeCount -Count $removed -One (Get-WinForgeText 'referência removida') -Many (Get-WinForgeText 'referências removidas')
+    $removedText = Format-TFToolkitCount -Count $removed -One (Get-TFToolkitText 'referência removida') -Many (Get-TFToolkitText 'referências removidas')
 
     $keptParts = @()
-    if ($back -gt 0) { $keptParts += Format-WinForgeCount -Count $back -One (Get-WinForgeText 'referência voltou a apontar para um arquivo que existe e ficou') -Many (Get-WinForgeText 'referências voltaram a apontar para arquivos que existem e ficaram') }
-    if ($gone -gt 0) { $keptParts += Format-WinForgeCount -Count $gone -One (Get-WinForgeText 'referência já tinha saído do registro') -Many (Get-WinForgeText 'referências já tinham saído do registro') }
+    if ($back -gt 0) { $keptParts += Format-TFToolkitCount -Count $back -One (Get-TFToolkitText 'referência voltou a apontar para um arquivo que existe e ficou') -Many (Get-TFToolkitText 'referências voltaram a apontar para arquivos que existem e ficaram') }
+    if ($gone -gt 0) { $keptParts += Format-TFToolkitCount -Count $gone -One (Get-TFToolkitText 'referência já tinha saído do registro') -Many (Get-TFToolkitText 'referências já tinham saído do registro') }
     if ($keptParts.Count -gt 0) { $removedText += "; " + ($keptParts -join "; ") }
 
     $data = @{ Backup = $(if ($backupFiles.Count -gt 0) { $backupFiles[0] } else { "" }); BackupFiles = $backupFiles; Removed = $removed; Failures = @($failures); Back = $back; Gone = $gone }
 
-    if ($current.Count -eq 0) { return (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nada a remover: {0}' "$($keptParts -join '; ')") -Data $data) }
+    if ($current.Count -eq 0) { return (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nada a remover: {0}' "$($keptParts -join '; ')") -Data $data) }
 
-    if ($failures.Count -eq 0) { return (New-WinForgeResult -Kind Ok -Detail $removedText -Data $data) }
-    if ($removed -eq 0) { return (New-WinForgeResult -Kind Failed -Detail (Get-WinForgeText 'nenhuma referência foi removida') -Data $data) }
+    if ($failures.Count -eq 0) { return (New-TFToolkitResult -Kind Ok -Detail $removedText -Data $data) }
+    if ($removed -eq 0) { return (New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'nenhuma referência foi removida') -Data $data) }
 
-    return (New-WinForgeResult -Kind Warning -Detail $(if ($failures.Count -eq 1) { (Get-WinForgeText '{0}; 1 não pôde ser removida' "$removedText") } else { (Get-WinForgeText '{0}; {1} não puderam ser removidas' "$removedText" "$($failures.Count)") }) -Data $data)
+    return (New-TFToolkitResult -Kind Warning -Detail $(if ($failures.Count -eq 1) { (Get-TFToolkitText '{0}; 1 não pôde ser removida' "$removedText") } else { (Get-TFToolkitText '{0}; {1} não puderam ser removidas' "$removedText" "$($failures.Count)") }) -Data $data)
 }
 
 
@@ -965,115 +965,115 @@ function Clear-WinForgeRegistryIssues {
 # Ação
 # ---------------------------------------------------------------------------
 
-function Invoke-WinForgeRegistryCleanup {
-    $title = (Get-WinForgeText 'Limpar o registro')
+function Invoke-TFToolkitRegistryCleanup {
+    $title = (Get-TFToolkitText 'Limpar o registro')
 
-    Enter-WinForgeAction -Title $title
+    Enter-TFToolkitAction -Title $title
 
-    $final = New-WinForgeResult -Kind Ok -Title $title
+    $final = New-TFToolkitResult -Kind Ok -Title $title
 
     try {
-        $isAdmin = Test-WinForgeAdministrator
+        $isAdmin = Test-TFToolkitAdministrator
 
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'procurando referências a arquivos que não existem mais')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'procurando referências a arquivos que não existem mais')
 
         try {
-            $issues = @(Find-WinForgeRegistryIssues -IncludeMachine $isAdmin)
+            $issues = @(Find-TFToolkitRegistryIssues -IncludeMachine $isAdmin)
         }
         finally {
             Write-Progress -Activity $title -Completed
         }
 
         if (-not $isAdmin) {
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Sem Administrador, só as entradas do seu usuário entram. Para incluir as do PC todo, feche o WinForge, abra de novo e aceite o aviso do Windows.')
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Sem Administrador, só as entradas do seu usuário entram. Para incluir as do PC todo, feche o TF-Toolkit, abra de novo e aceite o aviso do Windows.')
         }
 
         if ($issues.Count -eq 0) {
-            Write-WinForgeStatus -Type Success -Message (Get-WinForgeText 'Nenhuma referência quebrada foi encontrada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Ok -Detail (Get-WinForgeText 'nenhuma referência quebrada') -Title $title)
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Nenhuma referência quebrada foi encontrada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'nenhuma referência quebrada') -Title $title)
             return
         }
 
-        $categories = @(Get-WinForgeRegistryCategories | Where-Object { $id = $_.Id; @($issues | Where-Object { $_.Category -eq $id }).Count -gt 0 })
+        $categories = @(Get-TFToolkitRegistryCategories | Where-Object { $id = $_.Id; @($issues | Where-Object { $_.Category -eq $id }).Count -gt 0 })
 
-        Write-WinForgeSection -Title (Get-WinForgeText 'Referências quebradas')
+        Write-TFToolkitSection -Title (Get-TFToolkitText 'Referências quebradas')
 
         foreach ($category in $categories) {
-            Write-WinForgeKeyValue -Label $category.Label -Value (Format-WinForgeNumber -Value @($issues | Where-Object { $_.Category -eq $category.Id }).Count) -LabelWidth 48
+            Write-TFToolkitKeyValue -Label $category.Label -Value (Format-TFToolkitNumber -Value @($issues | Where-Object { $_.Category -eq $category.Id }).Count) -LabelWidth 48
         }
 
         Write-Host ""
-        [void](Write-WinForgeOtherAccountNotice -What 'as entradas do registro do usuário')
+        [void](Write-TFToolkitOtherAccountNotice -What 'as entradas do registro do usuário')
 
         # A lista completa fica nos detalhes técnicos: a chave, o valor e o arquivo que falta.
         foreach ($issue in $issues) {
-            Write-Host (Get-WinForgeText '  {0}{1} -> falta {2}' "$(ConvertTo-WinForgeRegExePath -Path $issue.Key)" "$(if ($issue.Value) { ' : ' + $issue.Value })" "$($issue.Missing)") -ForegroundColor DarkGray
+            Write-Host (Get-TFToolkitText '  {0}{1} -> falta {2}' "$(ConvertTo-TFToolkitRegExePath -Path $issue.Key)" "$(if ($issue.Value) { ' : ' + $issue.Value })" "$($issue.Missing)") -ForegroundColor DarkGray
         }
 
         Write-Host ""
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Só saem referências a arquivos que não existem mais. Antes, o WinForge salva um backup que desfaz tudo pelo Histórico de mudanças.')
-        Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Isso não deixa o PC mais rápido: tira do registro entradas que levam a lugar nenhum.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Só saem referências a arquivos que não existem mais. Antes, o TF-Toolkit salva um backup que desfaz tudo pelo Histórico de mudanças.')
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Isso não deixa o PC mais rápido: tira do registro entradas que levam a lugar nenhum.')
         Write-Host ""
 
         $options = @(
             foreach ($category in $categories) {
                 $inCategory = @($issues | Where-Object { $_.Category -eq $category.Id })
-                $examples = Join-WinForgeList -Items @($inCategory | Select-Object -First 3 | ForEach-Object { $_.Name })
+                $examples = Join-TFToolkitList -Items @($inCategory | Select-Object -First 3 | ForEach-Object { $_.Name })
                 # Bibliotecas compartilhadas vêm desmarcadas: é uma contagem que os instaladores consultam, e quem decide é a pessoa.
-                @{ Key = $category.Id; Label = "$($category.Label) ($($inCategory.Count))"; Description = (Get-WinForgeText '{0}. Ex.: {1}' "$($category.Description)" "$examples"); Selected = ($category.Id -ne "shared-dlls") }
+                @{ Key = $category.Id; Label = "$($category.Label) ($($inCategory.Count))"; Description = (Get-TFToolkitText '{0}. Ex.: {1}' "$($category.Description)" "$examples"); Selected = ($category.Id -ne "shared-dlls") }
             }
         )
 
-        $picked = Read-WinForgeMultiSelect -Message (Get-WinForgeText 'O que remover?') -Options $options
+        $picked = Read-TFToolkitMultiSelect -Message (Get-TFToolkitText 'O que remover?') -Options $options
 
         if ($null -eq $picked -or @($picked).Count -eq 0) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
         $chosen = @($issues | Where-Object { @($picked) -contains $_.Category })
-        $countText = Format-WinForgeCount -Count $chosen.Count -One (Get-WinForgeText 'referência quebrada') -Many (Get-WinForgeText 'referências quebradas')
+        $countText = Format-TFToolkitCount -Count $chosen.Count -One (Get-TFToolkitText 'referência quebrada') -Many (Get-TFToolkitText 'referências quebradas')
 
-        if (-not (Confirm-WinForgeAction -Message (Get-WinForgeText 'Remover {0} (com backup)?' "$countText") -DefaultKey "S" -YesLabel (Get-WinForgeText 'Remover') -NoLabel (Get-WinForgeText 'Cancelar'))) {
-            Write-WinForgeStatus -Type Warning -Message (Get-WinForgeText 'Operação cancelada.')
-            Exit-WinForgeAction -Result (New-WinForgeResult -Kind Skipped -Detail (Get-WinForgeText 'cancelado pelo usuário') -Title $title)
+        if (-not (Confirm-TFToolkitAction -Message (Get-TFToolkitText 'Remover {0} (com backup)?' "$countText") -DefaultKey "S" -YesLabel (Get-TFToolkitText 'Remover') -NoLabel (Get-TFToolkitText 'Cancelar'))) {
+            Write-TFToolkitStatus -Type Warning -Message (Get-TFToolkitText 'Operação cancelada.')
+            Exit-TFToolkitAction -Result (New-TFToolkitResult -Kind Skipped -Detail (Get-TFToolkitText 'cancelado pelo usuário') -Title $title)
             return
         }
 
-        Write-Progress -Activity $title -Status (Get-WinForgeText 'salvando o backup e removendo')
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'salvando o backup e removendo')
 
         try {
-            $result = Clear-WinForgeRegistryIssues -Issues $chosen
+            $result = Clear-TFToolkitRegistryIssues -Issues $chosen
         }
         finally {
             Write-Progress -Activity $title -Completed
         }
 
         foreach ($backupFile in @($result.Data.BackupFiles)) {
-            Write-WinForgeKeyValue -Label (Get-WinForgeText 'Backup') -Value $backupFile
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Backup') -Value $backupFile
         }
 
         Write-Host ""
 
         foreach ($failure in @($result.Data.Failures) | Select-Object -First 5) {
-            Write-WinForgeStatus -Type Error -Message "$failure."
+            Write-TFToolkitStatus -Type Error -Message "$failure."
         }
 
         if ([int]$result.Data.Removed -gt 0) {
-            $removedText = Format-WinForgeCount -Count ([int]$result.Data.Removed) -One (Get-WinForgeText 'referência removida') -Many (Get-WinForgeText 'referências removidas')
-            Write-WinForgeStatus -Type Success -Message "$removedText."
-            Write-WinForgeStatus -Type Info -Message (Get-WinForgeText 'Para desfazer, use Manutenção > Histórico de mudanças.')
+            $removedText = Format-TFToolkitCount -Count ([int]$result.Data.Removed) -One (Get-TFToolkitText 'referência removida') -Many (Get-TFToolkitText 'referências removidas')
+            Write-TFToolkitStatus -Type Success -Message "$removedText."
+            Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Para desfazer, use Manutenção > Histórico de mudanças.')
 
             # A faixa diz quantas saíram e leva ao Histórico de mudanças, onde fica o desfazer (antes, só o texto apontava).
             # Numa ressalva (alguma não pôde ser removida), o título e a frase continuam os dela, e o botão também entra: o
             # que saiu tem desfazer do mesmo jeito.
             if ([string]$result.Kind -eq "Ok") {
-                [void](Set-WinForgeResultView -Result $result -Headline (ConvertTo-WinForgeHeadline -Text $removedText) -Note (Get-WinForgeText 'Para desfazer, use Manutenção > Histórico de mudanças.') `
-                        -Next "maintenance.changes" -NextLabel (Get-WinForgeText 'Histórico de mudanças'))
+                [void](Set-TFToolkitResultView -Result $result -Headline (ConvertTo-TFToolkitHeadline -Text $removedText) -Note (Get-TFToolkitText 'Para desfazer, use Manutenção > Histórico de mudanças.') `
+                        -Next "maintenance.changes" -NextLabel (Get-TFToolkitText 'Histórico de mudanças'))
             }
             elseif ([string]$result.Kind -eq "Warning") {
-                [void](Set-WinForgeResultView -Result $result -Next "maintenance.changes" -NextLabel (Get-WinForgeText 'Histórico de mudanças'))
+                [void](Set-TFToolkitResultView -Result $result -Next "maintenance.changes" -NextLabel (Get-TFToolkitText 'Histórico de mudanças'))
             }
         }
 
@@ -1081,11 +1081,11 @@ function Invoke-WinForgeRegistryCleanup {
         $final = $result
     }
     catch {
-        Write-WinForgeStatus -Type Error -Message (Get-WinForgeText 'Não foi possível limpar o registro: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
-        $final = New-WinForgeResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Não foi possível limpar o registro: {0}.' "$($_.Exception.Message.TrimEnd('.'))")
+        $final = New-TFToolkitResult -Kind Failed -Detail $_.Exception.Message.TrimEnd('.') -Title $title
     }
 
-    Exit-WinForgeAction -Result $final
+    Exit-TFToolkitAction -Result $final
 }
 
 
