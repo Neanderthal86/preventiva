@@ -354,10 +354,10 @@ function Get-TFToolkitNavGroups {
     e a busca seguem a ordem da tabela de navegação, e nenhuma página muda de nome nem de lugar.
     #>
     return @(
-        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Cuidar'); Pages = @("maintenance", "cleanup", "performance") },
-        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Consertar'); Pages = @("repair", "diagnostics", "network") },
-        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Proteger'); Pages = @("security", "updates") },
-        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Configurar'); Pages = @("software", "tweaks", "personalize") }
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Otimização'); Pages = @("maintenance", "cleanup", "performance") },
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Ferramentas'); Pages = @("repair", "diagnostics", "network") },
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Segurança'); Pages = @("security", "updates") },
+        [PSCustomObject]@{ Label = (Get-TFToolkitText 'Sistema'); Pages = @("software", "tweaks", "personalize") }
     )
 }
 

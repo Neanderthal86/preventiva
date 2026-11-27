@@ -1561,11 +1561,11 @@ function Set-GuiFallbackWindowIcon {
 }
 
 function Set-GuiWindowIcon {
-    # Carrega a logo oficial Tech Fontes no cabecalho da barra lateral
+    # Carrega a logo oficial Tech Fontes no cabecalho da barra lateral e no icone da janela/barra de tarefas
     try {
         $brandLogo = $window.FindName("BrandLogo")
         $logoPng = Join-Path $PSScriptRoot "assets\logo.png"
-        if ($null -ne $brandLogo -and (Test-Path -LiteralPath $logoPng)) {
+        if (Test-Path -LiteralPath $logoPng) {
             $logoStream = New-Object System.IO.MemoryStream (, [System.IO.File]::ReadAllBytes($logoPng))
             $logoBmp = New-Object System.Windows.Media.Imaging.BitmapImage
             $logoBmp.BeginInit()
@@ -1573,8 +1573,10 @@ function Set-GuiWindowIcon {
             $logoBmp.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
             $logoBmp.EndInit()
             $logoBmp.Freeze()
-            $brandLogo.Source = $logoBmp
+            if ($null -ne $brandLogo) { $brandLogo.Source = $logoBmp }
+            $window.Icon = $logoBmp
             $logoStream.Dispose()
+            return
         }
     } catch {}
 
@@ -7111,8 +7113,9 @@ function Add-GuiNavButton {
     }
 }
 
+$script:NavHeadings = @()
 function Add-GuiNavHeading {
-    # O título de um grupo da barra lateral (Cuidar, Consertar...): discreto, só organiza a lista. As cores e o tamanho vêm
+    # O título de um grupo da barra lateral (Otimização, Ferramentas...): discreto, só organiza a lista. As cores e o tamanho vêm
     # dos recursos da janela, e acompanham o tema e o tamanho do texto sem refazer a barra.
     param ([Parameter(Mandatory)][string]$Text)
 
@@ -7121,8 +7124,9 @@ function Add-GuiNavHeading {
     $heading.FontWeight = [System.Windows.FontWeights]::SemiBold
     $heading.SetResourceReference([System.Windows.Controls.TextBlock]::FontSizeProperty, "CaptionSize")
     $heading.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "MutedBrush")
-    $heading.Margin = New-Object System.Windows.Thickness (12, 14, 0, 4)
+    $heading.Margin = New-Object System.Windows.Thickness (12, 10, 0, 3)
     Set-GuiAutomationName -Element $heading -Name (Get-TFToolkitText 'Seção: {0}' "$Text")
+    $script:NavHeadings += $heading
     [void]$navPanel.Children.Add($heading)
 }
 
@@ -7146,6 +7150,38 @@ foreach ($entry in $mainNavOrder) {
 # No rodapé, o Sobre o TF-Toolkit com a versão embaixo do nome.
 foreach ($navPage in @(Get-TFToolkitNavigation | Where-Object { $_.Placement -eq "Footer" })) {
     Add-GuiNavButton -Id $navPage.Id -Title $navPage.Title -Footer $true -Note $(if ([string]$navPage.Id -eq "app") { (Get-TFToolkitText 'Versão {0}' "$(Get-TFToolkitBuild)") } else { "" })
+}
+
+# Recuo / Expansao do menu lateral
+$script:SidebarCollapsed = $false
+$sidebarToggleBtn = $window.FindName("SidebarToggle")
+$sidebarCol = $window.FindName("SidebarColumn")
+$brandTitleEl = $window.FindName("BrandTitle")
+$searchBoxContainer = $window.FindName("SearchContainer")
+$adminTextEl = $window.FindName("AdminText")
+
+if ($null -ne $sidebarToggleBtn -and $null -ne $sidebarCol) {
+    $sidebarToggleBtn.Add_Click({
+        $script:SidebarCollapsed = -not $script:SidebarCollapsed
+        $vis = if ($script:SidebarCollapsed) { [System.Windows.Visibility]::Collapsed } else { [System.Windows.Visibility]::Visible }
+
+        $sidebarCol.Width = New-Object System.Windows.GridLength ($(if ($script:SidebarCollapsed) { 68 } else { 248 }))
+        $sidebarToggleBtn.Content = if ($script:SidebarCollapsed) { [string][char]0x00BB } else { [string][char]0x00AB }
+        if ($null -ne $brandTitleEl) { $brandTitleEl.Visibility = $vis }
+        if ($null -ne $searchBoxContainer) { $searchBoxContainer.Visibility = $vis }
+        if ($null -ne $adminTextEl) { $adminTextEl.Visibility = $vis }
+
+        foreach ($h in $script:NavHeadings) { $h.Visibility = $vis }
+        foreach ($kv in $script:NavParts.GetEnumerator()) {
+            $row = $kv.Value.Button.Content
+            if ($row -is [System.Windows.Controls.StackPanel] -and $row.Children.Count -gt 1) {
+                for ($idx = 1; $idx -lt $row.Children.Count; $idx++) {
+                    $row.Children[$idx].Visibility = $vis
+                }
+            }
+            $kv.Value.Icon.Margin = New-Object System.Windows.Thickness (0, 0, $(if ($script:SidebarCollapsed) { 0 } else { 12 }), 0)
+        }
+    })
 }
 
 # --- Temporizadores, botões do painel de execução e encerramento -----------------------------------------------

@@ -3,7 +3,7 @@
 # qual ícone usa e onde é criado.
 
 # O começo do identificador da barra de tarefas; cada pasta do TF-Toolkit completa com o dela (Get-TFToolkitAppId).
-$script:TFToolkitAppIdPrefix = "TFToolkit.App"
+$script:TFToolkitAppIdPrefix = "TechFontes.TFToolkit.v4"
 $script:TFToolkitAppIds = @{}
 # O que foi lido de cada atalho (o destino e o identificador), com a data e o tamanho do arquivo (Read-TFToolkitShortcutCached).
 $script:TFToolkitShortcutReads = @{}
