@@ -1,4 +1,4 @@
-# Relatórios HTML e texto do estado do PC.
+﻿# Relatórios HTML e texto do estado do PC.
 
 
 # ---------------------------------------------------------------------------
