@@ -1540,32 +1540,23 @@ function Get-GuiIconDecoder {
 }
 
 function Set-GuiFallbackWindowIcon {
-    # Reserva para quando o .ico não está na pasta: o mesmo desenho de assets\TF-Toolkit.svg (Get-TFToolkitLogoDrawing),
-    # reduzido da caixa de 1024 para 64 px.
+    # Reserva para quando o .ico nao esta na pasta: usa diretamente assets\logo.png da Tech Fontes.
     try {
-        $logo = Get-TFToolkitLogoDrawing
-        $k = 64.0 / $logo.Box
-        $tile = New-Object System.Windows.Rect ($logo.TileX * $k, $logo.TileX * $k, $logo.TileSize * $k, $logo.TileSize * $k)
-
-        $visual = New-Object System.Windows.Media.DrawingVisual
-        $context = $visual.RenderOpen()
-        $context.DrawRoundedRectangle((New-GuiBrush $logo.TileColor), $null, $tile, $logo.TileRadius * $k, $logo.TileRadius * $k)
-        $context.PushTransform((New-Object System.Windows.Media.MatrixTransform ($logo.Scale * $k, 0.0, 0.0, $logo.Scale * $k, $logo.OffsetX * $k, $logo.OffsetY * $k)))
-
-        foreach ($part in $logo.Parts) {
-            $context.DrawGeometry((New-GuiBrush $part.Color), $null, [System.Windows.Media.Geometry]::Parse($part.Data))
+        $logoPng = Join-Path $PSScriptRoot "assets\logo.png"
+        if (Test-Path -LiteralPath $logoPng) {
+            $stream = New-Object System.IO.MemoryStream (, [System.IO.File]::ReadAllBytes($logoPng))
+            $bitmap = New-Object System.Windows.Media.Imaging.BitmapImage
+            $bitmap.BeginInit()
+            $bitmap.StreamSource = $stream
+            $bitmap.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+            $bitmap.EndInit()
+            $bitmap.Freeze()
+            $window.Icon = $bitmap
+            $stream.Dispose()
         }
-
-        $context.Pop()
-        $context.Close()
-
-        $bitmap = New-Object System.Windows.Media.Imaging.RenderTargetBitmap (64, 64, 96, 96, [System.Windows.Media.PixelFormats]::Pbgra32)
-        $bitmap.Render($visual)
-        $bitmap.Freeze()
-        $window.Icon = $bitmap
     }
     catch {
-        # O ícone é opcional.
+        # O icone e opcional.
     }
 }
 
