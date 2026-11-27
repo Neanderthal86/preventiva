@@ -603,6 +603,362 @@ function Invoke-TFToolkitReport {
 
 
 # ---------------------------------------------------------------------------
+# Relatorio Completo em PDF (para envio ao Analista)
+# ---------------------------------------------------------------------------
+
+function Get-TFToolkitReportNetworkItems {
+    $items = @()
+    try {
+        $route = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue |
+            Sort-Object RouteMetric, InterfaceMetric | Select-Object -First 1
+        $nic = if ($route) { Get-NetAdapter -InterfaceIndex $route.ifIndex -ErrorAction SilentlyContinue } else { Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq "Up" } | Select-Object -First 1 }
+        if ($nic) {
+            $items += [PSCustomObject]@{ Label = "Adaptador ativo"; Value = "$($nic.Name) ($($nic.InterfaceDescription)) · $($nic.LinkSpeed)" }
+            $items += [PSCustomObject]@{ Label = "Endereço MAC"; Value = "$($nic.MacAddress)" }
+            $ipCfg = Get-NetIPConfiguration -InterfaceIndex $nic.ifIndex -ErrorAction SilentlyContinue
+            if ($ipCfg) {
+                $ipv4 = $ipCfg.IPv4Address | Select-Object -First 1
+                if ($ipv4) { $items += [PSCustomObject]@{ Label = "IP Local (IPv4)"; Value = "$($ipv4.IPAddress)/$($ipv4.PrefixLength)" } }
+                $gw = $ipCfg.IPv4DefaultGateway | Select-Object -First 1
+                if ($gw) { $items += [PSCustomObject]@{ Label = "Gateway padrão"; Value = "$($gw.NextHop)" } }
+                $dns = ($ipCfg.DNSServer | Where-Object { $_.AddressFamily -eq 2 }).ServerAddresses
+                if ($dns) { $items += [PSCustomObject]@{ Label = "Servidores DNS"; Value = ($dns -join ", ") } }
+            }
+        }
+    } catch {}
+
+    try {
+        $ping = Test-Connection -ComputerName 8.8.8.8 -Count 2 -ErrorAction SilentlyContinue
+        if ($ping) {
+            $avg = [math]::Round(($ping | Measure-Object -Property ResponseTime -Average).Average, 1)
+            $items += [PSCustomObject]@{ Label = "Conectividade (8.8.8.8)"; Value = "OK · latência média $avg ms" }
+        } else {
+            $items += [PSCustomObject]@{ Label = "Conectividade (8.8.8.8)"; Value = "Sem resposta" }
+        }
+    } catch {}
+
+    if ($items.Count -eq 0) {
+        $items += [PSCustomObject]@{ Label = "Rede"; Value = "Informações de rede indisponíveis" }
+    }
+    return $items
+}
+
+
+function Get-TFToolkitReportDriversAndStartupItems {
+    $items = @()
+    try {
+        $bad = @(Get-PnpDevice -ErrorAction SilentlyContinue | Where-Object { $_.Status -notin @("OK", "Unknown") })
+        if ($bad.Count -eq 0) {
+            $items += [PSCustomObject]@{ Label = "Dispositivos / Drivers"; Value = "Nenhum dispositivo com erro encontrado" }
+        } else {
+            $items += [PSCustomObject]@{ Label = "Dispositivos com erro"; Value = "$($bad.Count) encontrado(s)" }
+            foreach ($d in ($bad | Select-Object -First 8)) {
+                $items += [PSCustomObject]@{ Label = "Driver ($($d.Status))"; Value = "$($d.FriendlyName)" }
+            }
+        }
+    } catch {}
+
+    try {
+        $startup = @(Get-CimInstance Win32_StartupCommand -ErrorAction SilentlyContinue)
+        $items += [PSCustomObject]@{ Label = "Itens na inicialização"; Value = "$($startup.Count) registro(s)" }
+        $names = @($startup | Select-Object -ExpandProperty Name -Unique | Sort-Object | Select-Object -First 12)
+        if ($names.Count -gt 0) {
+            $items += [PSCustomObject]@{ Label = "Principais itens"; Value = ($names -join ", ") }
+        }
+    } catch {}
+
+    return $items
+}
+
+
+function Get-TFToolkitReportInstalledAppsItems {
+    $items = @()
+    try {
+        $regPaths = @(
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+            "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+            "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+        )
+        $apps = @(Get-ItemProperty -Path $regPaths -ErrorAction SilentlyContinue |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_.DisplayName) -and -not $_.SystemComponent } |
+            Sort-Object DisplayName -Unique)
+
+        $items += [PSCustomObject]@{ Label = "Total de programas"; Value = "$($apps.Count) instalado(s)" }
+        foreach ($a in ($apps | Select-Object -First 35)) {
+            $ver = if ($a.DisplayVersion) { "v$($a.DisplayVersion)" } else { "-" }
+            $pub = if ($a.Publisher) { " · $($a.Publisher)" } else { "" }
+            $items += [PSCustomObject]@{ Label = "$($a.DisplayName)"; Value = "$ver$pub" }
+        }
+        if ($apps.Count -gt 35) {
+            $items += [PSCustomObject]@{ Label = "Demais programas"; Value = "+$($apps.Count - 35) aplicativos adicionais instalados" }
+        }
+    } catch {}
+
+    return $items
+}
+
+
+function Find-TFToolkitPdfBrowser {
+    $candidates = @(
+        (Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe"),
+        (Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe"),
+        (Join-Path $env:ProgramFiles "Google\Chrome\Application\chrome.exe"),
+        (Join-Path ${env:ProgramFiles(x86)} "Google\Chrome\Application\chrome.exe"),
+        (Join-Path $env:LOCALAPPDATA "Google\Chrome\Application\chrome.exe")
+    )
+    foreach ($c in $candidates) {
+        if (-not [string]::IsNullOrWhiteSpace($c) -and (Test-Path -LiteralPath $c -PathType Leaf)) {
+            return $c
+        }
+    }
+    return $null
+}
+
+
+function ConvertTo-TFToolkitAnalystHtmlReport {
+    param (
+        [Parameter(Mandatory)][object[]]$Sections,
+        [string]$Build = "4.0",
+        [int]$HealthScore = -1,
+        [string]$HealthLabel = ""
+    )
+
+    $encode = { param($text) [System.Net.WebUtility]::HtmlEncode([string]$text) }
+    $logoHtml = "<div class='brand-badge'>TF</div>"
+    try {
+        $logoFile = Join-Path (Split-Path -Parent $PSScriptRoot) "assets\logo.png"
+        if (Test-Path -LiteralPath $logoFile -PathType Leaf) {
+            $b64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($logoFile))
+            $logoHtml = "<img class='brand-logo' src='data:image/png;base64,$b64' alt='Tech Fontes'/>"
+        }
+    } catch {}
+
+    $nowText = Get-Date -Format "dd/MM/yyyy 'às' HH:mm"
+    $hostName = & $encode $env:COMPUTERNAME
+    $userName = & $encode $env:USERNAME
+    $scoreBadge = ""
+    if ($HealthScore -ge 0) {
+        $scoreCls = if ($HealthScore -ge 85) { "ok" } elseif ($HealthScore -ge 65) { "warn" } else { "bad" }
+        $scoreBadge = "<div class='score-box $scoreCls'><div class='score-num'>$HealthScore<span>/100</span></div><div class='score-lbl'>$(& $encode $HealthLabel)</div></div>"
+    }
+
+    $sb = New-Object System.Text.StringBuilder
+    [void]$sb.AppendLine(@"
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório de Diagnóstico - $hostName - Tech Fontes</title>
+<style>
+  @page { size: A4; margin: 13mm 12mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; color: #1a1d26; background: #ffffff; font-size: 11.5px; line-height: 1.45; }
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #C4613A; padding-bottom: 12px; margin-bottom: 16px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-logo { width: 42px; height: 42px; object-fit: contain; }
+  .brand-badge { width: 42px; height: 42px; border-radius: 8px; background: #C4613A; color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .brand h1 { margin: 0; font-size: 20px; font-weight: 800; color: #1a1d26; }
+  .brand h1 span { color: #C4613A; }
+  .brand p { margin: 2px 0 0; font-size: 11px; color: #5a6275; }
+  .score-box { text-align: right; padding: 8px 14px; border-radius: 8px; border: 1px solid #d5dae6; background: #f7f8fc; }
+  .score-box.ok { border-color: #9ad4b3; background: #edf7f1; }
+  .score-box.warn { border-color: #e8c78a; background: #fdf6e7; }
+  .score-box.bad { border-color: #e5a3a3; background: #fdf0f0; }
+  .score-num { font-size: 22px; font-weight: 800; line-height: 1.1; }
+  .score-num span { font-size: 11px; font-weight: 600; color: #646b82; }
+  .score-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #3c4257; margin-top: 2px; }
+  .meta-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f5f7fb; border: 1px solid #e1e4ee; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+  .meta-item span { display: block; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #646b82; }
+  .meta-item strong { font-size: 12px; color: #1a1d26; }
+  section { border: 1px solid #dfe3ed; border-radius: 8px; padding: 11px 14px; margin-bottom: 12px; break-inside: avoid; page-break-inside: avoid; }
+  section h2 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #C4613A; border-bottom: 1px solid #eef0f6; padding-bottom: 5px; display: flex; justify-content: space-between; }
+  section h2 span { font-size: 10px; font-weight: 600; color: #646b82; background: #f2f4f8; padding: 1px 7px; border-radius: 99px; }
+  table { width: 100%; border-collapse: collapse; }
+  tr { border-bottom: 1px dashed #eceff5; }
+  tr:last-child { border-bottom: none; }
+  td { padding: 4px 4px; vertical-align: top; }
+  td.k { width: 34%; font-weight: 600; color: #4d5568; padding-right: 10px; }
+  td.v { color: #1a1d26; word-break: break-word; }
+  .footer { margin-top: 18px; padding-top: 10px; border-top: 1px solid #dfe3ed; display: flex; justify-content: space-between; font-size: 10px; color: #646b82; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      $logoHtml
+      <div>
+        <h1>Tech <span>Fontes</span> · Relatório de Diagnóstico</h1>
+        <p>TF-Toolkit v$(& $encode $Build) · Levantamento Técnico Completo para Análise</p>
+      </div>
+    </div>
+    $scoreBadge
+  </div>
+
+  <div class="meta-bar">
+    <div class="meta-item"><span>Estação</span><strong>$hostName</strong></div>
+    <div class="meta-item"><span>Usuário</span><strong>$userName</strong></div>
+    <div class="meta-item"><span>Data / Hora</span><strong>$nowText</strong></div>
+    <div class="meta-item"><span>Seções Coletadas</span><strong>$($Sections.Count)</strong></div>
+  </div>
+"@)
+
+    foreach ($sec in $Sections) {
+        if (-not $sec.Items -or $sec.Items.Count -eq 0) { continue }
+        [void]$sb.AppendLine("<section><h2>$(& $encode $sec.Title)<span>$($sec.Items.Count)</span></h2><table>")
+        foreach ($it in $sec.Items) {
+            [void]$sb.AppendLine("<tr><td class='k'>$(& $encode $it.Label)</td><td class='v'>$(& $encode $it.Value)</td></tr>")
+        }
+        [void]$sb.AppendLine("</table></section>")
+    }
+
+    [void]$sb.AppendLine(@"
+  <div class="footer">
+    <div>Tech Fontes · techfontes.com.br · fontes@techfontes.com.br</div>
+    <div>Relatório gerado automaticamente pelo TF-Toolkit v$(& $encode $Build) em $nowText</div>
+  </div>
+</body>
+</html>
+"@)
+
+    return $sb.ToString()
+}
+
+
+function Export-TFToolkitDiagnosticPdf {
+    param (
+        [string]$OutputDirectory = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
+        $desktop = [Environment]::GetFolderPath("Desktop")
+        if (-not [string]::IsNullOrWhiteSpace($desktop) -and (Test-Path -LiteralPath $desktop -PathType Container)) {
+            $OutputDirectory = $desktop
+        } else {
+            $OutputDirectory = Join-Path (Get-TFToolkitDataPath) "reports"
+        }
+    }
+    if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
+        [void](New-Item -Path $OutputDirectory -ItemType Directory -Force -ErrorAction Stop)
+    }
+
+    $reportsDir = Join-Path (Get-TFToolkitDataPath) "reports"
+    if (-not (Test-Path -LiteralPath $reportsDir -PathType Container)) {
+        [void](New-Item -Path $reportsDir -ItemType Directory -Force -ErrorAction SilentlyContinue)
+    }
+
+    # Coleta todas as secoes padrao + Rede + Drivers/Startup + Programas Instalados
+    $sections = New-Object System.Collections.Generic.List[object]
+    foreach ($s in @(Get-TFToolkitReportSections)) { $sections.Add($s) }
+
+    $sections.Add((New-TFToolkitReportSection -Title (Get-TFToolkitText 'Rede e Conectividade') -Build { Get-TFToolkitReportNetworkItems }))
+    $sections.Add((New-TFToolkitReportSection -Title (Get-TFToolkitText 'Drivers e Inicialização') -Build { Get-TFToolkitReportDriversAndStartupItems }))
+    $sections.Add((New-TFToolkitReportSection -Title (Get-TFToolkitText 'Programas Instalados') -Build { Get-TFToolkitReportInstalledAppsItems }))
+
+    # Nota de saude se disponivel
+    $score = -1
+    $scoreLabel = ""
+    try {
+        if (Get-Command Get-TFToolkitHomeStatus -ErrorAction SilentlyContinue) {
+            $status = Get-TFToolkitHomeStatus
+            if ($null -ne $status -and $null -ne $status.Health -and (Test-TFToolkitHealthKnown -Health $status.Health)) {
+                $score = [int]$status.Health.Score
+                $scoreLabel = [string]$status.Health.Label
+            }
+        }
+    } catch {}
+
+    $build = Get-TFToolkitBuild
+    $stamp = Get-Date -Format "yyyyMMdd-HHmm"
+    $safeHost = ($env:COMPUTERNAME -replace '[^A-Za-z0-9_-]', '_')
+    $baseName = "Relatorio_Diagnostico_${safeHost}_${stamp}"
+    $htmlPath = Join-Path $reportsDir "$baseName.html"
+    $pdfPath  = Join-Path $OutputDirectory "$baseName.pdf"
+
+    $html = ConvertTo-TFToolkitAnalystHtmlReport -Sections $sections.ToArray() -Build $build -HealthScore $score -HealthLabel $scoreLabel
+    Set-Content -LiteralPath $htmlPath -Value $html -Encoding UTF8 -ErrorAction Stop
+
+    $browser = Find-TFToolkitPdfBrowser
+    $pdfCreated = $false
+    $pdfNote = ""
+
+    if ($browser) {
+        $fileUri = ([System.Uri]$htmlPath).AbsoluteUri
+        foreach ($modeArg in @("--headless=new", "--headless")) {
+            try {
+                if (Test-Path -LiteralPath $pdfPath) { Remove-Item -LiteralPath $pdfPath -Force -ErrorAction SilentlyContinue }
+                $argStr = "$modeArg --disable-gpu --no-pdf-header-footer --print-to-pdf=`"$pdfPath`" `"$fileUri`""
+                $p = Start-Process -FilePath $browser -ArgumentList $argStr -WindowStyle Hidden -PassThru
+                if ($p.WaitForExit(30000) -and (Test-Path -LiteralPath $pdfPath -PathType Leaf) -and (Get-Item -LiteralPath $pdfPath).Length -gt 1024) {
+                    $pdfCreated = $true
+                    break
+                }
+            } catch {}
+        }
+        if (-not $pdfCreated) { $pdfNote = "Não foi possível converter automaticamente para PDF; relatório HTML salvo pronto para impressão." }
+    } else {
+        $pdfNote = "Edge/Chrome não encontrado para gerar PDF automático; relatório HTML salvo pronto para impressão."
+    }
+
+    if ($pdfCreated -and $OutputDirectory -ne $reportsDir) {
+        try { Copy-Item -LiteralPath $pdfPath -Destination (Join-Path $reportsDir "$baseName.pdf") -Force -ErrorAction SilentlyContinue } catch {}
+    }
+
+    return [PSCustomObject]@{
+        Pdf        = $(if ($pdfCreated) { $pdfPath } else { $null })
+        Html       = $htmlPath
+        PdfCreated = $pdfCreated
+        Note       = $pdfNote
+        Sections   = $sections.Count
+    }
+}
+
+
+function Invoke-TFToolkitPdfReport {
+    $title = (Get-TFToolkitText 'Relatório em PDF (para analista)')
+    Enter-TFToolkitAction -Title $title
+
+    $result = $null
+    try {
+        Write-Progress -Activity $title -Status (Get-TFToolkitText 'coletando hardware, discos, rede, segurança, drivers, eventos e programas...')
+        try {
+            $out = Export-TFToolkitDiagnosticPdf
+        } finally {
+            Write-Progress -Activity $title -Completed
+        }
+
+        Write-Host ""
+        if ($out.PdfCreated) {
+            Write-TFToolkitStatus -Type Success -Message (Get-TFToolkitText 'Relatório completo em PDF gerado com sucesso! Pronto para encaminhar ao analista.')
+            Write-TFToolkitKeyValue -Label "PDF" -Value $out.Pdf
+            Write-TFToolkitKeyValue -Label "HTML" -Value $out.Html
+            Write-TFToolkitKeyValue -Label (Get-TFToolkitText 'Seções incluídas') -Value "$($out.Sections)"
+            $result = New-TFToolkitResult -Kind Ok -Detail (Get-TFToolkitText 'relatório completo salvo em PDF na Área de Trabalho')
+            $openTarget = $out.Pdf
+        } else {
+            Write-TFToolkitStatus -Type Warning -Message $out.Note
+            Write-TFToolkitKeyValue -Label "HTML" -Value $out.Html
+            $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'relatório salvo em HTML (use Ctrl+P para salvar em PDF)')
+            $openTarget = $out.Html
+        }
+
+        Write-Host ""
+        Write-TFToolkitStatus -Type Info -Message (Get-TFToolkitText 'Você pode anexar este arquivo no chamado, WhatsApp ou e-mail para fontes@techfontes.com.br.')
+
+        $problem = Open-TFToolkitSavedReport -Path $openTarget
+        if ($problem) {
+            $result = New-TFToolkitResult -Kind Warning -Detail (Get-TFToolkitText 'relatório salvo, mas não foi possível {0}' "$problem")
+        }
+    } catch {
+        Write-Host ""
+        Write-TFToolkitStatus -Type Error -Message (Get-TFToolkitText 'Falha ao gerar relatório em PDF: {0}' "$($_.Exception.Message.TrimEnd('.'))")
+        $result = New-TFToolkitResult -Kind Failed -Detail (Get-TFToolkitText 'não foi possível gerar o relatório em PDF')
+    }
+
+    Exit-TFToolkitAction -Result $result
+}
+
+
+# ---------------------------------------------------------------------------
 # Verificação rápida (TF-Toolkit.Console.ps1 -Action Check)
 # ---------------------------------------------------------------------------
 

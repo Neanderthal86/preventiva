@@ -1,4 +1,4 @@
-﻿# Navegação: a única tabela com as páginas e ações do TF-Toolkit. A barra lateral da janela e os menus do console
+# Navegação: a única tabela com as páginas e ações do TF-Toolkit. A barra lateral da janela e os menus do console
 # leem daqui, então a ordem e os nomes nunca ficam diferentes entre as duas interfaces.
 #
 # Ordem das páginas: primeiro o caminho guiado (Manutenção); depois as ferramentas manuais na sequência natural de
@@ -130,6 +130,9 @@ function Get-TFToolkitNavigation {
         (New-TFToolkitNavItem -Id "diagnostics.windows-support" -Label (Get-TFToolkitText 'Suporte do Windows') -Group (Get-TFToolkitText 'Visão geral') `
             -Keywords (Get-TFToolkitText 'fim do suporte windows 10 windows 11 atualizações de segurança esu requisitos tpm compatível upgrade versão 24h2 25h2') `
             -Description (Get-TFToolkitText 'Até quando há atualizações e se dá para ir ao Windows 11') -Detail (Get-TFToolkitText 'Até quando este Windows recebe atualizações de segurança e se o PC pode ir para o Windows 11') -Command "Show-TFToolkitWindowsSupport"),
+        (New-TFToolkitNavItem -Id "diagnostics.pdf-report" -Label (Get-TFToolkitText 'Relatório em PDF (para analista)') -ButtonText (Get-TFToolkitText 'Gerar PDF') -Group (Get-TFToolkitText 'Visão geral') `
+            -Keywords (Get-TFToolkitText 'pdf relatorio diagnostico analista laudo suporte enviar whatsapp email completo') `
+            -Description (Get-TFToolkitText 'Gera um PDF completo com todos os dados da máquina pronto para enviar ao analista') -Detail (Get-TFToolkitText 'Extrai hardware, discos, rede, segurança, drivers, eventos e programas instalados em um arquivo PDF salvo na Área de Trabalho') -Command "Invoke-TFToolkitPdfReport"),
         (New-TFToolkitNavItem -Id "diagnostics.report" -Label (Get-TFToolkitText 'Exportar relatório') -Group (Get-TFToolkitText 'Visão geral') `
             -Keywords (Get-TFToolkitText 'salvar html txt relatório laudo') `
             -Description (Get-TFToolkitText 'Salva o estado do PC em HTML e texto, para guardar ou mandar') -Detail (Get-TFToolkitText 'Salva o estado do PC em HTML e em texto, para guardar ou mandar a quem vai ajudar') -Command "Invoke-TFToolkitReport"),
