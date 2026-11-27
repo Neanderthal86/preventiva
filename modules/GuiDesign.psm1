@@ -1,4 +1,4 @@
-# O visual da janela do TF-Toolkit: as cores dos temas claro e escuro, os ícones (desenhos de traço numa caixa de 24 x 24)
+﻿# O visual da janela do TF-Toolkit: as cores dos temas claro e escuro, os ícones (desenhos de traço numa caixa de 24 x 24)
 # e a leitura da saída das ações para o resumo da tela de execução. Só dados e lógica, sem WPF: a janela
 # (TF-Toolkit.Gui.ps1) monta os controles a partir daqui, e tudo isto pode ser conferido fora do Windows.
 

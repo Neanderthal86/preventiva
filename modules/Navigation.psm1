@@ -1,4 +1,4 @@
-# Navegação: a única tabela com as páginas e ações do TF-Toolkit. A barra lateral da janela e os menus do console
+﻿# Navegação: a única tabela com as páginas e ações do TF-Toolkit. A barra lateral da janela e os menus do console
 # leem daqui, então a ordem e os nomes nunca ficam diferentes entre as duas interfaces.
 #
 # Ordem das páginas: primeiro o caminho guiado (Manutenção); depois as ferramentas manuais na sequência natural de
