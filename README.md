@@ -168,3 +168,9 @@ Para recompilar o `Dist/TechFontes-Utility.ps1` após alterar módulos ou tweaks
 ## Créditos
 * Desenvolvido por **[Tech Fontes](https://techfontes.com.br)**.
 * Utilitário avançado integrado baseado no projeto open-source **[Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil)**.
+
+---
+
+## Licença
+
+Código proprietário da Tech Fontes, com uso liberado para clientes e para avaliação. Redistribuição, modificação e uso comercial por terceiros exigem autorização por escrito. O fork do WinUtil em `Dev/` segue a licença MIT original. Detalhes em [LICENSE](LICENSE).

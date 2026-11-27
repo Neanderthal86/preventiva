@@ -1,0 +1,80 @@
+TF-Toolkit — Licença Proprietária / Proprietary License
+Copyright (c) 2024-2026 Tech Fontes. Todos os direitos reservados.
+Copyright (c) 2024-2026 Tech Fontes. All rights reserved.
+
+================================================================================
+PORTUGUÊS
+================================================================================
+
+1. Titularidade
+   O código-fonte, os scripts, a interface, a documentação e os demais
+   materiais deste repositório são de propriedade da Tech Fontes, exceto as
+   partes de terceiros descritas na seção 4.
+
+2. Uso permitido
+   É permitido, sem necessidade de autorização adicional:
+   a) uso por clientes da Tech Fontes, nos equipamentos da própria empresa
+      cliente, no contexto dos serviços contratados;
+   b) uso interno pela Tech Fontes;
+   c) leitura e avaliação do código para fins de conhecimento e auditoria.
+
+3. Uso não permitido sem autorização por escrito
+   Sem autorização prévia e por escrito da Tech Fontes, é proibido:
+   a) copiar, modificar, traduzir ou criar obras derivadas;
+   b) redistribuir, publicar, sublicenciar, vender ou alugar o software;
+   c) oferecê-lo como parte de serviço de terceiros ou sob outra marca;
+   d) remover avisos de direitos autorais, créditos ou esta licença.
+
+   Para solicitar autorização: fontes@techfontes.com.br
+
+4. Componentes de terceiros
+   O diretório Dev/winutil-main contém um fork do projeto WinUtil, de
+   Chris Titus Tech (CT Tech Group LLC), distribuído sob a Licença MIT. Os
+   termos e o aviso de copyright originais estão em
+   Dev/winutil-main/LICENSE e continuam valendo para esses arquivos. Esta
+   licença não altera os direitos concedidos pela MIT sobre o código do WinUtil.
+
+5. Isenção de garantia
+   O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA", SEM GARANTIA DE
+   QUALQUER TIPO, EXPRESSA OU IMPLÍCITA. A TECH FONTES NÃO SE RESPONSABILIZA
+   POR DANOS DECORRENTES DO USO DO SOFTWARE. Recomenda-se executar primeiro
+   o modo Diagnóstico (somente leitura) e manter backup antes de aplicar
+   alterações.
+
+================================================================================
+ENGLISH
+================================================================================
+
+1. Ownership
+   The source code, scripts, interface, documentation and other materials in
+   this repository are owned by Tech Fontes, except for the third-party
+   components described in section 4.
+
+2. Permitted use
+   The following is permitted without further authorization:
+   a) use by Tech Fontes clients, on the client company's own equipment, in
+      the context of the contracted services;
+   b) internal use by Tech Fontes;
+   c) reading and reviewing the code for learning and auditing purposes.
+
+3. Use requiring written permission
+   Without prior written permission from Tech Fontes, you may not:
+   a) copy, modify, translate or create derivative works;
+   b) redistribute, publish, sublicense, sell or rent the software;
+   c) offer it as part of a third-party service or under another brand;
+   d) remove copyright notices, credits or this license.
+
+   To request permission: fontes@techfontes.com.br
+
+4. Third-party components
+   The Dev/winutil-main directory contains a fork of the WinUtil project by
+   Chris Titus Tech (CT Tech Group LLC), distributed under the MIT License.
+   The original terms and copyright notice are in Dev/winutil-main/LICENSE
+   and remain in force for those files. This license does not change the
+   rights granted by the MIT License over the WinUtil code.
+
+5. Disclaimer of warranty
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED. TECH FONTES SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM THE
+   USE OF THE SOFTWARE. Running Diagnostic mode (read-only) first and keeping
+   a backup before applying changes is recommended.

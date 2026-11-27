@@ -168,3 +168,9 @@ To rebuild `Dist/TechFontes-Utility.ps1` after modifying modules or tweaks:
 ## Credits
 * Developed by **[Tech Fontes](https://techfontes.com.br)**.
 * Integrated advanced utility based on the open-source **[Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil)** project.
+
+---
+
+## License
+
+Proprietary code owned by Tech Fontes, free to use for clients and for review. Redistribution, modification and commercial use by third parties require written permission. The WinUtil fork in `Dev/` remains under its original MIT license. See [LICENSE](LICENSE) for details.
