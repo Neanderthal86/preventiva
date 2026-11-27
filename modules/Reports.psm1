@@ -1,4 +1,4 @@
-﻿# Relatórios HTML e texto do estado do PC.
+# Relatórios HTML e texto do estado do PC.
 
 
 # ---------------------------------------------------------------------------
@@ -729,17 +729,118 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
         $logoFile = Join-Path (Split-Path -Parent $PSScriptRoot) "assets\logo.png"
         if (Test-Path -LiteralPath $logoFile -PathType Leaf) {
             $b64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($logoFile))
-            $logoHtml = "<img class='brand-logo' src='data:image/png;base64,$b64' alt='Tech Fontes'/>"
+            $logoHtml = "<div class='logo-wrap'><img class='brand-logo' src='data:image/png;base64,$b64' alt='Tech Fontes'/></div>"
         }
     } catch {}
 
     $nowText = Get-Date -Format "dd/MM/yyyy 'às' HH:mm"
     $hostName = & $encode $env:COMPUTERNAME
     $userName = & $encode $env:USERNAME
+
+    # Extrair destaques para os cards executivos (KPIs) no topo
+    $kpiModel = $env:COMPUTERNAME
+    $kpiOs = "Windows"
+    $kpiOsSub = ""
+    $kpiDiskText = "-"
+    $kpiDiskPct = -1
+    $kpiSecText = "Verificado"
+    $kpiSecSub = ""
+    $kpiSecTone = "ok"
+
+    foreach ($sec in $Sections) {
+        $t = [string]$sec.Title
+        foreach ($it in @($sec.Items)) {
+            $lbl = [string]$it.Label
+            $val = [string]$it.Value
+            if ($t -match 'Sistema') {
+                if ($lbl -match 'Fabricante') { $kpiModel = $val }
+                elseif ($lbl -match 'Sistema operacional') { $kpiOs = ($val -replace '\s*\(build.*$', '') }
+                elseif ($lbl -match 'Ativa') { $kpiOsSub = $val }
+            } elseif ($t -match 'Discos' -and $lbl -eq 'C:') {
+                $kpiDiskText = ($val -replace '\s*·.*$', '')
+                if ($val -match '\((\d+)%\s*usado\)') { $kpiDiskPct = [int]$Matches[1] }
+            } elseif ($t -match 'Seguran') {
+                if ($lbl -match 'Antiv') {
+                    $kpiSecText = ($val -replace '^Outro antivírus em uso:\s*', '')
+                    if ($val -match 'Nenhum|Desativado|desligado') { $kpiSecTone = "bad" }
+                } elseif ($lbl -match 'Firewall') {
+                    $kpiSecSub = if ($val -match 'desligado') { "Firewall parcialmente desligado" } else { "Firewall ativo" }
+                    if ($val -match 'desligado' -and $kpiSecTone -eq 'ok') { $kpiSecTone = "warn" }
+                }
+            }
+        }
+    }
+
     $scoreBadge = ""
     if ($HealthScore -ge 0) {
         $scoreCls = if ($HealthScore -ge 85) { "ok" } elseif ($HealthScore -ge 65) { "warn" } else { "bad" }
-        $scoreBadge = "<div class='score-box $scoreCls'><div class='score-num'>$HealthScore<span>/100</span></div><div class='score-lbl'>$(& $encode $HealthLabel)</div></div>"
+        $scoreRingColor = if ($HealthScore -ge 85) { "#22c55e" } elseif ($HealthScore -ge 65) { "#f59e0b" } else { "#ef4444" }
+        $dashOffset = [math]::Round(125.6 - (125.6 * [math]::Min(100, [math]::Max(0, $HealthScore)) / 100.0), 1)
+        $scoreBadge = @"
+<div class='score-card $scoreCls'>
+  <svg class='score-ring' viewBox='0 0 48 48' width='48' height='48'>
+    <circle cx='24' cy='24' r='20' fill='none' stroke='rgba(255,255,255,0.16)' stroke-width='4.5'/>
+    <circle cx='24' cy='24' r='20' fill='none' stroke='$scoreRingColor' stroke-width='4.5' stroke-linecap='round' stroke-dasharray='125.6' stroke-dashoffset='$dashOffset' transform='rotate(-90 24 24)'/>
+    <text x='24' y='28' text-anchor='middle' fill='#ffffff' font-size='13' font-weight='800' font-family='Segoe UI, Arial, sans-serif'>$HealthScore</text>
+  </svg>
+  <div class='score-info'>
+    <div class='score-tag'>Saúde do PC</div>
+    <div class='score-lbl'>$(& $encode $HealthLabel)</div>
+    <div class='score-sub'>$HealthScore de 100 pontos</div>
+  </div>
+</div>
+"@
+    }
+
+    $diskBarHtml = ""
+    if ($kpiDiskPct -ge 0) {
+        $dCls = if ($kpiDiskPct -ge 90) { "bad" } elseif ($kpiDiskPct -ge 75) { "warn" } else { "ok" }
+        $diskBarHtml = "<div class='mini-bar'><div class='mini-fill $dCls' style='width:$kpiDiskPct%'></div></div>"
+    }
+
+    # Helper para badges visuais de valor
+    $formatValue = {
+        param([string]$secTitle, [string]$label, [string]$val)
+        $safe = & $encode $val
+
+        if ($secTitle -match 'Ajustes') {
+            if ($val -eq 'Ativado') { return "<span class='pill pill-ok'>Ativado</span>" }
+            if ($val -eq 'Desativado') { return "<span class='pill pill-muted'>Desativado</span>" }
+            return "<span class='pill pill-info'>$safe</span>"
+        }
+
+        if ($secTitle -match 'Discos' -and $val -match '\((\d+)%\s*usado\)') {
+            $pct = [int]$Matches[1]
+            $barCls = if ($pct -ge 90) { "bad" } elseif ($pct -ge 75) { "warn" } else { "ok" }
+            return "<div>$safe</div><div class='disk-bar'><div class='disk-fill $barCls' style='width:$pct%'></div></div>"
+        }
+
+        if ($label -match '^Grave$') { return "<span class='pill pill-bad'>Crítico</span> $safe" }
+        if ($label -match '^Aten') { return "<span class='pill pill-warn'>Atenção</span> $safe" }
+        if ($val -match 'Desgaste alto|Crítico|Nenhum antivírus|Falha|Kernel-Power|Reinício inesperado') {
+            return "<span class='val-warn'>$safe</span>"
+        }
+        if ($val -match '^(Ativado|Saudável|OK\b|Nenhuma|Nenhum dispositivo com erro|Nenhum$)') {
+            return "<span class='val-ok'>$safe</span>"
+        }
+        return $safe
+    }
+
+    # Icones SVG inline por secao
+    $getSectionIcon = {
+        param([string]$title)
+        if ($title -match 'aten') { return "<svg viewBox='0 0 24 24'><path d='M12 3L2 20h20L12 3zm0 6v5m0 3h.01'/></svg>" }
+        if ($title -match 'Sistema') { return "<svg viewBox='0 0 24 24'><rect x='3' y='4' width='18' height='12' rx='2'/><path d='M8 20h8M12 16v4'/></svg>" }
+        if ($title -match 'Hardware') { return "<svg viewBox='0 0 24 24'><rect x='6' y='6' width='12' height='12' rx='2'/><path d='M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4'/></svg>" }
+        if ($title -match 'Disco') { return "<svg viewBox='0 0 24 24'><rect x='3' y='13' width='18' height='7' rx='2'/><path d='M4 13l2.5-8h11L20 13M16.5 16.5h.01'/></svg>" }
+        if ($title -match 'Seguran') { return "<svg viewBox='0 0 24 24'><path d='M12 3l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3z'/><path d='M9 12l2 2 4-4'/></svg>" }
+        if ($title -match 'Rede') { return "<svg viewBox='0 0 24 24'><path d='M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01M2 9a15 15 0 0 1 20 0'/></svg>" }
+        if ($title -match 'Bateria') { return "<svg viewBox='0 0 24 24'><rect x='2' y='7' width='18' height='10' rx='2'/><path d='M22 10v4M6 10v4M10 10v4'/></svg>" }
+        if ($title -match 'Evento') { return "<svg viewBox='0 0 24 24'><circle cx='12' cy='12' r='9'/><path d='M12 8v5M12 16h.01'/></svg>" }
+        if ($title -match 'Telas azuis') { return "<svg viewBox='0 0 24 24'><path d='M3 12h4l3-7 4 14 3-7h4'/></svg>" }
+        if ($title -match 'Driver') { return "<svg viewBox='0 0 24 24'><path d='M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17a2 2 0 1 0 2.8 2.8l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2.8-.8-.8-2.8z'/></svg>" }
+        if ($title -match 'Programa') { return "<svg viewBox='0 0 24 24'><rect x='3' y='3' width='8' height='8' rx='1.5'/><rect x='13' y='3' width='8' height='8' rx='1.5'/><rect x='3' y='13' width='8' height='8' rx='1.5'/><rect x='13' y='13' width='8' height='8' rx='1.5'/></svg>" }
+        return "<svg viewBox='0 0 24 24'><path d='M4 7h10M18 7h2M4 17h4M12 17h8'/><circle cx='16' cy='7' r='2'/><circle cx='10' cy='17' r='2'/></svg>"
     }
 
     $sb = New-Object System.Text.StringBuilder
@@ -748,73 +849,183 @@ function ConvertTo-TFToolkitAnalystHtmlReport {
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Relatório de Diagnóstico - $hostName - Tech Fontes</title>
+<title>Relatório Técnico de Diagnóstico - $hostName - Tech Fontes</title>
 <style>
-  @page { size: A4; margin: 13mm 12mm; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; color: #1a1d26; background: #ffffff; font-size: 11.5px; line-height: 1.45; }
-  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #C4613A; padding-bottom: 12px; margin-bottom: 16px; }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-logo { width: 42px; height: 42px; object-fit: contain; }
-  .brand-badge { width: 42px; height: 42px; border-radius: 8px; background: #C4613A; color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
-  .brand h1 { margin: 0; font-size: 20px; font-weight: 800; color: #1a1d26; }
-  .brand h1 span { color: #C4613A; }
-  .brand p { margin: 2px 0 0; font-size: 11px; color: #5a6275; }
-  .score-box { text-align: right; padding: 8px 14px; border-radius: 8px; border: 1px solid #d5dae6; background: #f7f8fc; }
-  .score-box.ok { border-color: #9ad4b3; background: #edf7f1; }
-  .score-box.warn { border-color: #e8c78a; background: #fdf6e7; }
-  .score-box.bad { border-color: #e5a3a3; background: #fdf0f0; }
-  .score-num { font-size: 22px; font-weight: 800; line-height: 1.1; }
-  .score-num span { font-size: 11px; font-weight: 600; color: #646b82; }
-  .score-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #3c4257; margin-top: 2px; }
-  .meta-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f5f7fb; border: 1px solid #e1e4ee; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
-  .meta-item span { display: block; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #646b82; }
-  .meta-item strong { font-size: 12px; color: #1a1d26; }
-  section { border: 1px solid #dfe3ed; border-radius: 8px; padding: 11px 14px; margin-bottom: 12px; break-inside: avoid; page-break-inside: avoid; }
-  section h2 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #C4613A; border-bottom: 1px solid #eef0f6; padding-bottom: 5px; display: flex; justify-content: space-between; }
-  section h2 span { font-size: 10px; font-weight: 600; color: #646b82; background: #f2f4f8; padding: 1px 7px; border-radius: 99px; }
-  table { width: 100%; border-collapse: collapse; }
-  tr { border-bottom: 1px dashed #eceff5; }
-  tr:last-child { border-bottom: none; }
-  td { padding: 4px 4px; vertical-align: top; }
-  td.k { width: 34%; font-weight: 600; color: #4d5568; padding-right: 10px; }
-  td.v { color: #1a1d26; word-break: break-word; }
-  .footer { margin-top: 18px; padding-top: 10px; border-top: 1px solid #dfe3ed; display: flex; justify-content: space-between; font-size: 10px; color: #646b82; }
+  @page { size: A4; margin: 11mm 11mm 12mm 11mm; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { margin: 0; font-family: 'Segoe UI', -apple-system, Arial, sans-serif; color: #1e293b; background: #ffffff; font-size: 10.5px; line-height: 1.42; }
+
+  /* Cabeçalho Corporativo Tech Fontes */
+  .hero {
+    background: linear-gradient(135deg, #1e293b 0%, #2a3b4c 65%, #34475a 100%);
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 15px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 4px solid #C4613A;
+  }
+  .brand { display: flex; align-items: center; gap: 13px; }
+  .logo-wrap { background: #ffffff; border-radius: 9px; padding: 5px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .brand-logo { width: 38px; height: 38px; object-fit: contain; }
+  .brand-badge { width: 46px; height: 46px; border-radius: 9px; background: #C4613A; color: #fff; font-weight: 800; font-size: 19px; display: flex; align-items: center; justify-content: center; }
+  .brand-kicker { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #f4a482; margin-bottom: 2px; }
+  .brand h1 { margin: 0; font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.2px; }
+  .brand p { margin: 2px 0 0; font-size: 10px; color: #cbd5e1; }
+
+  /* Score Card no Cabeçalho */
+  .score-card { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16); border-radius: 9px; padding: 7px 12px; }
+  .score-ring { flex-shrink: 0; }
+  .score-tag { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.7px; color: #cbd5e1; font-weight: 600; }
+  .score-lbl { font-size: 13px; font-weight: 800; color: #ffffff; line-height: 1.15; }
+  .score-sub { font-size: 9.5px; color: #cbd5e1; }
+
+  /* Faixa de Metadados + KPIs Executivos */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 13px; }
+  .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3px solid #2a3b4c; border-radius: 8px; padding: 8px 10px; }
+  .kpi.accent { border-top-color: #C4613A; }
+  .kpi.ok { border-top-color: #16a34a; }
+  .kpi.warn { border-top-color: #d97706; }
+  .kpi.bad { border-top-color: #dc2626; }
+  .kpi-lbl { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 2px; }
+  .kpi-val { font-size: 11.5px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi-sub { font-size: 9.5px; color: #475569; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini-bar { height: 5px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 5px; }
+  .mini-fill { height: 100%; border-radius: 99px; }
+  .mini-fill.ok { background: #16a34a; }
+  .mini-fill.warn { background: #d97706; }
+  .mini-fill.bad { background: #dc2626; }
+
+  /* Seções */
+  section { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
+  section.flow { break-inside: auto; page-break-inside: auto; }
+  .sec-head { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 7px 12px; display: flex; justify-content: space-between; align-items: center; break-after: avoid; page-break-after: avoid; }
+  .sec-title { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.35px; }
+  .sec-title svg { width: 14px; height: 14px; stroke: #C4613A; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .sec-count { font-size: 9px; font-weight: 700; color: #475569; background: #e2e8f0; padding: 1.5px 7px; border-radius: 99px; }
+  .sec-body { padding: 6px 12px 8px; }
+
+  /* Tabela Padrão */
+  table.kv { width: 100%; border-collapse: collapse; }
+  table.kv tr { border-bottom: 1px solid #f1f5f9; }
+  table.kv tr:nth-child(even) { background: #fafbfd; }
+  table.kv tr:last-child { border-bottom: none; }
+  table.kv td { padding: 4.5px 6px; vertical-align: top; }
+  table.kv td.k { width: 31%; font-weight: 600; color: #475569; }
+  table.kv td.v { color: #0f172a; word-break: break-word; }
+
+  /* Grade Compacta de 2 Colunas (Ajustes & Programas) */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; row-gap: 0; }
+  .g-item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3.5px 4px; border-bottom: 1px solid #f1f5f9; break-inside: avoid; }
+  .g-k { font-weight: 600; color: #334155; font-size: 9.8px; }
+  .g-v { color: #475569; font-size: 9.5px; text-align: right; flex-shrink: 0; max-width: 52%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Barras e Badges */
+  .disk-bar { height: 5px; width: 180px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 4px; }
+  .disk-fill { height: 100%; border-radius: 99px; }
+  .disk-fill.ok { background: #16a34a; }
+  .disk-fill.warn { background: #d97706; }
+  .disk-fill.bad { background: #dc2626; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 8.8px; font-weight: 700; letter-spacing: 0.2px; }
+  .pill-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .pill-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .pill-bad { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  .pill-muted { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .pill-info { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+  .val-ok { color: #15803d; font-weight: 600; }
+  .val-warn { color: #b45309; font-weight: 600; }
+
+  /* Quadro do Analista */
+  .analyst-box { margin-top: 12px; border: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 8px; padding: 10px 14px; break-inside: avoid; page-break-inside: avoid; }
+  .analyst-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #2a3b4c; margin-bottom: 6px; }
+  .analyst-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; font-size: 9.5px; color: #64748b; }
+  .analyst-line { border-bottom: 1px solid #cbd5e1; height: 18px; margin-top: 2px; }
+
+  /* Rodapé */
+  .footer { margin-top: 14px; padding-top: 8px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 9.2px; color: #64748b; }
+  .footer strong { color: #C4613A; }
 </style>
 </head>
 <body>
-  <div class="header">
+  <div class="hero">
     <div class="brand">
       $logoHtml
       <div>
-        <h1>Tech <span>Fontes</span> · Relatório de Diagnóstico</h1>
-        <p>TF-Toolkit v$(& $encode $Build) · Levantamento Técnico Completo para Análise</p>
+        <div class="brand-kicker">Tech Fontes Informática · Laudo Preventivo</div>
+        <h1>Relatório Técnico de Diagnóstico</h1>
+        <p>Estação <strong>$hostName</strong> · Usuário <strong>$userName</strong> · Gerado em $nowText</p>
       </div>
     </div>
     $scoreBadge
   </div>
 
-  <div class="meta-bar">
-    <div class="meta-item"><span>Estação</span><strong>$hostName</strong></div>
-    <div class="meta-item"><span>Usuário</span><strong>$userName</strong></div>
-    <div class="meta-item"><span>Data / Hora</span><strong>$nowText</strong></div>
-    <div class="meta-item"><span>Seções Coletadas</span><strong>$($Sections.Count)</strong></div>
+  <div class="kpi-grid">
+    <div class="kpi accent">
+      <div class="kpi-lbl">Equipamento</div>
+      <div class="kpi-val">$(& $encode $kpiModel)</div>
+      <div class="kpi-sub">Host: $hostName · $($Sections.Count) seções</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Sistema Operacional</div>
+      <div class="kpi-val">$(& $encode $kpiOs)</div>
+      <div class="kpi-sub">$(& $encode $kpiOsSub)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Disco Principal (C:)</div>
+      <div class="kpi-val">$(& $encode $kpiDiskText)</div>
+      $diskBarHtml
+    </div>
+    <div class="kpi $kpiSecTone">
+      <div class="kpi-lbl">Proteção &amp; Segurança</div>
+      <div class="kpi-val">$(& $encode $kpiSecText)</div>
+      <div class="kpi-sub">$(& $encode $kpiSecSub)</div>
+    </div>
   </div>
 "@)
 
     foreach ($sec in $Sections) {
         if (-not $sec.Items -or $sec.Items.Count -eq 0) { continue }
-        [void]$sb.AppendLine("<section><h2>$(& $encode $sec.Title)<span>$($sec.Items.Count)</span></h2><table>")
-        foreach ($it in $sec.Items) {
-            [void]$sb.AppendLine("<tr><td class='k'>$(& $encode $it.Label)</td><td class='v'>$(& $encode $it.Value)</td></tr>")
+        $secTitle = [string]$sec.Title
+        $iconSvg = & $getSectionIcon $secTitle
+        $isCompactGrid = ($secTitle -match 'Ajustes do Windows|Programas Instalados')
+        $secCls = if ($isCompactGrid -or $sec.Items.Count -gt 12) { " class='flow'" } else { "" }
+
+        [void]$sb.AppendLine("<section$secCls><div class='sec-head'><div class='sec-title'>$iconSvg<span>$(& $encode $secTitle)</span></div><span class='sec-count'>$($sec.Items.Count) itens</span></div><div class='sec-body'>")
+
+        if ($isCompactGrid) {
+            [void]$sb.AppendLine("<div class='grid-2'>")
+            foreach ($it in $sec.Items) {
+                $vHtml = & $formatValue $secTitle ([string]$it.Label) ([string]$it.Value)
+                [void]$sb.AppendLine("<div class='g-item'><span class='g-k'>$(& $encode $it.Label)</span><span class='g-v'>$vHtml</span></div>")
+            }
+            [void]$sb.AppendLine("</div>")
+        } else {
+            [void]$sb.AppendLine("<table class='kv'>")
+            foreach ($it in $sec.Items) {
+                $vHtml = & $formatValue $secTitle ([string]$it.Label) ([string]$it.Value)
+                [void]$sb.AppendLine("<tr><td class='k'>$(& $encode $it.Label)</td><td class='v'>$vHtml</td></tr>")
+            }
+            [void]$sb.AppendLine("</table>")
         }
-        [void]$sb.AppendLine("</table></section>")
+
+        [void]$sb.AppendLine("</div></section>")
     }
 
     [void]$sb.AppendLine(@"
+  <div class="analyst-box">
+    <div class="analyst-title">Parecer Técnico / Registro do Analista</div>
+    <div class="analyst-grid">
+      <div>Analista Responsável<div class="analyst-line"></div></div>
+      <div>Chamado / Ordem de Serviço<div class="analyst-line"></div></div>
+      <div>Data da Análise<div class="analyst-line"></div></div>
+    </div>
+  </div>
+
   <div class="footer">
-    <div>Tech Fontes · techfontes.com.br · fontes@techfontes.com.br</div>
-    <div>Relatório gerado automaticamente pelo TF-Toolkit v$(& $encode $Build) em $nowText</div>
+    <div><strong>Tech Fontes</strong> · techfontes.com.br · fontes@techfontes.com.br</div>
+    <div>TF-Toolkit v$(& $encode $Build) · Documento gerado automaticamente em $nowText</div>
   </div>
 </body>
 </html>
