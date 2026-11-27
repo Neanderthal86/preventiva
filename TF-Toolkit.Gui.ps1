@@ -1570,6 +1570,23 @@ function Set-GuiFallbackWindowIcon {
 }
 
 function Set-GuiWindowIcon {
+    # Carrega a logo oficial Tech Fontes no cabecalho da barra lateral
+    try {
+        $brandLogo = $window.FindName("BrandLogo")
+        $logoPng = Join-Path $PSScriptRoot "assets\logo.png"
+        if ($null -ne $brandLogo -and (Test-Path -LiteralPath $logoPng)) {
+            $logoStream = New-Object System.IO.MemoryStream (, [System.IO.File]::ReadAllBytes($logoPng))
+            $logoBmp = New-Object System.Windows.Media.Imaging.BitmapImage
+            $logoBmp.BeginInit()
+            $logoBmp.StreamSource = $logoStream
+            $logoBmp.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+            $logoBmp.EndInit()
+            $logoBmp.Freeze()
+            $brandLogo.Source = $logoBmp
+            $logoStream.Dispose()
+        }
+    } catch {}
+
     $decoder = Get-GuiIconDecoder
 
     if ($null -ne $decoder -and $decoder.Frames.Count -gt 0) {
