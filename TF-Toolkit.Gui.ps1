@@ -7155,6 +7155,8 @@ foreach ($navPage in @(Get-TFToolkitNavigation | Where-Object { $_.Placement -eq
 # Recuo / Expansao do menu lateral
 $script:SidebarCollapsed = $false
 $sidebarToggleBtn = $window.FindName("SidebarToggle")
+$sidebarToggleText = $window.FindName("SidebarToggleText")
+$sidebarToggleArrow = $window.FindName("SidebarToggleArrow")
 $sidebarCol = $window.FindName("SidebarColumn")
 $brandTitleEl = $window.FindName("BrandTitle")
 $searchBoxContainer = $window.FindName("SearchContainer")
@@ -7166,7 +7168,12 @@ if ($null -ne $sidebarToggleBtn -and $null -ne $sidebarCol) {
         $vis = if ($script:SidebarCollapsed) { [System.Windows.Visibility]::Collapsed } else { [System.Windows.Visibility]::Visible }
 
         $sidebarCol.Width = New-Object System.Windows.GridLength ($(if ($script:SidebarCollapsed) { 68 } else { 248 }))
-        $sidebarToggleBtn.Content = if ($script:SidebarCollapsed) { [string][char]0x00BB } else { [string][char]0x00AB }
+        if ($null -ne $sidebarToggleText) { $sidebarToggleText.Visibility = $vis }
+        if ($null -ne $sidebarToggleArrow) {
+            $arrowData = if ($script:SidebarCollapsed) { "M 12.5 9.5 L 15.5 12 L 12.5 14.5" } else { "M 15.5 9.5 L 12.5 12 L 15.5 14.5" }
+            $sidebarToggleArrow.Data = [System.Windows.Media.Geometry]::Parse($arrowData)
+        }
+        $sidebarToggleBtn.ToolTip = if ($script:SidebarCollapsed) { "Expandir menu" } else { "Recolher menu" }
         if ($null -ne $brandTitleEl) { $brandTitleEl.Visibility = $vis }
         if ($null -ne $searchBoxContainer) { $searchBoxContainer.Visibility = $vis }
         if ($null -ne $adminTextEl) { $adminTextEl.Visibility = $vis }

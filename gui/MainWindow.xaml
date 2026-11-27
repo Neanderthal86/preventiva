@@ -992,21 +992,15 @@
         <!-- O logotipo: a bigorna de assets/TF-Toolkit.svg, sem o quadrado do ícone, nas cores do tema (o corpo na cor do
              texto e a face na cor de destaque), e o nome em negrito. A bigorna acompanha o tamanho do nome; com o texto do
              Windows grande, os dois diminuem juntos até caber na barra (DownOnly). -->
-        <DockPanel Grid.Row="0" Margin="4,2,0,0" LastChildFill="True">
-          <Button x:Name="SidebarToggle" DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="&#x00AB;"
-                  MinWidth="28" MinHeight="28" Padding="4,0" FontSize="15" FontWeight="Bold"
-                  VerticalAlignment="Center" ToolTip="Recuar ou expandir menu lateral"
-                  AutomationProperties.Name="Recuar ou expandir menu lateral"/>
-          <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left"
-                   AutomationProperties.Name="TF-Toolkit">
-            <StackPanel Orientation="Horizontal">
-              <Image x:Name="BrandLogo" Width="30" Height="30" RenderOptions.BitmapScalingMode="HighQuality"
-                     VerticalAlignment="Center" Margin="0,0,10,0"/>
-              <TextBlock x:Name="BrandTitle" Text="TF-Toolkit" FontFamily="{DynamicResource DisplayFont}" FontSize="{DynamicResource TitleSize}" FontWeight="Bold"
-                         Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" TextOptions.TextFormattingMode="Ideal"/>
-            </StackPanel>
-          </Viewbox>
-        </DockPanel>
+        <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="6,2,0,0"
+                 AutomationProperties.Name="TF-Toolkit">
+          <StackPanel Orientation="Horizontal">
+            <Image x:Name="BrandLogo" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"
+                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBlock x:Name="BrandTitle" Text="TF-Toolkit" FontFamily="{DynamicResource DisplayFont}" FontSize="{DynamicResource TitleSize}" FontWeight="Bold"
+                       Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" TextOptions.TextFormattingMode="Ideal"/>
+          </StackPanel>
+        </Viewbox>
 
         <!-- Busca (Ctrl+K): acha ações, atalhos e ajustes de qualquer página. Com o foco na caixa, o contorno fica na cor de
              destaque, como nas outras caixas de texto. -->
@@ -1083,7 +1077,23 @@
         </ScrollViewer>
 
         <StackPanel Grid.Row="3">
-          <Border Height="1" Background="{DynamicResource SidebarLineBrush}" Margin="4,6,4,8"/>
+          <Border Height="1" Background="{DynamicResource SidebarLineBrush}" Margin="4,6,4,6"/>
+          <Button x:Name="SidebarToggle" Style="{StaticResource NavButton}" ToolTip="Recolher menu"
+                  AutomationProperties.Name="Recolher ou expandir menu lateral">
+            <StackPanel Orientation="Horizontal">
+              <Viewbox Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" IsHitTestVisible="False">
+                <Canvas Width="24" Height="24">
+                  <Path Data="M 4 5 Q 4 4 5 4 H 19 Q 20 4 20 5 V 19 Q 20 20 19 20 H 5 Q 4 20 4 19 Z M 9 4 V 20"
+                        Stroke="{DynamicResource MutedBrush}" StrokeThickness="1.9" StrokeLineJoin="Round"/>
+                  <Path x:Name="SidebarToggleArrow" Data="M 15.5 9.5 L 12.5 12 L 15.5 14.5"
+                        Stroke="{DynamicResource MutedBrush}" StrokeThickness="1.9" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                </Canvas>
+              </Viewbox>
+              <TextBlock x:Name="SidebarToggleText" Text="Recolher menu" FontSize="{DynamicResource BodySize}"
+                         Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Border Height="1" Background="{DynamicResource SidebarLineBrush}" Margin="4,4,4,6"/>
           <!-- Páginas com Placement = Footer (Sobre o TF-Toolkit) -->
           <StackPanel x:Name="FooterNav"/>
           <DockPanel Margin="10,8,4,0">

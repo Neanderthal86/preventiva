@@ -57,10 +57,12 @@ function Get-TFToolkitIconPath {
         [string]$Root = (Get-TFToolkitAppRoot)
     )
 
-    $path = Join-Path (Join-Path $Root "assets") "TF-Toolkit.ico"
-
-    if ((Test-Path -LiteralPath $path -PathType Leaf) -and (Test-TFToolkitIconFile -Path $path)) {
-        return $path
+    $assetsDir = Join-Path $Root "assets"
+    foreach ($icoName in @("techfontes-icon.ico", "TF-Toolkit.ico")) {
+        $path = Join-Path $assetsDir $icoName
+        if ((Test-Path -LiteralPath $path -PathType Leaf) -and (Test-TFToolkitIconFile -Path $path)) {
+            return $path
+        }
     }
 
     return $null
