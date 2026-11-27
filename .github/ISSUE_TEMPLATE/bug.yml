@@ -1,0 +1,23 @@
+name: Reportar um Problema (Bug)
+description: Relate um erro encontrado no TF-Toolkit
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Versão do Windows / PowerShell
+      placeholder: "Ex.: Windows 11 24H2 / PowerShell 5.1"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o erro e, se possível, cole a mensagem exibida no console ou log.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir
+      placeholder: "1. Abri o TF-Toolkit\n2. Cliquei em...\n3. Ocorreu o erro..."

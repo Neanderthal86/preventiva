@@ -1,0 +1,11 @@
+name: Sugerir Melhoria
+description: Proponha um novo recurso, tweak ou melhoria para o TF-Toolkit
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Qual é a sua sugestão?
+      description: Explique a funcionalidade e como ela ajuda na rotina de suporte/manutenção.
+    validations:
+      required: true

@@ -1,16 +1,21 @@
 <div align="center">
 
-# TF-Toolkit — Preventiva Corporativa Windows
+<img src="assets/logo.png" width="76" height="76" alt="Tech Fontes Logo"/>
 
-**Central modular de diagnóstico, manutenção preventiva, auditoria de segurança e instalação de softwares para estações Windows.**
+# TF-Toolkit
+
+**Central modular de diagnóstico, manutenção preventiva, auditoria de segurança, rede e instalação de softwares para Windows 10/11.**
 
 [![Português](https://img.shields.io/badge/Idioma-Portugu%C3%AAs-C4613A?style=for-the-badge)](README.md)
 [![English](https://img.shields.io/badge/Language-English-3D5270?style=for-the-badge)](README.en.md)
 
+![Versão](https://img.shields.io/badge/vers%C3%A3o-v3.0-C4613A?style=flat-square)
+![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-3d7a5a?style=flat-square)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square&logo=powershell&logoColor=white)
 ![WPF](https://img.shields.io/badge/UI-WPF%20Auto%20%7C%20Light%20%7C%20Dark-1d1e26?style=flat-square)
-![Winget](https://img.shields.io/badge/Apps-Winget-3d7a5a?style=flat-square)
+
+[Site Tech Fontes](https://techfontes.com.br) · [O que mudou (Changelog)](CHANGELOG.md) · [Segurança](.github/SECURITY.md) · [Licença MIT](LICENSE)
 
 </div>
 
@@ -18,7 +23,7 @@
 
 ## Execução Rápida (1 Linha no PowerShell)
 
-Execute o comando abaixo no PowerShell em qualquer estação Windows (eleva automaticamente para Administrador, baixa apenas os arquivos leves de `Dist/` e abre o painel em poucos segundos):
+Execute o comando abaixo no PowerShell em qualquer estação Windows — eleva automaticamente para Administrador, sincroniza apenas os arquivos essenciais (**~65 KB**) e abre o painel em segundos:
 
 ```powershell
 irm techfontes.com.br/p | iex
@@ -33,23 +38,24 @@ irm https://raw.githubusercontent.com/Neanderthal86/tf-toolkit/main/run.ps1 | ie
 
 ---
 
-## O que é o TF-Toolkit?
+## Principais Recursos
 
-O **TF-Toolkit** foi desenvolvido pela **Tech Fontes** para padronizar e agilizar o atendimento técnico em ambientes corporativos Windows. Ele reúne em um único painel visual:
-
-* **Auditoria segura (somente leitura)** para diagnosticar máquinas antes de aplicar qualquer alteração.
-* **Manutenção preventiva por presets** (`Light`, `Moderate`, `Heavy`, `Recovery`) ou **execução granular tarefa por tarefa** (ex.: rodar apenas *Flush DNS* ou *DISM + SFC*).
-* **Instalação silenciosa de aplicativos via Winget** em um clique.
-* **Relatórios automáticos em HTML (visual) e JSON (integrações/Webhook)**.
+* **Auditoria segura (somente leitura)** para diagnosticar estações antes de qualquer alteração.
+* **Presets rápidos (`Light`, `Moderate`, `Heavy`, `Recovery`) + 16 tarefas granulares** (execute um pacote completo ou apenas uma ação pontual, como *Flush DNS*).
+* **16 Tweaks Corporativos 100% Reversíveis** (`Aplicar Tweaks` e `Desfazer`) com preset **Corporativo Seguro**.
+* **Perfis de Pós-Formatação** configuráveis em `config/settings.json` (*Desktop Escritório* e *Notebook Corporativo*).
+* **Softwares via Winget:** instale selecionados ou atualize tudo com **Atualizar Todos** (`winget upgrade --all`).
+* **Aba `Rede & Suporte`:** diagnóstico ao vivo, troca de DNS em 1 clique (**Cloudflare**, **Google**, **Quad9**, **DHCP**) e ações rápidas (Flush DNS, Renovar IP, Reiniciar Spooler + limpar fila de impressão).
+* **Temas `Auto` / `Claro` / `Escuro`** em tempo real no painel WPF e no relatório HTML executivo.
+* **Relatório HTML executivo + JSON (Webhook)** com **Índice de Saúde (`0–100`)**, busca instantânea, logo embutido em Base64 e modo **Imprimir / PDF**.
 * **Agendamento semanal silencioso** via Agendador de Tarefas (`SYSTEM`).
-* **Integração com o Chris Titus Tech (WinUtil)** para tweaks avançados.
 
 ---
 
 ## Visão Geral da Interface
 
 ### 1. Preventiva & Diagnóstico (Presets + Checklist Granular)
-Escolha um preset rápido (**Light**, **Moderate**, **Heavy**, **Recovery**) ou clique em **Desmarcar tudo** para executar apenas uma ação pontual (como **Flush DNS** ou **Limpeza de Temporários**). Na coluna direita, alterne entre **Modo Diagnóstico** (somente leitura) e **Modo Execução** (aplica limpezas e reparos).
+Escolha um preset rápido (**Light**, **Moderate**, **Heavy**, **Recovery**) ou clique em **Desmarcar tudo** para executar apenas uma tarefa específica. Alterne entre **Modo Diagnóstico** (somente leitura) e **Modo Execução**.
 
 ![Aba Preventiva e Diagnóstico (Escuro)](docs/screenshots/tab-preventiva.png)
 
@@ -61,76 +67,69 @@ Escolha um preset rápido (**Light**, **Moderate**, **Heavy**, **Recovery**) ou 
 | :--- | :--- |
 | **Light** | Inventário, bateria, rede, saúde de disco, startup, drivers, eventos (BSOD), serviços críticos, limpeza de temporários, Lixeira, Flush DNS, varredura de pastas grandes e auditoria de segurança (AV, Firewall, RDP, BitLocker, ativação). |
 | **Moderate** | Tudo do **Light** + Windows Update, Quick Scan do Microsoft Defender e otimização SSD (TRIM). |
-| **Heavy** | Tudo do **Moderate** + `DISM /RestoreHealth`, `SFC /scannow`, limpeza de componentes `WinSxS`, varredura completa de arquivos (`>200 MB`) e criação de Ponto de Restauração. |
+| **Heavy** | Tudo do **Moderate** + `DISM /RestoreHealth`, `SFC /scannow`, limpeza `WinSxS`, varredura completa de arquivos (`>200 MB`) e Ponto de Restauração. |
 | **Recovery** | Tudo do **Heavy** + reset emergencial do Windows Update (`SoftwareDistribution`), Winsock e pilha TCP/IP. |
 
 ---
 
-### 2. Otimização & Ferramentas Complementares
-Aplique ou reverta com segurança **16 tweaks corporativos 100% reversíveis** (baseados nas chaves validadas do WinUtil e GPOs oficiais da Microsoft), usando o preset **Perfil Corporativo Seguro** ou seleção individual, além de atalhos rápidos para o **Chris Titus Tech (WinUtil)**, o **Agendamento Semanal** e o `settings.json`.
+### 2. Otimização & Ferramentas (Tweaks Reversíveis + Perfis Pós-Formatação)
+Aplique ou reverta com segurança **16 tweaks corporativos 100% reversíveis**, carregue perfis prontos de pós-formatação em 1 clique (*Desktop Escritório* / *Notebook Corporativo*) e acesse o agendamento semanal ou o `settings.json`.
 
 ![Aba Otimização e Ferramentas](docs/screenshots/tab-otimizacao.png)
 
 ---
 
 ### 3. Softwares (Winget)
-Selecione os aplicativos corporativos padrão (configuráveis em `Dist/Config/settings.json`) e clique em **Instalar Selecionados** para instalar silenciosamente via Winget na hora — ou clique em **Atualizar Todos** (`winget upgrade --all`) para atualizar todos os programas já instalados na máquina.
+Selecione os aplicativos corporativos padrão (configuráveis em `config/settings.json`) e clique em **Instalar Selecionados**, ou use **Atualizar Todos** (`winget upgrade --all`) para manter a máquina atualizada.
 
 ![Aba Softwares Winget](docs/screenshots/tab-softwares.png)
 
 ---
 
-### 4. Rede & Suporte Rápido (Novo na v2.0)
-Diagnóstico ao vivo do adaptador principal (IP Local, Gateway, DNS, MAC, IP Público e latência), troca de DNS em 1 clique (**Cloudflare**, **Google**, **Quad9** ou **DHCP**) e atalhos imediatos para **Flush DNS**, **Renovar IP** e **Reiniciar Spooler + limpar fila de impressão**.
+### 4. Rede & Suporte Rápido
+Diagnóstico ao vivo do adaptador principal (IP Local, Gateway, DNS, MAC, IP Público e latência), troca de DNS em 1 clique (**Cloudflare**, **Google**, **Quad9**, **DHCP**) e ações rápidas de suporte (**Flush DNS**, **Renovar IP** e **Reiniciar Spooler + limpar fila de impressão**).
 
 ![Aba Rede e Suporte](docs/screenshots/tab-rede.png)
 
 ---
 
-## Como foi Desenvolvido (Arquitetura)
+## Arquitetura & Como foi Desenvolvido
 
-O projeto nasceu como um script monolítico único (preservado em `Legado/`) e foi refatorado para uma **arquitetura modular em PowerShell** pensada para manutenção simples, distribuição rápida e compatibilidade nativa com Windows 10/11 (PowerShell 5.1+, sem dependências externas):
+O **TF-Toolkit v3.0** é 100% nativo em **Windows PowerShell 5.1+ e WPF** (zero dependências externas):
 
-* **Frontend WPF sem dependências:** construído em XAML embarcado (`Dist/Painel-Preventiva.ps1`), com `ControlTemplates` próprios em tema escuro, 100% em ASCII seguro (entidades XML `&#x...;` e `$([char]0x...)`) para nunca quebrar acentuação no PowerShell 5.1, e execução **assíncrona** via `DispatcherTimer` (a interface não congela durante a preventiva).
-* **Orquestrador CLI (`Dist/Invoke-Preventiva.ps1`):** aceita tanto os presets (`-Mode`) quanto uma lista granular (`-Tasks "FlushDns,CleanTemp"`), sempre bloqueando ações destrutivas quando `-SubModo Diagnostico` está ativo.
-* **Runner de 1 linha (`run.ps1`):** em vez de baixar um `.zip` pesado do repositório inteiro, utiliza `System.Net.WebClient` para baixar **apenas os 14 arquivos da pasta `Dist/`** para `C:\ProgramData\TechFontes\Preventiva`, abrindo o painel em segundos.
-* **Módulos independentes (`Dist/Modules/`):**
+* **Separação clara entre UI e lógica:** a interface vive em `gui/MainWindow.xaml` (UTF-8 limpo) com `DynamicResource` para troca de tema em tempo real, e a lógica assíncrona (`DispatcherTimer`) vive em `TF-Toolkit.ps1`.
+* **Módulos independentes (`modules/`):**
 
 | Módulo | Responsabilidade |
 | :--- | :--- |
 | `SystemInventory.psm1` | Inventário de hardware/SO, saúde da bateria via WMI (alerta `< 70%`) e teste de latência (`8.8.8.8`). |
-| `Diagnostics.psm1` | Espaço e saúde S.M.A.R.T. dos discos, programas de inicialização, drivers com falha, eventos de BSOD (ID 41), varredura de pastas/arquivos grandes, auditoria de segurança (AV, Firewall, porta RDP 3389, BitLocker, ativação) e `DISM`/`SFC`. |
-| `Maintenance.psm1` | Verificação/restart de serviços críticos, limpeza de temporários, Lixeira, Flush DNS, SSD TRIM, limpeza `WinSxS`, Windows Update (`PSWindowsUpdate`), Ponto de Restauração e modo Recovery. |
-| `Optimization.psm1` | Tweaks corporativos 100% reversíveis (aplicar/desfazer via registro e GPO) e plano de energia Alto Desempenho (`powercfg`). |
-| `Software.psm1` | Instalação silenciosa em lote via `winget`. |
-| `Reporting.psm1` | Geração de `.log`, `Transcript`, relatório **HTML** estilizado e **JSON** com disparo opcional para Webhook. |
+| `Diagnostics.psm1` | Saúde S.M.A.R.T. e espaço em disco, startup, drivers com falha, BSOD (ID 41), varredura de arquivos/pastas grandes, auditoria de segurança (AV, Firewall, RDP 3389, BitLocker, ativação) e `DISM`/`SFC`. |
+| `Maintenance.psm1` | Serviços críticos, limpeza de temporários, Lixeira, Flush DNS, SSD TRIM, limpeza `WinSxS`, Windows Update, Ponto de Restauração e modo Recovery. |
+| `Optimization.psm1` | 16 tweaks corporativos 100% reversíveis (`Invoke-PreventivaTweaks -Tweaks ... [-Undo]`). |
+| `Software.psm1` | Instalação em lote (`Install-PreventivaSoftware`) e atualização em massa (`Update-PreventivaAllSoftware`) via Winget. |
+| `NetworkTools.psm1` | Diagnóstico de rede ao vivo, troca de DNS em 1 clique, renovação de IP e limpeza/restart do Spooler de Impressão. |
+| `Reporting.psm1` | Índice de Saúde (`0–100`), relatório HTML executivo (`Auto/Claro/Escuro`, busca, logo Base64, modo PDF) e JSON/Webhook. |
 
 ---
 
-## Relatórios, Telemetria e Configuração
+## Linha de Comando (CLI) & Agendamento
 
-Os arquivos gerados ficam em `C:\ProgramData\Preventiva\` (configurável em `Dist/Config/settings.json`):
-* `Relatorio_<Modo>_<SubModo>_<Data>.html` — Relatório visual com cards de status, espaço liberado e pontos de atenção.
-* `Relatorio_<Modo>_<SubModo>_<Data>.json` — Payload estruturado pronto para envio via `ReportSettings.WebhookUrl` (n8n, Teams, Discord, API própria).
-* `Preventiva_*.log` e `Transcript_*.txt` — Histórico técnico completo da execução.
-
-### Uso via Linha de Comando (CLI)
 ```powershell
 # Auditoria somente leitura completa
-.\Dist\Invoke-Preventiva.ps1 -Mode Heavy -SubModo Diagnostico
+.\Invoke-Preventiva.ps1 -Mode Heavy -SubModo Diagnostico
 
 # Executar apenas tarefas específicas (granular)
-.\Dist\Invoke-Preventiva.ps1 -Mode Personalizado -SubModo Execucao -Tasks "FlushDns,CleanTemp,EmptyRecycleBin"
+.\Invoke-Preventiva.ps1 -Mode Personalizado -SubModo Execucao -Tasks "FlushDns,CleanTemp,EmptyRecycleBin"
 
-# Instalar aplicativos diretamente via CLI
-.\Dist\Invoke-Preventiva.ps1 -Mode Softwares -SubModo Execucao -Tasks "None" -SoftwareToInstall "Google.Chrome","7zip.7zip"
-```
+# Aplicar tweaks específicos via CLI
+.\Invoke-Preventiva.ps1 -Mode Tweaks -SubModo Execucao -Tasks "None" -Tweaks "DisableTelemetry,EdgeDebloat,DisableCopilotAI"
 
-### Agendamento Semanal Silencioso
-```powershell
-.\Dist\Install-Agendamento.ps1
+# Atualizar todos os apps instalados via Winget
+.\Invoke-Preventiva.ps1 -Mode WingetUpgrade -SubModo Execucao -Tasks "None" -UpgradeAllSoftware
+
+# Agendar preventiva semanal silenciosa (sexta-feira 18h como SYSTEM)
+.\Install-Agendamento.ps1
 ```
-Registra a tarefa `TechFontes-Preventiva-Semanal` (toda sexta-feira às 18h, conta `SYSTEM`, execução oculta em modo `Light / Execucao`).
 
 ---
 
@@ -138,33 +137,29 @@ Registra a tarefa `TechFontes-Preventiva-Semanal` (toda sexta-feira às 18h, con
 
 ```text
 tf-toolkit/
-├── run.ps1                    # Launcher de 1 linha (baixa apenas Dist/ e abre o painel)
-├── Dist/                      # Pacote pronto para produção / cliente
-│   ├── Painel-Preventiva.ps1
-│   ├── Invoke-Preventiva.ps1
-│   ├── Install-Agendamento.ps1
-│   ├── TechFontes-Utility.ps1
-│   ├── Rodar-Preventiva.bat
-│   ├── Rodar-Utilitario.bat
-│   ├── Assets/logo.png
-│   ├── Config/settings.json
-│   └── Modules/*.psm1
-├── Dev/                       # Ambiente de desenvolvimento e build
-│   ├── Build-Utility.ps1      # Sincroniza módulos, compila o WinUtil e publica em Dist/
-│   └── winutil-main/          # Fork customizado do Chris Titus WinUtil
-├── docs/screenshots/          # Prints oficiais da interface
-├── Legado/                    # Script monolítico original (histórico)
-├── README.md                  # Documentação em Português
-└── README.en.md               # Documentation in English
+├── .github/                  # Templates de Issue e Política de Segurança
+├── assets/logo.png           # Logo oficial Tech Fontes
+├── config/settings.json      # Parâmetros, Webhook, Softwares e Perfis Pós-Formatação
+├── docs/screenshots/         # Prints oficiais da interface
+├── gui/MainWindow.xaml       # Interface WPF (XAML separado)
+├── modules/*.psm1            # 7 módulos PowerShell independentes
+├── tools/New-ReleasePackage.ps1  # Gera TF-Toolkit-v3.0.zip + hash SHA-256
+├── run.ps1                   # Launcher em 1 linha (~65 KB)
+├── TF-Toolkit.ps1            # Entrada da interface gráfica
+├── TF-Toolkit.bat            # Atalho duplo-clique com elevação automática
+├── Invoke-Preventiva.ps1     # Orquestrador CLI
+├── Install-Agendamento.ps1   # Registro da tarefa agendada semanal
+├── CHANGELOG.md              # Histórico de versões
+├── LICENSE                   # Licença MIT
+├── README.md                 # Documentação em Português
+└── README.en.md              # Documentation in English
 ```
 
-Para recompilar o `Dist/TechFontes-Utility.ps1` após alterar módulos ou tweaks:
+Para gerar um pacote `.zip` de release com hash **SHA-256**:
 ```powershell
-.\Dev\Build-Utility.ps1
+.\tools\New-ReleasePackage.ps1 -Version "3.0"
 ```
 
 ---
 
-## Créditos
-* Desenvolvido por **[Tech Fontes](https://techfontes.com.br)**.
-* Utilitário avançado integrado baseado no projeto open-source **[Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil)**.
+Desenvolvido por **[Tech Fontes](https://techfontes.com.br)** · Distribuído sob a licença **[MIT](LICENSE)**.
