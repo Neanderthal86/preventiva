@@ -4,7 +4,7 @@
 
 # TF-Toolkit
 
-[![Versión más reciente](https://img.shields.io/github/v/release/guilhermehenn/tf-toolkit?label=versi%C3%B3n)](https://github.com/guilhermehenn/tf-toolkit/releases/latest)
+[![Versión más reciente](https://img.shields.io/github/v/release/Neanderthal86/tf-toolkit?label=versi%C3%B3n)](https://github.com/Neanderthal86/tf-toolkit/releases/latest)
 [![Licencia GPLv3](https://img.shields.io/badge/licencia-GPLv3-blue)](LICENSE)
 [![Windows 10 y 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4)](#requisitos)
 [![Windows PowerShell 5.1](https://img.shields.io/badge/PowerShell-5.1-5391FE)](#requisitos)
@@ -13,10 +13,10 @@
 
 Cuida tu PC con Windows en un solo lugar: TF-Toolkit limpia, repara, actualiza y avisa antes del problema, en una ventana sencilla o, si lo prefieres, en un menú en el terminal. Pregunta antes de lo que tiene peso y guarda cómo estaban las cosas, para que puedas volver atrás.
 
-[Sitio web](https://usewinforge.com.br/es/) · [**Descargar TF-Toolkit**](https://github.com/guilhermehenn/tf-toolkit/releases/latest/download/TF-Toolkit.zip) · [Todas las versiones](https://github.com/guilhermehenn/tf-toolkit/releases) · [Qué cambió (en portugués)](CHANGELOG.md)
+[Sitio web](https://techfontes.com.br/es/) · [**Descargar TF-Toolkit**](https://github.com/Neanderthal86/tf-toolkit/releases/latest/download/TF-Toolkit.zip) · [Todas las versiones](https://github.com/Neanderthal86/tf-toolkit/releases) · [Qué cambió (en portugués)](CHANGELOG.md)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/guilhermehenn/tf-toolkit/main/docs/images/inicio.png" width="820" alt="La pantalla Inicio de TF-Toolkit, con la nota de salud del PC y los botones Revisar el PC y Optimizar">
+  <img src="https://raw.githubusercontent.com/Neanderthal86/tf-toolkit/main/docs/images/inicio.png" width="820" alt="La pantalla Inicio de TF-Toolkit, con la nota de salud del PC y los botones Revisar el PC y Optimizar">
 </p>
 
 ## Por qué TF-Toolkit
@@ -62,7 +62,7 @@ Y además:
 ## Seguridad y privacidad
 
 > [!IMPORTANT]
-> Los scripts no tienen firma digital, y Windows puede avisar al abrirlos. Descarga solo desde la [página de versiones](https://github.com/guilhermehenn/tf-toolkit/releases) y, si quieres, comprueba el zip en PowerShell: el resultado debe ser igual al SHA-256 publicado en la página de la versión.
+> Los scripts no tienen firma digital, y Windows puede avisar al abrirlos. Descarga solo desde la [página de versiones](https://github.com/Neanderthal86/tf-toolkit/releases) y, si quieres, comprueba el zip en PowerShell: el resultado debe ser igual al SHA-256 publicado en la página de la versión.
 >
 > ```powershell
 > Get-FileHash .\TF-Toolkit.zip -Algorithm SHA256
@@ -122,7 +122,7 @@ Reparar Windows, instalar actualizaciones y cambiar ajustes del sistema los nece
 
 ## Ayuda
 
-¿Encontraste un problema o tienes una sugerencia? [Abre un issue](https://github.com/guilhermehenn/tf-toolkit/issues/new). Para ayudar a investigar un problema, incluye:
+¿Encontraste un problema o tienes una sugerencia? [Abre un issue](https://github.com/Neanderthal86/tf-toolkit/issues/new). Para ayudar a investigar un problema, incluye:
 
 - La versión de TF-Toolkit y la versión y compilación de Windows.
 - La interfaz utilizada: ventana o terminal.
@@ -132,15 +132,15 @@ Reparar Windows, instalar actualizaciones y cambiar ajustes del sistema los nece
 
 **Acerca de TF-Toolkit > Paquete de soporte** reúne los registros, la revisión rápida y el último informe en un zip. Antes de compartir registros, informes o el paquete, revisa su contenido y elimina la información personal.
 
-**¿Encontraste un fallo de seguridad?** No abras un issue público: sigue la [política de seguridad](https://github.com/guilhermehenn/tf-toolkit/security/policy) y usa **Report a vulnerability**, que solo ve el mantenedor.
+**¿Encontraste un fallo de seguridad?** No abras un issue público: sigue la [política de seguridad](https://github.com/Neanderthal86/tf-toolkit/security/policy) y usa **Report a vulnerability**, que solo ve el mantenedor.
 
 ## Para desarrolladores
 
-- [Documentación técnica (en portugués)](https://github.com/guilhermehenn/tf-toolkit/blob/main/docs/documentacao-tecnica-4.0.md): cómo está hecho TF-Toolkit, dónde está cada cosa y cómo cambiar el código. Quien llega ahora empieza por "Comece por aqui" (empieza aquí).
-- [Índice de la documentación (en portugués)](https://github.com/guilhermehenn/tf-toolkit/blob/main/docs/README.md): el mapa de funciones y la documentación técnica.
+- [Documentación técnica (en portugués)](https://github.com/Neanderthal86/tf-toolkit/blob/main/docs/documentacao-tecnica-4.0.md): cómo está hecho TF-Toolkit, dónde está cada cosa y cómo cambiar el código. Quien llega ahora empieza por "Comece por aqui" (empieza aquí).
+- [Índice de la documentación (en portugués)](https://github.com/Neanderthal86/tf-toolkit/blob/main/docs/README.md): el mapa de funciones y la documentación técnica.
 - `modules/`: las funciones; `gui/`: la ventana; `lang/`: las traducciones (gettext); `tools/`: firma, el zip de la versión y traducciones.
-- [Qué cambió en cada versión (en portugués)](CHANGELOG.md) y la [guía detallada de la build 3.69](https://github.com/guilhermehenn/tf-toolkit/blob/v3.69.0/README.md) (archivada, en portugués).
+- [Qué cambió en cada versión (en portugués)](CHANGELOG.md) y la [guía detallada de la build 3.69](https://github.com/Neanderthal86/tf-toolkit/blob/v3.69.0/README.md) (archivada, en portugués).
 
 ## Licencia
 
-[GNU GPLv3](LICENSE) · © 2026 [Guilherme Henn](https://github.com/guilhermehenn), que mantiene TF-Toolkit.
+[GNU GPLv3](LICENSE) · © 2026 [Tech Fontes](https://github.com/guilhermehenn), que mantiene TF-Toolkit.

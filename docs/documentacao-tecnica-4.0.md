@@ -807,14 +807,14 @@ O TF-Toolkit não envia dados do PC. Ele só consulta e baixa:
 
 | Para quê | Endereço | Quando |
 |---|---|---|
-| Verificar nova versão | `api.github.com/repos/guilhermehenn/tf-toolkit/releases/latest` e o download do release em `github.com` | Quando a pessoa pede; a consulta (sem o download), também pelo monitor, no máximo uma vez a cada 20 horas, fora da conexão limitada e da bateria |
-| Dados online (programas essenciais e datas de suporte do Windows) | `raw.githubusercontent.com/guilhermehenn/tf-toolkit/main/catalog/catalog.json` | Em Conferir dados online, e pelo monitor quando a última conferência tem mais de 7 dias |
+| Verificar nova versão | `api.github.com/repos/Neanderthal86/tf-toolkit/releases/latest` e o download do release em `github.com` | Quando a pessoa pede; a consulta (sem o download), também pelo monitor, no máximo uma vez a cada 20 horas, fora da conexão limitada e da bateria |
+| Dados online (programas essenciais e datas de suporte do Windows) | `raw.githubusercontent.com/Neanderthal86/tf-toolkit/main/catalog/catalog.json` | Em Conferir dados online, e pelo monitor quando a última conferência tem mais de 7 dias |
 | Teste de velocidade | `speed.cloudflare.com` (download e upload) | Quando a pessoa pede |
 | IP público | `api.ipify.org` | Na tela Informações de rede |
 | Testar conectividade | Ping em `1.1.1.1`, `8.8.8.8`, `9.9.9.9`, `www.microsoft.com` e `www.google.com`, os cinco juntos | Quando a pessoa pede |
 | Saber se há internet (reparo de rede, Otimizar) | Ping em `1.1.1.1` e `8.8.8.8`, os dois juntos, e, se o ping é bloqueado, uma conexão na porta 443 | No reparo da rede |
 | Páginas dos fabricantes (HP, Dell, AMD, NVIDIA) | Abertas no navegador | Quando a pessoa clica |
-| Site do TF-Toolkit (Sobre o TF-Toolkit > Site do TF-Toolkit) | `usewinforge.com.br`, na página do idioma da janela (`Get-TFToolkitWebsiteUrl`), aberto no navegador | Quando a pessoa clica |
+| Site do TF-Toolkit (Sobre o TF-Toolkit > Site do TF-Toolkit) | `techfontes.com.br`, na página do idioma da janela (`Get-TFToolkitWebsiteUrl`), aberto no navegador | Quando a pessoa clica |
 | Conferir o relógio (Acertar a data e a hora) | `http://www.msftconnecttest.com/connecttest.txt`, o teste de internet do próprio Windows: só o cabeçalho `Date` da resposta | Quando a pessoa pede |
 
 O resto passa pelos canais do próprio Windows: Windows Update, winget, Microsoft Store, as assinaturas do Defender e o Horário do Windows (a sincronização do relógio).
@@ -956,12 +956,12 @@ O link `releases/latest/download/TF-Toolkit.zip` dos READMEs sempre leva ao últ
 O GitHub mostra o `README.md` da raiz na página do repositório, e o da pasta `docs` ao abrir a pasta. O que a página precisa ter:
 
 - **Os READMEs nos três idiomas:** `README.md` (português), `README.en.md` e `README.es.md`, com a linha dos idiomas no alto de cada um, com os mesmos títulos e na mesma ordem. Os nomes das telas são os das traduções do TF-Toolkit (`lang/en.po` e `lang/es.po`), para quem lê o README achar o mesmo nome na janela. Um texto que muda num README muda nos três.
-- **Os links:** os arquivos que vão no zip (`LICENSE`, `CHANGELOG.md`, os outros READMEs e o ícone), por caminho relativo, que o GitHub ajusta ao branch aberto e que funciona também na pasta extraída; os documentos da pasta `docs`, que não vão no zip, pelo endereço no GitHub; o download e as versões, pelos endereços do release; o site, na linha do download, pela página do idioma de cada README (`usewinforge.com.br`, `/en/` e `/es/`, as mesmas de `Get-TFToolkitWebsiteUrl`).
+- **Os links:** os arquivos que vão no zip (`LICENSE`, `CHANGELOG.md`, os outros READMEs e o ícone), por caminho relativo, que o GitHub ajusta ao branch aberto e que funciona também na pasta extraída; os documentos da pasta `docs`, que não vão no zip, pelo endereço no GitHub; o download e as versões, pelos endereços do release; o site, na linha do download, pela página do idioma de cada README (`techfontes.com.br`, `/en/` e `/es/`, as mesmas de `Get-TFToolkitWebsiteUrl`).
 - **Uma ajuda que pede atenção** (os scripts sem assinatura) num alerta do GitHub (`> [!IMPORTANT]`), um só por README; as perguntas frequentes em `<details>`, que abrem com um clique.
 - **Os diagramas** em Mermaid, num bloco `mermaid`, que o GitHub desenha nos arquivos Markdown (os deste documento).
 - **O "About" do repositório** (a engrenagem ao lado de About), à mão, porque não fica em nenhum arquivo:
   - **a descrição:** "Free, open-source Windows 10/11 maintenance tool in PowerShell: cleanup, repair, updates, security checks and app management via winget, with alerts before problems. Portuguese, English and Spanish.";
-  - **o site** (Website): `https://usewinforge.com.br`;
+  - **o site** (Website): `https://techfontes.com.br`;
   - **os tópicos** (só letras minúsculas, números e hífens, até 50 caracteres cada e no máximo 20): `windows`, `windows-10`, `windows-11`, `powershell`, `wpf`, `winget`, `windows-update`, `windows-maintenance`, `pc-maintenance`, `system-maintenance`, `system-repair`, `cleanup`, `diagnostics`, `windows-tweaks`, `privacy`;
   - **Releases** marcado, para a página mostrar a versão mais recente.
 - **Os selos do README** vêm do shields.io, e o da versão lê o último release publicado: sem release, ele não mostra um número.

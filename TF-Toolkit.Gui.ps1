@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
     TF-Toolkit com janela (WPF): as ações rodam dentro da própria janela, sem abrir terminal.

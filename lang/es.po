@@ -10728,8 +10728,8 @@ msgid "Site do TF-Toolkit"
 msgstr "Sitio web de TF-Toolkit"
 
 #: modules/Navigation.psm1:451
-msgid "site página internet web novidades usewinforge"
-msgstr "sitio web página internet novedades usewinforge"
+msgid "site página internet web novidades techfontes"
+msgstr "sitio web página internet novedades techfontes"
 
 #: modules/Navigation.psm1:452
 msgid "Abre o site do TF-Toolkit no navegador"

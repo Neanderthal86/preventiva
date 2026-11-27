@@ -52,7 +52,7 @@ function Get-TFToolkitPackageChangelog {
 
     if ($heads.Count -le 5) { return $Text }
 
-    $footer = "As builds anteriores estão no histórico completo: https://github.com/guilhermehenn/tf-toolkit/blob/main/CHANGELOG.md`r`n"
+    $footer = "As builds anteriores estão no histórico completo: https://github.com/Neanderthal86/tf-toolkit/blob/main/CHANGELOG.md`r`n"
 
     return ($Text.Substring(0, $heads[5].Index).TrimEnd("`r", "`n") + "`r`n`r`n---`r`n`r`n" + $footer)
 }

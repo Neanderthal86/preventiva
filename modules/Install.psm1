@@ -9,7 +9,7 @@
 $script:TFToolkitUninstallKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\TF-Toolkit"
 $script:TFToolkitPackageFolders = @("modules", "gui", "lang", "assets")
 $script:TFToolkitPackageRootFiles = @("TF-Toolkit*.cmd", "TF-Toolkit.*.ps1", "README*.md", "CHANGELOG.md", "LICENSE", "SHA256SUMS.txt")
-$script:TFToolkitPublisher = "Guilherme Henn"
+$script:TFToolkitPublisher = "Tech Fontes"
 # Quanto esperar o TF-Toolkit fechar antes de trocar os arquivos (segundos).
 $script:TFToolkitUpdateWaitSeconds = 120
 # Um resultado de atualização mais velho que isto não é mostrado (a janela abriu muito depois, por outro caminho).

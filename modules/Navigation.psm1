@@ -448,7 +448,7 @@ function Get-TFToolkitNavigation {
             -Keywords (Get-TFToolkitText 'suporte ajuda log logs zip problema erro bug enviar mandar técnico') `
             -Description (Get-TFToolkitText 'Logs, verificação e versões num zip, para quem vai ajudar') -Detail (Get-TFToolkitText 'Junta logs, verificação e versões num zip para mandar a quem vai ajudar') -Command "New-TFToolkitSupportPackage"),
         (New-TFToolkitNavItem -Id "app.website" -Label (Get-TFToolkitText 'Site do TF-Toolkit') -Group (Get-TFToolkitText 'Versão e dados') `
-            -Keywords (Get-TFToolkitText 'site página internet web novidades usewinforge') `
+            -Keywords (Get-TFToolkitText 'site página internet web novidades techfontes') `
             -Description (Get-TFToolkitText 'Abre o site do TF-Toolkit no navegador') -Shortcut "Website"),
         (New-TFToolkitNavItem -Id "app.shortcut" -Label (Get-TFToolkitText 'Criar atalho do TF-Toolkit') -ButtonText (Get-TFToolkitText 'Criar atalho') -Group (Get-TFToolkitText 'Integração com o Windows') -Accent `
             -Keywords (Get-TFToolkitText 'fixar barra tarefas') `

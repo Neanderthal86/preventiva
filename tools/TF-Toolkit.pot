@@ -10726,7 +10726,7 @@ msgid "Site do TF-Toolkit"
 msgstr ""
 
 #: modules/Navigation.psm1:451
-msgid "site página internet web novidades usewinforge"
+msgid "site página internet web novidades techfontes"
 msgstr ""
 
 #: modules/Navigation.psm1:452
